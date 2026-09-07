@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Enterprise HR Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
+</head>
+
+<body>
+
+  <!-- Desktop Switcher Bar -->
+  <preview-top-bar active-page="calendar"></preview-top-bar>
+
+  <div class="phone-container">
+    <!-- Top Executive Header Block (Matches PQ Mobile Royal Purple Standard) -->
+    <div class="cal-top-header">
+      <!-- Status Bar -->
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <!-- Calendar Top Navigation (Clean standard: Title on left, Month arrows on right, No Today card) -->
+      <div class="cal-nav-row">
+        <div class="cal-nav-left">
+          <button class="me-back-btn" onclick="navTo('home', event)" aria-label="Back to Home" title="Back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="cal-title-wrap">
+            <span class="cal-sub-label">PEOPLEHCM CALENDAR</span>
+            <h2 class="cal-month-title" id="calMonthDisplay">September 2026</h2>
+          </div>
+        </div>
+
+        <div class="cal-nav-right">
+          <!-- Clean Month Stepper Arrows -->
+          <div class="cal-month-arrows">
+            <button class="cal-arrow-btn" onclick="changeMonth(-1)" title="Previous Month">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button class="cal-arrow-btn" onclick="changeMonth(1)" title="Next Month">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scope Filter Pills -->
+      <div class="cal-filter-bar">
+        <button class="cal-filter-pill active" onclick="filterCategory('all', this)">🏢 All Activities</button>
+        <button class="cal-filter-pill" onclick="filterCategory('shift', this)">🔵 My Shifts</button>
+        <button class="cal-filter-pill" onclick="filterCategory('leave', this)">🟢 Team Leaves</button>
+        <button class="cal-filter-pill" onclick="filterCategory('holiday', this)">🟡 Holidays</button>
+        <button class="cal-filter-pill" onclick="filterCategory('event', this)">🟣 Events</button>
+      </div>
+    </div>
+
+    <!-- Scrollable Main Content -->
+    <div class="main-content" style="padding: 10px 0 90px;">
+
+      <!-- Compact Integrated HR Metrics Strip -->
+      <div class="cal-summary-strip">
+        <div class="cal-summary-pill">
+          <span style="font-size: 14px;">💼</span>
+          <div>
+            <span class="cal-summary-num">20</span> <span class="cal-summary-label">Work Days</span>
+          </div>
+        </div>
+        <div style="height: 18px; width: 1px; background: var(--border-subtle);"></div>
+        <div class="cal-summary-pill">
+          <span style="font-size: 14px;">🇲🇾</span>
+          <div>
+            <span class="cal-summary-num" style="color: #f59e0b;">2</span> <span class="cal-summary-label">Holidays</span>
+          </div>
+        </div>
+        <div style="height: 18px; width: 1px; background: var(--border-subtle);"></div>
+        <div class="cal-summary-pill">
+          <span style="font-size: 14px;">🌴</span>
+          <div>
+            <span class="cal-summary-num" style="color: #10b981;">14.0d</span> <span class="cal-summary-label">Leave Bal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Month Calendar Card -->
+      <div class="cal-card-box">
+        <!-- Weekday Headers (Monday to Sunday) -->
+        <div class="cal-weekdays">
+          <span class="cal-weekday-name">Mon</span>
+          <span class="cal-weekday-name">Tue</span>
+          <span class="cal-weekday-name">Wed</span>
+          <span class="cal-weekday-name">Thu</span>
+          <span class="cal-weekday-name">Fri</span>
+          <span class="cal-weekday-name weekend">Sat</span>
+          <span class="cal-weekday-name weekend">Sun</span>
+        </div>
+
+        <!-- 7-Column Days Grid -->
+        <div class="cal-days-grid" id="calDaysGrid">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <!-- Dots Legend Strip -->
+        <div class="cal-legend-strip">
+          <div class="cal-legend-item">
+            <span class="cal-dot blue"></span> Shift
+          </div>
+          <div class="cal-legend-item">
+            <span class="cal-dot green"></span> Leave
+          </div>
+          <div class="cal-legend-item">
+            <span class="cal-dot amber"></span> Holiday
+          </div>
+          <div class="cal-legend-item">
+            <span class="cal-dot purple"></span> Event
+          </div>
+          <div class="cal-legend-item">
+            <span class="cal-dot red"></span> Urgent OOO
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Day Agenda & Activities (Timeline View) -->
+      <div class="cal-agenda-section">
+        <div class="cal-agenda-header">
+          <div>
+            <div class="cal-agenda-date-title" id="selectedDateTitle">Friday, 4 Sep 2026</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;" id="selectedDateSubtitle">Today's Schedule &amp; Team Status</div>
+          </div>
+          <span class="cal-agenda-count" id="agendaCountBadge">3 Items</span>
+        </div>
+
+        <!-- Timeline Items Container -->
+        <div id="agendaItemsContainer">
+          <!-- Populated by updateAgendaView -->
+        </div>
+
+        <!-- Quick Action Bar -->
+        <div style="display: flex; gap: 10px; margin-top: 14px;">
+          <button class="sheet-btn primary" onclick="navTo('apply_leave', event)" style="flex: 1; padding: 11px; font-size: 13px; font-weight: 800; border-radius: 14px; background: var(--purple-primary); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
+            + Apply Leave
+          </button>
+          <button class="sheet-btn secondary" onclick="alert('Shift Swap: Select team coworker to propose swap.')" style="flex: 1; padding: 11px; font-size: 13px; font-weight: 700; border-radius: 14px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-subtle); cursor: pointer;">
+            ⚡ Swap Shift
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar with Calendar Active -->
+    <phone-bottom-nav active="calendar"></phone-bottom-nav>
+
+    <!-- Slide-in Left Profile Drawer -->
+    <left-profile-drawer></left-profile-drawer>
+
+    <!-- For You Notification Bottom Sheet Drawer -->
+    <notification-sheet></notification-sheet>
+  </div>
+
+  <script>
+    // Enterprise HR Calendar Events Data for September 2026
+    const HR_CALENDAR_EVENTS = {
+      // 31 Aug (Merdeka Day lead-in)
+      '2026-08-31': {
+        dots: ['amber'],
+        title: 'Monday, 31 Aug 2026',
+        subtitle: 'National Public Holiday',
+        items: [
+          {
+            timeVal: 'All Day',
+            timeAmPm: '',
+            nodeColor: 'amber',
+            badge: 'National Holiday',
+            badgeClass: 'orange',
+            title: '🇲🇾 National Day (Hari Kebangsaan)',
+            desc: '69th Merdeka Day Celebration. All offices closed nationwide.'
+          }
+        ]
+      },
+      // 4 Sep 2026 (Today)
+      '2026-09-04': {
+        dots: ['blue', 'purple', 'green'],
+        title: 'Friday, 4 Sep 2026',
+        subtitle: "Today's Schedule & Team Status",
+        items: [
+          {
+            timeVal: '09:00',
+            timeAmPm: 'AM',
+            nodeColor: 'blue',
+            badge: 'Clocked In (08:52 AM)',
+            badgeClass: 'green',
+            title: 'Standard Working Shift (Group A)',
+            desc: '09:00 AM — 06:00 PM • Times Square HQ (Floor 12). Regular 9-hour executive working hours.'
+          },
+          {
+            timeVal: '02:30',
+            timeAmPm: 'PM',
+            nodeColor: 'purple',
+            badge: 'Company Event',
+            badgeClass: 'purple',
+            title: 'Q3 All-Hands Townhall & Recognition',
+            desc: '02:30 PM — 03:30 PM • Auditorium 1 & MS Teams. Keynote by CEO & employee awards ceremony.'
+          },
+          {
+            timeVal: 'All Day',
+            timeAmPm: '',
+            nodeColor: 'green',
+            badge: '3 Members OOO',
+            badgeClass: 'blue',
+            title: 'Team Out of Office Status',
+            desc: '<div class="cal-member-row"><span><strong>Ahmad Faizal</strong> (Snr Exec)</span><span style="color:#10b981;font-weight:700;">Annual Leave</span></div><div class="cal-member-row"><span><strong>Siti Nurhaliza</strong> (Specialist)</span><span style="color:#ef4444;font-weight:700;">Medical Leave</span></div><div class="cal-member-row"><span><strong>Kevin Tan</strong> (Talent Acq)</span><span style="color:#0ea5e9;font-weight:700;">WFH • University Fair</span></div>'
+          }
+        ]
+      },
+      // 16 Sep 2026 (Malaysia Day)
+      '2026-09-16': {
+        dots: ['amber'],
+        title: 'Wednesday, 16 Sep 2026',
+        subtitle: 'National Public Holiday',
+        items: [
+          {
+            timeVal: 'All Day',
+            timeAmPm: '',
+            nodeColor: 'amber',
+            badge: 'Public Holiday',
+            badgeClass: 'orange',
+            title: '🇲🇾 Malaysia Day (Hari Malaysia)',
+            desc: 'Gazetted Federal Public Holiday commemorating the formation of the Malaysian federation. All offices closed.'
+          }
+        ]
+      },
+      // 25 Sep 2026 (Personal Leave)
+      '2026-09-25': {
+        dots: ['green'],
+        title: 'Friday, 25 Sep 2026',
+        subtitle: 'Personal Approved Leave',
+        items: [
+          {
+            timeVal: 'All Day',
+            timeAmPm: '',
+            nodeColor: 'green',
+            badge: 'Approved',
+            badgeClass: 'green',
+            title: '🌴 Annual Leave (Farhan binti rahmat)',
+            desc: 'Full Day Leave • 1.0 Day Deducted from annual balance. Primary handover: Muhammad Ali.'
+          }
+        ]
+      },
+      // 28 Sep 2026 (Maulidur Rasul)
+      '2026-09-28': {
+        dots: ['amber'],
+        title: 'Monday, 28 Sep 2026',
+        subtitle: 'National Public Holiday (Long Weekend)',
+        items: [
+          {
+            timeVal: 'All Day',
+            timeAmPm: '',
+            nodeColor: 'amber',
+            badge: 'Public Holiday',
+            badgeClass: 'orange',
+            title: '🕌 Maulidur Rasul (Prophet’s Birthday)',
+            desc: 'National public holiday observed in all states. Creates a 3-day extended weekend.'
+          }
+        ]
+      }
+    };
+
+    let selectedDateStr = '2026-09-04';
+    let currentFilter = 'all';
+
+    // Render September 2026 Calendar (Starting Monday)
+    // 1 Sep 2026 is Tuesday!
+    function renderCalendar() {
+      const grid = document.getElementById('calDaysGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      // Mon 31 Aug 2026 (1 leading day from previous month)
+      const leadIns = [
+        { day: 31, date: '2026-08-31', other: true }
+      ];
+
+      // September 1 to 30 (30 days)
+      const days = [];
+      for (let i = 1; i <= 30; i++) {
+        const dateStr = `2026-09-${String(i).padStart(2, '0')}`;
+        days.push({ day: i, date: dateStr, other: false });
+      }
+
+      // Trailing days: 1 + 30 = 31 days. To complete 5 rows (35 days), add 4 trailing days (1, 2, 3, 4 Oct)
+      const trailing = [
+        { day: 1, date: '2026-10-01', other: true },
+        { day: 2, date: '2026-10-02', other: true },
+        { day: 3, date: '2026-10-03', other: true },
+        { day: 4, date: '2026-10-04', other: true }
+      ];
+
+      const allCells = [...leadIns, ...days, ...trailing];
+
+      allCells.forEach(cell => {
+        const cellEl = document.createElement('div');
+        cellEl.className = 'cal-day-cell';
+        if (cell.other) cellEl.classList.add('other-month');
+        if (cell.date === '2026-09-04') cellEl.classList.add('today');
+        if (cell.date === selectedDateStr) cellEl.classList.add('selected');
+
+        const ev = HR_CALENDAR_EVENTS[cell.date];
+        let dotsHtml = '<div class="cal-dots-row">';
+
+        if (ev && ev.dots) {
+          ev.dots.forEach(color => {
+            if (currentFilter === 'all' ||
+               (currentFilter === 'shift' && color === 'blue') ||
+               (currentFilter === 'leave' && color === 'green') ||
+               (currentFilter === 'holiday' && color === 'amber') ||
+               (currentFilter === 'event' && color === 'purple')) {
+              dotsHtml += `<span class="cal-dot ${color}"></span>`;
+            }
+          });
+        } else if (!cell.other) {
+          const dayOfWeek = new Date(cell.date).getDay();
+          // Workdays Monday-Friday get subtle shift blue dot
+          if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            if (currentFilter === 'all' || currentFilter === 'shift') {
+              dotsHtml += `<span class="cal-dot blue"></span>`;
+            }
+          }
+        }
+        dotsHtml += '</div>';
+
+        cellEl.innerHTML = `
+          <div class="cal-date-circle">${cell.day}</div>
+          ${dotsHtml}
+        `;
+
+        cellEl.onclick = () => selectDate(cell.date);
+        grid.appendChild(cellEl);
+      });
+    }
+
+    // Select Date
+    function selectDate(dateStr) {
+      selectedDateStr = dateStr;
+      renderCalendar();
+      updateAgendaView(dateStr);
+    }
+
+    // Update Timeline Agenda View
+    function updateAgendaView(dateStr) {
+      const titleEl = document.getElementById('selectedDateTitle');
+      const subEl = document.getElementById('selectedDateSubtitle');
+      const countEl = document.getElementById('agendaCountBadge');
+      const container = document.getElementById('agendaItemsContainer');
+
+      const ev = HR_CALENDAR_EVENTS[dateStr];
+      const d = new Date(dateStr);
+      const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+      const formattedDate = d.toLocaleDateString('en-US', options);
+
+      if (ev) {
+        titleEl.innerText = ev.title || formattedDate;
+        subEl.innerText = ev.subtitle || 'Scheduled Activities';
+        countEl.innerText = `${ev.items.length} Items`;
+
+        let html = '';
+        ev.items.forEach(item => {
+          html += `
+            <div class="cal-timeline-item">
+              <div class="cal-time-col">
+                <div class="cal-time-val">${item.timeVal}</div>
+                ${item.timeAmPm ? `<div class="cal-time-ampm">${item.timeAmPm}</div>` : ''}
+              </div>
+              <div class="cal-timeline-node">
+                <div class="cal-node-dot ${item.nodeColor}"></div>
+                <div class="cal-node-line"></div>
+              </div>
+              <div class="cal-timeline-content">
+                <div class="cal-item-top">
+                  <span class="cal-item-title">${item.title}</span>
+                  <span class="sheet-tag-badge ${item.badgeClass || 'blue'}" style="font-size: 9.5px;">${item.badge}</span>
+                </div>
+                <div class="cal-item-desc">${item.desc}</div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } else {
+        const dayOfWeek = d.getDay();
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        titleEl.innerText = formattedDate;
+        subEl.innerText = isWeekend ? 'Weekend Rest Day' : 'Normal Working Day';
+        countEl.innerText = isWeekend ? '0 Items' : '1 Item';
+
+        if (isWeekend) {
+          container.innerHTML = `
+            <div class="cal-timeline-item">
+              <div class="cal-time-col">
+                <div class="cal-time-val">All Day</div>
+              </div>
+              <div class="cal-timeline-node">
+                <div class="cal-node-dot purple"></div>
+              </div>
+              <div class="cal-timeline-content">
+                <div class="cal-item-top">
+                  <span class="cal-item-title">Weekend Rest Day</span>
+                  <span class="sheet-tag-badge blue" style="font-size: 9.5px;">Off-Duty</span>
+                </div>
+                <div class="cal-item-desc">No corporate duties scheduled for Shift Group A. Enjoy your break!</div>
+              </div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="cal-timeline-item">
+              <div class="cal-time-col">
+                <div class="cal-time-val">09:00</div>
+                <div class="cal-time-ampm">AM</div>
+              </div>
+              <div class="cal-timeline-node">
+                <div class="cal-node-dot blue"></div>
+              </div>
+              <div class="cal-timeline-content">
+                <div class="cal-item-top">
+                  <span class="cal-item-title">Standard Working Shift (Group A)</span>
+                  <span class="sheet-tag-badge blue" style="font-size: 9.5px;">Scheduled</span>
+                </div>
+                <div class="cal-item-desc">09:00 AM — 06:00 PM • Times Square HQ (Floor 12). Regular 9-hour executive working shift.</div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Filter pills
+    function filterCategory(cat, btn) {
+      currentFilter = cat;
+      document.querySelectorAll('.cal-filter-pill').forEach(p => p.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderCalendar();
+    }
+
+    function changeMonth(delta) {
+      alert(delta > 0 ? 'Navigating to October 2026' : 'Navigating to August 2026');
+    }
+
+    function goToToday() {
+      selectDate('2026-09-04');
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCalendar();
+      updateAgendaView('2026-09-04');
+    });
+    renderCalendar();
+  </script>
+
+</body>
+
+</html>
