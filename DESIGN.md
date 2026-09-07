@@ -65,6 +65,7 @@ To ensure unified user experience across all modules (`me.html`, `change-request
 | Family Details | 👨‍👩‍👧 | `👨‍👩‍👧 Family` |
 | Bonus Statement History | 🎁 | `🎁 Bonus` |
 | Salary Revision History | 💰 | `💰 Salary` |
+| Work Behaviour & Attendance Trend | 📈 | `📈 Work Behaviour Trend` |
 | Change Request | 📝 | `📝 Change Request` |
 
 ### Action & Control Icons
