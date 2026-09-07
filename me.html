@@ -28,17 +28,12 @@
       <!-- App Bar -->
       <div class="me-app-bar">
         <div class="me-app-bar-left">
-          <button class="me-back-btn" onclick="navTo('home', event)" aria-label="Back to Home" title="Back">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-          </button>
           <div class="me-title-group">
             <span class="me-emp-code">EBB12</span>
             <span class="me-emp-fullname">Farhan binti rahmat</span>
           </div>
         </div>
-        <button class="me-options-btn" onclick="openProfileDrawer()" aria-label="More Options" title="Options">
+        <button class="me-options-btn" onclick="toggleExecutiveOptions(true)" aria-label="More Options" title="Options">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="1.5"></circle>
             <circle cx="12" cy="5" r="1.5"></circle>
@@ -100,20 +95,34 @@
 
     <!-- Sticky Horizontal Category Navigation Bar -->
     <div class="me-jump-bar-wrapper">
-      <div class="me-jump-bar">
-        <button class="me-jump-pill active" onclick="scrollToBento('bento-work', this)">🏢 Work</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-personal', this)">👤 Personal &amp; Family</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-contact', this)">📍 Contact &amp; Address</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-education', this)">🎓 Qualification</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-finance', this)">💳 Payroll &amp; Tax</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-career', this)">🚀 Career (5)</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-performance', this)">📊 Performance (6)</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-competency', this)">⚡ Competencies (6)</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-training', this)">📚 Training (33)</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-assets', this)">💼 Assets (4)</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-letters', this)">📄 HR Letters (31)</button>
-        <button class="me-jump-pill" onclick="scrollToBento('bento-compliance', this)">🛡️ Disciplinary (0)</button>
+      <div class="me-jump-bar-container">
+        <div class="me-jump-bar" id="meJumpBar" onscroll="handleJumpBarScroll(this)">
+          <button class="me-jump-pill active" onclick="scrollToBento('bento-work', this)">🏢 Work</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-personal', this)">👤 Personal &amp; Family</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-contact', this)">📍 Contact &amp; Address</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-education', this)">🎓 Qualification</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-finance', this)">💳 Payroll &amp; Tax</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-career', this)">🚀 Career (5)</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-performance', this)">📊 Performance (6)</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-competency', this)">⚡ Competencies (6)</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-training', this)">📚 Training (33)</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-assets', this)">💼 Assets (4)</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-letters', this)">📄 HR Letters (31)</button>
+          <button class="me-jump-pill" onclick="scrollToBento('bento-compliance', this)">🛡️ Disciplinary (0)</button>
+        </div>
+        <!-- Right side gradient fade + chevron hint -->
+        <div class="me-jump-bar-fade" id="meJumpFade">›</div>
       </div>
+
+      <!-- Right fixed expand button -->
+      <button class="me-jump-expand-btn" onclick="toggleCatSheet(true)" title="View All Categories Grid" aria-label="View All Categories">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+      </button>
     </div>
 
     <!-- Scrollable Main Content -->
@@ -977,6 +986,168 @@
     <!-- Slide-in Left Profile Drawer -->
     <left-profile-drawer></left-profile-drawer>
 
+    <!-- Category Quick Navigation Sheet -->
+    <div class="me-cat-sheet" id="meCatSheet" onclick="if(event.target===this) toggleCatSheet(false)">
+      <div class="me-cat-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Profile Navigator</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">Jump directly to any profile category</div>
+          </div>
+          <button onclick="toggleCatSheet(false)" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); width: 28px; height: 28px; border-radius: 50%; color: var(--text-muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <button onclick="selectCategoryFromSheet('bento-work')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">🏢</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Work</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-personal')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">👤</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Personal</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-contact')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">📍</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Contact</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-education')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">🎓</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Qualification</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-finance')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">💳</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Payroll &amp; Tax</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-career')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">🚀</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Career (5)</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-performance')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">📊</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Performance</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-competency')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">⚡</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Competencies</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-training')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">📚</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Training (33)</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-assets')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">💼</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Assets (4)</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-letters')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">📄</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Letters (31)</div>
+          </button>
+
+          <button onclick="selectCategoryFromSheet('bento-compliance')" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer;">
+            <div style="font-size: 20px; margin-bottom: 4px;">🛡️</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-primary);">Disciplinary</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Executive Options Menu Sheet (Three Dots Action Sheet) -->
+    <div class="me-options-sheet" id="meOptionsSheet" onclick="if(event.target===this) toggleExecutiveOptions(false)">
+      <div class="me-options-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Executive Actions</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">Farhan binti rahmat • EBB12</div>
+          </div>
+          <button onclick="toggleExecutiveOptions(false)" style="background: var(--bg-phone); border: 1px solid var(--border-subtle); width: 28px; height: 28px; border-radius: 50%; color: var(--text-muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <!-- 1. View JD -->
+          <div class="me-option-row" onclick="openExecutiveFeatureModal('jd')">
+            <div class="me-option-left">
+              <div class="me-option-icon">📄</div>
+              <div>
+                <div class="me-option-title">View JD</div>
+                <div class="me-option-sub">Job Description for Group HR Manager</div>
+              </div>
+            </div>
+            <span style="font-size: 14px; color: var(--text-muted);">›</span>
+          </div>
+
+          <!-- 2. Bonus History -->
+          <div class="me-option-row" onclick="openExecutiveFeatureModal('bonus')">
+            <div class="me-option-left">
+              <div class="me-option-icon">🎁</div>
+              <div>
+                <div class="me-option-title">Bonus History</div>
+                <div class="me-option-sub">Historical annual bonus payouts &amp; multiplier</div>
+              </div>
+            </div>
+            <span style="font-size: 14px; color: var(--text-muted);">›</span>
+          </div>
+
+          <!-- 3. Salary History -->
+          <div class="me-option-row" onclick="openExecutiveFeatureModal('salary')">
+            <div class="me-option-left">
+              <div class="me-option-icon">💰</div>
+              <div>
+                <div class="me-option-title">Salary History</div>
+                <div class="me-option-sub">Base salary revision &amp; increment log</div>
+              </div>
+            </div>
+            <span style="font-size: 14px; color: var(--text-muted);">›</span>
+          </div>
+
+          <!-- 4. Change Request -->
+          <div class="me-option-row" onclick="openExecutiveFeatureModal('change')">
+            <div class="me-option-left">
+              <div class="me-option-icon">📝</div>
+              <div>
+                <div class="me-option-title">Change Request</div>
+                <div class="me-option-sub">Submit employee detail update request</div>
+              </div>
+            </div>
+            <span style="font-size: 14px; color: var(--text-muted);">›</span>
+          </div>
+
+          <!-- 5. Work Behaviour Trend -->
+          <div class="me-option-row" onclick="openExecutiveFeatureModal('behaviour')">
+            <div class="me-option-left">
+              <div class="me-option-icon">📈</div>
+              <div>
+                <div class="me-option-title">Work Behaviour Trend</div>
+                <div class="me-option-sub">Attendance, punctuality &amp; KPI analytics</div>
+              </div>
+            </div>
+            <span style="font-size: 14px; color: var(--text-muted);">›</span>
+          </div>
+
+          <!-- 6. Subordinates -->
+          <div class="me-option-row" onclick="openExecutiveFeatureModal('subordinates')">
+            <div class="me-option-left">
+              <div class="me-option-icon">👥</div>
+              <div>
+                <div class="me-option-title">Subordinates</div>
+                <div class="me-option-sub">Direct &amp; indirect reporting team members</div>
+              </div>
+            </div>
+            <span style="font-size: 14px; color: var(--text-muted);">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- For You Notification Bottom Sheet Drawer -->
     <notification-sheet></notification-sheet>
   </div>
@@ -1147,6 +1318,75 @@
         if (idx === 0) p.classList.add('active');
         else p.classList.remove('active');
       });
+    }
+
+    // Category Sheet Modal & Jump Bar Scroll Handle
+    function toggleCatSheet(open) {
+      const sheet = document.getElementById('meCatSheet');
+      if (sheet) {
+        if (open) sheet.classList.add('open');
+        else sheet.classList.remove('open');
+      }
+    }
+
+    function toggleExecutiveOptions(open) {
+      const sheet = document.getElementById('meOptionsSheet');
+      if (sheet) {
+        if (open) sheet.classList.add('open');
+        else sheet.classList.remove('open');
+      }
+    }
+
+    function openExecutiveFeatureModal(featureKey) {
+      toggleExecutiveOptions(false);
+      if (featureKey === 'bonus') {
+        window.location.href = 'bonus-history.html';
+        return;
+      }
+      if (featureKey === 'salary') {
+        window.location.href = 'salary-history.html';
+        return;
+      }
+      if (featureKey === 'change') {
+        window.location.href = 'change-request.html';
+        return;
+      }
+      const titles = {
+        'jd': '📄 Job Description (GROUP HR MANAGER)',
+        'bonus': '🎁 Bonus History Records',
+        'salary': '💰 Salary Revision History',
+        'change': '📝 Submit Change Request',
+        'behaviour': '📈 Work Behaviour & KPI Analytics',
+        'subordinates': '👥 Subordinates (Direct Reports)'
+      };
+      const contents = {
+        'jd': 'Role: GROUP HR MANAGER (Grade G3-EXEC)\n\nKey Responsibilities:\n• Lead Group-wide Talent Acquisition, Payroll & HR Strategy\n• Manage employee relations, industrial compliance & benefit schemes\n• Oversee HR Operations across all branches (Times Square HQ)',
+        'bonus': 'Bonus Payout History:\n• FY 2025: 2.5 Months (RM 18,500.00)\n• FY 2024: 3.0 Months (RM 21,000.00)\n• FY 2023: 2.0 Months (RM 13,000.00)\n• FY 2022: 2.5 Months (RM 15,000.00)',
+        'salary': 'Base Salary Revision History:\n• 1 Jan 2017: Salary Adjusted (Group HR Manager)\n• 1 May 2012: Promoted (HR Manager)\n• 2 Jan 2008: Annual Increment (HR Manager)\n• 12 Nov 2006: Confirmed (HR Manager)\n• 12 Aug 2006: Hired (Barista)',
+        'change': 'Select information field to request updates:\n[ ] Residential Address\n[ ] Personal Phone Number\n[ ] Passport / Driving License Details\n[ ] Emergency Contact Info\n\nClick Submit to route request to HR Operations.',
+        'behaviour': 'Work Behaviour Index: 98.5% (Excellent)\n• Punctuality: 99.2%\n• Attendance Rate: 100%\n• Disciplinary Offences: 0 Incidents\n• Leadership Metric: Top Tier (G3-EXEC)',
+        'subordinates': 'Direct Subordinates (8 Team Members):\n1. EBB05 - Siti Nurhaliza (Senior HR Executive)\n2. EBB08 - Ahmad Razak (Payroll Officer)\n3. EBB14 - Tan Wei Lun (Talent Acquisition Specialist)\n4. EBB19 - Kavitha A/P Gopal (HR Administrator)\n5. EBB22 - Danial Ariff (Training Coordinator)\n+ 3 additional HR Operations staff'
+      };
+
+      setTimeout(() => {
+        alert(`${titles[featureKey]}\n\n${contents[featureKey]}`);
+      }, 150);
+    }
+
+    function selectCategoryFromSheet(bentoId) {
+      toggleCatSheet(false);
+      setTimeout(() => {
+        const btn = document.querySelector(`.me-jump-pill[onclick*="${bentoId}"]`);
+        scrollToBento(bentoId, btn);
+      }, 150);
+    }
+
+    function handleJumpBarScroll(el) {
+      const fade = document.getElementById('meJumpFade');
+      if (!fade) return;
+      const isEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+      if (isEnd) fade.style.opacity = '0';
+      else fade.style.opacity = '0.9';
     }
 
     // CIMB Account Number Mask Toggle
