@@ -260,11 +260,23 @@ class NotificationSheet extends HTMLElement {
             </button>
             <button class="sheet-filter-pill" onclick="filterForYouTab('pending_approval', this)">
               <span>Pending Approval</span>
-              <span class="sheet-tag-badge red">4</span>
+              <span class="sheet-tag-badge red" id="badgePendingApprovalCount">4</span>
             </button>
             <button class="sheet-filter-pill" onclick="filterForYouTab('pending_resubmit', this)">
               <span>Pending Resubmit</span>
-              <span class="sheet-tag-badge amber">3</span>
+              <span class="sheet-tag-badge amber" id="badgePendingResubmitCount">3</span>
+            </button>
+          </div>
+
+          <!-- View Switcher Bar: Group by File Type vs Flat List -->
+          <div class="notif-view-switch-bar">
+            <button class="notif-view-btn active" id="btnNotifGroupedView" onclick="toggleForYouViewMode('grouped')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>📁 Group by File Type</span>
+            </button>
+            <button class="notif-view-btn" id="btnNotifFlatView" onclick="toggleForYouViewMode('flat')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>≡ List View</span>
             </button>
           </div>
 
@@ -278,7 +290,7 @@ class NotificationSheet extends HTMLElement {
                   </svg>
                 </div>
                 <div id="selectedDocTypeLabel">
-                  <span class="doctype-placeholder">Document Type</span>
+                  <span class="doctype-placeholder">Document Type Filter</span>
                 </div>
               </div>
               <div class="doctype-select-arrow">
@@ -338,82 +350,15 @@ class NotificationSheet extends HTMLElement {
           <!-- Active Selected Filter Pills (Horizontal Scroll Row) -->
           <div class="active-filter-pills-row" id="activeFilterPillsRow" style="display: none;"></div>
 
-          <div class="sheet-list-scroll">
-            <!-- Item 1: Pending Approval -->
-            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Leave Request" onclick="navTo('team', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">👤</div>
-                <div class="item-info">
-                  <h5>Approval needed: Alex Tan</h5>
-                  <span>Annual Leave 2 Days (Oct 12-13)</span>
-                </div>
-              </div>
+          <div class="sheet-list-scroll" id="forYouListScroll">
+            <!-- Mode A: Grouped by File Type Accordions (Default) -->
+            <div id="forYouGroupedContainer">
+              <!-- Dynamically populated via renderNotificationGroupedUI() -->
             </div>
 
-            <!-- Item 2: Pending Approval -->
-            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Medical Claim" onclick="navTo('team', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🧾</div>
-                <div class="item-info">
-                  <h5>Approval needed: Emily Wong</h5>
-                  <span>Medical Claim $85.50</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 3: Pending Resubmit -->
-            <div class="sheet-item-card" data-fy="pending_resubmit" data-doctype="Overtime" onclick="navTo('team', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-rose-bg); color: var(--tag-rose-text);">⏰</div>
-                <div class="item-info">
-                  <h5>Resubmit required: Overtime</h5>
-                  <span>OT Claim Sep 02 (Correction needed)</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 4: Pending Resubmit -->
-            <div class="sheet-item-card" data-fy="pending_resubmit" data-doctype="Change Request" onclick="navTo('change_request', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);">📑</div>
-                <div class="item-info">
-                  <h5>Resubmit required: Bank Account</h5>
-                  <span>Bank Statement attachment missing</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 5: Pending Approval -->
-            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Tax EA Form" onclick="navTo('taxform', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">📄</div>
-                <div class="item-info">
-                  <h5>Approval needed: EA Form 2025</h5>
-                  <span>Official income tax return statement</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 6: Pending Approval -->
-            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Performance Goal" onclick="navTo('performance_goals', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-teal-bg); color: var(--tag-teal-text);">🎯</div>
-                <div class="item-info">
-                  <h5>Approval needed: Q3 KPI</h5>
-                  <span>Performance Goal submission</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 7: Pending Resubmit -->
-            <div class="sheet-item-card" data-fy="pending_resubmit" data-doctype="Leave Request" onclick="navTo('leave', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🌴</div>
-                <div class="item-info">
-                  <h5>Resubmit required: Emergency Leave</h5>
-                  <span>Supporting document attachment required</span>
-                </div>
-              </div>
+            <!-- Mode B: Flat Item List -->
+            <div id="forYouFlatContainer" style="display: none;">
+              <!-- Dynamically populated via renderNotificationFlatUI() -->
             </div>
 
             <!-- Empty State when filtered results are 0 -->
@@ -424,10 +369,55 @@ class NotificationSheet extends HTMLElement {
           </div>
         </div>
       </div>
+      
+      <!-- Integrated Approval Details Modal Sheet -->
+      <approval-detail-sheet></approval-detail-sheet>
     `;
   }
 }
 customElements.define('notification-sheet', NotificationSheet);
+
+// 6.5 Approval Detail Sheet Web Component
+class ApprovalDetailSheet extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = `
+      <div class="approval-detail-overlay" id="approvalDetailOverlay" onclick="closeApprovalDetailDirect(event)">
+        <div class="approval-detail-sheet" onclick="event.stopPropagation()">
+          <div class="sheet-handle"></div>
+
+          <div class="sheet-header" style="margin-bottom: 12px;">
+            <div class="sheet-title">
+              <h3 id="approvalModalTitle">Approval Request Details</h3>
+              <p id="approvalModalSubTitle">Review details & take action</p>
+            </div>
+            <button class="sheet-close-btn" onclick="closeApprovalDetailDirect()" aria-label="Close">✕</button>
+          </div>
+
+          <!-- Applicant Card -->
+          <div class="approval-applicant-card" id="approvalApplicantCard">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Details Grid -->
+          <div class="approval-meta-grid" id="approvalMetaGrid">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Action Buttons Bar -->
+          <div class="approval-action-bar" id="approvalActionBar">
+            <button class="btn-reject" onclick="actionRejectRequest()">
+              <span>❌ Reject / Request Info</span>
+            </button>
+            <button class="btn-approve" onclick="actionApproveRequest()">
+              <span>✅ Approve Request</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+customElements.define('approval-detail-sheet', ApprovalDetailSheet);
 
 // 7. Phone Bottom Navigation Bar Component
 class PhoneBottomNav extends HTMLElement {

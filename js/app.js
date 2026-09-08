@@ -201,6 +201,7 @@ function handleSignOut() {
 
 // 6. Notification (For You) Bottom Sheet Drawer Controls
 function openForYouModal() {
+  renderForYouSheetUI();
   const overlay = document.getElementById('forYouOverlay');
   if (overlay) overlay.classList.add('active');
 }
@@ -364,30 +365,351 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// Notifications Catalog Data with Grouping by File Type & Rich Details
+let NOTIFICATIONS_CATALOG = [
+  // 🌴 Leave Requests Group
+  {
+    id: 'notif_1',
+    doctype: 'Leave Request',
+    typeCategory: '🌴 Leave Requests',
+    fy: 'pending_approval',
+    icon: '🌴',
+    iconBg: 'rgba(249, 115, 22, 0.16)',
+    iconColor: '#f97316',
+    title: 'Approval needed: Alex Tan',
+    subtitle: 'Annual Leave 2 Days (Oct 12-13)',
+    applicant: 'Alex Tan',
+    applicantAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+    role: 'Senior UI/UX Designer • Product Team',
+    details: [
+      { label: 'Leave Type', val: 'Annual Leave (Paid)' },
+      { label: 'Duration', val: '2 Days (Oct 12 - Oct 13, 2026)' },
+      { label: 'Balance Left', val: '10.5 / 14 Days Remaining' },
+      { label: 'Reason', val: 'Family personal matter & medical appointment.' }
+    ],
+    status: 'Pending Manager Approval',
+    badgeColor: 'amber'
+  },
+  {
+    id: 'notif_2',
+    doctype: 'Leave Request',
+    typeCategory: '🌴 Leave Requests',
+    fy: 'pending_resubmit',
+    icon: '🌴',
+    iconBg: 'rgba(249, 115, 22, 0.16)',
+    iconColor: '#f97316',
+    title: 'Resubmit required: Emergency Leave',
+    subtitle: 'Supporting document attachment required',
+    applicant: 'Sarah Jenkins (You)',
+    applicantAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+    role: 'Lead Frontend Developer',
+    details: [
+      { label: 'Leave Type', val: 'Emergency Medical Leave' },
+      { label: 'Duration', val: '1 Day (Sep 28, 2026)' },
+      { label: 'HR Remark', val: 'Please attach doctor medical certificate (MC).' }
+    ],
+    status: 'Pending Resubmit',
+    badgeColor: 'amber'
+  },
+
+  // 🧾 Medical & Expense Claim Group
+  {
+    id: 'notif_3',
+    doctype: 'Medical Claim',
+    typeCategory: '🧾 Medical & Expense Claims',
+    fy: 'pending_approval',
+    icon: '🧾',
+    iconBg: 'rgba(14, 165, 233, 0.16)',
+    iconColor: '#0ea5e9',
+    title: 'Approval needed: Emily Wong',
+    subtitle: 'Medical Claim $85.50 (Panacea Clinic)',
+    applicant: 'Emily Wong',
+    applicantAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
+    role: 'Marketing Executive • Growth Team',
+    details: [
+      { label: 'Claim Type', val: 'Outpatient Medical Receipt' },
+      { label: 'Claim Amount', val: '$85.50 SGD' },
+      { label: 'Clinic Name', val: 'Panacea Medical Clinic Orchard' },
+      { label: 'Attachment', val: '📄 Receipt_2026_0904.pdf (Verified)' }
+    ],
+    status: 'Pending Manager Approval',
+    badgeColor: 'amber'
+  },
+  {
+    id: 'notif_4',
+    doctype: 'Change Request',
+    typeCategory: '🧾 Medical & Expense Claims',
+    fy: 'pending_resubmit',
+    icon: '📑',
+    iconBg: 'rgba(59, 130, 246, 0.16)',
+    iconColor: '#3b82f6',
+    title: 'Resubmit required: Bank Account',
+    subtitle: 'Bank Statement attachment missing',
+    applicant: 'Sarah Jenkins (You)',
+    applicantAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+    role: 'Lead Frontend Developer',
+    details: [
+      { label: 'Change Request', val: 'Salary Direct Deposit Bank Account' },
+      { label: 'Bank Name', val: 'DBS Bank Ltd' },
+      { label: 'Finance Note', val: 'Bank statement header is missing. Please upload clear scan.' }
+    ],
+    status: 'Pending Resubmit',
+    badgeColor: 'blue'
+  },
+
+  // ⏰ Overtime Group
+  {
+    id: 'notif_5',
+    doctype: 'Overtime',
+    typeCategory: '⏰ Overtime & Shift Requests',
+    fy: 'pending_resubmit',
+    icon: '⏰',
+    iconBg: 'rgba(244, 63, 94, 0.16)',
+    iconColor: '#f43f5e',
+    title: 'Resubmit required: Overtime',
+    subtitle: 'OT Claim Sep 02 (Correction needed)',
+    applicant: 'David Chen',
+    applicantAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+    role: 'DevOps Engineer',
+    details: [
+      { label: 'OT Date', val: 'Sep 02, 2026 (18:00 - 21:30)' },
+      { label: 'Hours Claimed', val: '3.5 Hours (Rate 1.5x)' },
+      { label: 'Project', val: 'System Migration Sprint' }
+    ],
+    status: 'Pending Correction',
+    badgeColor: 'rose'
+  },
+
+  // 📄 Tax & Official Documents Group
+  {
+    id: 'notif_6',
+    doctype: 'Tax EA Form',
+    typeCategory: '📄 Tax & Official Documents',
+    fy: 'pending_approval',
+    icon: '📄',
+    iconBg: 'rgba(168, 85, 247, 0.16)',
+    iconColor: '#a855f7',
+    title: 'Approval needed: EA Form 2025',
+    subtitle: 'Official income tax return statement',
+    applicant: 'Payroll & Compliance Dept',
+    applicantAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
+    role: 'Group HR Compliance',
+    details: [
+      { label: 'Document Type', val: 'EA Tax Return Form 2025' },
+      { label: 'Total Earnings', val: '$78,400.00 SGD' },
+      { label: 'Action Needed', val: 'Digitally Sign & Confirm Declaration' }
+    ],
+    status: 'Pending Signature',
+    badgeColor: 'violet'
+  },
+
+  // 🎯 Performance & KPI Goals Group
+  {
+    id: 'notif_7',
+    doctype: 'Performance Goal',
+    typeCategory: '🎯 Performance & KPI Goals',
+    fy: 'pending_approval',
+    icon: '🎯',
+    iconBg: 'rgba(20, 184, 166, 0.16)',
+    iconColor: '#14b8a6',
+    title: 'Approval needed: Q3 KPI',
+    subtitle: 'Performance Goal submission',
+    applicant: 'Michael Chang',
+    applicantAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
+    role: 'QA Engineering Lead',
+    details: [
+      { label: 'Goal Title', val: 'Automated E2E Test Suite Coverage 90%' },
+      { label: 'Target Date', val: 'Q3 2026 (Oct 30, 2026)' },
+      { label: 'Weightage', val: '35% Score Weight' }
+    ],
+    status: 'Pending Lead Review',
+    badgeColor: 'teal'
+  }
+];
+
+let forYouViewMode = 'grouped'; // 'grouped' | 'flat'
+let activeNotifItem = null;
+
+function toggleForYouViewMode(mode) {
+  forYouViewMode = mode;
+  const btnGrouped = document.getElementById('btnNotifGroupedView');
+  const btnFlat = document.getElementById('btnNotifFlatView');
+
+  if (mode === 'grouped') {
+    btnGrouped?.classList.add('active');
+    btnFlat?.classList.remove('active');
+  } else {
+    btnFlat?.classList.add('active');
+    btnGrouped?.classList.remove('active');
+  }
+
+  renderForYouSheetUI();
+}
+
+function toggleNotifGroupAccordion(groupId) {
+  const groupEl = document.getElementById(groupId);
+  if (groupEl) {
+    groupEl.classList.toggle('collapsed');
+  }
+}
+
 function applyForYouFilters() {
-  const cards = document.querySelectorAll('#forYouOverlay .sheet-item-card');
-  let visibleCount = 0;
+  renderForYouSheetUI();
+}
 
-  cards.forEach(card => {
-    const cardTab = card.getAttribute('data-fy');
-    const cardDocType = card.getAttribute('data-doctype');
+function renderForYouSheetUI() {
+  const groupedContainer = document.getElementById('forYouGroupedContainer');
+  const flatContainer = document.getElementById('forYouFlatContainer');
+  const emptyEl = document.getElementById('forYouEmptyState');
 
-    const matchTab = (currentForYouTab === 'all' || cardTab === currentForYouTab);
+  if (!groupedContainer || !flatContainer) return;
+
+  // Filter Catalog Items
+  const filteredList = NOTIFICATIONS_CATALOG.filter(item => {
+    const matchTab = (currentForYouTab === 'all' || item.fy === currentForYouTab);
     const isAllDocs = selectedDocTypes.includes('all');
-    const matchDocType = isAllDocs || selectedDocTypes.includes(cardDocType);
-
-    if (matchTab && matchDocType) {
-      card.style.display = 'flex';
-      visibleCount++;
-    } else {
-      card.style.display = 'none';
-    }
+    const matchDocType = isAllDocs || selectedDocTypes.includes(item.doctype);
+    return matchTab && matchDocType;
   });
 
-  const emptyEl = document.getElementById('forYouEmptyState');
-  if (emptyEl) {
-    emptyEl.style.display = visibleCount === 0 ? 'block' : 'none';
+  if (emptyEl) emptyEl.style.display = filteredList.length === 0 ? 'block' : 'none';
+
+  if (forYouViewMode === 'grouped') {
+    groupedContainer.style.display = 'block';
+    flatContainer.style.display = 'none';
+
+    // Group items by typeCategory (File Type / Request Module)
+    const grouped = {};
+    filteredList.forEach(item => {
+      if (!grouped[item.typeCategory]) grouped[item.typeCategory] = [];
+      grouped[item.typeCategory].push(item);
+    });
+
+    if (Object.keys(grouped).length === 0) {
+      groupedContainer.innerHTML = '';
+      return;
+    }
+
+    groupedContainer.innerHTML = Object.keys(grouped).map((catTitle, idx) => {
+      const items = grouped[catTitle];
+      const groupDomId = `notif_grp_${idx}`;
+      return `
+        <div class="notif-group-card" id="${groupDomId}">
+          <div class="notif-group-header" onclick="toggleNotifGroupAccordion('${groupDomId}')">
+            <div class="group-title-box">
+              <span class="group-folder-icon">📂</span>
+              <span class="group-title-text">${catTitle}</span>
+              <span class="group-count-badge">${items.length} Request${items.length > 1 ? 's' : ''}</span>
+            </div>
+            <span class="group-chevron">▼</span>
+          </div>
+
+          <div class="notif-group-body">
+            ${items.map(item => `
+              <div class="sheet-item-card" onclick="openApprovalDetailModal('${item.id}', event)">
+                <div class="item-left-box">
+                  <div class="item-icon-box" style="background: ${item.iconBg}; color: ${item.iconColor};">${item.icon}</div>
+                  <div class="item-info">
+                    <h5>${item.title}</h5>
+                    <span>${item.subtitle}</span>
+                  </div>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Details ›</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    groupedContainer.style.display = 'none';
+    flatContainer.style.display = 'flex';
+    flatContainer.style.flexDirection = 'column';
+    flatContainer.style.gap = '8px';
+
+    flatContainer.innerHTML = filteredList.map(item => `
+      <div class="sheet-item-card" onclick="openApprovalDetailModal('${item.id}', event)">
+        <div class="item-left-box">
+          <div class="item-icon-box" style="background: ${item.iconBg}; color: ${item.iconColor};">${item.icon}</div>
+          <div class="item-info">
+            <h5>${item.title}</h5>
+            <span>${item.subtitle}</span>
+          </div>
+        </div>
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Details ›</span>
+      </div>
+    `).join('');
   }
+}
+
+// Approval Details Sheet Modal Controls
+function openApprovalDetailModal(notifId, event) {
+  if (event) event.stopPropagation();
+  const item = NOTIFICATIONS_CATALOG.find(n => n.id === notifId);
+  if (!item) return;
+
+  activeNotifItem = item;
+
+  const applicantCard = document.getElementById('approvalApplicantCard');
+  const metaGrid = document.getElementById('approvalMetaGrid');
+  const modalTitle = document.getElementById('approvalModalTitle');
+  const modalSubTitle = document.getElementById('approvalModalSubTitle');
+
+  if (modalTitle) modalTitle.innerText = item.title;
+  if (modalSubTitle) modalSubTitle.innerText = `Type: ${item.typeCategory} • Status: ${item.status}`;
+
+  if (applicantCard) {
+    applicantCard.innerHTML = `
+      <img src="${item.applicantAvatar}" class="approval-avatar" alt="Avatar">
+      <div>
+        <h4 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px 0;">${item.applicant}</h4>
+        <p style="font-size: 11px; color: var(--text-muted); margin: 0;">${item.role}</p>
+      </div>
+    `;
+  }
+
+  if (metaGrid) {
+    metaGrid.innerHTML = item.details.map(d => `
+      <div class="approval-meta-row">
+        <span class="approval-meta-label">${d.label}</span>
+        <span class="approval-meta-val">${d.val}</span>
+      </div>
+    `).join('');
+  }
+
+  const overlay = document.getElementById('approvalDetailOverlay');
+  if (overlay) overlay.classList.add('active');
+}
+
+function closeApprovalDetailDirect(event) {
+  if (event && event.target && event.target.id !== 'approvalDetailOverlay') return;
+  const overlay = document.getElementById('approvalDetailOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function actionApproveRequest() {
+  if (!activeNotifItem) return;
+  const name = activeNotifItem.applicant;
+  const id = activeNotifItem.id;
+
+  // Remove approved item from catalog
+  NOTIFICATIONS_CATALOG = NOTIFICATIONS_CATALOG.filter(n => n.id !== id);
+
+  closeApprovalDetailDirect();
+  if (typeof showToast === 'function') showToast(`✅ Approved [${name}]'s request!`);
+  renderForYouSheetUI();
+}
+
+function actionRejectRequest() {
+  if (!activeNotifItem) return;
+  const name = activeNotifItem.applicant;
+  const id = activeNotifItem.id;
+
+  NOTIFICATIONS_CATALOG = NOTIFICATIONS_CATALOG.filter(n => n.id !== id);
+
+  closeApprovalDetailDirect();
+  if (typeof showToast === 'function') showToast(`❌ Rejected [${name}]'s request.`);
+  renderForYouSheetUI();
 }
 
 // 7. V1 Insights Tab Switcher (My vs Team)
