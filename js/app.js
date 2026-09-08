@@ -527,24 +527,7 @@ let NOTIFICATIONS_CATALOG = [
   }
 ];
 
-let forYouViewMode = 'grouped'; // 'grouped' | 'flat'
 let activeNotifItem = null;
-
-function toggleForYouViewMode(mode) {
-  forYouViewMode = mode;
-  const btnGrouped = document.getElementById('btnNotifGroupedView');
-  const btnFlat = document.getElementById('btnNotifFlatView');
-
-  if (mode === 'grouped') {
-    btnGrouped?.classList.add('active');
-    btnFlat?.classList.remove('active');
-  } else {
-    btnFlat?.classList.add('active');
-    btnGrouped?.classList.remove('active');
-  }
-
-  renderForYouSheetUI();
-}
 
 function toggleNotifGroupAccordion(groupId) {
   const groupEl = document.getElementById(groupId);
@@ -559,10 +542,9 @@ function applyForYouFilters() {
 
 function renderForYouSheetUI() {
   const groupedContainer = document.getElementById('forYouGroupedContainer');
-  const flatContainer = document.getElementById('forYouFlatContainer');
   const emptyEl = document.getElementById('forYouEmptyState');
 
-  if (!groupedContainer || !flatContainer) return;
+  if (!groupedContainer) return;
 
   // Filter Catalog Items
   const filteredList = NOTIFICATIONS_CATALOG.filter(item => {
@@ -574,72 +556,51 @@ function renderForYouSheetUI() {
 
   if (emptyEl) emptyEl.style.display = filteredList.length === 0 ? 'block' : 'none';
 
-  if (forYouViewMode === 'grouped') {
-    groupedContainer.style.display = 'block';
-    flatContainer.style.display = 'none';
+  groupedContainer.style.display = 'block';
 
-    // Group items by typeCategory (File Type / Request Module)
-    const grouped = {};
-    filteredList.forEach(item => {
-      if (!grouped[item.typeCategory]) grouped[item.typeCategory] = [];
-      grouped[item.typeCategory].push(item);
-    });
+  // Group items by typeCategory (File Type / Request Module)
+  const grouped = {};
+  filteredList.forEach(item => {
+    if (!grouped[item.typeCategory]) grouped[item.typeCategory] = [];
+    grouped[item.typeCategory].push(item);
+  });
 
-    if (Object.keys(grouped).length === 0) {
-      groupedContainer.innerHTML = '';
-      return;
-    }
-
-    groupedContainer.innerHTML = Object.keys(grouped).map((catTitle, idx) => {
-      const items = grouped[catTitle];
-      const groupDomId = `notif_grp_${idx}`;
-      return `
-        <div class="notif-group-card" id="${groupDomId}">
-          <div class="notif-group-header" onclick="toggleNotifGroupAccordion('${groupDomId}')">
-            <div class="group-title-box">
-              <span class="group-folder-icon">📂</span>
-              <span class="group-title-text">${catTitle}</span>
-              <span class="group-count-badge">${items.length} Request${items.length > 1 ? 's' : ''}</span>
-            </div>
-            <span class="group-chevron">▼</span>
-          </div>
-
-          <div class="notif-group-body">
-            ${items.map(item => `
-              <div class="sheet-item-card" onclick="openApprovalDetailModal('${item.id}', event)">
-                <div class="item-left-box">
-                  <div class="item-icon-box" style="background: ${item.iconBg}; color: ${item.iconColor};">${item.icon}</div>
-                  <div class="item-info">
-                    <h5>${item.title}</h5>
-                    <span>${item.subtitle}</span>
-                  </div>
-                </div>
-                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Details ›</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }).join('');
-  } else {
-    groupedContainer.style.display = 'none';
-    flatContainer.style.display = 'flex';
-    flatContainer.style.flexDirection = 'column';
-    flatContainer.style.gap = '8px';
-
-    flatContainer.innerHTML = filteredList.map(item => `
-      <div class="sheet-item-card" onclick="openApprovalDetailModal('${item.id}', event)">
-        <div class="item-left-box">
-          <div class="item-icon-box" style="background: ${item.iconBg}; color: ${item.iconColor};">${item.icon}</div>
-          <div class="item-info">
-            <h5>${item.title}</h5>
-            <span>${item.subtitle}</span>
-          </div>
-        </div>
-        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Details ›</span>
-      </div>
-    `).join('');
+  if (Object.keys(grouped).length === 0) {
+    groupedContainer.innerHTML = '';
+    return;
   }
+
+  groupedContainer.innerHTML = Object.keys(grouped).map((catTitle, idx) => {
+    const items = grouped[catTitle];
+    const groupDomId = `notif_grp_${idx}`;
+    return `
+      <div class="notif-group-card" id="${groupDomId}">
+        <div class="notif-group-header" onclick="toggleNotifGroupAccordion('${groupDomId}')">
+          <div class="group-title-box">
+            <span class="group-folder-icon">📂</span>
+            <span class="group-title-text">${catTitle}</span>
+            <span class="group-count-badge">${items.length} Request${items.length > 1 ? 's' : ''}</span>
+          </div>
+          <span class="group-chevron">▼</span>
+        </div>
+
+        <div class="notif-group-body">
+          ${items.map(item => `
+            <div class="sheet-item-card" onclick="openApprovalDetailModal('${item.id}', event)">
+              <div class="item-left-box">
+                <div class="item-icon-box" style="background: ${item.iconBg}; color: ${item.iconColor};">${item.icon}</div>
+                <div class="item-info">
+                  <h5>${item.title}</h5>
+                  <span>${item.subtitle}</span>
+                </div>
+              </div>
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Details ›</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // Approval Details Sheet Modal Controls

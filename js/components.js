@@ -268,18 +268,6 @@ class NotificationSheet extends HTMLElement {
             </button>
           </div>
 
-          <!-- View Switcher Bar: Group by File Type vs Flat List -->
-          <div class="notif-view-switch-bar">
-            <button class="notif-view-btn active" id="btnNotifGroupedView" onclick="toggleForYouViewMode('grouped')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-              <span>📁 Group by File Type</span>
-            </button>
-            <button class="notif-view-btn" id="btnNotifFlatView" onclick="toggleForYouViewMode('flat')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-              <span>≡ List View</span>
-            </button>
-          </div>
-
           <!-- Custom Floating Rounded Dropdown Filter -->
           <div class="custom-dropdown-container">
             <button class="sheet-doctype-bar-row" onclick="toggleDocTypeDropdown(event)" type="button" aria-label="Select Document Type">
@@ -351,14 +339,9 @@ class NotificationSheet extends HTMLElement {
           <div class="active-filter-pills-row" id="activeFilterPillsRow" style="display: none;"></div>
 
           <div class="sheet-list-scroll" id="forYouListScroll">
-            <!-- Mode A: Grouped by File Type Accordions (Default) -->
+            <!-- Grouped by File Type Accordions -->
             <div id="forYouGroupedContainer">
               <!-- Dynamically populated via renderNotificationGroupedUI() -->
-            </div>
-
-            <!-- Mode B: Flat Item List -->
-            <div id="forYouFlatContainer" style="display: none;">
-              <!-- Dynamically populated via renderNotificationFlatUI() -->
             </div>
 
             <!-- Empty State when filtered results are 0 -->
