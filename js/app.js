@@ -53,10 +53,13 @@ const APP_ROUTES = {
   'learning_dev': '#learning-development',
   'people_documents': 'team.html',
 
-  // Bottom Navigation
+  // Bottom Navigation & Favourite Shortcut
   'calendar': 'calendar.html',
+  'favourite': 'favourite.html',
+  'fav': 'favourite.html',
   'nav_home': () => getCurrentTheme() === 'light' ? 'homelight.html' : 'homedark.html',
   'nav_calendar': 'calendar.html',
+  'nav_favourite': 'favourite.html',
   'nav_apps': () => getCurrentTheme() === 'light' ? 'applight.html' : 'appdark.html',
   'nav_me': 'me.html'
 };
@@ -211,19 +214,180 @@ function closeForYouModal(e) {
   if (e.target.id === 'forYouOverlay') closeForYouDirect();
 }
 
-function filterForYou(category, btnElement) {
-  const tabs = btnElement.parentElement.querySelectorAll('.sheet-filter-pill');
-  tabs.forEach(tab => tab.classList.remove('active'));
-  btnElement.classList.add('active');
+let currentForYouTab = 'all';
+let selectedDocTypes = ['all'];
 
+function filterForYou(category, btnElement) {
+  filterForYouTab(category, btnElement);
+}
+
+function filterForYouTab(tabCategory, btnElement) {
+  currentForYouTab = tabCategory;
+  if (btnElement && btnElement.parentElement) {
+    const tabs = btnElement.parentElement.querySelectorAll('.sheet-filter-pill');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    btnElement.classList.add('active');
+  }
+  applyForYouFilters();
+}
+
+function filterForYouDocType(docType) {
+  selectedDocTypes = [docType];
+  updateMultiSelectUI();
+  applyForYouFilters();
+}
+
+function toggleDocTypeDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('docTypeDropdownMenu');
+  if (menu) {
+    menu.classList.toggle('show');
+  }
+}
+
+function toggleMultiSelectDocType(value, itemElem, e) {
+  if (e) e.stopPropagation();
+
+  if (value === 'all') {
+    selectedDocTypes = ['all'];
+  } else {
+    const allIdx = selectedDocTypes.indexOf('all');
+    if (allIdx !== -1) {
+      selectedDocTypes.splice(allIdx, 1);
+    }
+
+    const idx = selectedDocTypes.indexOf(value);
+    if (idx !== -1) {
+      selectedDocTypes.splice(idx, 1);
+    } else {
+      selectedDocTypes.push(value);
+    }
+
+    if (selectedDocTypes.length === 0) {
+      selectedDocTypes = ['all'];
+    }
+  }
+
+  updateMultiSelectUI();
+  applyForYouFilters();
+}
+
+const docTypeIconMap = {
+  'Leave Request': '🌴 Leave Request',
+  'Medical Claim': '🧾 Medical Claim',
+  'Overtime': '⏰ Overtime',
+  'Change Request': '📑 Change Request',
+  'Tax EA Form': '📄 Tax EA Form',
+  'Performance Goal': '🎯 Performance Goal'
+};
+
+function removeDocTypePill(value) {
+  const idx = selectedDocTypes.indexOf(value);
+  if (idx !== -1) {
+    selectedDocTypes.splice(idx, 1);
+  }
+  if (selectedDocTypes.length === 0) {
+    selectedDocTypes = ['all'];
+  }
+  updateMultiSelectUI();
+  applyForYouFilters();
+}
+
+function clearAllDocTypePills() {
+  selectedDocTypes = ['all'];
+  updateMultiSelectUI();
+  applyForYouFilters();
+}
+
+function updateMultiSelectUI() {
+  const menu = document.getElementById('docTypeDropdownMenu');
+  if (!menu) return;
+
+  const items = menu.querySelectorAll('.dropdown-item');
+  const isAll = selectedDocTypes.includes('all');
+
+  items.forEach(item => {
+    const val = item.getAttribute('data-value');
+    const chk = item.querySelector('input[type="checkbox"]');
+
+    if (isAll) {
+      if (val === 'all') {
+        item.classList.add('active');
+        if (chk) chk.checked = true;
+      } else {
+        item.classList.remove('active');
+        if (chk) chk.checked = false;
+      }
+    } else {
+      if (selectedDocTypes.includes(val)) {
+        item.classList.add('active');
+        if (chk) chk.checked = true;
+      } else {
+        item.classList.remove('active');
+        if (chk) chk.checked = false;
+      }
+    }
+  });
+
+  const label = document.getElementById('selectedDocTypeLabel');
+  if (label) {
+    if (isAll || selectedDocTypes.length === 0) {
+      label.innerHTML = '<span class="doctype-placeholder">Document Type</span>';
+      label.title = 'Document Type';
+    } else {
+      let html = selectedDocTypes.map(val => {
+        const titleText = docTypeIconMap[val] || val;
+        return `
+          <div class="inline-active-pill" onclick="removeDocTypePill('${val}'); event.stopPropagation();">
+            <span>${titleText}</span>
+          </div>
+        `;
+      }).join('');
+      label.innerHTML = `<div class="inline-pills-container">${html}</div>`;
+      label.title = selectedDocTypes.join(', ');
+    }
+  }
+
+  // Hide the old separate pills row as we now render inline
+  const pillsRow = document.getElementById('activeFilterPillsRow');
+  if (pillsRow) {
+    pillsRow.style.display = 'none';
+  }
+}
+
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('docTypeDropdownMenu');
+  if (menu && menu.classList.contains('show')) {
+    if (!e.target.closest('.custom-dropdown-container')) {
+      menu.classList.remove('show');
+    }
+  }
+});
+
+function applyForYouFilters() {
   const cards = document.querySelectorAll('#forYouOverlay .sheet-item-card');
+  let visibleCount = 0;
+
   cards.forEach(card => {
-    if (category === 'all' || card.getAttribute('data-fy') === category) {
+    const cardTab = card.getAttribute('data-fy');
+    const cardDocType = card.getAttribute('data-doctype');
+
+    const matchTab = (currentForYouTab === 'all' || cardTab === currentForYouTab);
+    const isAllDocs = selectedDocTypes.includes('all');
+    const matchDocType = isAllDocs || selectedDocTypes.includes(cardDocType);
+
+    if (matchTab && matchDocType) {
       card.style.display = 'flex';
+      visibleCount++;
     } else {
       card.style.display = 'none';
     }
   });
+
+  const emptyEl = document.getElementById('forYouEmptyState');
+  if (emptyEl) {
+    emptyEl.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
 }
 
 // 7. V1 Insights Tab Switcher (My vs Team)
@@ -642,5 +806,149 @@ function previewLetterDoc(letterName) {
 
 function signLetterAction(letterName) {
   showToast(`✍️ Opening digital signing pad for ${letterName}`);
+}
+
+// ========================================================
+// INSTANT FAVOURITE BOTTOM SHEET DRAWER LOGIC
+// ========================================================
+const SYSTEM_FAV_CATALOG = [
+  // 📝 Apply Module
+  { id: 'leave', category: '📝 Apply Module', name: 'Leave Application', icon: '🌴', color: '#f97316', bg: 'rgba(249, 115, 22, 0.16)', target: 'leave' },
+  { id: 'overtime', category: '📝 Apply Module', name: 'Overtime Request', icon: '⏰', color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.16)', target: 'work_behaviour' },
+  { id: 'shift_swap', category: '📝 Apply Module', name: 'Shift Exchange Request', icon: '🔄', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.16)', target: 'work_behaviour' },
+
+  // 🧾 Claim & Expense Module
+  { id: 'claims', category: '🧾 Claim & Expense Module', name: 'Medical & Outpatient Claim', icon: '🧾', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.16)', target: 'change_request' },
+  { id: 'travel_claim', category: '🧾 Claim & Expense Module', name: 'Travel & Allowance Expense', icon: '✈️', color: '#0284c7', bg: 'rgba(2, 132, 199, 0.16)', target: 'change_request' },
+
+  // 💰 Payroll & Personal Module
+  { id: 'payslip', category: '💰 Payroll & Personal Module', name: 'Payslip & EA Form', icon: '💰', color: '#10b981', bg: 'rgba(16, 185, 129, 0.16)', target: 'payslip' },
+  { id: 'bonus', category: '💰 Payroll & Personal Module', name: 'Bonus & Dividend History', icon: '🎁', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.16)', target: 'bonus_history' },
+  { id: 'calendar', category: '💰 Payroll & Personal Module', name: 'My Work Calendar', icon: '📅', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.16)', target: 'calendar' },
+
+  // 👥 Team & Manager Module
+  { id: 'team', category: '👥 Team & Manager Module', name: 'Team Directory & Contact', icon: '👥', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.16)', target: 'team' },
+  { id: 'subordinates', category: '👥 Team & Manager Module', name: 'Subordinates Roster & Approval', icon: '👔', color: '#4f46e5', bg: 'rgba(79, 70, 229, 0.16)', target: 'subordinates' },
+
+  // 🎯 Performance & Growth Module
+  { id: 'performance', category: '🎯 Performance & Growth Module', name: 'KPI Review & Goals', icon: '🎯', color: '#eab308', bg: 'rgba(234, 179, 8, 0.16)', target: 'performance_goals' }
+];
+
+let userFavStarredIds = JSON.parse(localStorage.getItem('peoplehcm_starred_list') || '["leave", "payslip", "team", "calendar", "claims", "overtime"]');
+let favEditMode = false;
+
+function openFavouriteModal(event) {
+  if (event) event.preventDefault();
+
+  let favSheet = document.querySelector('favourite-sheet');
+  if (!favSheet) {
+    favSheet = document.createElement('favourite-sheet');
+    document.querySelector('.phone-container')?.appendChild(favSheet);
+  }
+
+  favEditMode = false;
+  renderFavSheetUI();
+
+  const overlay = document.getElementById('favSheetOverlay');
+  if (overlay) overlay.classList.add('active');
+}
+
+function closeFavSheetDirect() {
+  const overlay = document.getElementById('favSheetOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function closeFavSheet(event) {
+  if (event && event.target && event.target.id === 'favSheetOverlay') {
+    closeFavSheetDirect();
+  }
+}
+
+function toggleFavEditMode() {
+  favEditMode = !favEditMode;
+  renderFavSheetUI();
+}
+
+function toggleFavStarInModal(modId, event) {
+  if (event) event.stopPropagation();
+  const idx = userFavStarredIds.indexOf(modId);
+  const mod = SYSTEM_FAV_CATALOG.find(m => m.id === modId);
+
+  if (idx > -1) {
+    if (userFavStarredIds.length <= 1) {
+      showToast('⚠️ Keep at least 1 favourite starred!');
+      return;
+    }
+    userFavStarredIds.splice(idx, 1);
+    if (typeof showToast === 'function') showToast(`Removed [${mod ? mod.name : modId}]`);
+  } else {
+    userFavStarredIds.push(modId);
+    if (typeof showToast === 'function') showToast(`⭐ Added [${mod ? mod.name : modId}]!`);
+  }
+
+  localStorage.setItem('peoplehcm_starred_list', JSON.stringify(userFavStarredIds));
+  renderFavSheetUI();
+}
+
+function renderFavSheetUI() {
+  const gridView = document.getElementById('favGridView');
+  const editView = document.getElementById('favEditView');
+  const toggleBtn = document.getElementById('favEditToggleBtn');
+  const subTitle = document.getElementById('favSheetSubtitle');
+
+  if (!gridView || !editView) return;
+
+  if (favEditMode) {
+    gridView.style.display = 'none';
+    editView.style.display = 'flex';
+    if (toggleBtn) toggleBtn.innerHTML = '✅ Done';
+    if (subTitle) subTitle.innerText = 'Grouped by Module • Tap ⭐ to toggle';
+
+    // Group catalog by module category
+    const grouped = {};
+    SYSTEM_FAV_CATALOG.forEach(mod => {
+      if (!grouped[mod.category]) grouped[mod.category] = [];
+      grouped[mod.category].push(mod);
+    });
+
+    editView.innerHTML = Object.keys(grouped).map(catName => `
+      <div style="margin-top: 4px;">
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); padding: 4px 2px 6px 2px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <span>${catName}</span>
+          <span style="font-size: 10px; font-weight: 600; opacity: 0.7;">${grouped[catName].length} Modules</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          ${grouped[catName].map(mod => {
+            const isStarred = userFavStarredIds.includes(mod.id);
+            return `
+              <div style="background: var(--bg-card); border: 1px solid ${isStarred ? 'rgba(234, 179, 8, 0.3)' : 'var(--border-subtle)'}; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 34px; height: 34px; border-radius: 10px; background: ${mod.bg}; color: ${mod.color}; display: flex; align-items: center; justify-content: center; font-size: 17px;">${mod.icon}</div>
+                  <span style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">${mod.name}</span>
+                </div>
+                <button onclick="toggleFavStarInModal('${mod.id}', event)" style="background: ${isStarred ? 'rgba(234, 179, 8, 0.2)' : 'var(--bg-card-hover)'}; border: 1px solid ${isStarred ? 'rgba(234, 179, 8, 0.4)' : 'var(--border-subtle)'}; color: ${isStarred ? '#eab308' : 'var(--text-muted)'}; width: 32px; height: 32px; border-radius: 8px; font-size: 15px; cursor: pointer; transition: all 0.2s ease;">
+                  ${isStarred ? '★' : '☆'}
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `).join('');
+  } else {
+    gridView.style.display = 'grid';
+    editView.style.display = 'none';
+    if (toggleBtn) toggleBtn.innerHTML = '✏️ Customize';
+    if (subTitle) subTitle.innerText = `${userFavStarredIds.length} Starred Shortcuts`;
+
+    const starredMods = SYSTEM_FAV_CATALOG.filter(m => userFavStarredIds.includes(m.id));
+
+    gridView.innerHTML = starredMods.map(mod => `
+      <div class="fav-grid-item" onclick="closeFavSheetDirect(); navTo('${mod.target}', event);">
+        <div class="fav-grid-icon-box" style="background: ${mod.bg}; color: ${mod.color};">${mod.icon}</div>
+        <span class="fav-grid-label">${mod.name}</span>
+      </div>
+    `).join('');
+  }
 }
 

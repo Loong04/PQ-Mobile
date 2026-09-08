@@ -253,25 +253,94 @@ class NotificationSheet extends HTMLElement {
             <button class="sheet-close-btn" onclick="closeForYouDirect()" aria-label="Close">✕</button>
           </div>
 
+          <!-- 3 Tabs: All, Pending Approval, Pending Resubmit -->
           <div class="sheet-filter-bar">
-            <button class="sheet-filter-pill active" onclick="filterForYou('all', this)">
+            <button class="sheet-filter-pill active" onclick="filterForYouTab('all', this)">
               <span>All (7)</span>
             </button>
-            <button class="sheet-filter-pill" onclick="filterForYou('approvals', this)">
-              <span>Approvals</span>
-              <span class="sheet-tag-badge red">2</span>
+            <button class="sheet-filter-pill" onclick="filterForYouTab('pending_approval', this)">
+              <span>Pending Approval</span>
+              <span class="sheet-tag-badge red">4</span>
             </button>
-            <button class="sheet-filter-pill" onclick="filterForYou('payroll', this)">
-              <span>Payroll & Tax</span>
-              <span class="sheet-tag-badge green">2</span>
-            </button>
-            <button class="sheet-filter-pill" onclick="filterForYou('team', this)">
-              <span>Team (3)</span>
+            <button class="sheet-filter-pill" onclick="filterForYouTab('pending_resubmit', this)">
+              <span>Pending Resubmit</span>
+              <span class="sheet-tag-badge amber">3</span>
             </button>
           </div>
 
+          <!-- Custom Floating Rounded Dropdown Filter -->
+          <div class="custom-dropdown-container">
+            <button class="sheet-doctype-bar-row" onclick="toggleDocTypeDropdown(event)" type="button" aria-label="Select Document Type">
+              <div class="doctype-bar-left" style="flex: 1; min-width: 0;">
+                <div class="doctype-icon-box">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                  </svg>
+                </div>
+                <div id="selectedDocTypeLabel">
+                  <span class="doctype-placeholder">Document Type</span>
+                </div>
+              </div>
+              <div class="doctype-select-arrow">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </button>
+
+            <!-- Multi-Select Rounded Popup Menu (border-radius: 18px) -->
+            <div class="custom-dropdown-menu multi-select" id="docTypeDropdownMenu">
+              <div class="dropdown-item active" data-value="all" onclick="toggleMultiSelectDocType('all', this, event)">
+                <div class="chk-box-wrap">
+                  <input type="checkbox" checked id="chk-all">
+                  <span>All Document Types</span>
+                </div>
+              </div>
+              <div class="dropdown-item" data-value="Leave Request" onclick="toggleMultiSelectDocType('Leave Request', this, event)">
+                <div class="chk-box-wrap">
+                  <input type="checkbox" id="chk-leave">
+                  <span>🌴 Leave Request</span>
+                </div>
+              </div>
+              <div class="dropdown-item" data-value="Medical Claim" onclick="toggleMultiSelectDocType('Medical Claim', this, event)">
+                <div class="chk-box-wrap">
+                  <input type="checkbox" id="chk-claim">
+                  <span>🧾 Medical Claim</span>
+                </div>
+              </div>
+              <div class="dropdown-item" data-value="Overtime" onclick="toggleMultiSelectDocType('Overtime', this, event)">
+                <div class="chk-box-wrap">
+                  <input type="checkbox" id="chk-ot">
+                  <span>⏰ Overtime</span>
+                </div>
+              </div>
+              <div class="dropdown-item" data-value="Change Request" onclick="toggleMultiSelectDocType('Change Request', this, event)">
+                <div class="chk-box-wrap">
+                  <input type="checkbox" id="chk-change">
+                  <span>📑 Change Request</span>
+                </div>
+              </div>
+              <div class="dropdown-item" data-value="Tax EA Form" onclick="toggleMultiSelectDocType('Tax EA Form', this, event)">
+                <div class="chk-box-wrap">
+                  <input type="checkbox" id="chk-tax">
+                  <span>📄 Tax EA Form</span>
+                </div>
+              </div>
+              <div class="dropdown-item" data-value="Performance Goal" onclick="toggleMultiSelectDocType('Performance Goal', this, event)">
+                <div class="chk-box-wrap">
+                  <input type="checkbox" id="chk-kpi">
+                  <span>🎯 Performance Goal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Selected Filter Pills (Horizontal Scroll Row) -->
+          <div class="active-filter-pills-row" id="activeFilterPillsRow" style="display: none;"></div>
+
           <div class="sheet-list-scroll">
-            <div class="sheet-item-card attention" data-fy="approvals" onclick="navTo('team', event)">
+            <!-- Item 1: Pending Approval -->
+            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Leave Request" onclick="navTo('team', event)">
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">👤</div>
                 <div class="item-info">
@@ -279,12 +348,10 @@ class NotificationSheet extends HTMLElement {
                   <span>Annual Leave 2 Days (Oct 12-13)</span>
                 </div>
               </div>
-              <div class="item-right-box">
-                <span class="item-status-pill attention">Action</span>
-              </div>
             </div>
 
-            <div class="sheet-item-card attention" data-fy="approvals" onclick="navTo('team', event)">
+            <!-- Item 2: Pending Approval -->
+            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Medical Claim" onclick="navTo('team', event)">
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🧾</div>
                 <div class="item-info">
@@ -292,74 +359,67 @@ class NotificationSheet extends HTMLElement {
                   <span>Medical Claim $85.50</span>
                 </div>
               </div>
-              <div class="item-right-box">
-                <span class="item-status-pill attention">Action</span>
-              </div>
             </div>
 
-            <div class="sheet-item-card positive" data-fy="payroll" onclick="navTo('payslip', event)">
+            <!-- Item 3: Pending Resubmit -->
+            <div class="sheet-item-card" data-fy="pending_resubmit" data-doctype="Overtime" onclick="navTo('team', event)">
               <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">📄</div>
+                <div class="item-icon-box" style="background: var(--tag-rose-bg); color: var(--tag-rose-text);">⏰</div>
                 <div class="item-info">
-                  <h5>Payslip ready</h5>
-                  <span>Your July 2026 payslip is available</span>
+                  <h5>Resubmit required: Overtime</h5>
+                  <span>OT Claim Sep 02 (Correction needed)</span>
                 </div>
               </div>
-              <div class="item-right-box">
-                <span class="item-status-pill positive">Ready</span>
-              </div>
             </div>
 
-            <div class="sheet-item-card" data-fy="payroll" onclick="navTo('taxform', event)">
+            <!-- Item 4: Pending Resubmit -->
+            <div class="sheet-item-card" data-fy="pending_resubmit" data-doctype="Change Request" onclick="navTo('change_request', event)">
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);">📑</div>
                 <div class="item-info">
-                  <h5>Tax EA Form 2025</h5>
+                  <h5>Resubmit required: Bank Account</h5>
+                  <span>Bank Statement attachment missing</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 5: Pending Approval -->
+            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Tax EA Form" onclick="navTo('taxform', event)">
+              <div class="item-left-box">
+                <div class="item-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">📄</div>
+                <div class="item-info">
+                  <h5>Approval needed: EA Form 2025</h5>
                   <span>Official income tax return statement</span>
                 </div>
               </div>
-              <div class="item-right-box">
-                <span class="item-status-pill normal">Download</span>
+            </div>
+
+            <!-- Item 6: Pending Approval -->
+            <div class="sheet-item-card" data-fy="pending_approval" data-doctype="Performance Goal" onclick="navTo('performance_goals', event)">
+              <div class="item-left-box">
+                <div class="item-icon-box" style="background: var(--tag-teal-bg); color: var(--tag-teal-text);">🎯</div>
+                <div class="item-info">
+                  <h5>Approval needed: Q3 KPI</h5>
+                  <span>Performance Goal submission</span>
+                </div>
               </div>
             </div>
 
-            <div class="sheet-item-card" data-fy="team" onclick="navTo('team', event)">
+            <!-- Item 7: Pending Resubmit -->
+            <div class="sheet-item-card" data-fy="pending_resubmit" data-doctype="Leave Request" onclick="navTo('leave', event)">
               <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-teal-bg); color: var(--tag-teal-text);">👥</div>
+                <div class="item-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🌴</div>
                 <div class="item-info">
-                  <h5>Team update</h5>
-                  <span>3 colleagues away tomorrow (Alex, David, Chloe)</span>
+                  <h5>Resubmit required: Emergency Leave</h5>
+                  <span>Supporting document attachment required</span>
                 </div>
-              </div>
-              <div class="item-right-box">
-                <span class="item-status-pill normal">Team</span>
               </div>
             </div>
 
-            <div class="sheet-item-card" data-fy="team" onclick="showToast('🎉 Jessica\'s birthday celebrated!')">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-rose-bg); color: var(--tag-rose-text);">🎂</div>
-                <div class="item-info">
-                  <h5>Birthday Celebration</h5>
-                  <span>Jessica Chen's birthday this Friday!</span>
-                </div>
-              </div>
-              <div class="item-right-box">
-                <span class="item-status-pill normal">Team</span>
-              </div>
-            </div>
-
-            <div class="sheet-item-card" data-fy="team" onclick="navTo('performance_goals', event)">
-              <div class="item-left-box">
-                <div class="item-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">🎯</div>
-                <div class="item-info">
-                  <h5>Performance Review</h5>
-                  <span>Q3 Review submission deadline Sep 15</span>
-                </div>
-              </div>
-              <div class="item-right-box">
-                <span class="item-status-pill attention">Reminder</span>
-              </div>
+            <!-- Empty State when filtered results are 0 -->
+            <div id="forYouEmptyState" style="display: none; text-align: center; padding: 36px 12px; color: var(--text-muted); font-size: 12.5px; font-weight: 600;">
+              <div style="font-size: 26px; margin-bottom: 6px;">🔍</div>
+              No notifications match your selected filter.
             </div>
           </div>
         </div>
@@ -408,17 +468,14 @@ class PhoneBottomNav extends HTMLElement {
           </svg>
         </button>
 
-        <!-- 4. Calendar -->
-        <a class="nav-item ${active === 'calendar' ? 'active' : ''}" href="javascript:void(0)" onclick="navTo('calendar', event)">
+        <!-- 4. Favourite -->
+        <a class="nav-item ${active === 'favourite' || active === 'fav' ? 'active' : ''}" href="javascript:void(0)" onclick="openFavouriteModal(event)">
           <div class="nav-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
           </div>
-          <span>Calendar</span>
+          <span>Favourite</span>
         </a>
 
         <!-- 5. Me -->
@@ -439,6 +496,41 @@ class PhoneBottomNav extends HTMLElement {
   }
 }
 customElements.define('phone-bottom-nav', PhoneBottomNav);
+
+// 8. Instant Favourite Bottom Sheet Component
+class FavouriteSheet extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = `
+      <div class="fav-sheet-overlay" id="favSheetOverlay" onclick="closeFavSheet(event)">
+        <div class="fav-sheet-content" onclick="event.stopPropagation()">
+          <div class="sheet-handle"></div>
+
+          <div class="fav-sheet-header">
+            <div>
+              <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">⭐ My Favourites</h3>
+              <p style="font-size: 11.5px; color: var(--text-muted); margin: 2px 0 0 0;" id="favSheetSubtitle">Quick Access Shortcuts</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button class="fav-edit-btn" id="favEditToggleBtn" onclick="toggleFavEditMode()">✏️ Customize</button>
+              <button class="sheet-close-btn" onclick="closeFavSheetDirect()" aria-label="Close">✕</button>
+            </div>
+          </div>
+
+          <!-- Mode 1: Quick Favourites Grid View (Default) -->
+          <div class="fav-grid-view" id="favGridView">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <!-- Mode 2: Customize Catalog List View (Hidden by default) -->
+          <div id="favEditView" style="display: none; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px;">
+            <!-- Catalog with Star Toggles -->
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+customElements.define('favourite-sheet', FavouriteSheet);
 
 // 8. Indicators Bottom Sheet Component (Team & Individual Indicators)
 // 8. Indicators Bottom Sheet Component (Team & Individual Indicators - Card Design)
