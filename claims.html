@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Claims & Expenses</title>
+  <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #6d28d9;
+      --primary-light: rgba(124, 58, 237, 0.15);
+      --secondary: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --accent-blue: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    /* Mobile Frame */
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Main Scrollable Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    /* Submit CTA Card */
+    .submit-cta-card {
+      margin-top: 14px;
+      margin-bottom: 16px;
+    }
+
+    .btn-submit-claim {
+      width: 100%;
+      padding: 14px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--purple-primary), var(--purple-hover));
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-submit-claim:active {
+      transform: scale(0.98);
+    }
+
+    /* Time Filter Bar */
+    .time-filter-wrapper {
+      margin-bottom: 16px;
+    }
+
+    .date-range-picker {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-primary);
+      cursor: pointer;
+      box-shadow: var(--shadow-card);
+    }
+
+    .date-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .date-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .date-value {
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Dashboard Financial Overview Card */
+    .overview-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 110px;
+      height: 110px;
+    }
+
+    .circular-chart {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      max-height: 250px;
+    }
+    .circle-bg {
+      fill: none;
+      stroke: var(--border-subtle);
+      stroke-width: 3.5;
+    }
+    .circle-approved {
+      fill: none;
+      stroke: var(--secondary);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-dasharray: 65 100;
+    }
+    .circle-pending {
+      fill: none;
+      stroke: var(--warning);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-dasharray: 25 100;
+      stroke-dashoffset: -65;
+    }
+
+    .chart-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .chart-center-text .total-num {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+    .chart-center-text .total-label {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .stats-container {
+      flex: 1;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-label-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .dot.approved { background: var(--secondary); }
+    .dot.pending { background: var(--warning); }
+    .dot.avail { background: var(--accent-blue); }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .section-action {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--purple-primary);
+      text-decoration: none;
+    }
+
+    /* Claim Category Cards (Single Column Dashboard List) */
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .cat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .cat-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .cat-name {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .cat-entitlement {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .cat-amount-used {
+      text-align: right;
+    }
+
+    .cat-used-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .cat-used-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .progress-wrapper {
+      margin-top: 6px;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .progress-bar-bg {
+      height: 6px;
+      background: var(--border-subtle);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--purple-primary);
+      border-radius: 4px;
+    }
+
+    /* Recent Submissions List */
+    .filter-scroller {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .filter-scroller::-webkit-scrollbar { display: none; }
+
+    .filter-pill {
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .filter-pill.active {
+      background: var(--purple-primary);
+      color: #ffffff;
+      border-color: var(--purple-primary);
+    }
+
+    .claim-item-card {
+      background: var(--bg-card);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 12px;
+    }
+
+    .claim-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .claim-item-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .claim-item-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .claim-item-amount {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-align: right;
+    }
+
+    .claim-item-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .receipt-badge {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-pill {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+    .status-pill.approved {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--secondary);
+    }
+    .status-pill.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Desktop Switcher Bar (Light/Dark Mode outside phone frame) -->
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    <!-- Top Executive Header Block (Purple Gradient) -->
+    <div class="bonus-top-header" style="padding-bottom: 24px;">
+      <phone-status-bar time="09:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div class="bonus-nav-bar">
+        <button class="bonus-back-btn" onclick="javascript:history.back()" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <div class="bonus-title-wrap">
+          <h2 class="bonus-title-main">Claims &amp; Expenses</h2>
+        </div>
+        <button class="me-options-btn" aria-label="More Options">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="1.5"></circle>
+            <circle cx="12" cy="5" r="1.5"></circle>
+            <circle cx="12" cy="19" r="1.5"></circle>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable Main Content -->
+    <div class="main-content">
+
+      <!-- SUBMIT CLAIM HERO CTA -->
+      <div class="submit-cta-card">
+        <button class="btn-submit-claim" onclick="if(typeof showToast==='function') showToast('📝 New Claim Request Form opened!');">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>SUBMIT NEW CLAIM REQUEST</span>
+        </button>
+      </div>
+
+      <!-- TIME FILTER SELECTOR (DASHBOARD STYLE) -->
+      <div class="time-filter-wrapper">
+        <div class="date-range-picker">
+          <div class="date-info">
+            <span class="date-label">Viewing Period</span>
+            <span class="date-value">
+              01 Sep 2026 - 30 Sep 2026
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </span>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+      </div>
+
+      <!-- DASHBOARD FINANCIAL OVERVIEW CHART -->
+      <div class="overview-card">
+        <div class="chart-container">
+          <svg viewBox="0 0 36 36" class="circular-chart">
+            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle-approved" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle-pending" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+          <div class="chart-center-text">
+            <div class="total-num">RM 1,330</div>
+            <div class="total-label">Total Claimed</div>
+          </div>
+        </div>
+
+        <div class="stats-container">
+          <div class="stat-row">
+            <div class="stat-label-wrap">
+              <div class="dot approved"></div>
+              <span class="stat-label">Approved</span>
+            </div>
+            <span class="stat-value">RM 950.00</span>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label-wrap">
+              <div class="dot pending"></div>
+              <span class="stat-label">Pending</span>
+            </div>
+            <span class="stat-value">RM 380.00</span>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label-wrap">
+              <div class="dot avail"></div>
+              <span class="stat-label">Available Balance</span>
+            </div>
+            <span class="stat-value" style="color: var(--secondary);">RM 2,170.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLAIM CATEGORIES BALANCES SECTION -->
+      <div class="section-header">
+        <h2 class="section-title">Claim Allowances &amp; Balances</h2>
+        <a href="#" class="section-action">View Limits</a>
+      </div>
+
+      <div class="category-list">
+        
+        <!-- Medical Claim -->
+        <div class="category-card">
+          <div class="cat-card-header">
+            <div class="cat-title-wrap">
+              <div class="cat-icon">🏥</div>
+              <div>
+                <h3 class="cat-name">Medical &amp; Outpatient</h3>
+                <span class="cat-entitlement">Entitlement: RM 1,200.00 / yr</span>
+              </div>
+            </div>
+            <div class="cat-amount-used">
+              <div class="cat-used-val">RM 450.00</div>
+              <div class="cat-used-label">Claimed (37.5%)</div>
+            </div>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>RM 450 Used</span>
+              <span>RM 750 Available</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-fill" style="width: 37.5%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Travel & Transport Claim -->
+        <div class="category-card">
+          <div class="cat-card-header">
+            <div class="cat-title-wrap">
+              <div class="cat-icon">🚗</div>
+              <div>
+                <h3 class="cat-name">Travel &amp; Mileage</h3>
+                <span class="cat-entitlement">Entitlement: RM 1,500.00 / yr</span>
+              </div>
+            </div>
+            <div class="cat-amount-used">
+              <div class="cat-used-val">RM 620.00</div>
+              <div class="cat-used-label">Claimed (41.3%)</div>
+            </div>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>RM 620 Used</span>
+              <span>RM 880 Available</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-fill" style="width: 41.3%; background: var(--secondary);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile & Telecom Claim -->
+        <div class="category-card">
+          <div class="cat-card-header">
+            <div class="cat-title-wrap">
+              <div class="cat-icon">📱</div>
+              <div>
+                <h3 class="cat-name">Mobile &amp; Data Allowance</h3>
+                <span class="cat-entitlement">Entitlement: RM 300.00 / yr</span>
+              </div>
+            </div>
+            <div class="cat-amount-used">
+              <div class="cat-used-val">RM 150.00</div>
+              <div class="cat-used-label">Claimed (50%)</div>
+            </div>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>RM 150 Used</span>
+              <span>RM 150 Available</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-fill" style="width: 50%; background: var(--accent-blue);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Client Entertainment -->
+        <div class="category-card">
+          <div class="cat-card-header">
+            <div class="cat-title-wrap">
+              <div class="cat-icon">🍽️</div>
+              <div>
+                <h3 class="cat-name">Client Entertainment</h3>
+                <span class="cat-entitlement">Entitlement: RM 500.00 / yr</span>
+              </div>
+            </div>
+            <div class="cat-amount-used">
+              <div class="cat-used-val">RM 110.00</div>
+              <div class="cat-used-label">Claimed (22%)</div>
+            </div>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>RM 110 Used</span>
+              <span>RM 390 Available</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-fill" style="width: 22%; background: var(--warning);"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RECENT CLAIM REQUESTS LIST -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Recent Claim Submissions</h3>
+        <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">History</span>
+      </div>
+
+      <div class="filter-scroller">
+        <button class="filter-pill active">All Requests (8)</button>
+        <button class="filter-pill">Pending (2)</button>
+        <button class="filter-pill">Approved (6)</button>
+        <button class="filter-pill">Draft (1)</button>
+      </div>
+
+      <!-- CLAIM ITEMS LIST CARDS -->
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        
+        <!-- CLAIM 1 -->
+        <div class="claim-item-card">
+          <div class="claim-item-header">
+            <div>
+              <div class="claim-item-title">Grab Taxi - Client Meeting @ Mont Kiara</div>
+              <div class="claim-item-date">Travel &amp; Mileage • 05 Sep 2026</div>
+            </div>
+            <div class="claim-item-amount">RM 45.00</div>
+          </div>
+
+          <div class="claim-item-meta">
+            <div class="receipt-badge">
+              <span>📎</span>
+              <span>Receipt Verified</span>
+            </div>
+            <span class="status-pill pending">⏳ Pending Approval</span>
+          </div>
+        </div>
+
+        <!-- CLAIM 2 -->
+        <div class="claim-item-card">
+          <div class="claim-item-header">
+            <div>
+              <div class="claim-item-title">Dental Checkup &amp; Cleaning</div>
+              <div class="claim-item-date">Medical &amp; Outpatient • 01 Sep 2026</div>
+            </div>
+            <div class="claim-item-amount">RM 335.00</div>
+          </div>
+
+          <div class="claim-item-meta">
+            <div class="receipt-badge">
+              <span>📎</span>
+              <span>Receipt Verified</span>
+            </div>
+            <span class="status-pill pending">⏳ Pending Approval</span>
+          </div>
+        </div>
+
+        <!-- CLAIM 3 -->
+        <div class="claim-item-card">
+          <div class="claim-item-header">
+            <div>
+              <div class="claim-item-title">Monthly Mobile Data Subscription</div>
+              <div class="claim-item-date">Mobile &amp; Data • 28 Aug 2026</div>
+            </div>
+            <div class="claim-item-amount">RM 150.00</div>
+          </div>
+
+          <div class="claim-item-meta">
+            <div class="receipt-badge">
+              <span>📎</span>
+              <span>Receipt Verified</span>
+            </div>
+            <span class="status-pill approved">✔ Approved &amp; Paid</span>
+          </div>
+        </div>
+
+        <!-- CLAIM 4 -->
+        <div class="claim-item-card">
+          <div class="claim-item-header">
+            <div>
+              <div class="claim-item-title">Client Lunch @ Oriental Pavilion</div>
+              <div class="claim-item-date">Client Entertainment • 22 Aug 2026</div>
+            </div>
+            <div class="claim-item-amount">RM 110.00</div>
+          </div>
+
+          <div class="claim-item-meta">
+            <div class="receipt-badge">
+              <span>📎</span>
+              <span>Receipt Verified</span>
+            </div>
+            <span class="status-pill approved">✔ Approved &amp; Paid</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar (5 tabs + Home Bar) -->
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Slide-in Left Profile Drawer with Appearance Options -->
+    <left-profile-drawer></left-profile-drawer>
+
+    <!-- For You Notification Bottom Sheet Drawer -->
+    <notification-sheet></notification-sheet>
+
+    <!-- All Indicators Drawer -->
+    <indicators-sheet></indicators-sheet>
+  </div>
+</body>
+</html>

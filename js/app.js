@@ -30,14 +30,14 @@ const APP_ROUTES = {
 
   // V1 Quick Actions
   'apply_leave': 'leave.html',
-  'payslip': '#payslip-detail',
-  'claim': '#claims-submit',
+  'payslip': 'payslip.html',
+  'claim': 'claims.html',
   'more': () => getCurrentTheme() === 'light' ? 'applight.html' : 'appdark.html',
 
   // V2 6 Primary Shortcuts
-  'attendance': '#attendance-clockin',
-  'payslip': '#payslip-detail',
-  'claim': '#claims-submit',
+  'attendance': 'attendance.html',
+  'payslip': 'payslip.html',
+  'claim': 'claims.html',
   'benefits': '#benefits-portal',
   'documents': '#company-documents',
   'overtime': '#overtime-form',
@@ -45,10 +45,10 @@ const APP_ROUTES = {
   'taxform': '#tax-ea-form',
 
   // Explore PeopleHCM Modules
-  'time_attendance': '#time-and-attendance',
+  'time_attendance': 'attendance.html',
   'leave_holidays': 'leave.html',
-  'claims_expenses': '#claims-and-expenses',
-  'payroll_compensation': '#payroll-and-compensation',
+  'claims_expenses': 'claims.html',
+  'payroll_compensation': 'payslip.html',
   'performance_goals': '#performance-goals',
   'learning_dev': '#learning-development',
   'people_documents': 'team.html',

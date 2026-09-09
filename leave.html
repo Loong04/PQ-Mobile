@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PeopleHCM - Leave Dashboard</title>
+  <title>PeopleHCM - Leave Apply</title>
   <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,17 +15,10 @@
     :root {
       --primary: #6366f1; /* Indigo */
       --primary-dark: #4f46e5;
-      --primary-light: #e0e7ff;
+      --primary-light: rgba(99, 102, 241, 0.15);
       --secondary: #10b981; /* Emerald */
       --warning: #f59e0b; /* Amber */
       --danger: #ef4444; /* Red */
-      --bg-main: #f8fafc;
-      --bg-card: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-subtle: #e2e8f0;
-      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
-      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06);
     }
 
     * {
@@ -36,13 +30,13 @@
     }
 
     body {
-      background-color: #cbd5e1;
+      background-color: var(--bg-page);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      color: var(--text-main);
+      color: var(--text-primary);
       padding: 20px 0;
     }
 
@@ -53,10 +47,10 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 8px;
-      background: #ffffff;
+      background: var(--bg-card);
       padding: 6px 10px;
       border-radius: 20px;
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-card);
     }
 
     .mode-btn {
@@ -79,10 +73,10 @@
       width: 100%;
       max-width: 420px;
       height: 900px;
-      background: var(--bg-main);
+      background: var(--bg-phone);
       border-radius: 44px;
       overflow: hidden;
-      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.2), 0 0 0 10px #ffffff, 0 0 0 12px #94a3b8;
+      box-shadow: var(--shadow-phone);
       position: relative;
       display: flex;
       flex-direction: column;
@@ -261,7 +255,7 @@
     .chart-center-text .total-num {
       font-size: 22px;
       font-weight: 800;
-      color: var(--text-main);
+      color: var(--text-primary);
       line-height: 1;
     }
     .chart-center-text .total-label {
@@ -308,7 +302,7 @@
     .stat-value {
       font-size: 14px;
       font-weight: 800;
-      color: var(--text-main);
+      color: var(--text-primary);
     }
 
     /* Section Headers */
@@ -322,7 +316,7 @@
     .section-title {
       font-size: 16px;
       font-weight: 800;
-      color: var(--text-main);
+      color: var(--text-primary);
     }
 
     .section-action {
@@ -343,7 +337,7 @@
       background: var(--bg-card);
       border-radius: 16px;
       padding: 16px;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-card);
       border: 1px solid var(--border-subtle);
       transition: transform 0.2s;
     }
@@ -379,7 +373,7 @@
     .item-name {
       font-size: 15px;
       font-weight: 700;
-      color: var(--text-main);
+      color: var(--text-primary);
     }
 
     .item-avail {
@@ -389,7 +383,7 @@
     }
 
     .btn-apply-sm {
-      background: var(--primary);
+      background: var(--purple-primary);
       color: #ffffff;
       padding: 6px 14px;
       border-radius: 20px;
@@ -397,6 +391,10 @@
       font-weight: 700;
       border: none;
       cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-apply-sm:active {
+      transform: scale(0.96);
     }
 
     /* Horizontal Progress Bar */
@@ -428,67 +426,89 @@
     .segment-pending { background: var(--warning); }
     .segment-available { background: var(--secondary); border-radius: 0 4px 4px 0; }
 
-    /* Bottom Navigation */
-    .bottom-nav {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 78px;
-      background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 0 10px 14px;
-      z-index: 20;
+    /* Submit CTA Hero Button */
+    .submit-cta-card {
+      margin-top: 14px;
+      margin-bottom: 16px;
     }
 
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      color: var(--text-muted);
-      font-size: 10.5px;
-      font-weight: 600;
-      text-decoration: none;
-      width: 54px;
-    }
-
-    .nav-item.active {
-      color: var(--primary);
-    }
-
-    .fab-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--primary);
+    .btn-submit-hero {
+      width: 100%;
+      padding: 14px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--purple-primary), var(--purple-hover));
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #ffffff;
-      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4);
-      border: none;
-      margin-top: -16px;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-submit-hero:active {
+      transform: scale(0.98);
     }
 
-    .home-bar {
-      position: absolute;
-      bottom: 6px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 130px;
-      height: 4px;
-      background: #94a3b8;
-      border-radius: 10px;
+    /* Filter Scroller */
+    .filter-scroller {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .filter-scroller::-webkit-scrollbar { display: none; }
+
+    .filter-pill {
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .filter-pill.active {
+      background: var(--purple-primary);
+      color: #ffffff;
+      border-color: var(--purple-primary);
+    }
+
+    .form-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+    .form-field-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .form-field-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
     }
   </style>
 </head>
 <body>
 
+  <!-- Desktop Switcher Bar (Light/Dark Mode outside phone frame) -->
   <preview-top-bar active-page="leave"></preview-top-bar>
 
   <div class="phone-container">
@@ -502,7 +522,7 @@
           </svg>
         </button>
         <div class="bonus-title-wrap">
-          <h2 class="bonus-title-main">Leave Dashboard</h2>
+          <h2 class="bonus-title-main">Leave Apply</h2>
         </div>
         <button class="me-options-btn" aria-label="More Options">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -515,8 +535,8 @@
     </div>
 
     <div class="main-content">
-      
-      <!-- Time / Date Filter (Dashboard Style) -->
+
+      <!-- Time / Date Filter Selector -->
       <div class="time-filter-wrapper">
         <div class="date-range-picker">
           <div class="date-info">
@@ -530,22 +550,17 @@
         </div>
       </div>
 
-      <!-- Dashboard Overview Chart -->
+      <!-- Leave Overview Chart Card -->
       <div class="overview-card">
         <div class="chart-container">
-          <!-- Donut chart using SVG stroke-dasharray -->
           <svg viewBox="0 0 36 36" class="circular-chart">
-            <path class="circle-bg"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path class="circle-taken"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path class="circle-pending"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path class="circle-available"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle-taken" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle-pending" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle-available" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
           </svg>
           <div class="chart-center-text">
-            <div class="total-num">156</div>
+            <div class="total-num">274</div>
             <div class="total-label">Total Entitled</div>
           </div>
         </div>
@@ -556,7 +571,7 @@
               <div class="dot available"></div>
               <span class="stat-label">Available</span>
             </div>
-            <span class="stat-value">114.5</span>
+            <span class="stat-value">233.5</span>
           </div>
           <div class="stat-row">
             <div class="stat-label-wrap">
@@ -570,20 +585,28 @@
               <div class="dot pending"></div>
               <span class="stat-label">Pending</span>
             </div>
-            <span class="stat-value">12.5</span>
+            <span class="stat-value">11.5</span>
           </div>
         </div>
       </div>
 
+      <!-- SECTION TITLE & CATEGORY FILTERS -->
       <div class="section-header">
-        <h2 class="section-title">Leave Balances</h2>
-        <a href="#" class="section-action">View History</a>
+        <h2 class="section-title">Leave Entitlements &amp; Types</h2>
+        <a href="#" class="section-action" onclick="if(typeof showToast==='function') showToast('📜 Opening Leave Request History...');">View History</a>
       </div>
 
-      <!-- Leave List Items -->
+      <div class="filter-scroller">
+        <button class="filter-pill active">All Leave Types (10)</button>
+        <button class="filter-pill">Paid Entitled (6)</button>
+        <button class="filter-pill">Statutory &amp; Family (3)</button>
+        <button class="filter-pill">Unpaid &amp; Other (1)</button>
+      </div>
+
+      <!-- COMPREHENSIVE LEAVE LIST (10 TYPES) -->
       <div class="leave-list">
         
-        <!-- Annual Leave -->
+        <!-- 1. Annual Leave -->
         <div class="leave-list-item">
           <div class="item-header">
             <div class="item-title-wrap">
@@ -593,7 +616,7 @@
                 <span class="item-avail">65.00 days available</span>
               </div>
             </div>
-            <button class="btn-apply-sm">Apply</button>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Annual Leave')">Apply</button>
           </div>
           <div class="progress-wrapper">
             <div class="progress-labels">
@@ -611,7 +634,7 @@
           </div>
         </div>
 
-        <!-- Hospitalization Leave -->
+        <!-- 2. Hospitalization Leave -->
         <div class="leave-list-item">
           <div class="item-header">
             <div class="item-title-wrap">
@@ -621,7 +644,7 @@
                 <span class="item-avail">59.00 days available</span>
               </div>
             </div>
-            <button class="btn-apply-sm">Apply</button>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Hospitalization Leave')">Apply</button>
           </div>
           <div class="progress-wrapper">
             <div class="progress-labels">
@@ -639,17 +662,17 @@
           </div>
         </div>
 
-        <!-- Medical Leave -->
+        <!-- 3. Medical Leave -->
         <div class="leave-list-item">
           <div class="item-header">
             <div class="item-title-wrap">
               <div class="item-icon">💊</div>
               <div>
-                <h3 class="item-name">Medical Leave</h3>
+                <h3 class="item-name">Medical / Sick Leave</h3>
                 <span class="item-avail">12.00 days available</span>
               </div>
             </div>
-            <button class="btn-apply-sm">Apply</button>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Medical Leave')">Apply</button>
           </div>
           <div class="progress-wrapper">
             <div class="progress-labels">
@@ -664,25 +687,163 @@
           </div>
         </div>
 
-        <!-- Replacement Leave -->
+        <!-- 4. Maternity Leave -->
         <div class="leave-list-item">
           <div class="item-header">
             <div class="item-title-wrap">
-              <div class="item-icon" style="background:#f1f5f9; filter:grayscale(1)">🔄</div>
+              <div class="item-icon">🍼</div>
               <div>
-                <h3 class="item-name" style="color: var(--text-muted)">Replacement</h3>
-                <span class="item-avail">0.00 days available</span>
+                <h3 class="item-name">Maternity Leave</h3>
+                <span class="item-avail">90.00 days available</span>
               </div>
             </div>
-            <button class="btn-apply-sm" style="background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-subtle)">Apply</button>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Maternity Leave')">Apply</button>
           </div>
           <div class="progress-wrapper">
             <div class="progress-labels">
               <span>0 Taken</span>
-              <span>0 Entitled</span>
+              <span>90 Entitled</span>
             </div>
             <div class="progress-bar-bg">
-              <div class="progress-segment segment-available" style="width: 0%"></div>
+              <div class="progress-segment segment-available" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Paternity Leave -->
+        <div class="leave-list-item">
+          <div class="item-header">
+            <div class="item-title-wrap">
+              <div class="item-icon">👶</div>
+              <div>
+                <h3 class="item-name">Paternity Leave</h3>
+                <span class="item-avail">7.00 days available</span>
+              </div>
+            </div>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Paternity Leave')">Apply</button>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>0 Taken</span>
+              <span>7 Entitled</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-segment segment-available" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Marriage Leave -->
+        <div class="leave-list-item">
+          <div class="item-header">
+            <div class="item-title-wrap">
+              <div class="item-icon">💍</div>
+              <div>
+                <h3 class="item-name">Marriage Leave</h3>
+                <span class="item-avail">3.00 days available</span>
+              </div>
+            </div>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Marriage Leave')">Apply</button>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>0 Taken</span>
+              <span>3 Entitled</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-segment segment-available" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Compassionate Leave -->
+        <div class="leave-list-item">
+          <div class="item-header">
+            <div class="item-title-wrap">
+              <div class="item-icon">🕯️</div>
+              <div>
+                <h3 class="item-name">Compassionate Leave</h3>
+                <span class="item-avail">3.00 days available</span>
+              </div>
+            </div>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Compassionate Leave')">Apply</button>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>0 Taken</span>
+              <span>3 Entitled</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-segment segment-available" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Study & Exam Leave -->
+        <div class="leave-list-item">
+          <div class="item-header">
+            <div class="item-title-wrap">
+              <div class="item-icon">🎓</div>
+              <div>
+                <h3 class="item-name">Study &amp; Examination Leave</h3>
+                <span class="item-avail">5.00 days available</span>
+              </div>
+            </div>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Study & Exam Leave')">Apply</button>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>0 Taken</span>
+              <span>5 Entitled</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-segment segment-available" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Replacement Leave -->
+        <div class="leave-list-item">
+          <div class="item-header">
+            <div class="item-title-wrap">
+              <div class="item-icon">🔄</div>
+              <div>
+                <h3 class="item-name">Replacement Leave</h3>
+                <span class="item-avail">2.50 days available</span>
+              </div>
+            </div>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Replacement Leave')">Apply</button>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>0 Taken</span>
+              <span>2.5 Entitled</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-segment segment-available" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. Unpaid Leave -->
+        <div class="leave-list-item">
+          <div class="item-header">
+            <div class="item-title-wrap">
+              <div class="item-icon">🏖️</div>
+              <div>
+                <h3 class="item-name">Unpaid Leave</h3>
+                <span class="item-avail">Subject to Manager Approval</span>
+              </div>
+            </div>
+            <button class="btn-apply-sm" onclick="openLeaveApplyModal('Unpaid Leave')">Apply</button>
+          </div>
+          <div class="progress-wrapper">
+            <div class="progress-labels">
+              <span>0 Taken</span>
+              <span>Unlimited</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-segment segment-available" style="width: 100%; background: var(--text-muted);"></div>
             </div>
           </div>
         </div>
@@ -690,29 +851,144 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-      <a class="nav-item" href="index.html">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-        <span>Home</span>
-      </a>
-      <a class="nav-item active" href="leave.html">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <span>Leave</span>
-      </a>
-      <button class="fab-btn">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-      <a class="nav-item" href="#">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        <span>Inbox</span>
-      </a>
-      <a class="nav-item" href="#">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-        <span>More</span>
-      </a>
-      <div class="home-bar"></div>
+    <!-- Bottom Navigation Bar (5 tabs + Home Bar) -->
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- INTERACTIVE APPLY LEAVE BOTTOM SHEET MODAL -->
+    <div class="indicators-overlay" id="leaveApplyDrawerOverlay" onclick="closeLeaveApplyModal(event)" style="display: none;">
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="max-height: 85vh; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div class="sheet-title">
+            <h3 id="modalLeaveTypeTitle">🌴 Apply Leave Application</h3>
+            <p>Submit leave request to your line manager</p>
+          </div>
+          <button class="sheet-close-btn" onclick="closeLeaveApplyModal()">✕</button>
+        </div>
+
+        <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+          
+          <div class="form-field-group">
+            <label class="form-field-label">Select Leave Type</label>
+            <select class="form-field-input" id="selectLeaveTypeInput">
+              <option value="Annual Leave">🌴 Annual Leave (65.0 days avail)</option>
+              <option value="Hospitalization Leave">🏥 Hospitalization (59.0 days avail)</option>
+              <option value="Medical Leave">💊 Medical / Sick Leave (12.0 days avail)</option>
+              <option value="Maternity Leave">🍼 Maternity Leave (90.0 days avail)</option>
+              <option value="Paternity Leave">👶 Paternity Leave (7.0 days avail)</option>
+              <option value="Marriage Leave">💍 Marriage Leave (3.0 days avail)</option>
+              <option value="Compassionate Leave">🕯️ Compassionate Leave (3.0 days avail)</option>
+              <option value="Study & Exam Leave">🎓 Study & Examination (5.0 days avail)</option>
+              <option value="Replacement Leave">🔄 Replacement Leave (2.5 days avail)</option>
+              <option value="Unpaid Leave">🏖️ Unpaid Leave</option>
+            </select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="form-field-label">Leave Duration Mode</label>
+            <select class="form-field-input" id="selectLeaveDurationMode" onchange="handleDurationModeChange(this.value)">
+              <option value="full">Full Day(s)</option>
+              <option value="half_am">Half Day (Morning AM)</option>
+              <option value="half_pm">Half Day (Afternoon PM)</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-field-group">
+              <label class="form-field-label">From Date</label>
+              <input type="date" class="form-field-input" id="inputLeaveFromDate" value="2026-09-10">
+            </div>
+            <div class="form-field-group">
+              <label class="form-field-label">To Date</label>
+              <input type="date" class="form-field-input" id="inputLeaveToDate" value="2026-09-11">
+            </div>
+          </div>
+
+          <div style="background: var(--bg-input); padding: 10px 14px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+            <span style="font-weight: 600; color: var(--text-muted);">Total Calculated Days:</span>
+            <strong style="font-size: 14px; font-weight: 800; color: var(--purple-primary);" id="calculatedDaysText">2.0 Working Days</strong>
+          </div>
+
+          <div class="form-field-group">
+            <label class="form-field-label">Reason / Remarks</label>
+            <textarea class="form-field-input" rows="3" placeholder="Enter reason for leave request..." style="resize: none;"></textarea>
+          </div>
+
+          <div class="form-field-group">
+            <label class="form-field-label">Attach Document / Medical Cert (MC)</label>
+            <div style="display: flex; gap: 8px;">
+              <button style="flex: 1; padding: 10px; border-radius: 12px; background: var(--bg-input); border: 1px dashed var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer;" onclick="if(typeof showToast==='function') showToast('📄 Attachment selected!');">
+                📄 Select File / MC
+              </button>
+              <button style="padding: 10px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer;" onclick="if(typeof showToast==='function') showToast('📷 Camera launched for MC photo!');">
+                📷 Take Photo
+              </button>
+            </div>
+          </div>
+
+          <button style="width: 100%; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, var(--purple-primary), var(--purple-hover)); color: #ffffff; font-size: 14px; font-weight: 800; border: none; cursor: pointer; margin-top: 4px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3);" onclick="submitLeaveApplicationForm()">
+            Submit Leave Application ➔
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- Slide-in Left Profile Drawer with Appearance Options -->
+    <left-profile-drawer></left-profile-drawer>
+
+    <!-- For You Notification Bottom Sheet Drawer -->
+    <notification-sheet></notification-sheet>
+
+    <!-- All Indicators Drawer -->
+    <indicators-sheet></indicators-sheet>
   </div>
+
+  <script>
+    function openLeaveApplyModal(leaveType) {
+      const overlay = document.getElementById('leaveApplyDrawerOverlay');
+      const title = document.getElementById('modalLeaveTypeTitle');
+      const select = document.getElementById('selectLeaveTypeInput');
+
+      if (title && leaveType) title.innerText = '🌴 Apply ' + leaveType;
+      if (select && leaveType) {
+        for (let i = 0; i < select.options.length; i++) {
+          if (select.options[i].value.toLowerCase().includes(leaveType.toLowerCase())) {
+            select.selectedIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (overlay) overlay.style.display = 'flex';
+    }
+
+    function closeLeaveApplyModal(event) {
+      if (event && event.target && event.target.id !== 'leaveApplyDrawerOverlay' && !event.target.classList.contains('sheet-close-btn')) {
+        return;
+      }
+      const overlay = document.getElementById('leaveApplyDrawerOverlay');
+      if (overlay) overlay.style.display = 'none';
+    }
+
+    function handleDurationModeChange(val) {
+      const calcEl = document.getElementById('calculatedDaysText');
+      if (!calcEl) return;
+      if (val === 'half_am' || val === 'half_pm') {
+        calcEl.innerText = '0.5 Working Day';
+      } else {
+        calcEl.innerText = '2.0 Working Days';
+      }
+    }
+
+    function submitLeaveApplicationForm() {
+      const select = document.getElementById('selectLeaveTypeInput');
+      const leaveName = select ? select.value : 'Leave';
+      if (typeof showToast === 'function') {
+        showToast('✅ [' + leaveName + '] Request submitted to manager for approval!');
+      }
+      const overlay = document.getElementById('leaveApplyDrawerOverlay');
+      if (overlay) overlay.style.display = 'none';
+    }
+  </script>
 </body>
 </html>

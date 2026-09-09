@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Payslip &amp; Salary</title>
+  <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #6d28d9;
+      --primary-light: rgba(124, 58, 237, 0.15);
+      --secondary: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --accent-blue: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    /* Mobile Frame */
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Main Scrollable Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    /* Period Selector Dropdown */
+    .period-selector-wrapper {
+      margin-top: 14px;
+      margin-bottom: 16px;
+    }
+
+    .period-picker {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-primary);
+      cursor: pointer;
+      box-shadow: var(--shadow-card);
+    }
+
+    .period-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .period-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .period-value {
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Net Pay Hero Card */
+    .salary-hero-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .security-toggle-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-title-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple-text);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+
+    .net-pay-amount {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .net-pay-status {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    /* Action Grid Pills (Apply & Request HR Services) */
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .btn-action-pill {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-action-pill:active {
+      transform: scale(0.97);
+    }
+    .btn-action-pill.primary {
+      background: linear-gradient(135deg, var(--purple-primary), var(--purple-hover));
+      color: #ffffff;
+      border: none;
+    }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    /* Payslip Breakdown Card */
+    .breakdown-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 20px;
+    }
+
+    .breakdown-group {
+      margin-bottom: 16px;
+    }
+    .breakdown-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 8px;
+    }
+    .group-header.earnings { color: var(--secondary); }
+    .group-header.deductions { color: var(--danger); }
+    .group-header.employer { color: var(--accent-blue); }
+
+    .line-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      padding: 5px 0;
+    }
+
+    .line-item .label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .line-item .val {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    /* History List Cards */
+    .history-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .history-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .history-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .history-month {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .history-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .btn-download-sm {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--purple-primary);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Desktop Switcher Bar (Light/Dark Mode outside phone frame) -->
+  <preview-top-bar active-page="payslip"></preview-top-bar>
+
+  <div class="phone-container">
+    <!-- Top Executive Header Block (Purple Gradient) -->
+    <div class="bonus-top-header" style="padding-bottom: 24px;">
+      <phone-status-bar time="09:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div class="bonus-nav-bar">
+        <button class="bonus-back-btn" onclick="javascript:history.back()" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <div class="bonus-title-wrap">
+          <h2 class="bonus-title-main">Payslip &amp; Salary</h2>
+        </div>
+        <button class="me-options-btn" aria-label="More Options">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="1.5"></circle>
+            <circle cx="12" cy="5" r="1.5"></circle>
+            <circle cx="12" cy="19" r="1.5"></circle>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable Main Content -->
+    <div class="main-content">
+      
+      <!-- PERIOD SELECTOR -->
+      <div class="period-selector-wrapper">
+        <div class="period-picker">
+          <div class="period-info">
+            <span class="period-label">Selected Pay Period</span>
+            <span class="period-value">
+              August 2026 (Latest Payslip)
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </span>
+          </div>
+          <span style="font-size: 18px;">📅</span>
+        </div>
+      </div>
+
+      <!-- NET PAY HERO CARD -->
+      <div class="salary-hero-card">
+        <button class="security-toggle-btn" id="btnSecurityToggle" onclick="toggleSalaryPrivacy()">
+          <span id="privacyIcon">👁️</span>
+          <span id="privacyLabel">Hide</span>
+        </button>
+
+        <div class="hero-title-tag">Net Salary Take-Home</div>
+        <div class="net-pay-amount" id="netPayDisplay">RM 6,420.50</div>
+        <div class="net-pay-status">
+          <span>✔ Direct Deposit Paid on 28 Aug 2026</span>
+        </div>
+
+        <!-- ACTION & REQUEST PILLS -->
+        <div class="action-grid">
+          <button class="btn-action-pill primary" onclick="if(typeof showToast==='function') showToast('📥 Downloading August Payslip PDF...');">
+            <span>📥 Download PDF</span>
+          </button>
+          <button class="btn-action-pill" onclick="if(typeof showToast==='function') showToast('📄 EA Form Request Submitted!');">
+            <span>📄 Request EA Form</span>
+          </button>
+          <button class="btn-action-pill" onclick="if(typeof showToast==='function') showToast('🏢 Salary Verification Letter requested!');">
+            <span>🏛️ Salary Letter</span>
+          </button>
+          <button class="btn-action-pill" onclick="if(typeof showToast==='function') showToast('❓ Payroll Query opened with HR team');">
+            <span>❓ Query Payroll</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DETAILED BREAKDOWN -->
+      <div class="section-header">
+        <h2 class="section-title">Salary Breakdown</h2>
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Aug 2026</span>
+      </div>
+
+      <div class="breakdown-card">
+        
+        <!-- Earnings -->
+        <div class="breakdown-group">
+          <div class="group-header earnings">
+            <span>Earnings</span>
+            <span>+ RM 7,600.00</span>
+          </div>
+          <div class="line-item">
+            <span class="label">Basic Salary</span>
+            <span class="val">RM 6,500.00</span>
+          </div>
+          <div class="line-item">
+            <span class="label">Fixed Transport Allowance</span>
+            <span class="val">RM 600.00</span>
+          </div>
+          <div class="line-item">
+            <span class="label">Approved Overtime (OT)</span>
+            <span class="val">RM 500.00</span>
+          </div>
+        </div>
+
+        <!-- Deductions -->
+        <div class="breakdown-group">
+          <div class="group-header deductions">
+            <span>Employee Deductions</span>
+            <span>- RM 1,179.50</span>
+          </div>
+          <div class="line-item">
+            <span class="label">EPF (Employee 11%)</span>
+            <span class="val">RM 715.00</span>
+          </div>
+          <div class="line-item">
+            <span class="label">SOCSO</span>
+            <span class="val">RM 19.75</span>
+          </div>
+          <div class="line-item">
+            <span class="label">EIS</span>
+            <span class="val">RM 9.75</span>
+          </div>
+          <div class="line-item">
+            <span class="label">Income Tax (PCB)</span>
+            <span class="val">RM 435.00</span>
+          </div>
+        </div>
+
+        <!-- Employer Contributions -->
+        <div class="breakdown-group">
+          <div class="group-header employer">
+            <span>Employer Contributions (Info)</span>
+            <span>RM 914.15</span>
+          </div>
+          <div class="line-item">
+            <span class="label">Employer EPF (13%)</span>
+            <span class="val">RM 845.00</span>
+          </div>
+          <div class="line-item">
+            <span class="label">Employer SOCSO &amp; EIS</span>
+            <span class="val">RM 69.15</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PAST PAYSLIPS HISTORY -->
+      <div class="section-header">
+        <h2 class="section-title">Payslip Archive</h2>
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">2026 Financial Year</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        
+        <div class="history-card">
+          <div class="history-info">
+            <div class="history-icon">📄</div>
+            <div>
+              <div class="history-month">July 2026</div>
+              <div class="history-meta">Net Pay: RM 6,240.00 • Paid 28 Jul</div>
+            </div>
+          </div>
+          <button class="btn-download-sm" onclick="if(typeof showToast==='function') showToast('📥 Downloading July Payslip...');">Download</button>
+        </div>
+
+        <div class="history-card">
+          <div class="history-info">
+            <div class="history-icon">📄</div>
+            <div>
+              <div class="history-month">June 2026</div>
+              <div class="history-meta">Net Pay: RM 6,240.00 • Paid 28 Jun</div>
+            </div>
+          </div>
+          <button class="btn-download-sm" onclick="if(typeof showToast==='function') showToast('📥 Downloading June Payslip...');">Download</button>
+        </div>
+
+        <div class="history-card">
+          <div class="history-info">
+            <div class="history-icon">📄</div>
+            <div>
+              <div class="history-month">May 2026</div>
+              <div class="history-meta">Net Pay: RM 6,450.00 • Paid 28 May</div>
+            </div>
+          </div>
+          <button class="btn-download-sm" onclick="if(typeof showToast==='function') showToast('📥 Downloading May Payslip...');">Download</button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar (5 tabs + Home Bar) -->
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Slide-in Left Profile Drawer with Appearance Options -->
+    <left-profile-drawer></left-profile-drawer>
+
+    <!-- For You Notification Bottom Sheet Drawer -->
+    <notification-sheet></notification-sheet>
+
+    <!-- All Indicators Drawer -->
+    <indicators-sheet></indicators-sheet>
+  </div>
+
+  <script>
+    let isSalaryHidden = false;
+    function toggleSalaryPrivacy() {
+      const display = document.getElementById('netPayDisplay');
+      const icon = document.getElementById('privacyIcon');
+      const label = document.getElementById('privacyLabel');
+      
+      if (!display || !icon || !label) return;
+
+      if (isSalaryHidden) {
+        display.innerText = 'RM 6,420.50';
+        icon.innerText = '👁️';
+        label.innerText = 'Hide';
+        isSalaryHidden = false;
+      } else {
+        display.innerText = 'RM ••••••••';
+        icon.innerText = '🔒';
+        label.innerText = 'Show';
+        isSalaryHidden = true;
+      }
+    }
+  </script>
+</body>
+</html>
