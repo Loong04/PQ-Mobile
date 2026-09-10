@@ -299,37 +299,37 @@ class NotificationSheet extends HTMLElement {
               <div class="dropdown-item" data-value="Leave Request" onclick="toggleMultiSelectDocType('Leave Request', this, event)">
                 <div class="chk-box-wrap">
                   <input type="checkbox" id="chk-leave">
-                  <span>🌴 Leave Request</span>
+                  <span>Leave Request</span>
                 </div>
               </div>
               <div class="dropdown-item" data-value="Medical Claim" onclick="toggleMultiSelectDocType('Medical Claim', this, event)">
                 <div class="chk-box-wrap">
                   <input type="checkbox" id="chk-claim">
-                  <span>🧾 Medical Claim</span>
+                  <span>Medical Claim</span>
                 </div>
               </div>
               <div class="dropdown-item" data-value="Overtime" onclick="toggleMultiSelectDocType('Overtime', this, event)">
                 <div class="chk-box-wrap">
                   <input type="checkbox" id="chk-ot">
-                  <span>⏰ Overtime</span>
+                  <span>Overtime</span>
                 </div>
               </div>
               <div class="dropdown-item" data-value="Change Request" onclick="toggleMultiSelectDocType('Change Request', this, event)">
                 <div class="chk-box-wrap">
                   <input type="checkbox" id="chk-change">
-                  <span>📑 Change Request</span>
+                  <span>Change Request</span>
                 </div>
               </div>
               <div class="dropdown-item" data-value="Tax EA Form" onclick="toggleMultiSelectDocType('Tax EA Form', this, event)">
                 <div class="chk-box-wrap">
                   <input type="checkbox" id="chk-tax">
-                  <span>📄 Tax EA Form</span>
+                  <span>Tax EA Form</span>
                 </div>
               </div>
               <div class="dropdown-item" data-value="Performance Goal" onclick="toggleMultiSelectDocType('Performance Goal', this, event)">
                 <div class="chk-box-wrap">
                   <input type="checkbox" id="chk-kpi">
-                  <span>🎯 Performance Goal</span>
+                  <span>Performance Goal</span>
                 </div>
               </div>
             </div>

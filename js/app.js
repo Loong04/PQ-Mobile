@@ -274,12 +274,12 @@ function toggleMultiSelectDocType(value, itemElem, e) {
 }
 
 const docTypeIconMap = {
-  'Leave Request': '🌴 Leave Request',
-  'Medical Claim': '🧾 Medical Claim',
-  'Overtime': '⏰ Overtime',
-  'Change Request': '📑 Change Request',
-  'Tax EA Form': '📄 Tax EA Form',
-  'Performance Goal': '🎯 Performance Goal'
+  'Leave Request': 'Leave Request',
+  'Medical Claim': 'Medical Claim',
+  'Overtime': 'Overtime',
+  'Change Request': 'Change Request',
+  'Tax EA Form': 'Tax EA Form',
+  'Performance Goal': 'Performance Goal'
 };
 
 function removeDocTypePill(value) {
@@ -367,15 +367,15 @@ document.addEventListener('click', function(e) {
 
 // Notifications Catalog Data with Grouping by File Type & Rich Details
 let NOTIFICATIONS_CATALOG = [
-  // 🌴 Leave Requests Group
+  // Leave Requests Group
   {
     id: 'notif_1',
     doctype: 'Leave Request',
-    typeCategory: '🌴 Leave Requests',
+    typeCategory: 'Leave Requests',
     fy: 'pending_approval',
-    icon: '🌴',
-    iconBg: 'rgba(249, 115, 22, 0.16)',
-    iconColor: '#f97316',
+    icon: '',
+    iconBg: 'transparent',
+    iconColor: 'inherit',
     title: 'Approval needed: Alex Tan',
     subtitle: 'Annual Leave 2 Days (Oct 12-13)',
     applicant: 'Alex Tan',
@@ -393,11 +393,11 @@ let NOTIFICATIONS_CATALOG = [
   {
     id: 'notif_2',
     doctype: 'Leave Request',
-    typeCategory: '🌴 Leave Requests',
+    typeCategory: 'Leave Requests',
     fy: 'pending_resubmit',
-    icon: '🌴',
-    iconBg: 'rgba(249, 115, 22, 0.16)',
-    iconColor: '#f97316',
+    icon: '',
+    iconBg: 'transparent',
+    iconColor: 'inherit',
     title: 'Resubmit required: Emergency Leave',
     subtitle: 'Supporting document attachment required',
     applicant: 'Sarah Jenkins (You)',
@@ -412,15 +412,15 @@ let NOTIFICATIONS_CATALOG = [
     badgeColor: 'amber'
   },
 
-  // 🧾 Medical & Expense Claim Group
+  // Medical & Expense Claim Group
   {
     id: 'notif_3',
     doctype: 'Medical Claim',
-    typeCategory: '🧾 Medical & Expense Claims',
+    typeCategory: 'Medical & Expense Claims',
     fy: 'pending_approval',
-    icon: '🧾',
-    iconBg: 'rgba(14, 165, 233, 0.16)',
-    iconColor: '#0ea5e9',
+    icon: '',
+    iconBg: 'transparent',
+    iconColor: 'inherit',
     title: 'Approval needed: Emily Wong',
     subtitle: 'Medical Claim $85.50 (Panacea Clinic)',
     applicant: 'Emily Wong',
@@ -430,7 +430,7 @@ let NOTIFICATIONS_CATALOG = [
       { label: 'Claim Type', val: 'Outpatient Medical Receipt' },
       { label: 'Claim Amount', val: '$85.50 SGD' },
       { label: 'Clinic Name', val: 'Panacea Medical Clinic Orchard' },
-      { label: 'Attachment', val: '📄 Receipt_2026_0904.pdf (Verified)' }
+      { label: 'Attachment', val: 'Receipt_2026_0904.pdf (Verified)' }
     ],
     status: 'Pending Manager Approval',
     badgeColor: 'amber'
@@ -438,11 +438,11 @@ let NOTIFICATIONS_CATALOG = [
   {
     id: 'notif_4',
     doctype: 'Change Request',
-    typeCategory: '🧾 Medical & Expense Claims',
+    typeCategory: 'Medical & Expense Claims',
     fy: 'pending_resubmit',
-    icon: '📑',
-    iconBg: 'rgba(59, 130, 246, 0.16)',
-    iconColor: '#3b82f6',
+    icon: '',
+    iconBg: 'transparent',
+    iconColor: 'inherit',
     title: 'Resubmit required: Bank Account',
     subtitle: 'Bank Statement attachment missing',
     applicant: 'Sarah Jenkins (You)',
@@ -457,15 +457,15 @@ let NOTIFICATIONS_CATALOG = [
     badgeColor: 'blue'
   },
 
-  // ⏰ Overtime Group
+  // Overtime Group
   {
     id: 'notif_5',
     doctype: 'Overtime',
-    typeCategory: '⏰ Overtime & Shift Requests',
+    typeCategory: 'Overtime & Shift Requests',
     fy: 'pending_resubmit',
-    icon: '⏰',
-    iconBg: 'rgba(244, 63, 94, 0.16)',
-    iconColor: '#f43f5e',
+    icon: '',
+    iconBg: 'transparent',
+    iconColor: 'inherit',
     title: 'Resubmit required: Overtime',
     subtitle: 'OT Claim Sep 02 (Correction needed)',
     applicant: 'David Chen',
@@ -480,15 +480,15 @@ let NOTIFICATIONS_CATALOG = [
     badgeColor: 'rose'
   },
 
-  // 📄 Tax & Official Documents Group
+  // Tax & Official Documents Group
   {
     id: 'notif_6',
     doctype: 'Tax EA Form',
-    typeCategory: '📄 Tax & Official Documents',
+    typeCategory: 'Tax & Official Documents',
     fy: 'pending_approval',
-    icon: '📄',
-    iconBg: 'rgba(168, 85, 247, 0.16)',
-    iconColor: '#a855f7',
+    icon: '',
+    iconBg: 'transparent',
+    iconColor: 'inherit',
     title: 'Approval needed: EA Form 2025',
     subtitle: 'Official income tax return statement',
     applicant: 'Payroll & Compliance Dept',
@@ -503,15 +503,15 @@ let NOTIFICATIONS_CATALOG = [
     badgeColor: 'violet'
   },
 
-  // 🎯 Performance & KPI Goals Group
+  // Performance & KPI Goals Group
   {
     id: 'notif_7',
     doctype: 'Performance Goal',
-    typeCategory: '🎯 Performance & KPI Goals',
+    typeCategory: 'Performance & KPI Goals',
     fy: 'pending_approval',
-    icon: '🎯',
-    iconBg: 'rgba(20, 184, 166, 0.16)',
-    iconColor: '#14b8a6',
+    icon: '',
+    iconBg: 'transparent',
+    iconColor: 'inherit',
     title: 'Approval needed: Q3 KPI',
     subtitle: 'Performance Goal submission',
     applicant: 'Michael Chang',
@@ -577,7 +577,6 @@ function renderForYouSheetUI() {
       <div class="notif-group-card" id="${groupDomId}">
         <div class="notif-group-header" onclick="toggleNotifGroupAccordion('${groupDomId}')">
           <div class="group-title-box">
-            <span class="group-folder-icon">📂</span>
             <span class="group-title-text">${catTitle}</span>
             <span class="group-count-badge">${items.length} Request${items.length > 1 ? 's' : ''}</span>
           </div>
@@ -588,7 +587,6 @@ function renderForYouSheetUI() {
           ${items.map(item => `
             <div class="sheet-item-card" onclick="openApprovalDetailModal('${item.id}', event)">
               <div class="item-left-box">
-                <div class="item-icon-box" style="background: ${item.iconBg}; color: ${item.iconColor};">${item.icon}</div>
                 <div class="item-info">
                   <h5>${item.title}</h5>
                   <span>${item.subtitle}</span>
