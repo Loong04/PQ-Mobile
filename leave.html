@@ -1642,6 +1642,48 @@
         <!-- 2. TEAM SECTION (MANAGER LEAVE DASHBOARD) -->
         <div id="hubSectionTeam" class="leave-hub-section" style="display: none; margin-top: 4px;">
 
+          <!-- MONTH FILTER CONTROL BAR ABOVE STAT CARDS -->
+          <div
+            style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div
+                style="width: 36px; height: 36px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-text);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <div>
+                <div
+                  style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                  Filter Month</div>
+                <div id="teamFilterMonthLabel" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">
+                  September 2026</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" onclick="shiftTeamCalMonth(-1)" title="Previous Month"
+                style="width: 34px; height: 34px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 18px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                ‹
+              </button>
+              <button type="button" onclick="resetTeamMonthToCurrent()" title="Reset to Current Month"
+                style="height: 34px; padding: 0 12px; border-radius: 10px; background: var(--purple-gradient, linear-gradient(135deg, #7c3aed, #a855f7)); border: none; color: #ffffff; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);"
+                onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+                Today
+              </button>
+              <button type="button" onclick="shiftTeamCalMonth(1)" title="Next Month"
+                style="width: 34px; height: 34px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 18px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                ›
+              </button>
+            </div>
+          </div>
+
           <!-- 3 QUICK STAT CARDS (BENTO LIST MATCHING SCREENSHOT EXACTLY) -->
           <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
 
@@ -1662,7 +1704,7 @@
                 </div>
                 <div>
                   <div style="font-size: 13.5px; font-weight: 800; color: #ffffff;">Pending Approval</div>
-                  <div
+                  <div id="teamPendingCount"
                     style="font-size: 24px; font-weight: 900; color: #ffffff; margin: 2px 0 1px 0; line-height: 1.1;">6
                   </div>
                   <div style="font-size: 11.5px; font-weight: 600; color: #fecdd3;">Requests waiting for your approval
@@ -1673,7 +1715,7 @@
             </div>
 
             <!-- Card 2: On Leave Today -->
-            <div onclick="if(typeof showToast==='function') showToast('👥 4 Team members on leave today');"
+            <div onclick="if(typeof showToast==='function') showToast('👥 Team members on leave in ' + (teamMonthsList[currentTeamMonthIdx] || 'this month'));"
               style="background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%); border: 1px solid rgba(52, 211, 153, 0.4); border-radius: 20px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);"
               onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
               <div style="display: flex; align-items: center; gap: 14px;">
@@ -1686,11 +1728,11 @@
                   </svg>
                 </div>
                 <div>
-                  <div style="font-size: 13.5px; font-weight: 800; color: #ffffff;">On Leave Today</div>
-                  <div
+                  <div id="teamOnLeaveTitle" style="font-size: 13.5px; font-weight: 800; color: #ffffff;">On Leave Today</div>
+                  <div id="teamOnLeaveCount"
                     style="font-size: 24px; font-weight: 900; color: #ffffff; margin: 2px 0 1px 0; line-height: 1.1;">4
                   </div>
-                  <div style="font-size: 11.5px; font-weight: 600; color: #a7f3d0;">Team members are on leave today
+                  <div id="teamOnLeaveSub" style="font-size: 11.5px; font-weight: 600; color: #a7f3d0;">Team members are on leave today
                   </div>
                 </div>
               </div>
@@ -1714,10 +1756,10 @@
                 </div>
                 <div>
                   <div style="font-size: 13.5px; font-weight: 800; color: #ffffff;">Upcoming Leave</div>
-                  <div
+                  <div id="teamUpcomingCount"
                     style="font-size: 24px; font-weight: 900; color: #ffffff; margin: 2px 0 1px 0; line-height: 1.1;">9
                   </div>
-                  <div style="font-size: 11.5px; font-weight: 600; color: #bfdbfe;">Team members going on leave in the
+                  <div id="teamUpcomingSub" style="font-size: 11.5px; font-weight: 600; color: #bfdbfe;">Team members going on leave in the
                     next 14 days
                   </div>
                 </div>
@@ -1774,8 +1816,8 @@
                 onclick="shiftTeamCalMonth(1)">›</button>
             </div>
 
-            <!-- Days Grid -->
-            <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 4px;">
+            <!-- Days Grid Container -->
+            <div id="hubTeamCalDaysGridContainer" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 4px;">
               <!-- Days of week -->
               <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Mon</div>
               <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Tue</div>
@@ -5772,15 +5814,144 @@
     let currentTeamMonthIdx = 8; // September 2026
     const teamMonthsList = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+    const monthTeamStatData = {
+      0: { pending: 3, onLeave: 2, upcoming: 5, title: 'On Leave (Jan)', sub: 'Team members on leave in Jan' },
+      1: { pending: 5, onLeave: 3, upcoming: 7, title: 'On Leave (Feb)', sub: 'Team members on leave in Feb' },
+      2: { pending: 2, onLeave: 6, upcoming: 4, title: 'On Leave (Mar)', sub: 'Team members on leave in Mar' },
+      3: { pending: 4, onLeave: 1, upcoming: 8, title: 'On Leave (Apr)', sub: 'Team members on leave in Apr' },
+      4: { pending: 7, onLeave: 5, upcoming: 6, title: 'On Leave (May)', sub: 'Team members on leave in May' },
+      5: { pending: 1, onLeave: 4, upcoming: 3, title: 'On Leave (Jun)', sub: 'Team members on leave in Jun' },
+      6: { pending: 8, onLeave: 3, upcoming: 10, title: 'On Leave (Jul)', sub: 'Team members on leave in Jul' },
+      7: { pending: 5, onLeave: 2, upcoming: 6, title: 'On Leave (Aug)', sub: 'Team members on leave in Aug' },
+      8: { pending: 6, onLeave: 4, upcoming: 9, title: 'On Leave Today', sub: 'Team members are on leave today' }, // Sep 2026 (Default)
+      9: { pending: 4, onLeave: 7, upcoming: 5, title: 'On Leave (Oct)', sub: 'Team members on leave in Oct' },
+      10: { pending: 9, onLeave: 5, upcoming: 12, title: 'On Leave (Nov)', sub: 'Team members on leave in Nov' },
+      11: { pending: 2, onLeave: 8, upcoming: 7, title: 'On Leave (Dec)', sub: 'Team members on leave in Dec' }
+    };
+
     function shiftTeamCalMonth(dir) {
       currentTeamMonthIdx = (currentTeamMonthIdx + dir + 12) % 12;
+      updateTeamMonthUI();
+    }
+
+    function resetTeamMonthToCurrent() {
+      currentTeamMonthIdx = 8; // September 2026
+      updateTeamMonthUI();
+    }
+
+    function updateTeamMonthUI() {
       const mName = teamMonthsList[currentTeamMonthIdx];
       const monthStr = `${mName} 2026`;
+
+      // 1. Update Month Header Labels
+      const filterLbl = document.getElementById('teamFilterMonthLabel');
       const t1 = document.getElementById('teamCalMonthText');
       const t2 = document.getElementById('viewTeamCalMonthText');
+
+      if (filterLbl) filterLbl.innerText = monthStr;
       if (t1) t1.innerText = monthStr;
       if (t2) t2.innerText = monthStr;
-      if (typeof showToast === 'function') showToast(`📅 ${monthStr}`);
+
+      // 2. Update 3 Bento Stat Cards
+      const stats = monthTeamStatData[currentTeamMonthIdx] || monthTeamStatData[8];
+      const pCnt = document.getElementById('teamPendingCount');
+      const olTitle = document.getElementById('teamOnLeaveTitle');
+      const olCnt = document.getElementById('teamOnLeaveCount');
+      const olSub = document.getElementById('teamOnLeaveSub');
+      const upCnt = document.getElementById('teamUpcomingCount');
+
+      if (pCnt) {
+        pCnt.style.opacity = '0.4';
+        setTimeout(() => { pCnt.innerText = stats.pending; pCnt.style.opacity = '1'; }, 100);
+      }
+      if (olTitle) olTitle.innerText = stats.title;
+      if (olCnt) {
+        olCnt.style.opacity = '0.4';
+        setTimeout(() => { olCnt.innerText = stats.onLeave; olCnt.style.opacity = '1'; }, 100);
+      }
+      if (olSub) olSub.innerText = stats.sub;
+      if (upCnt) {
+        upCnt.style.opacity = '0.4';
+        setTimeout(() => { upCnt.innerText = stats.upcoming; upCnt.style.opacity = '1'; }, 100);
+      }
+
+      // 3. Render Calendar Grids
+      renderHubTeamCalendar();
+      if (typeof renderTeamCalendar === 'function') {
+        renderTeamCalendar();
+      }
+
+      if (typeof showToast === 'function') showToast(`📅 Switched to ${monthStr}`);
+    }
+
+    function renderHubTeamCalendar() {
+      const grid = document.getElementById('hubTeamCalDaysGridContainer');
+      if (!grid) return;
+
+      let html = `
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Mon</div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Tue</div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Wed</div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Thu</div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Fri</div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Sat</div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0;">Sun</div>
+      `;
+
+      const monthConfigs = {
+        0: { lead: 3, days: 31, badges: { 5: 2, 12: 1, 20: 3 } },
+        1: { lead: 6, days: 28, badges: { 4: 1, 14: 2, 22: 1 } },
+        2: { lead: 6, days: 31, badges: { 8: 3, 17: 2, 25: 4 } },
+        3: { lead: 2, days: 30, badges: { 6: 1, 15: 2, 23: 1 } },
+        4: { lead: 4, days: 31, badges: { 2: 2, 11: 3, 19: 1 } },
+        5: { lead: 0, days: 30, badges: { 9: 1, 18: 2, 26: 3 } },
+        6: { lead: 2, days: 31, badges: { 7: 4, 16: 2, 24: 1 } },
+        7: { lead: 5, days: 31, badges: { 3: 1, 13: 3, 21: 2 } },
+        8: { lead: 1, days: 30, badges: { 15: 2, 18: 3, 22: 1, 29: 2 }, today: 11, todayCount: 4 }, // September (Current)
+        9: { lead: 3, days: 31, badges: { 6: 2, 12: 3, 20: 1, 27: 4 } },
+        10: { lead: 6, days: 30, badges: { 5: 1, 14: 2, 22: 3 } },
+        11: { lead: 1, days: 31, badges: { 10: 2, 18: 4, 25: 5 } }
+      };
+
+      const cfg = monthConfigs[currentTeamMonthIdx] || monthConfigs[8];
+
+      for (let i = 0; i < cfg.lead; i++) {
+        const prevNum = 31 - cfg.lead + 1 + i;
+        html += `<div style="font-size: 12px; color: var(--text-muted); opacity: 0.4; padding: 8px 0; cursor: pointer;" onclick="openCalDateDetailsModal('${prevNum}')">${prevNum}</div>`;
+      }
+
+      for (let d = 1; d <= cfg.days; d++) {
+        const dStr = String(d);
+        if (cfg.today === d && currentTeamMonthIdx === 8) {
+          html += `
+            <div style="background: #dcfce7; border-radius: 10px; padding: 4px 0; border: 1px solid #86efac; display: flex; flex-direction: column; align-items: center; cursor: pointer;" onclick="openCalDateDetailsModal('${dStr}')">
+              <div style="font-size: 12px; font-weight: 900; color: #15803d;">${d}</div>
+              <div style="width: 16px; height: 16px; border-radius: 50%; background: #22c55e; color: #ffffff; font-size: 9.5px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-top: 1px;">${cfg.todayCount}</div>
+              <div style="font-size: 8.5px; font-weight: 800; color: #15803d; margin-top: 1px;">Today</div>
+            </div>
+          `;
+        } else if (cfg.badges[d]) {
+          const badgeVal = cfg.badges[d];
+          html += `
+            <div style="position: relative; padding: 8px 0; cursor: pointer;" onclick="openCalDateDetailsModal('${dStr}')">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-primary);">${d}</span>
+              <span style="position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); width: 15px; height: 15px; border-radius: 50%; background: #3b82f6; color: #fff; font-size: 9.5px; font-weight: 900; display: flex; align-items: center; justify-content: center;">${badgeVal}</span>
+            </div>
+          `;
+        } else {
+          html += `
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); padding: 8px 0; cursor: pointer;" onclick="openCalDateDetailsModal('${dStr}')">${d}</div>
+          `;
+        }
+      }
+
+      const totalCells = cfg.lead + cfg.days;
+      const trailing = (7 - (totalCells % 7)) % 7;
+      for (let t = 1; t <= trailing; t++) {
+        html += `<div style="font-size: 12px; color: var(--text-muted); opacity: 0.4; padding: 8px 0; cursor: pointer;" onclick="openCalDateDetailsModal('${t}')">${t}</div>`;
+      }
+
+      grid.innerHTML = html;
     }
 
     function filterTeamDept(val) {
@@ -6198,21 +6369,27 @@
       const toVal = document.getElementById('modalHistoryToDate')?.value || '';
       const leaveTypeVal = document.getElementById('modalHistoryLeaveTypeSelect')?.value || 'all';
       const statusVal = document.getElementById('modalHistoryStatusSelect')?.value || 'all';
+      const branchVal = document.getElementById('modalHistoryBranchSelect')?.value || 'all';
+      const deptVal = document.getElementById('modalHistoryDeptSelect')?.value || 'all';
+      const ccVal = document.getElementById('modalHistoryCostCenterSelect')?.value || 'all';
+      const jobVal = document.getElementById('modalHistoryJobSelect')?.value || 'all';
 
       const parts = [];
 
-      // 1. Keyword / Reference
-      if (refVal) {
-        parts.push(`"${refVal}"`);
-      }
+      // 1. Keyword
+      if (refVal) parts.push(`"${refVal}"`);
+      if (branchVal !== 'all') parts.push(branchVal);
+      if (deptVal !== 'all') parts.push(deptVal);
+      if (ccVal !== 'all') parts.push(ccVal);
+      if (jobVal !== 'all') parts.push(jobVal);
 
-      // 2. Status (if not 'all' and not offtime)
+      // 2. Status
       if (currentHistoryTab !== 'offtime' && statusVal !== 'all') {
-        const statusMap = { 'submitted': 'Submitted', 'approved': 'Approved', 'rejected': 'Rejected', 'cancelled': 'Cancelled' };
+        const statusMap = { 'submitted': 'Submitted', 'approved': 'Approved', 'rejected': 'Rejected', 'cancelled': 'Cancelled', 'draft': 'Draft' };
         if (statusMap[statusVal]) parts.push(statusMap[statusVal]);
       }
 
-      // 3. Leave Type (if not 'all' and in leave or credit tab)
+      // 3. Leave Type
       if ((currentHistoryTab === 'leave' || currentHistoryTab === 'credit') && leaveTypeVal !== 'all') {
         const typeMap = { 'annual': 'Annual Leave', 'medical': 'Medical Leave', 'replacement': 'Replacement Leave', 'unpaid': 'Unpaid Leave', 'compassionate': 'Compassionate Leave', 'emergency': 'Emergency Leave' };
         if (typeMap[leaveTypeVal]) parts.push(typeMap[leaveTypeVal]);
@@ -6321,28 +6498,11 @@
 
       const refLabel = document.getElementById('modalHistoryRefLabel');
       const refInput = document.getElementById('modalHistoryRefInput');
-      const fromLabel = document.getElementById('modalHistoryFromLabel');
-      const toLabel = document.getElementById('modalHistoryToLabel');
       const leaveTypeGroup = document.getElementById('modalHistoryLeaveTypeGroup');
-      const statusGroup = document.getElementById('modalHistoryStatusGroup');
 
-      if (currentHistoryTab === 'offtime') {
-        // Time Off tab: Only show Search Keyword, Start Date, End Date
-        if (refLabel) refLabel.innerText = 'Search Keyword';
-        if (refInput) refInput.placeholder = 'e.g. Late Start, Outstation, OT...';
-        if (fromLabel) fromLabel.innerText = 'Start Date';
-        if (toLabel) toLabel.innerText = 'End Date';
-        if (leaveTypeGroup) leaveTypeGroup.style.display = 'none';
-        if (statusGroup) statusGroup.style.display = 'none';
-      } else {
-        // Leave & Credit tabs
-        if (refLabel) refLabel.innerText = 'Reference';
-        if (refInput) refInput.placeholder = (currentHistoryTab === 'credit') ? 'e.g. CR-2026-0005' : 'e.g. LV-2026-0041';
-        if (fromLabel) fromLabel.innerText = 'Start Date';
-        if (toLabel) toLabel.innerText = 'End Date';
-        if (leaveTypeGroup) leaveTypeGroup.style.display = (currentHistoryTab === 'leave' || currentHistoryTab === 'credit') ? 'block' : 'none';
-        if (statusGroup) statusGroup.style.display = 'block';
-      }
+      if (refLabel) refLabel.innerText = 'Search Keyword';
+      if (refInput) refInput.placeholder = 'Employee Number or Name';
+      if (leaveTypeGroup) leaveTypeGroup.style.display = (currentHistoryTab === 'leave' || currentHistoryTab === 'credit') ? 'block' : 'none';
 
       overlay.style.display = 'flex';
       setTimeout(() => {
@@ -6528,11 +6688,20 @@
       const toDate = document.getElementById('modalHistoryToDate');
       const leaveType = document.getElementById('modalHistoryLeaveTypeSelect');
       const statusSelect = document.getElementById('modalHistoryStatusSelect');
+      const branchSelect = document.getElementById('modalHistoryBranchSelect');
+      const deptSelect = document.getElementById('modalHistoryDeptSelect');
+      const ccSelect = document.getElementById('modalHistoryCostCenterSelect');
+      const jobSelect = document.getElementById('modalHistoryJobSelect');
+
       if (refInput) refInput.value = '';
       if (fromDate) fromDate.value = '';
       if (toDate) toDate.value = '';
       if (leaveType) leaveType.value = 'all';
       if (statusSelect) statusSelect.value = 'all';
+      if (branchSelect) branchSelect.value = 'all';
+      if (deptSelect) deptSelect.value = 'all';
+      if (ccSelect) ccSelect.value = 'all';
+      if (jobSelect) jobSelect.value = 'all';
 
       renderHistoryCards();
       const summaryEl = document.getElementById('historyFilterSummaryText');
@@ -7908,38 +8077,118 @@
         </button>
       </div>
 
-      <!-- 1. Reference Search / Search Keyword -->
+      <!-- 1. Search Keyword -->
       <div id="modalHistoryRefGroup" style="margin-bottom: 16px;">
         <label id="modalHistoryRefLabel"
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
-          Reference
+          Search Keyword
         </label>
-        <input type="text" id="modalHistoryRefInput" placeholder="e.g. LV-2026-0041"
+        <input type="text" id="modalHistoryRefInput" placeholder="Employee Number or Name"
           style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; box-sizing: border-box;">
       </div>
 
-      <!-- 2. Start Date & End Date -->
-      <div id="modalHistoryDateGroup" style="display: flex; gap: 10px; margin-bottom: 16px;">
-        <div style="flex: 1;">
-          <label id="modalHistoryFromLabel"
-            style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
-            Start Date
-          </label>
-          <input type="date" id="modalHistoryFromDate"
-            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; box-sizing: border-box;">
-        </div>
-        <div style="flex: 1;">
-          <label id="modalHistoryToLabel"
-            style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
-            End Date
-          </label>
-          <input type="date" id="modalHistoryToDate"
-            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; box-sizing: border-box;">
+      <!-- 3. Branch Selector -->
+      <div id="modalHistoryBranchGroup" style="margin-bottom: 16px;">
+        <label
+          style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+          Branch
+        </label>
+        <div style="position: relative;">
+          <select id="modalHistoryBranchSelect"
+            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+            <option value="all">All Branches</option>
+            <option value="TIMES SQUARE BRANCH">TIMES SQUARE BRANCH</option>
+            <option value="MID VALLEY BRANCH">MID VALLEY BRANCH</option>
+            <option value="SUNWAY BRANCH">SUNWAY BRANCH</option>
+          </select>
+          <div
+            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
         </div>
       </div>
 
-      <!-- 3. Leave Type Selector -->
-      <div id="modalHistoryLeaveTypeGroup" style="margin-bottom: 16px;">
+      <!-- 4. Department Selector -->
+      <div id="modalHistoryDeptGroup" style="margin-bottom: 16px;">
+        <label
+          style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+          Department
+        </label>
+        <div style="position: relative;">
+          <select id="modalHistoryDeptSelect"
+            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+            <option value="all">All Departments</option>
+            <option value="HUMAN RESOURCE">HUMAN RESOURCE</option>
+            <option value="ADMINISTRATION">ADMINISTRATION</option>
+            <option value="ENGINEERING">ENGINEERING</option>
+            <option value="FINANCE & BANKING">FINANCE & BANKING</option>
+            <option value="TECH & IT">TECH & IT</option>
+          </select>
+          <div
+            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Cost Center Selector -->
+      <div id="modalHistoryCostCenterGroup" style="margin-bottom: 16px;">
+        <label
+          style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+          Cost Center
+        </label>
+        <div style="position: relative;">
+          <select id="modalHistoryCostCenterSelect"
+            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+            <option value="all">All Cost Centers</option>
+            <option value="CC-101">CC-101 (HR & Admin)</option>
+            <option value="CC-202">CC-202 (Operations & Tech)</option>
+            <option value="CC-303">CC-303 (Finance & Banking)</option>
+          </select>
+          <div
+            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Job / Position Selector -->
+      <div id="modalHistoryJobGroup" style="margin-bottom: 16px;">
+        <label
+          style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+          Job
+        </label>
+        <div style="position: relative;">
+          <select id="modalHistoryJobSelect"
+            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+            <option value="all">All Jobs</option>
+            <option value="Admin Manager">Admin Manager</option>
+            <option value="Senior HR Executive">Senior HR Executive</option>
+            <option value="Senior Software Engineer">Senior Software Engineer</option>
+            <option value="Bank Teller Officer">Bank Teller Officer</option>
+            <option value="Operation Manager">Operation Manager</option>
+          </select>
+          <div
+            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Leave Type Selector -->
+      <div id="modalHistoryLeaveTypeGroup" style="margin-bottom: 24px;">
         <label
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
           Leave Type
@@ -7954,32 +8203,6 @@
             <option value="unpaid">🏖️ Unpaid Leave</option>
             <option value="compassionate">🤝 Compassionate Leave</option>
             <option value="emergency">🚨 Emergency Leave</option>
-          </select>
-          <div
-            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. Application Status Selector -->
-      <div id="modalHistoryStatusGroup" style="margin-bottom: 24px;">
-        <label
-          style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
-          Status
-        </label>
-        <div style="position: relative;">
-          <select id="modalHistoryStatusSelect"
-            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
-            <option value="all">All Status</option>
-            <option value="submitted">⏳ Submitted</option>
-            <option value="approved">✅ Approved</option>
-            <option value="rejected">❌ Rejected</option>
-            <option value="cancelled">🚫 Cancelled</option>
-            <option value="draft">💾 Draft</option>
           </select>
           <div
             style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
