@@ -1233,3 +1233,42 @@ function renderFavSheetUI() {
   }
 }
 
+// 6. Dynamic Explore Header Scroll Color Controller
+function initExploreScrollListener() {
+  const mainScroll = document.querySelector('.main-content');
+  const exploreTitle = document.querySelector('.explore-title');
+  if (!mainScroll || !exploreTitle) return;
+
+  function handleExploreScroll() {
+    const isLight = (document.documentElement.getAttribute('data-theme') || 'dark') === 'light';
+    if (!isLight) {
+      exploreTitle.style.color = '#ffffff';
+      exploreTitle.style.textShadow = 'none';
+      return;
+    }
+
+    // Measure scroll position relative to purple hero background
+    const scrollTop = mainScroll.scrollTop;
+    if (scrollTop > 80) {
+      // Scrolled up into purple hero background area -> switch font to pure white
+      exploreTitle.style.color = '#ffffff';
+      exploreTitle.style.textShadow = '0 1px 4px rgba(0, 0, 0, 0.4)';
+    } else {
+      // Original position on white page background -> switch font to dark slate (#0f172a)
+      exploreTitle.style.color = '#0f172a';
+      exploreTitle.style.textShadow = 'none';
+    }
+  }
+
+  mainScroll.removeEventListener('scroll', handleExploreScroll);
+  mainScroll.addEventListener('scroll', handleExploreScroll, { passive: true });
+  handleExploreScroll();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initExploreScrollListener);
+} else {
+  initExploreScrollListener();
+}
+window.addEventListener('load', initExploreScrollListener);
+

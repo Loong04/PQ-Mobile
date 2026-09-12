@@ -47,13 +47,13 @@ customElements.define('phone-status-bar', PhoneStatusBar);
 class PhoneHeroBg extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
-      <div class="hero-bg">
-        <svg viewBox="0 0 420 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div class="hero-bg" style="background: url('hero-purple-mesh.jpg') center top / cover no-repeat, linear-gradient(178deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 70%, #5b21b6 90%, transparent 100%);">
+        <svg viewBox="0 0 420 520" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.85;">
           <defs>
             <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#c084fc" stop-opacity="0.35" />
-              <stop offset="50%" stop-color="#a855f7" stop-opacity="0.5" />
-              <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.3" />
+              <stop offset="0%" stop-color="#e9d5ff" stop-opacity="0.6" />
+              <stop offset="50%" stop-color="#c084fc" stop-opacity="0.75" />
+              <stop offset="100%" stop-color="#a855f7" stop-opacity="0.5" />
             </linearGradient>
             <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="3" result="blur" />
@@ -64,23 +64,23 @@ class PhoneHeroBg extends HTMLElement {
             </filter>
           </defs>
 
-          <path d="M-30 110 Q 90 60 210 120 T 440 90" stroke="url(#waveGrad)" stroke-width="1.8" />
-          <path d="M-10 160 Q 140 100 270 150 T 450 130" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1.4" />
-          <path d="M120 -10 Q 250 50 350 140 T 450 190" stroke="rgba(168, 85, 247, 0.25)" stroke-width="1.2" stroke-dasharray="3 3" />
+          <path d="M-30 110 Q 90 60 210 120 T 440 90" stroke="url(#waveGrad)" stroke-width="2.2" />
+          <path d="M-10 160 Q 140 100 270 150 T 450 130" stroke="rgba(233, 213, 255, 0.5)" stroke-width="1.6" />
+          <path d="M120 -10 Q 250 50 350 140 T 450 190" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1.4" stroke-dasharray="3 3" />
 
-          <line x1="250" y1="75" x2="330" y2="100" stroke="rgba(192, 132, 252, 0.45)" stroke-width="1.2" />
-          <line x1="330" y1="100" x2="390" y2="140" stroke="rgba(192, 132, 252, 0.45)" stroke-width="1.2" />
-          <line x1="250" y1="75" x2="280" y2="140" stroke="rgba(192, 132, 252, 0.35)" stroke-width="1" />
-          <line x1="280" y1="140" x2="350" y2="160" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1.2" />
+          <line x1="250" y1="75" x2="330" y2="100" stroke="rgba(233, 213, 255, 0.55)" stroke-width="1.4" />
+          <line x1="330" y1="100" x2="390" y2="140" stroke="rgba(233, 213, 255, 0.55)" stroke-width="1.4" />
+          <line x1="250" y1="75" x2="280" y2="140" stroke="rgba(233, 213, 255, 0.45)" stroke-width="1.2" />
+          <line x1="280" y1="140" x2="350" y2="160" stroke="rgba(233, 213, 255, 0.5)" stroke-width="1.4" />
 
-          <circle cx="250" cy="75" r="7" fill="rgba(192, 132, 252, 0.3)" filter="url(#neonGlow)" />
-          <circle cx="250" cy="75" r="3.5" fill="#e9d5ff" />
-          <circle cx="330" cy="100" r="9" fill="rgba(192, 132, 252, 0.35)" filter="url(#neonGlow)" />
-          <circle cx="330" cy="100" r="4.5" fill="#f5f3ff" />
-          <circle cx="280" cy="140" r="6" fill="rgba(192, 132, 252, 0.25)" filter="url(#neonGlow)" />
-          <circle cx="280" cy="140" r="3" fill="#c084fc" />
-          <circle cx="350" cy="160" r="8" fill="rgba(56, 189, 248, 0.3)" filter="url(#neonGlow)" />
-          <circle cx="350" cy="160" r="4" fill="#bae6fd" />
+          <circle cx="250" cy="75" r="7" fill="rgba(192, 132, 252, 0.4)" filter="url(#neonGlow)" />
+          <circle cx="250" cy="75" r="3.5" fill="#ffffff" />
+          <circle cx="330" cy="100" r="9" fill="rgba(192, 132, 252, 0.45)" filter="url(#neonGlow)" />
+          <circle cx="330" cy="100" r="4.5" fill="#ffffff" />
+          <circle cx="280" cy="140" r="6" fill="rgba(192, 132, 252, 0.35)" filter="url(#neonGlow)" />
+          <circle cx="280" cy="140" r="3" fill="#e9d5ff" />
+          <circle cx="350" cy="160" r="8" fill="rgba(192, 132, 252, 0.4)" filter="url(#neonGlow)" />
+          <circle cx="350" cy="160" r="4" fill="#ffffff" />
         </svg>
       </div>
     `;
