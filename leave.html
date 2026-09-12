@@ -5989,6 +5989,7 @@
     let currentHistoryStatusFilter = 'all';
 
     const HISTORY_LEAVE_DATA = [
+      { ref: 'LV-2026-0055', type: 'annual', icon: '📝', title: 'Annual Leave (1.0 Day) - Draft', dates: '25 Sep 2026', duration: 'Full Day', submittedDate: 'Not Submitted', approver: '-', reason: 'Draft application', status: 'draft' },
       { ref: 'LV-2026-0052', type: 'medical', icon: '💊', title: 'Medical Leave (1.0 Day)', dates: '12 Sep 2026', duration: 'Full Day', submittedDate: '09/09/2026, 08:30 AM', approver: 'Line Manager Review', reason: 'High Fever & Doctor Checkup (MC Attached)', status: 'submitted' },
       { ref: 'LV-2026-0041', type: 'annual', icon: '🌴', title: 'Annual Leave (2.0 Days)', dates: '10 Sep - 11 Sep 2026', duration: '2.0 Days', submittedDate: '05/09/2026, 10:15 AM', approver: 'Ahmad Rafy (Manager)', reason: 'Personal / Family Event', status: 'approved' },
       { ref: 'LV-2026-0047', type: 'annual', icon: '🌴', title: 'Annual Leave (Half Day)', dates: '22 Sep 2026', duration: 'Half Day (4.0 Hours PM)', submittedDate: '18/09/2026, 09:00 AM', approver: 'Ahmad Rafy (Manager)', reason: 'Personal Appointment', status: 'approved' },
@@ -6061,13 +6062,14 @@
         'approved': { icon: '✅', label: 'Approved' },
         'rejected': { icon: '❌', label: 'Rejected' },
         'cancelled': { icon: '🚫', label: 'Cancelled' },
+        'draft': { icon: '💾', label: 'Draft' },
       };
       const s = map[status] || map['submitted'];
       return `<span class="card-status-badge" data-status="${status}">${s.icon} ${s.label}</span>`;
     }
 
     function getStatusBorderColor(status) {
-      const map = { 'submitted': '#f59e0b', 'approved': '#10b981', 'rejected': '#ef4444', 'cancelled': '#64748b' };
+      const map = { 'submitted': '#f59e0b', 'approved': '#10b981', 'rejected': '#ef4444', 'cancelled': '#64748b', 'draft': '#94a3b8' };
       return map[status] || '#7c3aed';
     }
 
@@ -6079,8 +6081,29 @@
           <div><strong>Rejection Reason:</strong> ${item.rejectReason}</div>
         </div>`;
       }
+      let actionHTML = '';
+      if (item.status === 'submitted' || item.status === 'approved' || item.status === 'draft') {
+        let applyBtn = '';
+        if (item.status === 'draft') {
+          applyBtn = `
+            <button type="button" onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'submitted')"
+              style="padding: 8px 16px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: white; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);">
+              Apply
+            </button>
+          `;
+        }
+        actionHTML = `
+          <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;">
+            ${applyBtn}
+            <button type="button" onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'cancelled')"
+              style="padding: 8px 16px; border-radius: 20px; background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; font-size: 12px; font-weight: 700; cursor: pointer;">
+              ${item.status === 'draft' ? 'Discard' : 'Cancel'}
+            </button>
+          </div>
+        `;
+      }
       return `
-        <div class="history-item-card" data-status="${item.status}" data-ref="${item.ref}" data-type="${item.type}">
+        <div class="history-item-card" onclick="openHistoryDetailsModal('${item.ref}')" data-status="${item.status}" data-ref="${item.ref}" data-type="${item.type}">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
             <div style="flex: 1; min-width: 0; padding-right: 8px;">
               <h3 style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0;">${item.icon} ${item.title}</h3>
@@ -6095,12 +6118,34 @@
             <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: var(--text-muted); font-weight: 600;">Duration</span><strong style="color: var(--text-primary); font-weight: 700;">${item.duration}</strong></div>
           </div>
           ${rejectHTML}
+          ${actionHTML}
         </div>`;
     }
 
     function buildCreditCardHTML(item) {
+      let actionHTML = '';
+      if (item.status === 'submitted' || item.status === 'approved' || item.status === 'draft') {
+        let applyBtn = '';
+        if (item.status === 'draft') {
+          applyBtn = `
+            <button type="button" onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'submitted')"
+              style="padding: 8px 16px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: white; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);">
+              Apply
+            </button>
+          `;
+        }
+        actionHTML = `
+          <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;">
+            ${applyBtn}
+            <button type="button" onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'cancelled')"
+              style="padding: 8px 16px; border-radius: 20px; background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; font-size: 12px; font-weight: 700; cursor: pointer;">
+              ${item.status === 'draft' ? 'Discard' : 'Cancel'}
+            </button>
+          </div>
+        `;
+      }
       return `
-        <div class="history-item-card" data-status="${item.status}" data-ref="${item.ref}" data-type="${item.type || 'replacement'}">
+        <div class="history-item-card" onclick="openHistoryDetailsModal('${item.ref}')" data-status="${item.status}" data-ref="${item.ref}" data-type="${item.type || 'replacement'}">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
             <div style="flex: 1; min-width: 0; padding-right: 8px;">
               <h3 style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0;">💳 ${item.title}</h3>
@@ -6116,12 +6161,13 @@
             ${item.reason ? `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 2px;"><span style="color: var(--text-muted); font-weight: 600;">Reason</span><strong style="color: var(--text-primary); text-align: right; max-width: 60%; font-weight: 600;">${item.reason}</strong></div>` : ''}
           </div>
+          ${actionHTML}
         </div>`;
     }
 
     function buildOffTimeCardHTML(item) {
       return `
-        <div class="history-item-card" data-status="${item.status}" data-ref="${item.ref}">
+        <div class="history-item-card" onclick="openHistoryDetailsModal('${item.ref}')" data-status="${item.status}" data-ref="${item.ref}">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
             <div style="flex: 1; min-width: 0; padding-right: 8px;">
               <h3 style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0;">⏰ ${item.title}</h3>
@@ -6130,9 +6176,8 @@
             ${getStatusBadgeHTML(item.status)}
           </div>
           <div class="card-details-box" style="border-radius: 14px; padding: 12px; font-size: 11.5px; margin-top: 10px; display: flex; flex-direction: column; gap: 7px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: var(--text-muted); font-weight: 600;">Time Off Type</span><strong style="color: var(--text-primary); font-weight: 800;">${item.offType}</strong></div>
-            <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: var(--text-muted); font-weight: 600;">Date</span><strong style="color: var(--text-primary); font-weight: 800;">${item.date}</strong></div>
-            <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: var(--text-muted); font-weight: 600;">Time Range</span><strong style="color: var(--text-primary);">${item.timeRange}</strong></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: var(--text-muted); font-weight: 600;">Event Date</span><strong style="color: var(--text-primary); font-weight: 800;">${item.date}</strong></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: var(--text-muted); font-weight: 600;">Start & End Time</span><strong style="color: var(--text-primary); font-weight: 800;">${item.timeRange}</strong></div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 2px;"><span style="color: var(--text-muted); font-weight: 600;">Reason</span><strong style="color: var(--text-primary); text-align: right; max-width: 60%; font-weight: 600;">${item.reason}</strong></div>
           </div>
         </div>`;
@@ -6304,6 +6349,164 @@
         const content = overlay.querySelector('.filter-bottom-sheet-content');
         if (content) content.style.transform = 'translateY(0)';
       }, 10);
+    }
+
+    function cancelHistoryItem(ref, newStatus = 'cancelled') {
+      if (newStatus === 'cancelled' && !confirm(`Are you sure you want to cancel request: ${ref}?`)) return;
+      if (typeof showToast === 'function') showToast(`⏳ ${newStatus === 'submitted' ? 'Applying' : 'Cancelling'} request...`);
+      setTimeout(() => {
+        let item = HISTORY_LEAVE_DATA.find(d => d.ref === ref) || 
+                   HISTORY_CREDIT_DATA.find(d => d.ref === ref) || 
+                   HISTORY_OFFTIME_DATA.find(d => d.ref === ref);
+        if (item) {
+          item.status = newStatus;
+          if (newStatus === 'submitted') {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            item.submittedDate = `${dateStr}, ${timeStr}`;
+            if (item.approver === '-') item.approver = 'Line Manager Review';
+          }
+        }
+        renderHistoryCards();
+        if (typeof showToast === 'function') showToast(`✅ Successfully ${newStatus === 'submitted' ? 'Applied' : 'Cancelled'}`);
+      }, 400);
+    }
+
+    function openHistoryDetailsModal(ref) {
+      let item = HISTORY_LEAVE_DATA.find(d => d.ref === ref) || 
+                 HISTORY_CREDIT_DATA.find(d => d.ref === ref) || 
+                 HISTORY_OFFTIME_DATA.find(d => d.ref === ref);
+      if (!item) return;
+
+      const tbody = document.getElementById('historyDetailsTableBody');
+      if (!tbody) return;
+
+      let statusColor = '#f59e0b'; // submitted
+      if (item.status === 'approved') statusColor = '#2563eb';
+      if (item.status === 'rejected') statusColor = '#ef4444';
+      if (item.status === 'cancelled') statusColor = '#64748b';
+      if (item.status === 'draft') statusColor = '#94a3b8';
+      
+      const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+      const titleEl = document.getElementById('historyDetailsModalTitle');
+      let rows = [];
+
+      const isCredit = ref.startsWith('CR') || ref.startsWith('LVR') || currentHistoryTab === 'credit';
+      const isOffTime = ref.startsWith('OT') || ref.startsWith('VGP') || currentHistoryTab === 'offtime';
+
+      if (isOffTime) {
+        if (titleEl) titleEl.innerText = 'Time Off Detail';
+        let startTime = '0100';
+        let endTime = '0300';
+        if (item.timeRange) {
+          const parts = item.timeRange.split(' - ');
+          if (parts.length === 2) {
+            startTime = parts[0];
+            endTime = parts[1];
+          }
+        }
+        rows = [
+          { label: 'Reference #', value: item.ref },
+          { label: 'Emp #', value: 'EBB12' },
+          { label: 'Name', value: 'Farhan binti rahmat' },
+          { label: 'Date', value: item.date || (item.dates ? item.dates.split(' - ')[0] : '12 Aug 2023') },
+          { label: 'Start Time', value: startTime },
+          { label: 'End Time', value: endTime },
+          { label: 'Hours', value: item.duration || '2.00' },
+          { label: 'Reason', value: item.reason || '' },
+          { label: 'Remarks', value: item.reason || 'test' },
+          { label: 'Status', value: `<span style="color: ${statusColor}; font-weight: 700;">${statusText}</span>` },
+          { label: 'Attachments', value: '<div style="display:flex; align-items:center; gap:8px; color:#2563eb; font-weight:600; padding:4px 0;"><span style="font-size:16px">📄</span> 1302f11d5a254abbb2b9a10cb3b8f00f.jpg</div>', fullBox: true }
+        ];
+      } else if (isCredit) {
+        if (titleEl) titleEl.innerText = 'Leave Credit History';
+        rows = [
+          { label: 'Reference #', value: item.ref },
+          { label: 'Leave Credit Status', value: `<span style="color: ${statusColor}; font-weight: 700;">${statusText} <span style="font-size:14px">👁</span></span>` },
+          { label: 'Submitter', value: 'EBB12 - Farhan binti rahmat' },
+          { label: 'Submit Date', value: item.submittedDate || '8 Sep 2026' },
+          { label: 'Emp#', value: 'EBB12' },
+          { label: 'Name', value: 'Farhan binti rahmat' },
+          { label: 'Leave Year', value: item.creditYear || '2026' },
+          { label: 'Leave Type', value: item.title ? item.title.toUpperCase() : 'REPLACEMENT LEAVE' },
+          { label: 'Credit Type', value: '' },
+          { label: 'Offset Type', value: '' },
+          { label: 'Event Start', value: item.effectiveDate || '8 Sep 2026' },
+          { label: 'Event End', value: item.expiryDate || '18 Sep 2026' },
+          { label: 'Effective Date', value: item.effectiveDate || '19 Sep 2026' },
+          { label: 'Expiry Date', value: item.expiryDate || '18 Dec 2026' },
+          { label: 'Days/Hours', value: item.amount || '11.0 Days / 0.0 Hours' },
+          { label: 'Leave Reason', value: item.reason || 'OTHERS' },
+          { label: 'Note', value: '<div style="background: var(--bg-input); height: 14px; width: 100%; border-radius: 4px; opacity: 0.6;"></div>' },
+          { label: 'Approver Comment', value: '<div style="background: var(--bg-input); height: 14px; width: 100%; border-radius: 4px; opacity: 0.6;"></div>' },
+          { label: 'Attachments', value: '<div style="display:flex; align-items:center; gap:8px; color:#2563eb; font-weight:600; padding:4px 0;"><span style="font-size:16px">📄</span> 1000037175.jpg</div>', fullBox: true }
+        ];
+      } else {
+        if (titleEl) titleEl.innerText = 'Leave Detail';
+        rows = [
+          { label: 'Reference #', value: item.ref },
+          { label: 'Leave Status', value: `<span style="color: ${statusColor}; font-weight: 700;">${statusText} <span style="font-size:14px">👁</span></span>` },
+          { label: 'Backdated', value: 'No' },
+          { label: 'Submitter', value: 'EBB12 - Farhan binti rahmat' },
+          { label: 'Branch', value: 'TIMES SQUARE BRANCH' },
+          { label: 'Department', value: 'HUMAN RESOURCE' },
+          { label: 'Submit Date', value: item.submittedDate || '09/09/2026, 08:30 AM' },
+          { label: 'Emp#', value: 'EBB12' },
+          { label: 'Name', value: 'Farhan binti rahmat' },
+          { label: 'Leave Year', value: '2026' },
+          { label: 'Leave Type', value: item.title ? item.title.toUpperCase() : 'ANNUAL LEAVE' },
+          { label: 'Start Date', value: item.dates ? item.dates.split(' - ')[0] : '12 Sep 2026' },
+          { label: 'End Date', value: item.dates ? (item.dates.split(' - ')[1] || item.dates.split(' - ')[0]) : '12 Sep 2026' },
+          { label: 'Days/Hours', value: item.duration || '1.0 Day' },
+          { label: 'Nature Illness', value: '' },
+          { label: 'Sickness', value: '' },
+          { label: 'Location', value: '' },
+          { label: 'Clinic/Hospital', value: '' },
+          { label: 'Non Panel Clinic', value: '' },
+          { label: 'MC Chit No', value: '' },
+          { label: 'Short Notice Leave', value: 'No' },
+          { label: 'Advance Leave', value: 'No' },
+          { label: 'Leave Reason', value: item.reason || '' },
+          { label: 'Reliever', value: '' },
+          { label: 'Duration', value: item.duration || 'Full Day' },
+          { label: 'Note', value: '<div style="background: var(--bg-input); height: 14px; width: 100%; border-radius: 4px; opacity: 0.6;"></div>' },
+          { label: 'Approver Comment', value: '<div style="background: var(--bg-input); height: 14px; width: 100%; border-radius: 4px; opacity: 0.6;"></div>' },
+          { label: 'Cancel Remark', value: '<div style="background: var(--bg-input); height: 14px; width: 100%; border-radius: 4px; opacity: 0.6;"></div>' },
+          { label: 'Attachments', value: '<div style="display:flex; align-items:center; gap:8px; color:#2563eb; font-weight:600; padding:4px 0;"><span style="font-size:16px">📄</span> 1302f11d5a254abbb2b9a10cb3b8f00f.jpg</div>', fullBox: true }
+        ];
+      }
+
+      let html = '';
+      rows.forEach(r => {
+        if (r.fullBox) {
+          html += `
+            <tr>
+              <td colspan="2" style="padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); font-weight: 700;">${r.label}</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding: 10px 12px; border-bottom: 1px solid var(--border-subtle);">${r.value}</td>
+            </tr>
+          `;
+        } else if (r.colspan) {
+          html += `<tr><td colspan="2" style="padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); font-weight: 600;">${r.label}</td></tr>`;
+        } else {
+          html += `<tr>
+            <td style="padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-secondary); width: 38%;">${r.label}</td>
+            <td style="padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">${r.value}</td>
+          </tr>`;
+        }
+      });
+      tbody.innerHTML = html;
+
+      const overlay = document.getElementById('historyDetailsModalOverlay');
+      if (overlay) overlay.style.display = 'flex';
+    }
+
+    function closeHistoryDetailsModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const overlay = document.getElementById('historyDetailsModalOverlay');
+      if (overlay) overlay.style.display = 'none';
     }
 
     function closeHistoryFilterModal(event) {
@@ -7642,6 +7845,7 @@
             <option value="approved">✅ Approved</option>
             <option value="rejected">❌ Rejected</option>
             <option value="cancelled">🚫 Cancelled</option>
+            <option value="draft">💾 Draft</option>
           </select>
           <div
             style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
@@ -7659,6 +7863,29 @@
         onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
         Apply Filter
       </button>
+    </div>
+  </div>
+
+  <!-- HISTORY DETAILS MODAL -->
+  <div id="historyDetailsModalOverlay" onclick="closeHistoryDetailsModal(event)"
+    style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div onclick="event.stopPropagation()"
+      style="background: var(--bg-card); width: 92%; max-width: 400px; max-height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--border-subtle);">
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
+        <h2 id="historyDetailsModalTitle" style="color: #fff; margin: 0; font-size: 17px; font-weight: 700;">Leave Details</h2>
+        <div onclick="closeHistoryDetailsModal()" style="background: rgba(255,255,255,0.2); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(2px);">
+          <span style="color: #fff; font-weight: 900; font-size: 14px; line-height: 1;">✕</span>
+        </div>
+      </div>
+      <!-- Body (Table) -->
+      <div style="flex: 1; overflow-y: auto; padding: 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+          <tbody id="historyDetailsTableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </body>
