@@ -424,11 +424,8 @@
       showToast('🥧', `Viewing ${month} ${selectedYear} weekly breakdown`);
     }
 
-    function renderLayer3PieChart(weeksData, dataset) {
-      const colors = ['#7c3aed', '#38bdf8', '#f43f5e', '#10b981'];
-      const bgColors = ['rgba(124, 58, 237, 0.12)', 'rgba(56, 189, 248, 0.12)', 'rgba(244, 63, 94, 0.12)', 'rgba(16, 185, 129, 0.12)'];
-      const borderColors = ['rgba(124, 58, 237, 0.25)', 'rgba(56, 189, 248, 0.25)', 'rgba(244, 63, 94, 0.25)', 'rgba(16, 185, 129, 0.25)'];
-
+        function renderLayer3PieChart(weeksData, dataset) {
+      const colors = ['#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#8b5cf6'];
       const totalStaffSum = weeksData.reduce((acc, w) => acc + w.staff, 0);
       const totalStaffStr = Number.isInteger(totalStaffSum) ? totalStaffSum : totalStaffSum.toFixed(1);
 
@@ -444,56 +441,81 @@
         const dashOffset = -currentOffset;
         currentOffset += dashLen;
 
-        return `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${colors[idx]}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+        return `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${colors[idx % colors.length]}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
       }).join('');
 
       return `
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 4px 0;">
+        <div style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
           
-          <!-- SVG Donut Chart Card -->
-          <div style="position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
-            <svg width="200" height="200" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 16px rgba(124, 58, 237, 0.18));">
-              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--bg-phone)" stroke-width="22"></circle>
-              ${circles}
-            </svg>
-            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-              <div style="font-size: 22px; font-weight: 900; color: var(--text-primary); line-height: 1; letter-spacing: -0.5px;">${totalStaffStr}${layer3Unit}</div>
-              <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.6px; background: var(--purple-subtle); padding: 3px 8px; border-radius: 999px;">${layer3Label}</div>
+          <!-- Donut Chart Card -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 20px 24px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+
+            <!-- SVG Donut Chart -->
+            <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 195px; height: 195px; margin: 10px 0 14px;">
+              <svg width="195" height="195" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 20px rgba(16, 185, 129, 0.15));">
+                <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22"></circle>
+                ${circles}
+              </svg>
+              <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 105px;">
+                <div style="font-size: 20px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap;">${totalStaffStr}<span style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-left: 2px;">${layer3Unit}</span></div>
+                <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.2px;">${layer3Label}</div>
+              </div>
+            </div>
+
+            <!-- Note under chart -->
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple-primary);"></span>
+              <span>Weekly breakdown for ${selectedMonth} ${selectedYear}</span>
             </div>
           </div>
 
-          <!-- Ultra Neat 2x2 Bento Weekly Breakdown Cards -->
-          <div style="width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            ${weeksData.map((w, idx) => {
-              const sStr = Number.isInteger(w.staff) ? w.staff : w.staff.toFixed(1);
-              const pctVal = totalStaffSum > 0 ? Math.round((w.staff / totalStaffSum) * 100) : 25;
-              const wShort = `W${idx + 1}`;
-              return `
-                <div style="background: var(--bg-phone); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
-                  
-                  <!-- Top Row: Badge + Week Title + Pct -->
-                  <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <span style="width: 26px; height: 26px; border-radius: 8px; background: ${bgColors[idx]}; border: 1px solid ${borderColors[idx]}; color: ${colors[idx]}; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center;">${wShort}</span>
-                      <span style="font-size: 13px; font-weight: 900; color: var(--text-primary);">${w.week}</span>
+          <!-- Structured Data Table Listing Card ("整齐的数据表格") -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 18px 18px; box-shadow: var(--shadow-card);">
+            <!-- Table Header -->
+            <div style="display: grid; grid-template-columns: 1fr 75px 85px; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+              <div>WEEK</div>
+              <div style="text-align: right;">AMOUNT</div>
+              <div style="text-align: right;">% OF TOTAL</div>
+            </div>
+
+            <!-- Table Body Rows -->
+            <div style="display: flex; flex-direction: column; gap: 16px; padding-top: 16px;">
+              ${weeksData.map((w, idx) => {
+                const sStr = Number.isInteger(w.staff) ? w.staff : w.staff.toFixed(1);
+                const pctVal = totalStaffSum > 0 ? (w.staff / totalStaffSum * 100).toFixed(2) : '25.00';
+                return `
+                  <div style="display: grid; grid-template-columns: 1fr 75px 85px; gap: 10px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: ${colors[idx % colors.length]}; flex-shrink: 0;"></span>
+                      <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${w.week}</span>
                     </div>
-                    <span style="font-size: 12px; font-weight: 900; color: ${colors[idx]};">${pctVal}%</span>
+                    <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right;">${sStr}${layer3Unit}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: right;">${pctVal}%</div>
                   </div>
-
-                  <!-- Bottom Row: Amount / Hours -->
-                  <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed var(--border-subtle); padding-top: 6px; margin-top: 2px;">
-                    <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Amount</span>
-                    <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">${sStr}${layer3Unit}</span>
-                  </div>
-
-                </div>
-              `;
-            }).join('')}
+                `;
+              }).join('')}
+            </div>
           </div>
 
         </div>
       `;
     }
+
+    function selectYearDrilldown(year) {
+      selectedYear = year;
+      currentLayer = 2;
+      renderChart();
+      showToast('📅', `Viewing ${year} monthly breakdown`);
+    }
+
+    function selectMonthDrilldown(month) {
+      selectedMonth = month;
+      currentLayer = 3;
+      renderChart();
+      showToast('🥧', `Viewing ${month} ${selectedYear} weekly breakdown`);
+    }
+
+
 
     function renderChart() {
       const dataset = METRIC_DATASETS[currentMetricKey] || METRIC_DATASETS.attendance;
