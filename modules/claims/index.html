@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Claim Dashboard</title>
+  <script src="../../js/components.js"></script>
+  <script src="../../js/app.js" defer></script>
+  <script src="../../js/claims/claims-config.js"></script>
+  <script src="../../js/claims/claims-app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="../../css/app.css">
+  <style>
+    /* basic reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .header-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: background 0.2s;
+    }
+    .header-btn:active { background: rgba(255, 255, 255, 0.25); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    /* EXACT LEAVE.HTML SWITCHER STYLES */
+    .view-mode-switcher {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px;
+      border-radius: 20px;
+      margin-top: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+    }
+    .view-mode-tab {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: none;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .view-mode-tab svg {
+      color: #7c3aed;
+      opacity: 0.8;
+      transition: all 0.2s;
+    }
+    .view-mode-tab.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+    .view-mode-tab.active svg {
+      color: rgba(0, 0, 0, 0.35);
+      opacity: 1;
+    }
+    [data-theme="dark"] .view-mode-tab.active svg {
+      color: rgba(0, 0, 0, 0.35);
+    }
+
+    .stat-badge {
+       background: var(--bg-input);
+       color: var(--text-muted);
+    }
+
+    /* Custom Claim List */
+    .claim-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .claim-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .claim-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .claim-info {
+      flex: 1;
+      padding: 0 12px;
+    }
+    .claim-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .claim-date {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .claim-amount {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-align: right;
+    }
+    .claim-status {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+    .status-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .status-approved { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .status-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+  </style>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Executive Purple Header -->
+    <div class="cal-top-header" id="dynamic-header"
+      style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;" id="headerLeftWrapper">
+          <button class="me-back-btn" id="headerBackButton" onclick="javascript:history.back()" aria-label="Back"
+            title="Back"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;" id="headerTitleText">Claim Dashboard</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content" style="padding-top: 0;">
+
+      <!-- SWITCHER -->
+      <div class="view-mode-switcher">
+         <button id="tabInd" class="view-mode-tab active" onclick="switchView('individual')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Individual
+         </button>
+         <button id="tabTeam" class="view-mode-tab" onclick="switchView('team')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            Team
+         </button>
+      </div>
+      
+      <!-- ================= INDIVIDUAL VIEW ================= -->
+      <div id="view-individual" style="display: block;">
+         
+         <!-- Claim Requests Card -->
+         <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+               <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">My Claim Status</h3>
+               <span class="stat-badge" style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px;">YTD 2026</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+               <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
+                  <div style="font-size: 26px; font-weight: 800; color: var(--tag-amber-text); line-height: 1;">3</div>
+                  <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Pending<br>Review</div>
+               </div>
+               <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
+                  <div style="font-size: 26px; font-weight: 800; color: var(--tag-green-text); line-height: 1;">8</div>
+                  <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Approved<br>&nbsp;</div>
+               </div>
+               <div style="text-align: center; flex: 1;">
+                  <div style="font-size: 26px; font-weight: 800; color: var(--tag-rose-text); line-height: 1;">1</div>
+                  <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Rejected<br>&nbsp;</div>
+               </div>
+            </div>
+            <div style="text-align: right; margin-top: 14px;">
+               <a href="options/history.html" style="font-size: 12.5px; font-weight: 700; color: #7c3aed; text-decoration: none;">View claim history &rarr;</a>
+            </div>
+         </div>
+
+         <!-- Quick Options Grid -->
+         <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+               <div style="display: flex; align-items: center; gap: 8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                  <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary);">Quick Options</h3>
+               </div>
+               <span style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Common tasks</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+               <a href="options/submit-claim.html" style="text-decoration: none;">
+                   <div style="background: var(--tag-blue-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+                      <div style="color: var(--tag-blue-text); font-size: 24px;">🧾</div>
+                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-blue-text);">Submit<br>Claim</div>
+                   </div>
+               </a>
+               <a href="options/benefit-claim.html" style="text-decoration: none;">
+                   <div style="background: var(--tag-green-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+                      <div style="color: var(--tag-green-text); font-size: 24px;">🎁</div>
+                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-green-text);">Benefit<br>Claim</div>
+                   </div>
+               </a>
+               <a href="options/history.html" style="text-decoration: none;">
+                   <div style="background: var(--tag-violet-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+                      <div style="color: var(--tag-violet-text); font-size: 24px;">📜</div>
+                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-violet-text);">History<br>&nbsp;</div>
+                   </div>
+               </a>
+               <a href="#" style="text-decoration: none;">
+                   <div style="background: var(--tag-amber-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+                      <div style="color: var(--tag-amber-text); font-size: 24px;">📈</div>
+                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-amber-text);">Reports<br>&nbsp;</div>
+                   </div>
+               </a>
+            </div>
+         </div>
+
+         <!-- Recent Claims -->
+         <div class="card">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Recent Claims</h3>
+            
+            <div class="claim-item">
+              <div class="claim-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🚕</div>
+              <div class="claim-info">
+                <div class="claim-title">Transport to Client A</div>
+                <div class="claim-date">10 Sep 2026</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="claim-amount">RM 45.00</div>
+                <div class="claim-status status-pending">Pending</div>
+              </div>
+            </div>
+
+            <div class="claim-item">
+              <div class="claim-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🏥</div>
+              <div class="claim-info">
+                <div class="claim-title">Medical Checkup</div>
+                <div class="claim-date">02 Sep 2026</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="claim-amount">RM 120.00</div>
+                <div class="claim-status status-approved">Approved</div>
+              </div>
+            </div>
+
+            <div class="claim-item">
+              <div class="claim-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">🍽️</div>
+              <div class="claim-info">
+                <div class="claim-title">Client Entertainment</div>
+                <div class="claim-date">28 Aug 2026</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="claim-amount">RM 350.00</div>
+                <div class="claim-status status-rejected">Rejected</div>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 16px;">
+               <a href="options/history.html" style="font-size: 12.5px; font-weight: 700; color: #7c3aed; text-decoration: none;">View all claims</a>
+            </div>
+         </div>
+
+      </div>
+
+      <!-- ================= TEAM VIEW ================= -->
+      <div id="view-team" style="display: none;">
+
+         <!-- Team Claim Requests -->
+         <div class="card">
+            <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 20px;">
+               <div style="width: 44px; height: 44px; border-radius: 22px; background: var(--tag-violet-bg); display: flex; align-items: center; justify-content: center; color: var(--tag-violet-text);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+               </div>
+               <div>
+                  <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary);">Team Claims Pending</h3>
+                  <p style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Require your review & approval</p>
+               </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+               <div style="flex: 1; background: var(--bg-input); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 14px;">
+                  <div style="width: 44px; height: 44px; border-radius: 22px; background: var(--tag-amber-bg); display: flex; align-items: center; justify-content: center; color: var(--tag-amber-text);">
+                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  </div>
+                  <div>
+                     <div style="font-size: 11px; font-weight: 700; color: var(--tag-amber-text);">To Review</div>
+                     <div style="font-size: 26px; font-weight: 800; color: var(--text-primary); line-height: 1.1; margin-top: 4px;">14</div>
+                  </div>
+               </div>
+               <div style="flex: 1; background: var(--bg-input); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 14px;">
+                  <div style="width: 44px; height: 44px; border-radius: 22px; background: var(--tag-blue-bg); display: flex; align-items: center; justify-content: center; color: var(--tag-blue-text);">
+                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                  </div>
+                  <div>
+                     <div style="font-size: 11px; font-weight: 700; color: var(--tag-blue-text);">Total Value</div>
+                     <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); line-height: 1.1; margin-top: 4px;">RM 4.2k</div>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <!-- Pending Claims List -->
+         <div class="card">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Require Approval</h3>
+            
+            <div class="claim-item">
+              <div class="claim-icon" style="background: rgba(124, 58, 237, 0.15); color: #7c3aed;">👨‍💻</div>
+              <div class="claim-info">
+                <div class="claim-title">Daniel Lee</div>
+                <div class="claim-date">Mileage Claim &bull; 14 Sep</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="claim-amount">RM 85.50</div>
+                <a href="#" style="font-size: 11px; font-weight: 700; color: #7c3aed; background: var(--purple-subtle); padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; text-decoration: none;">Review</a>
+              </div>
+            </div>
+
+            <div class="claim-item">
+              <div class="claim-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">👩‍💻</div>
+              <div class="claim-info">
+                <div class="claim-title">Sarah Tan</div>
+                <div class="claim-date">Client Dinner &bull; 12 Sep</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="claim-amount">RM 240.00</div>
+                <a href="#" style="font-size: 11px; font-weight: 700; color: #7c3aed; background: var(--purple-subtle); padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; text-decoration: none;">Review</a>
+              </div>
+            </div>
+
+            <div class="claim-item">
+              <div class="claim-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">👨‍💼</div>
+              <div class="claim-info">
+                <div class="claim-title">Ahmad Razali</div>
+                <div class="claim-date">Flight Ticket &bull; 10 Sep</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="claim-amount">RM 890.00</div>
+                <a href="#" style="font-size: 11px; font-weight: 700; color: #7c3aed; background: var(--purple-subtle); padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; text-decoration: none;">Review</a>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 16px;">
+               <a href="#" style="font-size: 12.5px; font-weight: 700; color: #7c3aed; text-decoration: none;">View all pending</a>
+            </div>
+         </div>
+      </div>
+
+    </div> <!-- END MAIN CONTENT -->
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <indicators-sheet></indicators-sheet>
+  </div>
+
+  <script>
+    function switchView(view) {
+       const tabInd = document.getElementById('tabInd');
+       const tabTeam = document.getElementById('tabTeam');
+       const viewInd = document.getElementById('view-individual');
+       const viewTeam = document.getElementById('view-team');
+       const headerTitle = document.getElementById('headerTitleText');
+
+       if (view === 'individual') {
+          if (tabInd) tabInd.classList.add('active');
+          if (tabTeam) tabTeam.classList.remove('active');
+          if (viewInd) viewInd.style.display = 'block';
+          if (viewTeam) viewTeam.style.display = 'none';
+          if (headerTitle) headerTitle.innerText = 'Claim Dashboard';
+       } else {
+          if (tabTeam) tabTeam.classList.add('active');
+          if (tabInd) tabInd.classList.remove('active');
+          if (viewInd) viewInd.style.display = 'none';
+          if (viewTeam) viewTeam.style.display = 'block';
+          if (headerTitle) headerTitle.innerText = 'Team Claims';
+       }
+    }
+  </script>
+</body>
+</html>

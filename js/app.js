@@ -29,15 +29,15 @@ const APP_ROUTES = {
   'sign_out': 'index.html',
 
   // V1 Quick Actions
-  'apply_leave': 'leave.html',
+  'apply_leave': 'modules/leave/index.html',
   'payslip': 'payslip.html',
-  'claim': 'claims.html',
+  'claim': 'modules/claims/index.html',
   'more': () => getCurrentTheme() === 'light' ? 'applight.html' : 'appdark.html',
 
   // V2 6 Primary Shortcuts
-  'attendance': 'attendance.html',
+  'attendance': 'modules/attendance/index.html',
   'payslip': 'payslip.html',
-  'claim': 'claims.html',
+  'claim': 'modules/claims/index.html',
   'benefits': '#benefits-portal',
   'documents': '#company-documents',
   'overtime': '#overtime-form',
@@ -45,9 +45,9 @@ const APP_ROUTES = {
   'taxform': '#tax-ea-form',
 
   // Explore PeopleHCM Modules
-  'time_attendance': 'attendance.html',
-  'leave_holidays': 'leave.html',
-  'claims_expenses': 'claims.html',
+  'time_attendance': 'modules/attendance/index.html',
+  'leave_holidays': 'modules/leave/index.html',
+  'claims_expenses': 'modules/claims/index.html',
   'payroll_compensation': 'payslip.html',
   'performance_goals': '#performance-goals',
   'learning_dev': '#learning-development',
@@ -61,7 +61,7 @@ const APP_ROUTES = {
   'nav_calendar': 'calendar.html',
   'nav_favourite': 'favourite.html',
   'nav_apps': () => getCurrentTheme() === 'light' ? 'applight.html' : 'appdark.html',
-  'nav_me': 'me.html'
+  'nav_me': 'modules/me/index.html'
 };
 
 // 2. Safe Navigation Handler
@@ -83,6 +83,25 @@ function navTo(routeKey, event) {
     const routeName = routeKey.replace(/_/g, ' ').toUpperCase();
     showToast(`📍 [${routeName}] Ready to connect (${target})`);
   } else {
+    // Dynamically calculate relative base path if we are currently inside a module folder
+    // E.g., if we are in /modules/claims/index.html, and target is homedark.html, we need ../../homedark.html
+    // If target is modules/attendance/index.html, we need ../../modules/attendance/index.html
+    const path = window.location.pathname;
+    const isInsideModule = path.includes('/modules/') || path.includes('\\modules\\');
+    
+    if (isInsideModule && !target.startsWith('http')) {
+      // Assuming modules are 2 levels deep (modules/module_name/index.html) or 3 levels deep (modules/module_name/options/x.html)
+      const segments = path.split(/[\/\\]/);
+      const modulesIndex = segments.indexOf('modules');
+      const depth = segments.length - 1 - modulesIndex;
+      
+      let prefix = '';
+      for(let i = 0; i < depth; i++) {
+        prefix += '../';
+      }
+      target = prefix + target;
+    }
+    
     window.location.href = target;
   }
 }

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Overtime</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Plus Jakarta Sans", sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 0 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      box-shadow: 0 12px 32px rgba(76, 29, 149, 0.4);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* Tabs (view-mode-switcher) */
+    .view-mode-switcher {
+      display: flex;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 6px;
+      border-radius: 24px;
+      margin-top: 20px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+    }
+    .view-mode-tab {
+      flex: 1;
+      padding: 12px 4px;
+      border-radius: 18px;
+      border: none;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+    .view-mode-tab.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 8px 16px rgba(124, 58, 237, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* Modern Top Info Banner */
+    .hero-info-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.02) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .hero-stat .label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .hero-stat .value { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 4px; }
+    .hero-stat .accent { color: #a78bfa; font-size: 26px; font-weight: 900; line-height: 1; margin-top: 2px; }
+
+    /* Modern Card UI */
+    .modern-ot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+    .modern-ot-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+      background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    }
+    .modern-ot-card:active { transform: scale(0.97); }
+
+    .ot-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    
+    .date-badge {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 16px; width: 64px; height: 64px;
+    }
+    .date-badge .day { font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; }
+    .date-badge .date { font-size: 20px; font-weight: 900; color: #34d399; line-height: 1.1; margin-top: 2px; }
+
+    .tag-exception { background: rgba(239, 68, 68, 0.15); color: #f87171; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(239, 68, 68, 0.3); }
+    
+    .ot-time-block { margin-bottom: 20px; }
+    .ot-time-block .label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .ot-time-block .times { font-size: 18px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .ot-time-block .shift { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+
+    .ot-stats-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(0, 0, 0, 0.2); padding: 14px 16px; border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .ot-stat-item { display: flex; flex-direction: column; gap: 4px; }
+    .ot-stat-item.center { align-items: center; text-align: center; }
+    .ot-stat-item.right { align-items: flex-end; text-align: right; }
+    .ot-stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .ot-stat-val { font-size: 14px; font-weight: 800; color: var(--text-primary); }
+    .ot-stat-val.purple { color: #a78bfa; }
+    .ot-stat-val.green { color: #34d399; }
+    .ot-stat-divider { width: 1px; height: 24px; background: rgba(255, 255, 255, 0.1); }
+
+    /* Modern Form Styles */
+    .modern-form-group { margin-bottom: 20px; position: relative; }
+    .modern-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .modern-label .required { color: #f43f5e; font-size: 14px; }
+    .modern-input-wrapper { position: relative; }
+    .modern-input {
+      width: 100%; padding: 14px 16px; border-radius: 16px;
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-primary); font-size: 14px; font-weight: 600;
+      transition: all 0.3s;
+    }
+    .modern-input:focus { background: var(--bg-card); border-color: rgba(124, 58, 237, 0.6); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); outline: none; }
+    
+    select.modern-input { 
+      appearance: none; 
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); 
+      background-repeat: no-repeat; background-position: right 16px center; background-size: 16px auto; padding-right: 44px; 
+    }
+
+    .time-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    
+    .modern-btn-primary {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff; border: none; border-radius: 16px; padding: 15px 20px;
+      font-size: 14.5px; font-weight: 800; cursor: pointer; width: 100%;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .modern-btn-primary:active { transform: translateY(2px); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4); }
+    
+    .modern-btn-secondary {
+      background: var(--bg-card); color: var(--text-primary);
+      border: 1px solid var(--border-card); border-radius: 16px;
+      padding: 14px 18px; font-size: 14px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .modern-btn-secondary:active { background: var(--bg-hover, rgba(255, 255, 255, 0.08)); }
+    .modern-btn-secondary svg { color: var(--text-muted); }
+
+    /* Pop Out Modal Styling */
+    .modal-header-purple {
+      background: linear-gradient(135deg, #3b0764 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+    .modal-close-round {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-close-round:hover {
+      background: rgba(0, 0, 0, 0.5);
+      transform: scale(1.05);
+    }
+
+    /* Custom Switch for Leave Credit */
+    .modern-switch {
+      width: 52px; height: 32px; background: rgba(150, 150, 150, 0.25); border-radius: 32px;
+      position: relative; cursor: pointer; transition: 0.3s;
+      border: 1px solid var(--border-card);
+    }
+    .modern-switch.on { background: #7c3aed; border-color: #7c3aed; }
+    .modern-switch-thumb {
+      width: 24px; height: 24px; background: #ffffff; border-radius: 50%;
+      position: absolute; top: 3px; left: 4px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .modern-switch.on .modern-switch-thumb { transform: translateX(20px); }
+  </style>
+</head>
+<body>
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+  <div class="phone-container">
+    
+    <!-- Top App Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <button class="header-btn" onclick="goBack()" aria-label="Back" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; backdrop-filter: blur(8px);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <h1 id="headerTitle" style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: 0.2px;">Overtime</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content" style="padding-top: 20px;">
+      
+      <!-- ================= DASHBOARD VIEW ================= -->
+      <div id="view-dashboard" style="display: block;">
+        
+        <div class="hero-info-banner">
+          <div style="display: flex; gap: 24px;">
+            <div class="hero-stat">
+              <div class="label">Shift Group</div>
+              <div class="value">GROUP A</div>
+            </div>
+            <div class="hero-stat">
+              <div class="label">Supervisor</div>
+              <div class="value">EBB04</div>
+            </div>
+          </div>
+          <button onclick="switchView('request')" style="width: 48px; height: 48px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4); cursor: pointer; flex-shrink: 0;">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        </div>
+
+        <div class="view-mode-switcher">
+          <button class="view-mode-tab active" onclick="activateFilter(this)">This Week</button>
+          <button class="view-mode-tab" onclick="activateFilter(this)">Last Week</button>
+          <button class="view-mode-tab" onclick="activateFilter(this)">This Month</button>
+          <button class="view-mode-tab" onclick="activateFilter(this)">Last Month</button>
+        </div>
+
+        <div style="margin-bottom: 20px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between;">
+           <span style="font-size: 13.5px; font-weight: 700; color: var(--text-muted);">Total Hours Overview</span>
+           <span style="font-size: 16px; font-weight: 900; color: #a78bfa;">2.00 <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">HRS</span></span>
+        </div>
+
+        <!-- Modern OT List Card -->
+        <div class="modern-ot-card" onclick="openDetails()">
+          
+          <div class="ot-card-header">
+             <div class="date-badge">
+               <span class="day">Mon</span>
+               <span class="date">14</span>
+             </div>
+             <div class="tag-exception">
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 4px; vertical-align: text-top;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+               UOT
+             </div>
+          </div>
+
+          <div class="ot-time-block">
+             <div class="label">Clock Times</div>
+             <div class="times">
+               08:09 
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg> 
+               19:40
+             </div>
+             <div class="shift">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Shift: 8.30-17.30 (W01)
+             </div>
+          </div>
+
+          <div class="ot-stats-row">
+            <div class="ot-stat-item">
+              <span class="ot-stat-label">OT Code</span>
+              <span class="ot-stat-val purple">1.5 OT</span>
+            </div>
+            <div class="ot-stat-divider"></div>
+            <div class="ot-stat-item center">
+              <span class="ot-stat-label">Plan Hrs</span>
+              <span class="ot-stat-val">2.00</span>
+            </div>
+            <div class="ot-stat-divider"></div>
+            <div class="ot-stat-item center">
+              <span class="ot-stat-label">Actual Hrs</span>
+              <span class="ot-stat-val">2.00</span>
+            </div>
+            <div class="ot-stat-divider"></div>
+            <div class="ot-stat-item right">
+              <span class="ot-stat-label">Approved</span>
+              <span class="ot-stat-val green">0.00</span>
+            </div>
+          </div>
+
+        </div>
+        
+        <!-- End of Cards -->
+
+      </div>
+
+
+      <!-- ================= REQUEST VIEW ================= -->
+      <div id="view-request" style="display: none; padding-bottom: 20px;">
+        
+        <div class="hero-info-banner" style="margin-bottom: 24px; background: var(--bg-card); border: 1px solid var(--border-card); padding: 18px 20px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted);">Shift: <span style="color: var(--text-primary); font-weight: 800; margin-left: 6px;">8.30AM - 5.30PM (W01)</span></div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted);">Supervisor: <span style="color: var(--text-primary); font-weight: 800; margin-left: 6px;">EBB04</span></div>
+          </div>
+        </div>
+
+        <div class="modern-form-group">
+          <label class="modern-label">Request Date <span class="required">*</span></label>
+          <div class="modern-input-wrapper">
+            <input type="date" class="modern-input" value="2026-09-15">
+          </div>
+        </div>
+
+        <div class="time-picker-grid">
+          <div class="modern-form-group">
+            <label class="modern-label">Start Time <span class="required">*</span></label>
+            <input type="time" class="modern-input" value="00:00">
+          </div>
+          <div class="modern-form-group">
+            <label class="modern-label">End Time <span class="required">*</span></label>
+            <input type="time" class="modern-input" value="00:00">
+          </div>
+        </div>
+
+        <div class="time-picker-grid">
+           <div class="modern-form-group">
+             <label class="modern-label">Break Hours</label>
+             <input type="number" class="modern-input" placeholder="0.0" step="0.5">
+           </div>
+           <div class="modern-form-group">
+             <label class="modern-label">
+               Total Hours <span class="required">*</span>
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="#f43f5e" stroke="var(--bg-page)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+             </label>
+             <input type="text" class="modern-input" value="0" readonly style="background: rgba(244, 63, 94, 0.08); border-color: rgba(244, 63, 94, 0.3); color: #f43f5e; font-weight: 800;">
+           </div>
+        </div>
+
+        <div class="modern-form-group">
+          <label class="modern-label">Overtime Type <span class="required">*</span></label>
+          <select class="modern-input">
+            <option>- SELECT TYPE -</option>
+            <option>1.5 OT</option>
+            <option>2.0 OT</option>
+            <option>Public Holiday OT</option>
+          </select>
+        </div>
+
+        <div class="modern-form-group">
+          <label class="modern-label">Reason for OT <span class="required">*</span></label>
+          <select class="modern-input">
+            <option>- SELECT REASON -</option>
+            <option>System OT Reason</option>
+            <option>Project Deadline</option>
+            <option>Cover Colleague</option>
+          </select>
+        </div>
+
+        <div class="modern-form-group" style="background: var(--bg-card); border: 1px solid var(--border-card); padding: 18px 20px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Convert to Leave Credit</div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Opt to get leave days instead of pay</div>
+          </div>
+          <div class="modern-switch" onclick="this.classList.toggle('on')">
+            <div class="modern-switch-thumb"></div>
+          </div>
+        </div>
+
+        <div class="modern-form-group">
+          <label class="modern-label">Remarks</label>
+          <textarea class="modern-input" rows="3" placeholder="Add additional notes here..." style="resize: none;"></textarea>
+        </div>
+
+        <!-- Upload Attachments Section (Consistent Circular Design) -->
+        <div class="modern-form-group">
+          <label class="modern-label" style="margin-bottom: 14px; font-size: 13px; font-weight: 700; color: var(--text-muted);">Upload Attachments</label>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
+            
+            <!-- Circular Option 1: Select File(s) -->
+            <div onclick="triggerOtFileUpload('file')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" title="Select Files">
+              <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: #c084fc; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="12" y1="18" x2="12" y2="12"></line>
+                  <line x1="9" y1="15" x2="12" y2="12"></line>
+                  <line x1="15" y1="15" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 700; color: #c084fc;">Select File(s)</span>
+            </div>
+
+            <!-- Circular Option 2: Take a Picture -->
+            <div onclick="triggerOtFileUpload('camera')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" title="Take Photo">
+              <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform 0.2s; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">Take a Picture</span>
+            </div>
+
+          </div>
+
+          <!-- Attached Files Chips Container -->
+          <div id="uploadedOtFilesChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;"></div>
+          <input type="file" id="hiddenOtFileInput" style="display: none;" onchange="handleOtFileSelected(this)" />
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- Docked Request Action Bar Inside Phone Container (Right-aligned Draft + Submit) -->
+    <div id="request-actions" style="display: none; position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 1px solid var(--border-card); padding: 14px 20px 22px; justify-content: flex-end; align-items: center; gap: 12px; z-index: 50; box-shadow: 0 -8px 24px rgba(0,0,0,0.15);">
+       <button type="button" onclick="saveOtDraft()" style="padding: 12px 22px; border-radius: 24px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+           <polyline points="17 21 17 13 7 13 7 21"></polyline>
+           <polyline points="7 3 7 8 15 8"></polyline>
+         </svg>
+         Draft
+       </button>
+       <button type="button" onclick="submitOtRequest()" style="padding: 12px 28px; border-radius: 24px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 14px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4); display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+         <span>Submit</span>
+         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+           <line x1="22" y1="2" x2="11" y2="13"></line>
+           <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+         </svg>
+       </button>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Overtime Details Pop Out Modal -->
+    <div id="modal-ot-details" onclick="closeDetails(event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+
+      <div class="popup-modal-content" onclick="event.stopPropagation()"
+        style="width: 90%; max-width: 390px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85%; overflow: hidden; display: flex; flex-direction: column;">
+        
+        <!-- Purple Gradient Modal Header -->
+        <div class="modal-header-purple">
+          <div>
+            <h3 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0;">Overtime Details</h3>
+            <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8); margin-top: 2px;">Ref: AXTGEN000109598</div>
+          </div>
+          <button class="modal-close-round" onclick="closeDetails(true)" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        
+        <!-- Non-transparent Solid Scrollable Content -->
+        <div class="sheet-content" style="padding: 16px 20px 24px; overflow-y: auto; background: var(--bg-card); flex: 1;">
+           <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Reference ID</span>
+                 <span style="font-size: 13.5px; font-weight: 800; color: var(--purple-primary); font-family: monospace;">AXTGEN000109598</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Plan Status</span>
+                 <span style="font-size: 11px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 3px 8px; border-radius: 6px;">Approved</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Final Status</span>
+                 <span style="font-size: 11px; font-weight: 800; color: #f59e0b; background: rgba(245, 158, 11, 0.15); padding: 3px 8px; border-radius: 6px;">Draft</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Shift</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">8.30AM-5.30PM (W01)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Supervisor</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">EBB04</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Date</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">14 Sep 2026</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Submitted On</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">14 Sep 2026</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Times</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">00:00 - 00:00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Plan Hours</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">2.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Actual Hours</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">2.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Approved Hrs</span>
+                 <span style="font-size: 13.5px; font-weight: 800; color: #ef4444;">0.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Override Method</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">OT Type</span>
+                 <span style="font-size: 13.5px; font-weight: 800; color: var(--purple-primary);">1.5 OT</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Reason</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">System OT Reason</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Task</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Leave Credit</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">No</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Need Transport</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">No</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Remarks</span>
+                 <span style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 6px;">UNAUTHORISED OT</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Attachments</span>
+                 <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">No Data</span>
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentView = "dashboard";
+    
+    function switchView(view) {
+      currentView = view;
+      document.getElementById("view-dashboard").style.display = view === "dashboard" ? "block" : "none";
+      document.getElementById("view-request").style.display = view === "request" ? "block" : "none";
+      document.getElementById("headerTitle").innerText = view === "dashboard" ? "Overtime" : "Request OT";
+      
+      const reqActions = document.getElementById("request-actions");
+      if (reqActions) {
+        reqActions.style.display = view === "request" ? "flex" : "none";
+      }
+
+      const bottomNav = document.querySelector("phone-bottom-nav");
+      if (bottomNav) {
+        bottomNav.style.display = view === "dashboard" ? "contents" : "none";
+      }
+
+      const mainContent = document.querySelector(".main-content");
+      if (mainContent) {
+        mainContent.style.paddingBottom = view === "request" ? "100px" : "90px";
+        mainContent.scrollTop = 0;
+      }
+    }
+
+    function goBack() {
+      if (currentView === "request") {
+        switchView("dashboard");
+      } else {
+        window.location.href = "../index.html";
+      }
+    }
+
+    function activateFilter(btn) {
+      document.querySelectorAll(".view-mode-tab").forEach(el => el.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function openDetails() {
+      const overlay = document.getElementById("modal-ot-details");
+      const popup = overlay.querySelector(".popup-modal-content");
+      overlay.style.display = "flex";
+      setTimeout(() => {
+        overlay.style.opacity = "1";
+        if (popup) {
+          popup.style.transform = "scale(1)";
+          popup.style.opacity = "1";
+        }
+      }, 10);
+    }
+
+    function closeDetails(e) {
+      if (e === true || (e && (e.target.id === "modal-ot-details" || e.target.classList.contains("modal-close-round")))) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        const overlay = document.getElementById("modal-ot-details");
+        const popup = overlay.querySelector(".popup-modal-content");
+        overlay.style.opacity = "0";
+        if (popup) {
+          popup.style.transform = "scale(0.95)";
+          popup.style.opacity = "0";
+        }
+        setTimeout(() => { overlay.style.display = "none"; }, 300);
+      }
+    }
+
+    function triggerOtFileUpload(type) {
+      const fileInput = document.getElementById('hiddenOtFileInput');
+      if (type === 'camera') {
+        if (typeof showToast === 'function') showToast('📷 Launching device camera...');
+      }
+      if (fileInput) fileInput.click();
+    }
+
+    function handleOtFileSelected(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const container = document.getElementById('uploadedOtFilesChipsList');
+        if (container) {
+          const chip = document.createElement('div');
+          chip.style.cssText = 'background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 12px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #c084fc; display: flex; align-items: center; gap: 6px;';
+          chip.innerHTML = `<span>📎 ${file.name}</span> <span style="cursor:pointer; opacity: 0.7; margin-left: 4px;" onclick="this.parentElement.remove()">✕</span>`;
+          container.appendChild(chip);
+        }
+        if (typeof showToast === 'function') showToast(`📄 Attached: ${file.name}`);
+      }
+    }
+
+    function saveOtDraft() {
+      if (typeof showToast === 'function') {
+        showToast('💾 Overtime request saved to draft!');
+      } else {
+        alert('Overtime request saved to draft!');
+      }
+      setTimeout(() => { switchView('dashboard'); }, 800);
+    }
+
+    function submitOtRequest() {
+      if (typeof showToast === 'function') {
+        showToast('🚀 Overtime request submitted successfully!');
+      } else {
+        alert('Overtime request submitted successfully!');
+      }
+      setTimeout(() => { switchView('dashboard'); }, 800);
+    }
+  </script>
+</body>
+</html>

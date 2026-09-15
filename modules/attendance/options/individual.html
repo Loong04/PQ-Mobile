@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Attendance - Individual Option</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    .cal-cell {
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 6px 0;
+      min-height: 52px;
+      border-bottom: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+    }
+    .cal-cell:nth-child(7n) { border-right: none; }
+    .cal-cell:nth-last-child(-n+7) { border-bottom: none; }
+    .cal-cell.active { background: var(--purple-subtle); }
+    .cal-date { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+    .cal-d { background: var(--purple-subtle); color: #7c3aed; font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px; }
+    .cal-n { background: var(--tag-green-bg); color: var(--tag-green-text); font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px; }
+    .cal-off { font-size: 10px; font-weight: 600; color: var(--text-caption); }
+    .cal-ot { color: var(--tag-violet-text); font-size: 8.5px; font-weight: 800; margin-top: 1px; }
+    .cal-ot-badge { background: var(--tag-violet-bg); color: var(--tag-violet-text); font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px; }
+
+    .view-mode-switcher {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px;
+      border-radius: 20px;
+      margin-top: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+    }
+    .view-mode-tab {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: none;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .view-mode-tab.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Executive Purple Header -->
+    <div class="cal-top-header"
+      style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="../index.html" class="me-back-btn" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; text-decoration: none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </a>
+          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Attendance Dashboard</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content" style="padding-top: 0;">
+
+      <!-- Switcher to navigate options -->
+      <div class="view-mode-switcher">
+         <a href="individual.html" class="view-mode-tab active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Individual
+         </a>
+         <a href="team.html" class="view-mode-tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            Team
+         </a>
+      </div>
+      
+      <!-- Option Content: Individual Schedule & Requests -->
+      <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; padding: 0 4px;">September 2026</h2>
+      
+      <!-- Attendance Requests Card -->
+      <div class="card">
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Attendance Requests</h3>
+            <span style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: var(--bg-input); color: var(--text-muted);">9 Total</span>
+         </div>
+         <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
+               <div style="font-size: 26px; font-weight: 800; color: var(--tag-amber-text); line-height: 1;">2</div>
+               <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Pending<br>Feedback</div>
+            </div>
+            <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
+               <div style="font-size: 26px; font-weight: 800; color: var(--text-primary); line-height: 1;">3</div>
+               <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Submitted<br>&nbsp;</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+               <div style="font-size: 26px; font-weight: 800; color: var(--tag-green-text); line-height: 1;">4</div>
+               <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Approved<br>&nbsp;</div>
+            </div>
+         </div>
+         <div style="text-align: right; margin-top: 14px;">
+            <a href="requests.html" style="font-size: 12.5px; font-weight: 700; color: #7c3aed; text-decoration: none;">View requests &rarr;</a>
+         </div>
+      </div>
+
+      <!-- My Schedule Calendar -->
+      <div class="card">
+         <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">My Schedule</h3>
+         <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;">Shift roster & approved OT plans</p>
+         
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span style="font-size: 15px; font-weight: 800; color: var(--text-primary);">September 2026</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+         </div>
+
+         <!-- Calendar Grid Header -->
+         <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 6px;">
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-caption);">Mon</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-caption);">Tue</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-caption);">Wed</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-caption);">Thu</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-caption);">Fri</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-caption);">Sat</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-caption);">Sun</div>
+         </div>
+
+         <!-- Grid Dates -->
+         <div style="display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden;">
+            <div class="cal-cell"></div>
+            <div class="cal-cell"><span class="cal-date">1</span><span class="cal-d">D</span></div>
+            <div class="cal-cell"><span class="cal-date">2</span><span class="cal-d">D</span></div>
+            <div class="cal-cell"><span class="cal-date">3</span><span class="cal-d">D</span><span class="cal-ot">OT 2h</span></div>
+            <div class="cal-cell"><span class="cal-date">4</span><span class="cal-d">D</span></div>
+            <div class="cal-cell"><span class="cal-date">5</span><span class="cal-off">OFF</span></div>
+            <div class="cal-cell"><span class="cal-date">6</span><span class="cal-off">OFF</span></div>
+
+            <div class="cal-cell"><span class="cal-date">7</span><span class="cal-d">D</span></div>
+            <div class="cal-cell"><span class="cal-date">8</span><span class="cal-d">D</span><span class="cal-ot">OT 1h</span></div>
+            <div class="cal-cell"><span class="cal-date">9</span><span class="cal-d">D</span></div>
+            <div class="cal-cell"><span class="cal-date">10</span><span class="cal-d">D</span></div>
+            <div class="cal-cell active"><span class="cal-date">11</span><span class="cal-d" style="background:#7c3aed; color:#fff;">D</span><span class="cal-ot">OT 2h</span></div>
+            <div class="cal-cell"><span class="cal-date">12</span><span class="cal-off">OFF</span></div>
+            <div class="cal-cell"><span class="cal-date">13</span><span class="cal-off">OFF</span></div>
+         </div>
+
+         <!-- Legend -->
+         <div style="display: flex; gap: 12px; margin-top: 16px; justify-content: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 6px;"><span class="cal-d" style="margin:0;">D</span><span style="font-size: 10.5px; font-weight:600; color:var(--text-muted);">Day shift</span></div>
+            <div style="display: flex; align-items: center; gap: 6px;"><span class="cal-n" style="margin:0;">N</span><span style="font-size: 10.5px; font-weight:600; color:var(--text-muted);">Night shift</span></div>
+            <div style="display: flex; align-items: center; gap: 6px;"><span class="cal-off" style="margin:0; background:var(--bg-input); padding:2px 6px; border-radius:4px; color:var(--text-muted);">OFF</span><span style="font-size: 10.5px; font-weight:600; color:var(--text-muted);">Rest day</span></div>
+            <div style="display: flex; align-items: center; gap: 6px;"><span class="cal-ot-badge" style="margin:0;">OT</span><span style="font-size: 10.5px; font-weight:600; color:var(--text-muted);">Approved OT plan</span></div>
+         </div>
+      </div>
+      
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+</body>
+</html>

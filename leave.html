@@ -4792,103 +4792,417 @@
       </div>
 
       <!-- ==========================================
-           VIEW 7: TEAM APPROVALS (ENTERPRISE GRADE)
+           VIEW 7: TEAM APPROVALS (PURPLE EXECUTIVE BATCH STYLE)
            ========================================== -->
-      <div id="viewTeamApprovals" style="display: none; margin-top: 14px;">
+      <div id="viewTeamApprovals" style="display: none; margin-top: 10px;">
 
-        <!-- Filter Pill Chips Bar (Workday / Rippling Style) -->
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
-          <button style="padding: 7px 14px; border-radius: 20px; background: var(--purple-primary); color: #ffffff; font-weight: 800; font-size: 11.5px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3);">
-            <span>Pending</span>
-            <span id="pendingCountBadgePill" style="background: rgba(255,255,255,0.25); padding: 1px 7px; border-radius: 10px; font-size: 10.5px;">2</span>
-          </button>
-          <button onclick="if(typeof showToast==='function') showToast('Viewing Approved Leave History');" style="padding: 7px 14px; border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-weight: 700; font-size: 11.5px; border: 1px solid var(--border-subtle); cursor: pointer;">
-            Approved
-          </button>
-          <button onclick="if(typeof showToast==='function') showToast('Viewing Rejected Leave Requests');" style="padding: 7px 14px; border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-weight: 700; font-size: 11.5px; border: 1px solid var(--border-subtle); cursor: pointer;">
-            Rejected
+        <!-- STANDARD FILTER TOOLBAR HEADER -->
+        <div class="filter-summary-bar" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
+              CURRENT FILTER
+            </div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 14px; opacity: 0.85; color: var(--purple-primary);">⚡</span>
+              <span id="teamApprovalsFilterSummaryText">All Requests • All Dates</span>
+            </div>
+          </div>
+          <button type="button" onclick="openTeamApprovalsFilterModal()" title="Open Approvals Filter Options"
+            style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s;"
+            onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+              <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
+              <line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
           </button>
         </div>
 
-        <!-- Header Controls Bar with Select All -->
+        <!-- Filter & Select All Control Bar -->
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px;">
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Subordinate Requests</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Pending Approvals (<span id="pendingCountBadgePill">4</span>)</div>
+          
+          <!-- Select All Header Toggle -->
           <label style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: var(--purple-primary); cursor: pointer; user-select: none;">
-            <input type="checkbox" id="selectAllApprovalsCheckbox" onchange="toggleSelectAllApprovals(this.checked)" style="width: 16px; height: 16px; accent-color: var(--purple-primary); cursor: pointer;">
+            <input type="checkbox" id="selectAllApprovalsCheckbox" onchange="toggleSelectAllApprovals(this.checked)" style="width: 17px; height: 17px; accent-color: var(--purple-primary); cursor: pointer;">
             <span>Select All</span>
           </label>
         </div>
 
-        <!-- Cards List -->
-        <div id="teamApprovalsListContainer" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Cards List Container -->
+        <div id="teamApprovalsListContainer" style="display: flex; flex-direction: column; gap: 16px;">
 
-          <!-- Pending Card 1 -->
-          <div class="approval-request-card" id="approvalCard1" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" class="approval-card-checkbox" onchange="updateBatchApprovalCount()" style="width: 18px; height: 18px; accent-color: var(--purple-primary); cursor: pointer;">
+          <!-- CARD 1: Afifah Nasir -->
+          <div class="approval-request-card" id="approvalCard1" data-name="Afifah Nasir" data-empno="004177" data-type="Annual Leave" data-start="2026-02-23" data-end="2026-02-25" data-days="3" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            
+            <!-- 1. Header Banner (Executive Purple Brand Bar for ALL Cards) -->
+            <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                
+                <!-- Custom Selection Checkbox replacing Avatar Circle -->
+                <div style="display: flex; align-items: center;">
+                  <input type="checkbox" class="approval-card-checkbox" onchange="updateBatchApprovalCount()" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
+                </div>
+
                 <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Ahmad Rafy bin Zulkiple</div>
-                  <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Admin Manager • Emp #004177</div>
+                  <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">Afifah Nasir</div>
+                  <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">QA Manager • Emp #004177</div>
                 </div>
               </div>
-              <span style="font-size: 10.5px; font-weight: 800; background: rgba(245, 158, 11, 0.15); color: var(--warning); padding: 3px 10px; border-radius: 10px;">Pending</span>
-            </div>
-            <div style="font-size: 12px; font-weight: 800; color: var(--purple-text); margin-bottom: 4px; padding-left: 28px;">🌴 Annual Leave (2.0 Days)</div>
-            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 12px; padding-left: 28px;">10 Sep 2026 – 11 Sep 2026 • Reason: Family Emergency</div>
 
-            <div style="display: flex; gap: 8px; padding-left: 28px;">
-              <button style="flex: 1; padding: 8px; border-radius: 10px; background: var(--secondary); color: #ffffff; font-weight: 800; font-size: 12px; border: none; cursor: pointer;"
-                onclick="singleApproveCard('approvalCard1', 'Ahmad Rafy')">Approve ✔</button>
-              <button style="flex: 1; padding: 8px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12px; cursor: pointer;"
-                onclick="singleRejectCard('approvalCard1')">Reject</button>
+              <!-- Right: Sleek Mini 3-Dots Button & Pending Pill Tag -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <!-- Sleek Mini 3-Dots Button -->
+                <button type="button" onclick="openApprovalThreeDotsMenu('Afifah Nasir', 'Annual Leave', '23 Feb 2026 - 25 Feb 2026', '3 Days', 'Personnel Issues', { docRef: 'VLV000000000790', docStatus: 'Next Approval', employee: 'Afifah Nasir • Emp #004177', branch: 'TIMES SQUARE BRANCH', department: 'Quality Assurance', leaveYear: '2026', cutoffPeriod: '01/01/2026 – 31/12/2026', submitter: 'Afifah Nasir', submitDate: '23 Feb 2026', fromDate: '23 Feb 2026', toDate: '25 Feb 2026', duration: '3 Days', leaveDays: '3.000', mcChitNo: '', reliever: 'Benjamin Lee (On Behalf)', remark: 'Urgent personnel emergency leave for home repair & family assistance.', attachment: 'supporting_emergency_docs.pdf', advanceLeave: 'No', shortNotice: 'Yes' })" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+                <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Pending</span>
+              </div>
+            </div>
+
+            <!-- 2. Card Content Body -->
+            <div style="padding: 14px;">
+              
+              <!-- Type & Reason (2 Column Layout) -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Type</div>
+                  <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Annual Leave</div>
+                  <div style="font-size: 11px; font-weight: 800; color: #ef4444; margin-top: 1px;">(Unplanned)</div>
+                </div>
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Reason</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Personnel Issues</div>
+                </div>
+              </div>
+
+              <!-- Date Timeline Section -->
+              <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                  <span>Date Start</span>
+                  <span>Date End</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span>Tue, 23/02/2026</span>
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                  </div>
+
+                  <!-- Arrow in center with duration -->
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: -2px;">3 Days</span>
+                    <div style="width: 100%; height: 2px; background: var(--purple-primary); position: relative;">
+                      <div style="position: absolute; right: 0; top: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid var(--purple-primary);"></div>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                    <span>Thu, 25/02/2026</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Requested On Behalf By Section -->
+              <div style="margin-bottom: 12px;">
+                <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Requested On Behalf By</div>
+                <div style="display: flex; align-items: center; gap: 8px; background: rgba(124, 58, 237, 0.05); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 8px 10px;">
+                  <div style="font-size: 13px;">👤</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Benjamin Lee</div>
+                    <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Business Development Executive</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Remark Section -->
+              <div style="margin-bottom: 14px;">
+                <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remark</div>
+                <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+                  Urgent personnel emergency leave for home repair & family assistance.
+                </div>
+              </div>
+
+              <!-- Bottom Approve / Reject Buttons -->
+              <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="singleApproveCard('approvalCard1', 'Afifah Nasir')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12.5px; border: none; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);">
+                  Approve ✔
+                </button>
+                <button type="button" onclick="singleRejectCard('approvalCard1')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12.5px; cursor: pointer;">
+                  Reject ✕
+                </button>
+              </div>
+
             </div>
           </div>
 
-          <!-- Pending Card 2 -->
-          <div class="approval-request-card" id="approvalCard2" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" class="approval-card-checkbox" onchange="updateBatchApprovalCount()" style="width: 18px; height: 18px; accent-color: var(--purple-primary); cursor: pointer;">
+
+          <!-- CARD 2: Hailizam bin Mohamed -->
+          <div class="approval-request-card" id="approvalCard2" data-name="Hailizam bin Mohamed" data-empno="007216" data-type="Medical Leave" data-start="2026-09-12" data-end="2026-09-12" data-days="1" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            
+            <!-- 1. Header Banner (Executive Purple Brand Bar for ALL Cards) -->
+            <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                
+                <!-- Custom Selection Checkbox replacing Avatar Circle -->
+                <div style="display: flex; align-items: center;">
+                  <input type="checkbox" class="approval-card-checkbox" onchange="updateBatchApprovalCount()" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
+                </div>
+
                 <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Hailizam bin Mohamed</div>
-                  <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Operation Manager • Emp #007216</div>
+                  <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">Hailizam bin Mohamed</div>
+                  <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">Operation Manager • Emp #007216</div>
                 </div>
               </div>
-              <span style="font-size: 10.5px; font-weight: 800; background: rgba(245, 158, 11, 0.15); color: var(--warning); padding: 3px 10px; border-radius: 10px;">Pending</span>
-            </div>
-            <div style="font-size: 12px; font-weight: 800; color: var(--purple-text); margin-bottom: 4px; padding-left: 28px;">💊 Medical Leave (1.0 Day)</div>
-            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 12px; padding-left: 28px;">12 Sep 2026 • Reason: Medical Checkup (MC Attached)</div>
 
-            <div style="display: flex; gap: 8px; padding-left: 28px;">
-              <button style="flex: 1; padding: 8px; border-radius: 10px; background: var(--secondary); color: #ffffff; font-weight: 800; font-size: 12px; border: none; cursor: pointer;"
-                onclick="singleApproveCard('approvalCard2', 'Hailizam')">Approve ✔</button>
-              <button style="flex: 1; padding: 8px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12px; cursor: pointer;"
-                onclick="singleRejectCard('approvalCard2')">Reject</button>
+              <!-- Right: Sleek Mini 3-Dots Button & Pending Pill Tag -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" onclick="openApprovalThreeDotsMenu('Hailizam bin Mohamed', 'Medical Leave', '12 Sep 2026', '1 Day', 'Medical Checkup (MC Attached)', { docRef: 'VLV000000000791', docStatus: 'Next Approval', employee: 'Hailizam bin Mohamed • Emp #007216', branch: 'TIMES SQUARE BRANCH', department: 'Operations', leaveYear: '2026', cutoffPeriod: '01/01/2026 – 31/12/2026', submitter: 'Hailizam bin Mohamed', submitDate: '12 Sep 2026', fromDate: '12 Sep 2026', toDate: '12 Sep 2026', duration: '1 Day', leaveDays: '1.000', mcChitNo: 'MC-12312123', reliever: 'Sarah Jenkins', remark: 'Medical Checkup (MC Attached)', attachment: 'clinic_mc_slip.jpg', advanceLeave: 'No', shortNotice: 'No' })" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+                <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Pending</span>
+              </div>
+            </div>
+
+            <!-- 2. Card Content Body -->
+            <div style="padding: 14px;">
+              
+              <!-- Type & Reason (2 Column Layout) -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Type</div>
+                  <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Medical Leave</div>
+                  <div style="font-size: 11px; font-weight: 800; color: #3b82f6; margin-top: 1px;">(MC Verified)</div>
+                </div>
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Reason</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Medical Checkup</div>
+                </div>
+              </div>
+
+              <!-- Date Timeline Section -->
+              <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                  <span>Date Start</span>
+                  <span>Date End</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span>Sat, 12/09/2026</span>
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                  </div>
+
+                  <!-- Arrow in center with duration -->
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: -2px;">1 Day</span>
+                    <div style="width: 100%; height: 2px; background: var(--purple-primary); position: relative;">
+                      <div style="position: absolute; right: 0; top: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid var(--purple-primary);"></div>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                    <span>Sat, 12/09/2026</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Remark Section -->
+              <div style="margin-bottom: 14px;">
+                <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remark</div>
+                <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+                  Routine hospital specialist appointment & panel clinic receipt attached.
+                </div>
+              </div>
+
+              <!-- Bottom Approve / Reject Buttons -->
+              <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="singleApproveCard('approvalCard2', 'Hailizam')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12.5px; border: none; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);">
+                  Approve ✔
+                </button>
+                <button type="button" onclick="singleRejectCard('approvalCard2')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12.5px; cursor: pointer;">
+                  Reject ✕
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CARD 3: Nurfarhana binti Mohamad Yusoff -->
+          <div class="approval-request-card" id="approvalCard3" data-name="Nurfarhana binti Mohamad Yusoff" data-empno="008004" data-type="Annual Leave" data-start="2026-09-15" data-end="2026-09-16" data-days="2" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            
+            <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center;">
+                  <input type="checkbox" class="approval-card-checkbox" onchange="updateBatchApprovalCount()" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
+                </div>
+                <div>
+                  <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">Nurfarhana binti Mohamad</div>
+                  <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">Bank Teller • Emp #008004</div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" onclick="openApprovalThreeDotsMenu('Nurfarhana binti Mohamad', 'Annual Leave', '15 Sep 2026 - 16 Sep 2026', '2 Days', 'Family Vacation', { docRef: 'VLV000000000792', docStatus: 'Next Approval', employee: 'Nurfarhana binti Mohamad • Emp #008004', branch: 'SUNWAY BRANCH', department: 'FINANCE & BANKING', leaveYear: '2026', cutoffPeriod: '01/01/2026 – 31/12/2026', submitter: 'Nurfarhana binti Mohamad', submitDate: '10 Sep 2026', fromDate: '15 Sep 2026', toDate: '16 Sep 2026', duration: '2 Days', leaveDays: '2.000', mcChitNo: '', reliever: 'Ahmad Rafy', remark: 'Scheduled family vacation trip to Penang.', attachment: 'flight_itinerary.pdf', advanceLeave: 'No', shortNotice: 'No' })" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+                <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Pending</span>
+              </div>
+            </div>
+
+            <div style="padding: 14px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Type</div>
+                  <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Annual Leave</div>
+                  <div style="font-size: 11px; font-weight: 800; color: #10b981; margin-top: 1px;">(Planned)</div>
+                </div>
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Reason</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Family Vacation</div>
+                </div>
+              </div>
+
+              <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                  <span>Date Start</span>
+                  <span>Date End</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span>Tue, 15/09/2026</span>
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                  </div>
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: -2px;">2 Days</span>
+                    <div style="width: 100%; height: 2px; background: var(--purple-primary); position: relative;">
+                      <div style="position: absolute; right: 0; top: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid var(--purple-primary);"></div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                    <span>Wed, 16/09/2026</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remark</div>
+                <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+                  Scheduled family vacation trip to Penang with flight tickets attached.
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="singleApproveCard('approvalCard3', 'Nurfarhana')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12.5px; border: none; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);">
+                  Approve ✔
+                </button>
+                <button type="button" onclick="singleRejectCard('approvalCard3')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12.5px; cursor: pointer;">
+                  Reject ✕
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 4: Alex Tan Chin Hock -->
+          <div class="approval-request-card" id="approvalCard4" data-name="Alex Tan Chin Hock" data-empno="009102" data-type="Emergency Leave" data-start="2026-09-29" data-end="2026-09-29" data-days="1" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            
+            <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center;">
+                  <input type="checkbox" class="approval-card-checkbox" onchange="updateBatchApprovalCount()" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
+                </div>
+                <div>
+                  <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">Alex Tan Chin Hock</div>
+                  <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">Senior Software Engineer • Emp #009102</div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" onclick="openApprovalThreeDotsMenu('Alex Tan Chin Hock', 'Emergency Leave', '29 Sep 2026', '1 Day', 'Urgent Home Repair', { docRef: 'VLV000000000793', docStatus: 'Next Approval', employee: 'Alex Tan Chin Hock • Emp #009102', branch: 'TIMES SQUARE BRANCH', department: 'TECH & IT', leaveYear: '2026', cutoffPeriod: '01/01/2026 – 31/12/2026', submitter: 'Alex Tan Chin Hock', submitDate: '29 Sep 2026', fromDate: '29 Sep 2026', toDate: '29 Sep 2026', duration: '1 Day', leaveDays: '1.000', mcChitNo: '', reliever: 'None Assigned', remark: 'Sudden water pipe burst at apartment requiring urgent repair.', attachment: 'repair_invoice.pdf', advanceLeave: 'No', shortNotice: 'Yes' })" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+                <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Pending</span>
+              </div>
+            </div>
+
+            <div style="padding: 14px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Type</div>
+                  <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Emergency Leave</div>
+                  <div style="font-size: 11px; font-weight: 800; color: #f59e0b; margin-top: 1px;">(Urgent)</div>
+                </div>
+                <div>
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Reason</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Urgent Home Repair</div>
+                </div>
+              </div>
+
+              <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                  <span>Date Start</span>
+                  <span>Date End</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span>Tue, 29/09/2026</span>
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                  </div>
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: -2px;">1 Day</span>
+                    <div style="width: 100%; height: 2px; background: var(--purple-primary); position: relative;">
+                      <div style="position: absolute; right: 0; top: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid var(--purple-primary);"></div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                    <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                    <span>Tue, 29/09/2026</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remark</div>
+                <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+                  Sudden water pipe burst at apartment requiring urgent repair.
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="singleApproveCard('approvalCard4', 'Alex Tan')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12.5px; border: none; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);">
+                  Approve ✔
+                </button>
+                <button type="button" onclick="singleRejectCard('approvalCard4')" style="flex: 1; padding: 9.5px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12.5px; cursor: pointer;">
+                  Reject ✕
+                </button>
+              </div>
             </div>
           </div>
 
         </div>
 
-        <!-- Empty State Container (Hidden by default) -->
-        <div id="approvalsEmptyState" style="display: none; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 32px 20px; text-align: center; margin-top: 10px;">
+        <!-- Empty State Container -->
+        <div id="approvalsEmptyState" style="display: none; background: var(--bg-card); border: 1px dashed var(--purple-primary); border-radius: 20px; padding: 32px 20px; text-align: center; margin-top: 10px;">
           <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
           <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">All Caught Up!</div>
           <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">There are no pending subordinate leave requests to approve.</div>
         </div>
 
-        <!-- FLOATING CONTEXTUAL SELECTION BAR (WORKDAY & RIPPLING ENTERPRISE DESIGN) -->
-        <div id="teamApprovalsFloatingBar" style="display: none; position: sticky; bottom: 12px; z-index: 100; margin-top: 14px; background: var(--bg-card); border: 1px solid var(--purple-primary); border-radius: 20px; padding: 10px 14px; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 15px rgba(124, 58, 237, 0.25); backdrop-filter: blur(12px);">
+        <!-- FLOATING BATCH SELECTION BAR -->
+        <div id="teamApprovalsFloatingBar" style="display: none; position: sticky; bottom: 12px; z-index: 100; margin-top: 14px; background: var(--bg-card); border: 1.5px solid var(--purple-primary); border-radius: 20px; padding: 10px 14px; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 15px rgba(124, 58, 237, 0.25); backdrop-filter: blur(12px);">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span id="floatingSelectedCountBadge" style="background: var(--purple-primary); color: #ffffff; font-weight: 900; font-size: 11.5px; padding: 3px 9px; border-radius: 12px;">2</span>
+            <span id="floatingSelectedCountBadge" style="background: var(--purple-primary); color: #ffffff; font-weight: 900; font-size: 11.5px; padding: 3px 9px; border-radius: 12px;">0</span>
             <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Selected</span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
-            <button type="button" onclick="executeBatchReject()" style="padding: 7px 14px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger); font-weight: 800; font-size: 12px; cursor: pointer;">
+            <button type="button" onclick="executeBatchReject()" style="padding: 7.5px 14px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger); font-weight: 800; font-size: 12px; cursor: pointer;">
               Reject
             </button>
-            <button type="button" onclick="executeBatchApprove()" style="padding: 7px 18px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12px; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); display: flex; align-items: center; gap: 6px;">
-              <span>Approve ✓</span>
+            <button type="button" onclick="executeBatchApprove()" style="padding: 7.5px 18px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12px; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); display: flex; align-items: center; gap: 6px;">
+              <span>Approve Selected ✔</span>
             </button>
           </div>
         </div>
@@ -5225,6 +5539,802 @@
           <button type="button" onclick="submitLeaveApplicationForm()"
             style="padding: 9px 22px; border-radius: 10px; background: var(--purple-primary); color: #ffffff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; box-shadow: var(--shadow-sm);">
             Submit
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- THREE DOTS ACTION SHEET MODAL -->
+    <div class="indicators-overlay" id="approvalThreeDotsMenuOverlay" onclick="closeApprovalThreeDotsMenu(event)" style="display: none;">
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="padding-bottom: 24px;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 14px;">
+          <div class="sheet-title">
+            <h3 id="threeDotsApplicantName" style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Request Options</h3>
+            <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Select an action for this leave request</p>
+          </div>
+          <button class="sheet-close-btn" onclick="closeApprovalThreeDotsMenu()">✕</button>
+        </div>
+
+        <div style="padding: 0 16px; display: flex; flex-direction: column; gap: 10px;">
+          <!-- Option 1: View Details -->
+          <button type="button" onclick="triggerViewDetailsFromMenu()" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                📄
+              </div>
+              <div style="text-align: left;">
+                <div>View Details</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">See full entitlement, remarks & attachments</div>
+              </div>
+            </div>
+            <span style="font-size: 16px; color: var(--text-muted);">›</span>
+          </button>
+
+          <!-- Option 2: View Workflow -->
+          <button type="button" onclick="triggerViewWorkflowFromMenu()" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                🔀
+              </div>
+              <div style="text-align: left;">
+                <div>View Workflow</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Track multi-tier approval status</div>
+              </div>
+            </div>
+            <span style="font-size: 16px; color: var(--text-muted);">›</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW DETAILS MODAL -->
+    <div class="indicators-overlay" id="approvalDetailsModalOverlay" onclick="closeApprovalDetailsModal(event)" style="display: none;">
+      <style>
+        #approvalDetailsModalOverlay .details-modal-body::-webkit-scrollbar {
+          width: 4px;
+        }
+        #approvalDetailsModalOverlay .details-modal-body::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        #approvalDetailsModalOverlay .details-modal-body::-webkit-scrollbar-thumb {
+          background: rgba(124, 58, 237, 0.28);
+          border-radius: 4px;
+        }
+        .badge-status-yes {
+          color: #d97706;
+          background: rgba(245, 158, 11, 0.14);
+          border: 1px solid rgba(245, 158, 11, 0.35);
+          font-size: 11px;
+          font-weight: 800;
+          padding: 2.5px 10px;
+          border-radius: 6px;
+          display: inline-flex;
+          align-items: center;
+        }
+        [data-theme="dark"] .badge-status-yes {
+          color: #fbbf24;
+          background: rgba(245, 158, 11, 0.22);
+          border-color: rgba(245, 158, 11, 0.45);
+        }
+        .badge-status-no {
+          color: var(--text-muted);
+          background: var(--bg-input);
+          border: 1px solid var(--border-subtle);
+          font-size: 11px;
+          font-weight: 700;
+          padding: 2.5px 10px;
+          border-radius: 6px;
+          display: inline-flex;
+          align-items: center;
+        }
+      </style>
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="max-height: calc(100% - 24px); height: calc(100% - 24px); padding: 0 !important; overflow: hidden !important; display: flex; flex-direction: column; border-radius: 28px 28px 0 0; background: var(--bg-sheet);">
+        
+        <!-- Sticky Header Bar: Purple Gradient filling sheet curve natively -->
+        <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%) !important; color: #ffffff !important; padding: 12px 18px 14px 18px; border-radius: 28px 28px 0 0; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 10;">
+          <!-- Handle pill -->
+          <div style="width: 36px; height: 4px; background: rgba(255, 255, 255, 0.4); border-radius: 4px; margin: 0 auto;"></div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button type="button" onclick="closeApprovalDetailsModal()" title="Back" style="background: rgba(255, 255, 255, 0.2); border: none; color: #ffffff; width: 30px; height: 30px; border-radius: 50%; font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background 0.2s;">
+                ‹
+              </button>
+              <div>
+                <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.2px; line-height: 1.2;">Leave Approval</h3>
+                <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 2px;">Review leave application details</div>
+              </div>
+            </div>
+            <button type="button" onclick="closeApprovalDetailsModal()" class="sheet-close-btn" title="Close" style="background: rgba(255, 255, 255, 0.2); border: none; color: #ffffff; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Form Body: Excel-like Row-by-Row Table -->
+        <div class="details-modal-body" style="flex: 1 1 auto; overflow-y: auto; padding: 14px 16px 24px 16px; display: flex; flex-direction: column; gap: 14px; min-height: 0;">
+          
+          <!-- SECTION 1: LEAVE APPLICATION -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); flex-shrink: 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+              <tbody>
+                <!-- Row: Leave Type -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Leave Type</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 800;">
+                    <span id="detailsLeaveType" style="color: var(--purple-primary); font-size: 12.5px;">ANNUAL LEAVE</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Period -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Period</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsFromDate" style="font-weight: 700;">23 Feb 2026</span>
+                    <span style="color: var(--text-muted); font-size: 11px; margin: 0 4px;">to</span>
+                    <strong id="detailsToDate" style="color: var(--text-primary); font-size: 12px; font-weight: 700;">25 Feb 2026</strong>
+                  </td>
+                </tr>
+
+                <!-- Row: Duration -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Duration</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 800;">
+                    <span id="detailsDuration" style="font-size: 13px; color: var(--text-primary);">3 Days</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Leave Days -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Leave Days</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsLeaveDays" style="font-weight: 800; color: var(--text-primary);">3.000</span>
+                    <span style="font-size: 10.5px; color: var(--text-muted); margin-left: 2px;">Days / Hours</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Reliever -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Reliever</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsReliever">Benjamin Lee (On Behalf)</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Reason -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Reason</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 700;">
+                    <span id="detailsReasonText">Personnel Issues</span>
+                  </td>
+                </tr>
+
+                <!-- Row: MC Chit No (conditional) -->
+                <tr id="detailsMcChitRow" style="display: none;">
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Medical Chit (MC)</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsMcChitNo" style="font-family: monospace; font-weight: 800; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 2px 7px; border-radius: 6px;">-</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Applicant Remarks (conditional) -->
+                <tr id="detailsRemarkRow" style="display: none;">
+                  <td style="padding: 9px 12px; border-bottom: none; border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%; vertical-align: top;">Remarks</td>
+                  <td style="padding: 9px 12px; border-bottom: none; color: var(--text-primary); width: 62%; font-weight: 500; line-height: 1.4;">
+                    <div id="detailsRemarkText">Urgent personnel emergency leave for home repair & family assistance.</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SECTION 2: EMPLOYEE & AUDIT RECORD -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); flex-shrink: 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+              <tbody>
+                <!-- Row: Document Ref -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Doc Reference</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 700;">
+                    <span id="detailsDocRef" style="font-family: monospace; letter-spacing: 0.3px;">VLV000000000790</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Status -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Status</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsDocStatus" style="font-size: 10.5px; font-weight: 800; color: #7c3aed; background: rgba(124, 58, 237, 0.12); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(124, 58, 237, 0.25);">Next Approval</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Employee -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Employee</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 800;">
+                    <span id="detailsEmployee">Afifah Nasir • Emp #004177</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Department -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Department</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsDepartment">Quality Assurance</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Branch -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Branch</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsBranch">TIMES SQUARE BRANCH</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Submitter -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Submitter</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsSubmitter">Afifah Nasir</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Submit Date -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Submit Date</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsSubmitDate">23 Feb 2026</span>
+                  </td>
+                </tr>
+
+                <!-- Row: Approval Stage & Backup Approvers -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Approval Stage</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <span style="font-size: 11px; font-weight: 800; color: #7c3aed; background: rgba(124, 58, 237, 0.12); padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(124, 58, 237, 0.25);">Level 1 of 3</span>
+                      <span style="font-size: 10.5px; font-weight: 700; color: #059669; background: rgba(16, 185, 129, 0.12); padding: 2px 7px; border-radius: 6px;">👥 Backup Active</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.45;">
+                      Primary: <strong id="detailsPrimaryApprover" style="color: var(--text-primary);">Sarah Jenkins (Manager)</strong><br>
+                      Backup: <strong id="detailsBackupApprover" style="color: var(--purple-primary);">Benjamin Lee (Acting on Behalf)</strong>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row: Leave Year & Cutoff -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: none; border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Leave Year</td>
+                  <td style="padding: 9px 12px; border-bottom: none; color: var(--text-primary); width: 62%; font-weight: 600;">
+                    <span id="detailsLeaveYear" style="font-weight: 800;">2026</span>
+                    <span style="font-size: 10.5px; color: var(--text-muted); font-weight: 500; margin-left: 4px;">(<span id="detailsCutoffPeriod">01/01/2026 – 31/12/2026</span>)</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SECTION 3: VERIFICATION & ACTIONS -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); flex-shrink: 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+              <tbody>
+                <!-- Row: Advance Leave -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Advance Leave</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%;">
+                    <div id="detailsAdvanceLeaveContainer" style="display: flex; align-items: center;">
+                      <span class="badge-status-no">No</span>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row: Short Notice -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Short Notice</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%;">
+                    <div id="detailsShortNoticeContainer" style="display: flex; align-items: center;">
+                      <span class="badge-status-yes">Yes</span>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row: Attached Document -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%;">Attachment</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                      <div style="display: flex; align-items: center; gap: 5px; min-width: 0;">
+                        <span style="font-size: 13px;">📎</span>
+                        <span id="detailsAttachmentName" style="font-size: 11.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;">supporting_emergency_docs.pdf</span>
+                      </div>
+                      <button type="button" onclick="if (typeof showToast === 'function') showToast('Opening attachment preview...', 'info')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 800; cursor: pointer; flex-shrink: 0;">
+                        View ↗
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row: Approver Comments -->
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: none; border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%; vertical-align: middle;">
+                    Comments
+                  </td>
+                  <td style="padding: 6px 10px; border-bottom: none; width: 62%;">
+                    <input type="text" id="detailsApproverComments" placeholder="Add comments (optional)..." style="width: 100%; padding: 7px 10px; border-radius: 7px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 11.5px; font-weight: 500; outline: none; box-sizing: border-box;">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Sticky Footer: styled buttons -->
+        <div style="padding: 12px 18px 22px 18px; background: var(--bg-card); border-top: 1px solid var(--border-subtle); flex-shrink: 0; box-shadow: 0 -4px 12px rgba(0,0,0,0.05);">
+          <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+            <div style="display: flex; align-items: center; gap: 4px; min-width: 0;">
+              <span>🛡️ Approving as:</span>
+              <strong id="activeApproverRoleLabel" style="color: var(--purple-primary); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">Backup Approver (Benjamin Lee)</strong>
+            </div>
+            <button type="button" onclick="openSelectBackupApproverModal()" style="background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.3); padding: 2.5px 8px; border-radius: 6px; font-weight: 800; font-size: 10px; cursor: pointer; flex-shrink: 0;">
+              🔄 Switch Backup
+            </button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+            <button type="button" onclick="handleSingleApprovalAction('Approve (Primary)')" style="padding: 10.5px 2px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 11.5px; border: none; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.2s ease;">
+              Approve
+            </button>
+            <button type="button" onclick="handleSingleApprovalAction('Approve (as Backup)')" style="padding: 10.5px 2px; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; font-weight: 800; font-size: 11.5px; border: none; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: all 0.2s ease;">
+              🛡️ Backup
+            </button>
+            <button type="button" onclick="handleSingleApprovalAction('Resubmit')" style="padding: 10.5px 2px; border-radius: 12px; background: rgba(124, 58, 237, 0.12); color: #a78bfa; font-weight: 700; font-size: 11.5px; border: 1px solid rgba(124, 58, 237, 0.3); cursor: pointer; text-align: center; transition: all 0.2s ease;">
+              Resubmit
+            </button>
+            <button type="button" onclick="handleSingleApprovalAction('Reject')" style="padding: 10.5px 2px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); color: #f87171; font-weight: 700; font-size: 11.5px; border: 1px solid rgba(239, 68, 68, 0.3); cursor: pointer; text-align: center; transition: all 0.2s ease;">
+              Reject
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW WORKFLOW INFORMATION MODAL (PREMIUM ULTRA-ELEVATED) -->
+    <div class="indicators-overlay" id="approvalWorkflowModalOverlay" onclick="closeApprovalWorkflowModal(event)" style="display: none;">
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="max-height: calc(100% - 24px); overflow-y: auto; padding-bottom: 24px; border-top-left-radius: 24px; border-top-right-radius: 24px; backdrop-filter: blur(16px);">
+        <div class="sheet-handle" style="width: 40px; height: 5px; border-radius: 99px; background: rgba(148, 163, 184, 0.35); margin: 8px auto 4px auto;"></div>
+        
+        <!-- Premium Header Strip -->
+        <div class="sheet-header" style="border-bottom: 1px solid var(--border-subtle); padding: 10px 18px 14px 18px; margin-bottom: 14px;">
+          <div class="sheet-title" style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(99, 102, 241, 0.2) 100%); display: flex; align-items: center; justify-content: center; font-size: 16px; border: 1px solid rgba(124, 58, 237, 0.35); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);">
+                  🔀
+                </div>
+                <div>
+                  <h3 style="font-size: 17.5px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.3px; margin: 0;">Workflow Information</h3>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                    <span style="font-size: 10.5px; font-weight: 700; color: var(--purple-primary); background: var(--purple-subtle); padding: 1.5px 7px; border-radius: 6px; border: 1px solid var(--purple-border);">3-Level Approval</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">Real-time audit history & backup access</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="sheet-close-btn" onclick="closeApprovalWorkflowModal()" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
+        </div>
+
+        <div style="padding: 0 16px; display: flex; flex-direction: column; gap: 14px;">
+          
+          <!-- LEVEL 1 APPROVER DETAILS (MULTI-APPROVER: 5 APPROVERS POOL) -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;">
+            <!-- Header Bar -->
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.06) 100%); border-bottom: 1px solid var(--border-subtle); padding: 9.5px 14px; border-left: 4px solid #10b981; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.1px;">Level 1 Approver Details</span>
+                <span style="font-size: 10.5px; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 1.5px 7px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);">👥 5 Approvers Pool (Any 1)</span>
+              </div>
+              <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 2.5px 8px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 3px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span> Active Step
+              </span>
+            </div>
+
+            <!-- Approver Summary Bar (Stacked Avatars + Toggle) -->
+            <div style="padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); background: var(--bg-card);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <!-- Stacked Avatars -->
+                <div style="display: flex; align-items: center;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); z-index: 5;">SJ</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #f43f5e, #be123c); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 4;">FR</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 3;">BL</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 2;">DT</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-input); color: var(--purple-primary); font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 1;">+1</div>
+                </div>
+                <div>
+                  <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">5 Assigned Line Managers</div>
+                  <div style="font-size: 10.5px; color: #10b981; font-weight: 700;">1 Approved • 4 Pending</div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" onclick="openSelectBackupApproverModal('Level 1')" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; border: none; padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3);">
+                  🛡️ Backup
+                </button>
+                <button type="button" id="level1ApproversToggleBtn" onclick="toggleLevelApproversList('level1Approvers')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); padding: 6px 10px; border-radius: 16px; font-size: 11px; font-weight: 800; cursor: pointer;">
+                  ▼ Show All 5
+                </button>
+              </div>
+            </div>
+
+            <!-- Expandable 5-Approver List -->
+            <div id="level1Approvers" style="display: none; padding: 10px 14px; flex-direction: column; gap: 8px; background: var(--bg-input); max-height: 220px; overflow-y: auto;">
+              
+              <!-- Approver 1 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #10b981; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">SJ</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Sarah Jenkins</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Line Manager • Emp #EBB01</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 2px 7px; border-radius: 6px;">✓ Approved</span>
+              </div>
+
+              <!-- Approver 2 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #f43f5e; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">FR</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Farhan binti rahmat</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Assistant Mgr • Emp #EBB12</div>
+                  </div>
+                </div>
+                <button type="button" onclick="openSelectBackupApproverModal('Level 1')" style="background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.3); padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; cursor: pointer;">🛡️ Backup</button>
+              </div>
+
+              <!-- Approver 3 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #7c3aed; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">BL</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Benjamin Lee</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Senior Ops Exec • Emp #EBB31</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+              <!-- Approver 4 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #3b82f6; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">DT</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">David Tan</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Deputy HOD • Emp #EBB25</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+              <!-- Approver 5 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #f59e0b; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">MC</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Michael Chang</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Regional Ops Lead • Emp #EBB45</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LEVEL 2 APPROVER DETAILS (MULTI-APPROVER: 7 APPROVERS POOL) -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;">
+            <!-- Header Bar -->
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%); border-bottom: 1px solid var(--border-subtle); padding: 9.5px 14px; border-left: 4px solid #f59e0b; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.1px;">Level 2 Approver Details</span>
+                <span style="font-size: 10.5px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 1.5px 7px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.3);">👥 7 Approvers Pool (All Must)</span>
+              </div>
+              <span style="font-size: 10px; font-weight: 800; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2.5px 8px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; gap: 3px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #f59e0b;"></span> ⏳ Pending
+              </span>
+            </div>
+
+            <!-- Approver Summary Bar (Stacked Avatars + Toggle) -->
+            <div style="padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); background: var(--bg-card);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <!-- Stacked Avatars -->
+                <div style="display: flex; align-items: center;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #f43f5e, #be123c); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); z-index: 5;">MV</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 4;">RG</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 3;">AR</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #ec4899, #be185d); color: #fff; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 2;">CZ</div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-input); color: var(--purple-primary); font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-card); margin-left: -10px; z-index: 1;">+3</div>
+                </div>
+                <div>
+                  <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">7 Department Approvers</div>
+                  <div style="font-size: 10.5px; color: #d97706; font-weight: 700;">0 of 7 Approved • 7 Pending</div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" onclick="openSelectBackupApproverModal('Level 2')" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; border: none; padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3);">
+                  🛡️ Backup
+                </button>
+                <button type="button" id="level2ApproversToggleBtn" onclick="toggleLevelApproversList('level2Approvers')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); padding: 6px 10px; border-radius: 16px; font-size: 11px; font-weight: 800; cursor: pointer;">
+                  ▼ Show All 7
+                </button>
+              </div>
+            </div>
+
+            <!-- Expandable 7-Approver List -->
+            <div id="level2Approvers" style="display: none; padding: 10px 14px; flex-direction: column; gap: 8px; background: var(--bg-input); max-height: 240px; overflow-y: auto;">
+              
+              <!-- Approver 1 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #f43f5e; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">MV</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Marcus Vance</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Head of Department • Emp #HOD01</div>
+                  </div>
+                </div>
+                <button type="button" onclick="openSelectBackupApproverModal('Level 2')" style="background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.3); padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; cursor: pointer;">🛡️ Backup</button>
+              </div>
+
+              <!-- Approver 2 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #10b981; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">RG</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Rachel Green</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">HR Lead • Emp #HR02</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+              <!-- Approver 3 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #3b82f6; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">AR</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Alex Rivera</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Finance Director • Emp #FN05</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+              <!-- Approver 4 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #ec4899; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">CZ</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Chloe Zhang</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Audit Officer • Emp #AU08</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+              <!-- Approver 5 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #6366f1; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">DK</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Daniel Kim</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">VP Operations • Emp #OP01</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+              <!-- Approver 6 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #8b5cf6; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">ER</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Elena Rostova</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Legal Counsel • Emp #LG03</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+              <!-- Approver 7 -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 28px; height: 28px; border-radius: 50%; background: #14b8a6; color: #fff; font-weight: 800; font-size: 10.5px; display: flex; align-items: center; justify-content: center;">FH</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Fikri Hassan</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Compliance Manager • Emp #CP09</div>
+                  </div>
+                </div>
+                <span style="font-size: 10px; font-weight: 700; color: #d97706; background: rgba(245, 158, 11, 0.15); padding: 2px 7px; border-radius: 6px;">⏳ Pending</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LEVEL 3 APPROVER DETAILS -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;">
+            <!-- Header Bar -->
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(79, 70, 229, 0.06) 100%); border-bottom: 1px solid var(--border-subtle); padding: 9.5px 14px; border-left: 4px solid #6366f1; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.1px;">Level 3 Approver Details</span>
+              </div>
+              <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); background: var(--bg-input); padding: 2.5px 8px; border-radius: 20px; border: 1px solid var(--border-subtle);">
+                Final Step
+              </span>
+            </div>
+            <!-- Approver Body Card -->
+            <div style="padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 11px; min-width: 0;">
+                <!-- Avatar -->
+                <div style="position: relative; flex-shrink: 0;">
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); color: #ffffff; font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(244, 63, 94, 0.35);">
+                    FR
+                  </div>
+                  <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--text-caption); border: 2px solid var(--bg-card);"></span>
+                </div>
+                <div style="min-width: 0;">
+                  <div style="font-size: 10.5px; font-weight: 800; color: #f43f5e; background: rgba(244, 63, 94, 0.1); padding: 2px 7.5px; border-radius: 6px; display: inline-block; margin-bottom: 3.5px; border: 1px solid rgba(244, 63, 94, 0.25);">
+                    EBB12 - Farhan binti rahmat
+                  </div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Rachel Green (HR Statutory Audit)
+                  </div>
+                </div>
+              </div>
+              <button type="button" onclick="openSelectBackupApproverModal('Level 3')" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 11.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); flex-shrink: 0; display: flex; align-items: center; gap: 5px; transition: all 0.2s ease;">
+                <span style="font-size: 12px;">🛡️</span> Backup
+              </button>
+            </div>
+          </div>
+
+          <!-- WORKFLOW HISTORY SECTION -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 18px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-top: 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 15px;">📜</span>
+                <span style="font-size: 14px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.2px;">Workflow Audit Trail</span>
+              </div>
+              <span style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); background: var(--bg-input); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">Real-time</span>
+            </div>
+
+            <!-- Audit Trail Timeline Feed with Connected Line -->
+            <div style="position: relative; padding-left: 12px; display: flex; flex-direction: column; gap: 14px; font-size: 11.5px; color: var(--text-secondary);">
+              <!-- Gradient Vertical Line -->
+              <div style="position: absolute; top: 12px; bottom: 12px; left: 23px; width: 2px; background: linear-gradient(to bottom, #7c3aed 0%, #10b981 50%, #6366f1 100%); opacity: 0.6; z-index: 1;"></div>
+
+              <!-- Log 1 -->
+              <div style="display: flex; align-items: flex-start; gap: 12px; position: relative; z-index: 2;">
+                <div style="width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%); color: #ffffff; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);">
+                  📥
+                </div>
+                <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 8.5px 12px; flex: 1;">
+                  <div style="color: var(--text-primary); font-weight: 700; line-height: 1.35;">
+                    Leave Request Submitted by Employee
+                  </div>
+                  <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 500; margin-top: 3px;">
+                    12 May 2020 • 22:41:09
+                  </div>
+                </div>
+              </div>
+
+              <!-- Log 2 -->
+              <div style="display: flex; align-items: flex-start; gap: 12px; position: relative; z-index: 2;">
+                <div style="width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);">
+                  ✓
+                </div>
+                <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 8.5px 12px; flex: 1;">
+                  <div style="color: var(--text-primary); font-weight: 700; line-height: 1.35;">
+                    Employee <strong style="color: var(--purple-primary);">EBB12, Farhan binti rahmat</strong> Approved (Level 1)
+                  </div>
+                  <div style="font-size: 10.5px; color: #10b981; font-weight: 700; margin-top: 3px; display: flex; align-items: center; gap: 4px;">
+                    <span>✓ Verified</span> • 11 Jun 2021 • 03:41:10
+                  </div>
+                </div>
+              </div>
+
+              <!-- Log 3 -->
+              <div style="display: flex; align-items: flex-start; gap: 12px; position: relative; z-index: 2;">
+                <div style="width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);">
+                  ✓
+                </div>
+                <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 8.5px 12px; flex: 1;">
+                  <div style="color: var(--text-primary); font-weight: 700; line-height: 1.35;">
+                    Employee <strong style="color: var(--purple-primary);">EBB12, Farhan binti rahmat</strong> Approved (Level 2)
+                  </div>
+                  <div style="font-size: 10.5px; color: #10b981; font-weight: 700; margin-top: 3px; display: flex; align-items: center; gap: 4px;">
+                    <span>✓ Verified</span> • 23 Feb 2026 • 16:57:33
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" onclick="closeApprovalWorkflowModal()" style="width: 100%; padding: 13px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; font-weight: 800; font-size: 13.5px; border: none; cursor: pointer; margin-top: 4px; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4); transition: transform 0.15s ease;">
+            Close Workflow
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SELECT / SWITCH BACKUP APPROVER MODAL (TABLE VIEW MATCHING USER REFERENCE & PQ THEME) -->
+    <div class="indicators-overlay" id="selectBackupApproverModalOverlay" onclick="closeSelectBackupApproverModal(event)" style="display: none;">
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="max-height: calc(100% - 24px); overflow-y: auto; padding: 0 0 20px 0; border-top-left-radius: 20px; border-top-right-radius: 20px; background: var(--bg-card); box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden;">
+        
+        <!-- Header Bar with Deep Purple Gradient (App Theme Colors) -->
+        <div style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #4338ca 100%); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+          <h3 style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.2px;">Backup Approver</h3>
+          <button type="button" onclick="closeSelectBackupApproverModal()" style="width: 28px; height: 28px; border-radius: 50%; background: #ffffff; color: #4c1d95; border: none; font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">✕</button>
+        </div>
+
+        <div style="padding: 14px 16px 6px 16px;">
+          <!-- Subheader: Total Records -->
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 4px;">
+            <span>Total Records:</span> <span id="backupTotalRecordsCount" style="color: var(--purple-primary); font-weight: 800;">3</span>
+          </div>
+
+          <!-- Table Container with Lavender/Purple Header & Clean Rows -->
+          <div style="border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; background: var(--bg-card);">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+              <thead>
+                <tr style="background: var(--purple-subtle); border-bottom: 1px solid var(--purple-border);">
+                  <th style="padding: 11px 14px; font-weight: 800; color: var(--purple-primary); width: 72%;">
+                    Backup Approver
+                  </th>
+                  <th style="padding: 11px 14px; font-weight: 800; color: var(--purple-primary); text-align: right; width: 28%;">
+                    After<br>(Days)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Row 1: Anderson -->
+                <tr onclick="selectBackupApproverPerson('Anderson', 'Operations Lead')" style="border-bottom: 1px solid var(--border-subtle); cursor: pointer; transition: background 0.15s ease;" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 12.5px 14px; font-weight: 700; color: var(--text-primary);">
+                    Anderson
+                  </td>
+                  <td style="padding: 12.5px 14px; font-weight: 700; color: var(--text-secondary); text-align: right;">
+                    0
+                  </td>
+                </tr>
+
+                <!-- Row 2: Muhammad ali bin man -->
+                <tr onclick="selectBackupApproverPerson('Muhammad ali bin man', 'Assistant HOD')" style="border-bottom: 1px solid var(--border-subtle); background: var(--bg-input); cursor: pointer; transition: background 0.15s ease;" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background='var(--bg-input)'">
+                  <td style="padding: 12.5px 14px; font-weight: 700; color: var(--text-primary);">
+                    Muhammad ali bin man
+                  </td>
+                  <td style="padding: 12.5px 14px; font-weight: 700; color: var(--text-secondary); text-align: right;">
+                    0
+                  </td>
+                </tr>
+
+                <!-- Row 3: 1231234 -->
+                <tr onclick="selectBackupApproverPerson('1231234', 'System Backup')" style="cursor: pointer; transition: background 0.15s ease;" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 12.5px 14px; font-weight: 700; color: var(--text-primary);">
+                    1231234
+                  </td>
+                  <td style="padding: 12.5px 14px; font-weight: 700; color: var(--text-secondary); text-align: right;">
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <button type="button" onclick="closeSelectBackupApproverModal()" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-input); color: var(--text-primary); font-weight: 800; font-size: 13px; border: 1px solid var(--border-subtle); cursor: pointer; margin-top: 14px;">
+            Cancel
           </button>
         </div>
       </div>
@@ -6263,7 +7373,7 @@
             else if (sectionId === 'viewLeaveHighlight') headerTitle.innerText = 'Team Highlights';
             else if (sectionId === 'viewLeaveHighlightChart') headerTitle.innerText = 'Leave Days Analysis';
             else if (sectionId === 'viewStaffEntitlement') headerTitle.innerText = 'Staff Entitlement';
-            else if (sectionId === 'viewTeamApprovals') headerTitle.innerText = 'Team Approvals';
+            else if (sectionId === 'viewTeamApprovals') { headerTitle.innerText = 'Team Approvals'; if (typeof updateBatchApprovalCount === 'function') updateBatchApprovalCount(); }
           }
         }
       }
@@ -8374,6 +9484,572 @@
       }
     }
 
+    // ==========================================
+    // TEAM APPROVALS FILTER MODAL HANDLERS
+    // ==========================================
+    function openTeamApprovalsFilterModal() {
+      const overlay = document.getElementById('teamApprovalsFilterModalOverlay');
+      if (!overlay) return;
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.style.opacity = '1';
+        const content = overlay.querySelector('.filter-bottom-sheet-content');
+        if (content) content.style.transform = 'translateY(0)';
+      }, 10);
+    }
+
+    function closeTeamApprovalsFilterModal(event) {
+      const overlay = document.getElementById('teamApprovalsFilterModalOverlay');
+      if (!overlay) return;
+      if (event && event.target && event.target.id !== 'teamApprovalsFilterModalOverlay') {
+        return;
+      }
+      const content = overlay.querySelector('.filter-bottom-sheet-content');
+      if (content) content.style.transform = 'translateY(100%)';
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 300);
+    }
+
+    function handleTaOutstandingPresetChange(val) {
+      const container = document.getElementById('taCustomDaysRangeContainer');
+      if (container) {
+        container.style.display = (val === 'custom') ? 'grid' : 'none';
+      }
+    }
+
+    function resetTeamApprovalsFilterModal() {
+      if (document.getElementById('taFilterKeyword')) document.getElementById('taFilterKeyword').value = '';
+      if (document.getElementById('taFilterStartDate')) document.getElementById('taFilterStartDate').value = '';
+      if (document.getElementById('taFilterEndDate')) document.getElementById('taFilterEndDate').value = '';
+      if (document.getElementById('taFilterOutstandingDaysPreset')) document.getElementById('taFilterOutstandingDaysPreset').value = 'all';
+      if (document.getElementById('taFilterDaysMin')) document.getElementById('taFilterDaysMin').value = '';
+      if (document.getElementById('taFilterDaysMax')) document.getElementById('taFilterDaysMax').value = '';
+      handleTaOutstandingPresetChange('all');
+
+      const cards = document.querySelectorAll('#teamApprovalsListContainer .approval-request-card');
+      cards.forEach(card => card.style.display = 'block');
+
+      const summaryEl = document.getElementById('teamApprovalsFilterSummaryText');
+      if (summaryEl) summaryEl.innerText = 'All Requests • All Dates';
+
+      updateBatchApprovalCount();
+      if (typeof showToast === 'function') showToast('Approvals filter reset.');
+    }
+
+    function submitTeamApprovalsFilterModal() {
+      const kw = (document.getElementById('taFilterKeyword')?.value || '').toLowerCase().trim();
+      const startDate = document.getElementById('taFilterStartDate')?.value || '';
+      const endDate = document.getElementById('taFilterEndDate')?.value || '';
+      const preset = document.getElementById('taFilterOutstandingDaysPreset')?.value || 'all';
+      const minDays = parseFloat(document.getElementById('taFilterDaysMin')?.value) || 0;
+      const maxDays = parseFloat(document.getElementById('taFilterDaysMax')?.value) || 9999;
+
+      const cards = document.querySelectorAll('#teamApprovalsListContainer .approval-request-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        const cardStart = card.getAttribute('data-start') || '';
+        const cardEnd = card.getAttribute('data-end') || cardStart;
+        const cardDays = parseFloat(card.getAttribute('data-days')) || 1;
+
+        let match = true;
+
+        // 1. Search Keyword filter
+        if (kw && !text.includes(kw)) {
+          match = false;
+        }
+
+        // 2. Start Date & End Date range filter
+        if (match && startDate && cardEnd && cardEnd < startDate) {
+          match = false;
+        }
+        if (match && endDate && cardStart && cardStart > endDate) {
+          match = false;
+        }
+
+        // 3. Outstanding Days filter
+        if (match) {
+          if (preset === '1' && cardDays !== 1) match = false;
+          else if (preset === '2-3' && (cardDays < 2 || cardDays > 3)) match = false;
+          else if (preset === '4-5' && (cardDays < 4 || cardDays > 5)) match = false;
+          else if (preset === 'gt5' && cardDays <= 5) match = false;
+          else if (preset === 'custom' && (cardDays < minDays || cardDays > maxDays)) match = false;
+        }
+
+        card.style.display = match ? 'block' : 'none';
+        if (match) visibleCount++;
+      });
+
+      // Format clean summary pill string
+      let parts = [];
+      if (kw) parts.push(`"${kw}"`);
+      if (startDate || endDate) {
+        if (startDate && endDate) parts.push(`${startDate} ~ ${endDate}`);
+        else if (startDate) parts.push(`From ${startDate}`);
+        else parts.push(`Until ${endDate}`);
+      }
+      if (preset === '1') parts.push('1 Day');
+      else if (preset === '2-3') parts.push('2-3 Days');
+      else if (preset === '4-5') parts.push('4-5 Days');
+      else if (preset === 'gt5') parts.push('>5 Days');
+      else if (preset === 'custom') parts.push(`${minDays}-${maxDays} Days`);
+
+      const summaryEl = document.getElementById('teamApprovalsFilterSummaryText');
+      if (summaryEl) {
+        summaryEl.innerText = parts.length ? parts.join(' • ') : 'All Requests • All Dates';
+      }
+
+      updateBatchApprovalCount();
+      closeTeamApprovalsFilterModal();
+
+      if (typeof showToast === 'function') {
+        showToast(`🔍 Applied: ${visibleCount} Request${visibleCount !== 1 ? 's' : ''} Found`);
+      }
+    }
+
+    let currentSelectedApprovalData = {
+      applicant: 'Kathleen lee chee dee',
+      type: 'HOSPITALIZATION LEAVE',
+      dates: '11 May 2026',
+      duration: 'Full Day',
+      reason: 'Medical Rest & Recovery',
+      docRef: 'VLV000000000790',
+      docStatus: 'Next Approval',
+      employee: 'EBB21 - Kathleen lee chee dee',
+      branch: 'TIMES SQUARE BRANCH',
+      department: 'HUMAN RESOURCE',
+      leaveYear: '2026',
+      cutoffPeriod: '01/01/2026 - 31/12/2026',
+      submitter: 'EBB21 - Kathleen lee chee dee',
+      submitDate: '12 May 2026',
+      fromDate: '11 May 2026',
+      toDate: '11 May 2026',
+      leaveDays: '1.000',
+      mcChitNo: '12312123',
+      reliever: '',
+      attachment: 'lighthouse-clip-art-png.png'
+    };
+
+    function openApprovalThreeDotsMenu(applicant, type, dates, duration, reason, extraData = {}) {
+      currentSelectedApprovalData = {
+        applicant: applicant || 'Afifah Nasir',
+        type: type || 'Annual Leave',
+        dates: dates || '23 Feb 2026 - 25 Feb 2026',
+        duration: duration || '3 Days',
+        reason: reason || 'Personnel Issues',
+        docRef: extraData.docRef || 'VLV000000000790',
+        docStatus: extraData.docStatus || 'Next Approval',
+        employee: extraData.employee || `${applicant || 'Afifah Nasir'} • Emp #004177`,
+        branch: extraData.branch || 'TIMES SQUARE BRANCH',
+        department: extraData.department || 'Quality Assurance',
+        leaveYear: extraData.leaveYear || '2026',
+        cutoffPeriod: extraData.cutoffPeriod || '01/01/2026 – 31/12/2026',
+        submitter: extraData.submitter || applicant || 'Afifah Nasir',
+        submitDate: extraData.submitDate || (dates ? dates.split(' - ')[0] : '23 Feb 2026'),
+        fromDate: extraData.fromDate || (dates ? dates.split(' - ')[0] : '23 Feb 2026'),
+        toDate: extraData.toDate || (dates ? dates.split(' - ')[1] || dates.split(' - ')[0] : '25 Feb 2026'),
+        leaveDays: extraData.leaveDays || '3.000',
+        mcChitNo: extraData.mcChitNo !== undefined ? extraData.mcChitNo : '',
+        reliever: extraData.reliever || 'None Assigned',
+        remark: extraData.remark || '',
+        attachment: extraData.attachment || 'supporting_document.pdf',
+        advanceLeave: extraData.advanceLeave || 'No',
+        shortNotice: extraData.shortNotice !== undefined ? extraData.shortNotice : (type && (type.toLowerCase().includes('unplanned') || type.toLowerCase().includes('emergency')) || (extraData.remark && extraData.remark.toLowerCase().includes('urgent')) ? 'Yes' : 'No')
+      };
+
+      const nameEl = document.getElementById('threeDotsApplicantName');
+      if (nameEl) nameEl.innerText = `${applicant} • Request Options`;
+
+      const overlay = document.getElementById('approvalThreeDotsMenuOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        void overlay.offsetHeight;
+        overlay.classList.add('active');
+      }
+    }
+
+    function closeApprovalThreeDotsMenu(event) {
+      if (event && event.target && event.target.id !== 'approvalThreeDotsMenuOverlay' && !event.target.classList.contains('sheet-close-btn')) {
+        return;
+      }
+      const overlay = document.getElementById('approvalThreeDotsMenuOverlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => { overlay.style.display = 'none'; }, 250);
+      }
+    }
+
+    function toggleCustomSwitch(sliderEl, inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      input.checked = !input.checked;
+      const thumb = sliderEl.querySelector('span');
+      if (input.checked) {
+        sliderEl.style.backgroundColor = '#7c3aed';
+        if (thumb) thumb.style.transform = 'translateX(22px)';
+      } else {
+        sliderEl.style.backgroundColor = '#e5e7eb';
+        if (thumb) thumb.style.transform = 'translateX(0px)';
+      }
+    }
+
+    function triggerViewDetailsFromMenu() {
+      closeApprovalThreeDotsMenu();
+      setTimeout(() => {
+        const data = currentSelectedApprovalData || {};
+
+        const setElText = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = val || '';
+        };
+
+        setElText('detailsDocRef', data.docRef || 'VLV000000000790');
+        setElText('detailsDocStatus', data.docStatus || 'Next Approval');
+        setElText('detailsEmployee', data.employee || `${data.applicant || 'Afifah Nasir'} • Emp #004177`);
+        setElText('detailsBranch', data.branch || 'TIMES SQUARE BRANCH');
+        setElText('detailsDepartment', data.department || 'Quality Assurance');
+        setElText('detailsLeaveYear', data.leaveYear || '2026');
+        setElText('detailsLeaveType', data.type ? data.type.toUpperCase() : 'ANNUAL LEAVE');
+        setElText('detailsCutoffPeriod', data.cutoffPeriod || '01/01/2026 – 31/12/2026');
+        setElText('detailsSubmitter', data.submitter || data.applicant || 'Afifah Nasir');
+        setElText('detailsSubmitDate', data.submitDate || '23 Feb 2026');
+        setElText('detailsFromDate', data.fromDate || '23 Feb 2026');
+        setElText('detailsToDate', data.toDate || '25 Feb 2026');
+        setElText('detailsDuration', data.duration || '3 Days');
+        setElText('detailsLeaveDays', data.leaveDays || '3.000');
+
+        const mcRow = document.getElementById('detailsMcChitRow');
+        if (mcRow) {
+          if (data.mcChitNo && data.mcChitNo.trim() !== '' && data.mcChitNo !== '-') {
+            mcRow.style.display = 'table-row';
+            setElText('detailsMcChitNo', data.mcChitNo);
+          } else {
+            mcRow.style.display = 'none';
+          }
+        }
+
+        setElText('detailsReliever', data.reliever || 'None Assigned');
+        setElText('detailsReasonText', data.reason || 'Personnel Issues');
+
+        const remarkRow = document.getElementById('detailsRemarkRow');
+        if (remarkRow) {
+          if (data.remark && data.remark.trim() !== '') {
+            remarkRow.style.display = 'table-row';
+            setElText('detailsRemarkText', data.remark);
+          } else {
+            remarkRow.style.display = 'none';
+          }
+        }
+
+        setElText('detailsAttachmentName', data.attachment || 'leave_request_attachment.pdf');
+
+        const commentInput = document.getElementById('detailsApproverComments');
+        if (commentInput) commentInput.value = '';
+
+        // Render Yes/No Badges for Advance Leave and Short Notice
+        const formatYesNo = (val) => {
+          const isYes = (val === true || String(val).toLowerCase() === 'yes' || String(val).toLowerCase() === 'y');
+          return isYes ? '<span class="badge-status-yes">Yes</span>' : '<span class="badge-status-no">No</span>';
+        };
+
+        const advEl = document.getElementById('detailsAdvanceLeaveContainer');
+        if (advEl) advEl.innerHTML = formatYesNo(data.advanceLeave || 'No');
+
+        const shortEl = document.getElementById('detailsShortNoticeContainer');
+        if (shortEl) shortEl.innerHTML = formatYesNo(data.shortNotice || 'No');
+
+        const overlay = document.getElementById('approvalDetailsModalOverlay');
+        if (overlay) {
+          overlay.style.display = 'flex';
+          void overlay.offsetHeight;
+          overlay.classList.add('active');
+        }
+      }, 200);
+    }
+
+    function handleSingleApprovalAction(actionType) {
+      const applicant = currentSelectedApprovalData ? currentSelectedApprovalData.applicant : 'Employee';
+      const comments = document.getElementById('detailsApproverComments')?.value || '';
+      
+      closeApprovalDetailsModal();
+      
+      if (typeof showToast === 'function') {
+        let message = `Action '${actionType}' submitted for ${applicant}`;
+        if (comments) message += ` ("${comments}")`;
+        showToast(message, 'success');
+      } else {
+        alert(`Action '${actionType}' submitted for ${applicant}`);
+      }
+    }
+
+    function closeApprovalDetailsModal(event) {
+      if (event && event.target && event.target.id !== 'approvalDetailsModalOverlay' && !event.target.classList.contains('sheet-close-btn')) {
+        return;
+      }
+      const overlay = document.getElementById('approvalDetailsModalOverlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => { overlay.style.display = 'none'; }, 250);
+      }
+    }
+
+    function openSelectBackupApproverModal() {
+      const overlay = document.getElementById('selectBackupApproverModalOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        void overlay.offsetHeight;
+        overlay.classList.add('active');
+      }
+    }
+
+    function closeSelectBackupApproverModal(event) {
+      if (event && event.target && event.target.id !== 'selectBackupApproverModalOverlay' && !event.target.classList.contains('sheet-close-btn')) {
+        return;
+      }
+      const overlay = document.getElementById('selectBackupApproverModalOverlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => { overlay.style.display = 'none'; }, 250);
+      }
+    }
+
+    function selectBackupApproverPerson(name, role) {
+      const backupEl = document.getElementById('detailsBackupApprover');
+      if (backupEl) backupEl.innerText = `${name} (${role})`;
+
+      const labelEl = document.getElementById('activeApproverRoleLabel');
+      if (labelEl) labelEl.innerText = `Backup Approver (${name})`;
+
+      closeSelectBackupApproverModal();
+      if (typeof showToast === 'function') {
+        showToast(`Backup Approver updated to ${name} (${role})`, 'success');
+      }
+    }
+
+    function toggleLevelApproversList(levelId) {
+      const listEl = document.getElementById(levelId);
+      const btnEl = document.getElementById(levelId + 'ToggleBtn');
+      if (listEl) {
+        const isHidden = listEl.style.display === 'none' || listEl.style.display === '';
+        listEl.style.display = isHidden ? 'flex' : 'none';
+        if (btnEl) {
+          const count = levelId === 'level1Approvers' ? '5' : '7';
+          btnEl.innerHTML = isHidden ? `▲ Hide All ${count}` : `▼ Show All ${count}`;
+        }
+      }
+    }
+
+    function triggerViewWorkflowFromMenu() {
+      closeApprovalThreeDotsMenu();
+      setTimeout(() => {
+        const wfApplicant = document.getElementById('wfApplicantName');
+        if (wfApplicant) wfApplicant.innerText = currentSelectedApprovalData.applicant;
+
+        const overlay = document.getElementById('approvalWorkflowModalOverlay');
+        if (overlay) {
+          overlay.style.display = 'flex';
+          void overlay.offsetHeight;
+          overlay.classList.add('active');
+        }
+      }, 200);
+    }
+
+    function closeApprovalWorkflowModal(event) {
+      if (event && event.target && event.target.id !== 'approvalWorkflowModalOverlay' && !event.target.classList.contains('sheet-close-btn')) {
+        return;
+      }
+      const overlay = document.getElementById('approvalWorkflowModalOverlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => { overlay.style.display = 'none'; }, 250);
+      }
+    }
+
+    let currentCardIndex = 0;
+    const cardIds = ['swipeCard1', 'swipeCard2'];
+
+    function initSwipeGestures() {
+      cardIds.forEach((id, index) => {
+        const card = document.getElementById(id);
+        if (!card) return;
+
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        const onStart = (e) => {
+          if (index !== currentCardIndex) return;
+          isDragging = true;
+          startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+          card.style.transition = 'none';
+        };
+
+        const onMove = (e) => {
+          if (!isDragging || index !== currentCardIndex) return;
+          currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+          const diffX = currentX - startX;
+          const rotate = diffX * 0.08;
+          card.style.transform = `translateX(${diffX}px) rotate(${rotate}deg)`;
+
+          const approveOverlay = card.querySelector('.approve-overlay');
+          const rejectOverlay = card.querySelector('.reject-overlay');
+
+          if (diffX > 40) {
+            if (approveOverlay) approveOverlay.style.display = 'block';
+            if (rejectOverlay) rejectOverlay.style.display = 'none';
+          } else if (diffX < -40) {
+            if (rejectOverlay) rejectOverlay.style.display = 'block';
+            if (approveOverlay) approveOverlay.style.display = 'none';
+          } else {
+            if (approveOverlay) approveOverlay.style.display = 'none';
+            if (rejectOverlay) rejectOverlay.style.display = 'none';
+          }
+        };
+
+        const onEnd = () => {
+          if (!isDragging || index !== currentCardIndex) return;
+          isDragging = false;
+          card.style.transition = 'transform 0.4s ease, opacity 0.3s ease';
+
+          const diffX = currentX - startX;
+          if (diffX > 100) {
+            triggerSwipeAction('approve');
+          } else if (diffX < -100) {
+            triggerSwipeAction('reject');
+          } else {
+            card.style.transform = 'translateX(0px) rotate(0deg)';
+            const approveOverlay = card.querySelector('.approve-overlay');
+            const rejectOverlay = card.querySelector('.reject-overlay');
+            if (approveOverlay) approveOverlay.style.display = 'none';
+            if (rejectOverlay) rejectOverlay.style.display = 'none';
+          }
+        };
+
+        card.addEventListener('mousedown', onStart);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
+
+        card.addEventListener('touchstart', onStart, { passive: true });
+        window.addEventListener('touchmove', onMove, { passive: true });
+        window.addEventListener('touchend', onEnd);
+      });
+    }
+
+    function triggerSwipeAction(action) {
+      if (currentCardIndex >= cardIds.length) return;
+
+      const currentId = cardIds[currentCardIndex];
+      const card = document.getElementById(currentId);
+      if (!card) return;
+
+      const approveOverlay = card.querySelector('.approve-overlay');
+      const rejectOverlay = card.querySelector('.reject-overlay');
+
+      if (action === 'approve') {
+        if (approveOverlay) approveOverlay.style.display = 'block';
+        if (rejectOverlay) rejectOverlay.style.display = 'none';
+        card.style.transform = 'translateX(500px) rotate(30deg)';
+        card.style.opacity = '0';
+        if (typeof showToast === 'function') showToast(`✔ Approved request for ${currentCardIndex === 0 ? 'Ahmad Rafy' : 'Hailizam'}`);
+      } else {
+        if (rejectOverlay) rejectOverlay.style.display = 'block';
+        if (approveOverlay) approveOverlay.style.display = 'none';
+        card.style.transform = 'translateX(-500px) rotate(-30deg)';
+        card.style.opacity = '0';
+        if (typeof showToast === 'function') showToast(`❌ Rejected request for ${currentCardIndex === 0 ? 'Ahmad Rafy' : 'Hailizam'}`);
+      }
+
+      currentCardIndex++;
+
+      // Update dots indicator
+      const dots = document.querySelectorAll('#swipeProgressDots .deck-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === currentCardIndex) {
+          dot.style.width = '16px';
+          dot.style.background = 'var(--purple-primary)';
+        } else {
+          dot.style.width = '6px';
+          dot.style.background = 'var(--border-subtle)';
+        }
+      });
+
+      // Bring next card to front
+      if (currentCardIndex < cardIds.length) {
+        const nextId = cardIds[currentCardIndex];
+        const nextCard = document.getElementById(nextId);
+        if (nextCard) {
+          nextCard.style.transform = 'scale(1) translateY(0)';
+          nextCard.style.opacity = '1';
+          nextCard.style.zIndex = '10';
+        }
+      } else {
+        // Show Empty State
+        const emptyState = document.getElementById('swipeEmptyState');
+        const actionBtns = document.getElementById('swipeActionButtonsBar');
+        if (emptyState) emptyState.style.display = 'block';
+        if (actionBtns) actionBtns.style.display = 'none';
+      }
+
+      const badge = document.getElementById('swipeDeckCountBadge');
+      const remaining = cardIds.length - currentCardIndex;
+      if (badge) badge.innerText = `${remaining} Pending`;
+    }
+
+    function resetSwipeDeckDemo() {
+      currentCardIndex = 0;
+      const emptyState = document.getElementById('swipeEmptyState');
+      const actionBtns = document.getElementById('swipeActionButtonsBar');
+      if (emptyState) emptyState.style.display = 'none';
+      if (actionBtns) actionBtns.style.display = 'flex';
+
+      const card1 = document.getElementById('swipeCard1');
+      const card2 = document.getElementById('swipeCard2');
+
+      if (card1) {
+        card1.style.transform = 'translateX(0) rotate(0)';
+        card1.style.opacity = '1';
+        card1.style.zIndex = '10';
+        const ovA = card1.querySelector('.approve-overlay');
+        const ovR = card1.querySelector('.reject-overlay');
+        if (ovA) ovA.style.display = 'none';
+        if (ovR) ovR.style.display = 'none';
+      }
+
+      if (card2) {
+        card2.style.transform = 'scale(0.96) translateY(6px)';
+        card2.style.opacity = '0.85';
+        card2.style.zIndex = '5';
+        const ovA = card2.querySelector('.approve-overlay');
+        const ovR = card2.querySelector('.reject-overlay');
+        if (ovA) ovA.style.display = 'none';
+        if (ovR) ovR.style.display = 'none';
+      }
+
+      const dots = document.querySelectorAll('#swipeProgressDots .deck-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === 0) {
+          dot.style.width = '16px';
+          dot.style.background = 'var(--purple-primary)';
+        } else {
+          dot.style.width = '6px';
+          dot.style.background = 'var(--border-subtle)';
+        }
+      });
+
+      const badge = document.getElementById('swipeDeckCountBadge');
+      if (badge) badge.innerText = '2 Pending';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSwipeGestures();
+    });
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(initSwipeGestures, 200);
+    }
+
 
     function handleMainFormLeaveTypeChange(leaveType) {
       const medGroup = document.getElementById('mainMedicalFieldsGroup');
@@ -9003,6 +10679,97 @@
         onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
         Apply Filter
       </button>
+    </div>
+  </div>
+
+  <!-- TEAM APPROVALS FILTER BOTTOM SHEET MODAL (STANDARD FILTER SPEC) -->
+  <div id="teamApprovalsFilterModalOverlay" onclick="closeTeamApprovalsFilterModal(event)"
+    style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+
+    <div class="filter-bottom-sheet-content" onclick="event.stopPropagation()"
+      style="width: 100%; max-width: 480px; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 20px 20px 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-bottom: none; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow-y: auto;">
+
+      <!-- Top Drag Handle Pill -->
+      <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 0 auto 16px; opacity: 0.7;"></div>
+
+      <!-- Header Row: Title & Reset Button -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Filter Approvals</h3>
+        <button type="button" onclick="resetTeamApprovalsFilterModal()"
+          style="padding: 7px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 14px;">↻</span> Reset
+        </button>
+      </div>
+
+      <!-- 1. Search Keyword -->
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+          Search Keyword
+        </label>
+        <div style="position: relative;">
+          <input type="text" id="taFilterKeyword" placeholder="Employee Name, ID, or Leave Type"
+            style="width: 100%; padding: 14px 16px 14px 40px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; box-sizing: border-box;">
+          <div style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;">
+            🔍
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Date Range: Start Date & End Date -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+            Start Date
+          </label>
+          <input type="date" id="taFilterStartDate"
+            style="width: 100%; padding: 13px 14px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+            End Date
+          </label>
+          <input type="date" id="taFilterEndDate"
+            style="width: 100%; padding: 13px 14px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <!-- 3. Outstanding Days -->
+      <div style="margin-bottom: 24px;">
+        <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+          Outstanding Days
+        </label>
+        <div style="position: relative; margin-bottom: 8px;">
+          <select id="taFilterOutstandingDaysPreset" onchange="handleTaOutstandingPresetChange(this.value)"
+            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+            <option value="all">All Outstanding Days</option>
+            <option value="1">1 Day</option>
+            <option value="2-3">2 – 3 Days</option>
+            <option value="4-5">4 – 5 Days</option>
+            <option value="gt5">&gt; 5 Days</option>
+            <option value="custom">Custom Days Range</option>
+          </select>
+          <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+        <!-- Custom Days Range Inputs (shown if custom selected) -->
+        <div id="taCustomDaysRangeContainer" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <input type="number" id="taFilterDaysMin" placeholder="Min Days (e.g. 1)" min="0" step="0.5"
+            style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+          <input type="number" id="taFilterDaysMax" placeholder="Max Days (e.g. 5)" min="0" step="0.5"
+            style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <!-- Apply Filter Button -->
+      <button type="button" onclick="submitTeamApprovalsFilterModal()"
+        style="width: 100%; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed, #6366f1); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35); transition: transform 0.2s;"
+        onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+        Apply Filter
+      </button>
+
     </div>
   </div>
 
