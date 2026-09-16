@@ -558,7 +558,7 @@
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
               <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${item.title}</div>
-              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">📁 ${item.optionName} • ${item.subCatName} • ${item.date}</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px;"><i class="fa-solid fa-file-lines" style="margin-right: 4px;"></i>${item.optionName} • ${item.subCatName} • ${item.date}</div>
             </div>
             <div style="font-size: 14.5px; font-weight: 900; color: var(--text-primary);">RM ${item.amount.toFixed(2)}</div>
           </div>
