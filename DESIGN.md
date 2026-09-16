@@ -90,3 +90,5 @@ To ensure unified user experience across all modules (`me.html`, `change-request
 2. **Tab Scroll Interaction**: Tapping any tab pill must invoke `scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })` to keep the active tab visible.
 3. **Modal Overlay Standard**: All bottom sheets (`#historyOverlay`, `#reviewOverlay`, `#catGridOverlay`, `#qualSheetOverlay`, `#familySheetOverlay`) must use `toggleOverlay` with `void overlay.offsetHeight` layout reflow to ensure instant 60fps click response and transition animations.
 
+
+4. **Font Awesome Standard**: All future icons must use the Font Awesome styling and classes (e.g., <i class="fa-solid fa-trash-can"></i>) instead of inline SVGs or emojis, to ensure consistency across the application. The Font Awesome 6.4 CDN is required in the <head> of all pages.
