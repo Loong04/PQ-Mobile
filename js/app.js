@@ -927,20 +927,14 @@ function renderFileRow(fileObj, typeName) {
   }
   return `
     <div class="doc-file-icon pdf">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-      </svg>
+      <i class="fa-solid fa-file-pdf" style="font-size: 18px;"></i>
     </div>
     <div class="doc-file-info" onclick="previewPolicyDoc('${fileObj.name}')" style="cursor: pointer;">
       <div class="doc-file-name">${fileObj.name}</div>
       <div class="doc-file-meta">${fileObj.size} • ${fileObj.type || 'PDF Document'}</div>
     </div>
     <button class="doc-view-btn" onclick="previewPolicyDoc('${fileObj.name}')" title="View Document" aria-label="View Document">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
+      <i class="fa-solid fa-eye" style="font-size: 14px;"></i>
     </button>
   `;
 }

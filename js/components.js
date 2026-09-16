@@ -25,17 +25,9 @@ class PhoneStatusBar extends HTMLElement {
       <div class="status-bar">
         <span>${time}</span>
         <div class="status-icons">
-          <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor">
-            <path d="M1 10h2v2H1v-2zm4-3h2v5H5V7zm4-4h2v9H9V3zm4-3h2v12h-2V0z" />
-          </svg>
-          <svg width="15" height="12" viewBox="0 0 15 12" fill="currentColor">
-            <path d="M7.5 3C9.7 3 11.6 3.9 13 5.3L14.4 3.9C12.6 2.1 10.2 1 7.5 1S2.4 2.1.6 3.9L2 5.3C3.4 3.9 5.3 3 7.5 3zm0 4c1.4 0 2.6.6 3.5 1.5L12.4 7C11.1 5.7 9.4 5 7.5 5S3.9 5.7 2.6 7l1.4 1.5C4.9 7.6 6.1 7 7.5 7zm0 4c.8 0 1.5.3 2.1.9L10.7 11C9.9 10.1 8.8 9.5 7.5 9.5s-2.4.6-3.2 1.5l1.1.9c.6-.6 1.3-.9 2.1-.9z" />
-          </svg>
-          <svg width="22" height="11" viewBox="0 0 24 12" fill="currentColor">
-            <rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" />
-            <rect x="3" y="3" width="13" height="6" rx="1.5" fill="currentColor" />
-            <path d="M22 4.5v3a1.5 1.5 0 000-3z" fill="currentColor" />
-          </svg>
+          <i class="fa-solid fa-signal" style="font-size: 11px;"></i>
+          <i class="fa-solid fa-wifi" style="font-size: 11px;"></i>
+          <i class="fa-solid fa-battery-full" style="font-size: 12px;"></i>
         </div>
       </div>
     `;
@@ -96,11 +88,7 @@ class AppHeader extends HTMLElement {
         <div class="header-left">
           <!-- Burger Menu Button (Opens Left Profile & Nav Drawer) -->
           <button class="burger-btn" onclick="openProfileDrawer()" aria-label="Open Navigation Menu" title="Menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6"></line>
-              <line x1="4" y1="12" x2="20" y2="12"></line>
-              <line x1="4" y1="18" x2="20" y2="18"></line>
-            </svg>
+            <i class="fa-solid fa-bars"></i>
           </button>
 
           <!-- Brand Logo -->
@@ -140,7 +128,7 @@ class LeftProfileDrawer extends HTMLElement {
         <div class="profile-drawer-card drawer-card" onclick="event.stopPropagation()">
           <div class="profile-drawer-top">
             <span class="drawer-pill-tag">PEOPLEHCM MENU</span>
-            <button class="drawer-close-btn" onclick="closeProfileDrawerDirect()" aria-label="Close menu">✕</button>
+            <button class="drawer-close-btn" onclick="closeProfileDrawerDirect()" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
           <div class="drawer-user-box">
@@ -168,62 +156,49 @@ class LeftProfileDrawer extends HTMLElement {
             <!-- 1. Home -->
             <a class="drawer-menu-item ${window.location.pathname.includes('homedark.html') || window.location.pathname.includes('homelight.html') || window.location.pathname.includes('home-v1') ? 'active' : ''}" href="javascript:void(0)" onclick="navTo('home', event); closeProfileDrawerDirect();">
               <div class="drawer-menu-icon" style="background: rgba(168, 85, 247, 0.16); color: #c084fc;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
+                <i class="fa-solid fa-house"></i>
               </div>
               <div class="drawer-menu-text">
                 <div class="drawer-menu-label">Home</div>
                 <div class="drawer-menu-desc">Main dashboard screen</div>
               </div>
-              <span class="drawer-menu-arrow">›</span>
+              <span class="drawer-menu-arrow"><i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></span>
             </a>
 
             <!-- 2. Settings -->
             <a class="drawer-menu-item" href="javascript:void(0)" onclick="navTo('settings', event); closeProfileDrawerDirect();">
               <div class="drawer-menu-icon" style="background: rgba(148, 163, 184, 0.16); color: #94a3b8;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
+                <i class="fa-solid fa-gear"></i>
               </div>
               <div class="drawer-menu-text">
                 <div class="drawer-menu-label">Settings</div>
                 <div class="drawer-menu-desc">Preferences & notifications</div>
               </div>
-              <span class="drawer-menu-arrow">›</span>
+              <span class="drawer-menu-arrow"><i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></span>
             </a>
 
             <!-- 3. Change Password -->
             <a class="drawer-menu-item" href="javascript:void(0)" onclick="navTo('change_password', event); closeProfileDrawerDirect();">
               <div class="drawer-menu-icon" style="background: rgba(148, 163, 184, 0.16); color: #94a3b8;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+                <i class="fa-solid fa-lock"></i>
               </div>
               <div class="drawer-menu-text">
                 <div class="drawer-menu-label">Change Password</div>
                 <div class="drawer-menu-desc">Security & 2FA</div>
               </div>
-              <span class="drawer-menu-arrow">›</span>
+              <span class="drawer-menu-arrow"><i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></span>
             </a>
 
             <!-- 4. Sign Out -->
             <a class="drawer-menu-item" href="javascript:void(0)" onclick="handleSignOut(); closeProfileDrawerDirect();">
               <div class="drawer-menu-icon" style="background: rgba(244, 63, 94, 0.16); color: #f43f5e;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                  <polyline points="16 17 21 12 16 7"></polyline>
-                  <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
+                <i class="fa-solid fa-right-from-bracket"></i>
               </div>
               <div class="drawer-menu-text">
                 <div class="drawer-menu-label" style="color: #f43f5e;">Sign Out</div>
                 <div class="drawer-menu-desc">Log out of account</div>
               </div>
-              <span class="drawer-menu-arrow" style="color: #f43f5e;">›</span>
+              <span class="drawer-menu-arrow" style="color: #f43f5e;"><i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></span>
             </a>
           </div>
 
@@ -250,7 +225,7 @@ class NotificationSheet extends HTMLElement {
               <h3>For You (7)</h3>
               <p>Action Items & Reminders</p>
             </div>
-            <button class="sheet-close-btn" onclick="closeForYouDirect()" aria-label="Close">✕</button>
+            <button class="sheet-close-btn" onclick="closeForYouDirect()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
           <!-- 3 Tabs: All, Pending Approval, Pending Resubmit -->
@@ -273,22 +248,14 @@ class NotificationSheet extends HTMLElement {
             <button class="sheet-doctype-bar-row" onclick="toggleDocTypeDropdown(event)" type="button" aria-label="Select Document Type">
               <div class="doctype-bar-left" style="flex: 1; min-width: 0;">
                 <div class="doctype-icon-box">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-                    <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-                    <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
-                    <line x1="17" y1="16" x2="23" y2="16"></line>
-                  </svg>
+                  <i class="fa-solid fa-sliders" style="font-size: 13px;"></i>
                 </div>
                 <div id="selectedDocTypeLabel">
                   <span class="doctype-placeholder">Document Type Filter</span>
                 </div>
               </div>
               <div class="doctype-select-arrow">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+                <i class="fa-solid fa-chevron-down" style="font-size: 11px;"></i>
               </div>
             </button>
 
@@ -350,7 +317,7 @@ class NotificationSheet extends HTMLElement {
 
             <!-- Empty State when filtered results are 0 -->
             <div id="forYouEmptyState" style="display: none; text-align: center; padding: 36px 12px; color: var(--text-muted); font-size: 12.5px; font-weight: 600;">
-              <div style="font-size: 26px; margin-bottom: 6px;">🔍</div>
+              <div style="font-size: 26px; margin-bottom: 6px;"><i class="fa-solid fa-magnifying-glass"></i></div>
               No notifications match your selected filter.
             </div>
           </div>
@@ -377,7 +344,7 @@ class ApprovalDetailSheet extends HTMLElement {
               <h3 id="approvalModalTitle">Approval Request Details</h3>
               <p id="approvalModalSubTitle">Review details & take action</p>
             </div>
-            <button class="sheet-close-btn" onclick="closeApprovalDetailDirect()" aria-label="Close">✕</button>
+            <button class="sheet-close-btn" onclick="closeApprovalDetailDirect()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
           <!-- Applicant Card -->
@@ -393,10 +360,10 @@ class ApprovalDetailSheet extends HTMLElement {
           <!-- Action Buttons Bar -->
           <div class="approval-action-bar" id="approvalActionBar">
             <button class="btn-reject" onclick="actionRejectRequest()">
-              <span>❌ Reject / Request Info</span>
+              <span><i class="fa-solid fa-xmark" style="margin-right: 5px;"></i> Reject / Request Info</span>
             </button>
             <button class="btn-approve" onclick="actionApproveRequest()">
-              <span>✅ Approve Request</span>
+              <span><i class="fa-solid fa-check" style="margin-right: 5px;"></i> Approve Request</span>
             </button>
           </div>
         </div>
@@ -415,10 +382,7 @@ class PhoneBottomNav extends HTMLElement {
         <!-- 1. Home -->
         <a class="nav-item ${active === 'home' ? 'active' : ''}" href="javascript:void(0)" onclick="navTo('home', event)">
           <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
+            <i class="fa-solid fa-house"></i>
           </div>
           <span>Home</span>
         </a>
@@ -426,10 +390,7 @@ class PhoneBottomNav extends HTMLElement {
         <!-- 2. Notification -->
         <a class="nav-item ${active === 'notifications' || active === 'notification' ? 'active' : ''}" href="javascript:void(0)" onclick="openForYouModal()">
           <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
+            <i class="fa-solid fa-bell"></i>
             <div class="nav-badge-red">2</div>
           </div>
           <span>Notification</span>
@@ -437,20 +398,13 @@ class PhoneBottomNav extends HTMLElement {
 
         <!-- 3. Center Apps 4-Dots FAB (The App Icon!) -->
         <button class="fab-btn ${active === 'apps' ? 'active' : ''}" aria-label="App Shortcuts" onclick="navTo('nav_apps', event)" title="App Shortcuts">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="4" width="6.5" height="6.5" rx="2" fill="#ffffff" />
-            <rect x="13.5" y="4" width="6.5" height="6.5" rx="2" fill="#ffffff" />
-            <rect x="4" y="13.5" width="6.5" height="6.5" rx="2" fill="#ffffff" />
-            <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2" fill="#ffffff" />
-          </svg>
+          <i class="fa-solid fa-table-cells-large"></i>
         </button>
 
         <!-- 4. Favourite -->
         <a class="nav-item ${active === 'favourite' || active === 'fav' ? 'active' : ''}" href="javascript:void(0)" onclick="openFavouriteModal(event)">
           <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
+            <i class="fa-solid fa-star"></i>
           </div>
           <span>Favourite</span>
         </a>
@@ -458,10 +412,7 @@ class PhoneBottomNav extends HTMLElement {
         <!-- 5. Me -->
         <a class="nav-item ${active === 'me' || active === 'more' ? 'active' : ''}" href="javascript:void(0)" onclick="navTo('me', event)">
           <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
+            <i class="fa-solid fa-user"></i>
           </div>
           <span>Me</span>
         </a>
@@ -484,12 +435,12 @@ class FavouriteSheet extends HTMLElement {
 
           <div class="fav-sheet-header">
             <div>
-              <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">⭐ My Favourites</h3>
+              <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;"><i class="fa-solid fa-star" style="color: #fbbf24; margin-right: 6px;"></i>My Favourites</h3>
               <p style="font-size: 11.5px; color: var(--text-muted); margin: 2px 0 0 0;" id="favSheetSubtitle">Quick Access Shortcuts</p>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <button class="fav-edit-btn" id="favEditToggleBtn" onclick="toggleFavEditMode()">✏️ Customize</button>
-              <button class="sheet-close-btn" onclick="closeFavSheetDirect()" aria-label="Close">✕</button>
+              <button class="fav-edit-btn" id="favEditToggleBtn" onclick="toggleFavEditMode()"><i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Customize</button>
+              <button class="sheet-close-btn" onclick="closeFavSheetDirect()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
           </div>
 
@@ -523,7 +474,7 @@ class IndicatorsSheet extends HTMLElement {
               <h3 id="indicatorsSheetTitle">Team Indicator</h3>
               <p id="indicatorsSheetSubtitle">Department Aggregated Metrics (12) • Breakdown</p>
             </div>
-            <button class="sheet-close-btn" onclick="closeIndicatorsDirect()" aria-label="Close">✕</button>
+            <button class="sheet-close-btn" onclick="closeIndicatorsDirect()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
           <!-- Segmented Filter Control (No scope bar, directly filter cards) -->
@@ -550,14 +501,14 @@ class IndicatorsSheet extends HTMLElement {
               <div id="teamIndicatorsFeed">
                 <!-- Positive Section (3) -->
                 <div class="feed-section-label positive" data-group="positive">
-                  <span>👍 Positive Indicator (3)</span>
+                  <span><i class="fa-solid fa-thumbs-up" style="color: #10b981; margin-right: 6px;"></i>Positive Indicator (3)</span>
                 </div>
 
                 <!-- 1. Avg Competency Match% -->
                 <div class="metric-feed-card" data-group="positive">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">🎯</div>
+                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);"><i class="fa-solid fa-bullseye"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Competency Match%</h5>
                         <span>Department Skill Benchmark</span>
@@ -578,7 +529,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="positive">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🏆</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-trophy"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Goal Achievement%</h5>
                         <span>Team Milestone OKR Progress</span>
@@ -599,7 +550,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card highlight-alert" data-group="positive">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);">📅</div>
+                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);"><i class="fa-solid fa-calendar-days"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Attendance%</h5>
                         <span>Department Punctual Attendance</span>
@@ -618,14 +569,14 @@ class IndicatorsSheet extends HTMLElement {
 
                 <!-- Negative Section (9) -->
                 <div class="feed-section-label negative" data-group="negative">
-                  <span>👎 Negative Indicator (9)</span>
+                  <span><i class="fa-solid fa-thumbs-down" style="color: #f43f5e; margin-right: 6px;"></i>Negative Indicator (9)</span>
                 </div>
 
                 <!-- 4. Avg Odd Clocking Count -->
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--status-normal-bg); color: var(--text-secondary);">⏱️</div>
+                      <div class="feed-icon-box" style="background: var(--status-normal-bg); color: var(--text-secondary);"><i class="fa-solid fa-stopwatch"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Odd Clocking Count</h5>
                         <span>Irregular Punch Occurrences</span>
@@ -646,7 +597,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">⏰</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-clock"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Late In Count</h5>
                         <span>Morning Arrival Delays</span>
@@ -667,7 +618,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--status-normal-bg); color: var(--text-secondary);">👤</div>
+                      <div class="feed-icon-box" style="background: var(--status-normal-bg); color: var(--text-secondary);"><i class="fa-solid fa-user"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Absent Count</h5>
                         <span>Unscheduled Team Absences</span>
@@ -688,7 +639,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🚨</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-triangle-exclamation"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Emergency Leave Count</h5>
                         <span>Ad-hoc Emergency Requests</span>
@@ -709,7 +660,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card highlight-alert" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);">🏥</div>
+                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);"><i class="fa-solid fa-hospital"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Medical Leave Count</h5>
                         <span>Clinic Medical Certs (MC)</span>
@@ -730,7 +681,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">🌙</div>
+                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);"><i class="fa-solid fa-moon"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg OT Absent Count</h5>
                         <span>Overtime Attendance Failure</span>
@@ -751,7 +702,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-rose-bg); color: var(--tag-rose-text);">⚡</div>
+                      <div class="feed-icon-box" style="background: var(--tag-rose-bg); color: var(--tag-rose-text);"><i class="fa-solid fa-bolt"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Unauthorised OT Count</h5>
                         <span>Unapproved Extra Working Hours</span>
@@ -772,7 +723,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);">🎓</div>
+                      <div class="feed-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);"><i class="fa-solid fa-graduation-cap"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Training Absent Count</h5>
                         <span>Mandatory Training Absence</span>
@@ -793,7 +744,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🚪</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-door-open"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Avg Early Out Count</h5>
                         <span>Early Departures Before Shift End</span>
@@ -815,13 +766,13 @@ class IndicatorsSheet extends HTMLElement {
               <div id="myIndicatorsFeed" style="display: none;">
                 <!-- Positive Section (4) -->
                 <div class="feed-section-label positive" data-group="positive">
-                  <span>👍 Positive Indicator (4)</span>
+                  <span><i class="fa-solid fa-thumbs-up" style="color: #10b981; margin-right: 6px;"></i>Positive Indicator (4)</span>
                 </div>
 
                 <div class="metric-feed-card" data-group="positive">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">🎯</div>
+                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);"><i class="fa-solid fa-bullseye"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Competency Match%</h5>
                         <span>Job Role Skill Benchmark</span>
@@ -841,7 +792,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="positive">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🏆</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-trophy"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Goal Achievement%</h5>
                         <span>Quarterly OKRs & Milestone Progress</span>
@@ -861,7 +812,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card highlight-positive" data-group="positive">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-green-bg); color: var(--tag-green-text);">📅</div>
+                      <div class="feed-icon-box" style="background: var(--tag-green-bg); color: var(--tag-green-text);"><i class="fa-solid fa-calendar-days"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Attendance%</h5>
                         <span>Verified Monthly Punctual Punch</span>
@@ -881,7 +832,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="positive">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-teal-bg); color: var(--tag-teal-text);">🛡️</div>
+                      <div class="feed-icon-box" style="background: var(--tag-teal-bg); color: var(--tag-teal-text);"><i class="fa-solid fa-shield-halved"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Work Incident Points</h5>
                         <span>Safety & Disciplinary Compliance</span>
@@ -900,13 +851,13 @@ class IndicatorsSheet extends HTMLElement {
 
                 <!-- Negative Section (10) -->
                 <div class="feed-section-label negative" data-group="negative">
-                  <span>👎 Negative Indicator (10)</span>
+                  <span><i class="fa-solid fa-thumbs-down" style="color: #f43f5e; margin-right: 6px;"></i>Negative Indicator (10)</span>
                 </div>
 
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--status-normal-bg); color: var(--text-secondary);">⏱️</div>
+                      <div class="feed-icon-box" style="background: var(--status-normal-bg); color: var(--text-secondary);"><i class="fa-solid fa-stopwatch"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Odd Clocking Count</h5>
                         <span>Irregular Time Punch Log</span>
@@ -926,7 +877,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">⏰</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-clock"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Late In Count</h5>
                         <span>Morning Arrival Performance</span>
@@ -946,7 +897,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);">👤</div>
+                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);"><i class="fa-solid fa-user"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Absent Count</h5>
                         <span>Unexcused Non-attendance Record</span>
@@ -966,7 +917,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">🚨</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-triangle-exclamation"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Emergency Leave Count</h5>
                         <span>Ad-hoc Unplanned Leaves</span>
@@ -986,7 +937,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-rose-bg); color: var(--tag-rose-text);">🏥</div>
+                      <div class="feed-icon-box" style="background: var(--tag-rose-bg); color: var(--tag-rose-text);"><i class="fa-solid fa-hospital"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Medical Leave Count</h5>
                         <span>Approved Doctor Clinic MC</span>
@@ -1006,7 +957,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">🌙</div>
+                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);"><i class="fa-solid fa-moon"></i></div>
                       <div class="feed-card-title-group">
                         <h5>OT Absent Count</h5>
                         <span>Overtime Schedule Compliance</span>
@@ -1026,7 +977,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card highlight-alert" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);">⚡</div>
+                      <div class="feed-icon-box" style="background: var(--status-action-bg); color: var(--status-action-text);"><i class="fa-solid fa-bolt"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Unauthorised OT Count</h5>
                         <span>Worked Without Supervisor Sign-off</span>
@@ -1046,7 +997,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);">🎓</div>
+                      <div class="feed-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);"><i class="fa-solid fa-graduation-cap"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Training Absent Count</h5>
                         <span>Mandatory Course Compliance</span>
@@ -1066,7 +1017,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);">⚠️</div>
+                      <div class="feed-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);"><i class="fa-solid fa-triangle-exclamation"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Warning Letter Count</h5>
                         <span>Formal HR Advisory Notices</span>
@@ -1086,7 +1037,7 @@ class IndicatorsSheet extends HTMLElement {
                 <div class="metric-feed-card" data-group="negative">
                   <div class="feed-card-header">
                     <div class="feed-card-left">
-                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);">✉️</div>
+                      <div class="feed-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);"><i class="fa-solid fa-envelope"></i></div>
                       <div class="feed-card-title-group">
                         <h5>Unacknowledged Letter Count</h5>
                         <span>HR Circulars Pending Signature</span>
@@ -1126,7 +1077,7 @@ class CompanyUpdatesSheet extends HTMLElement {
               <h3>Company Updates (6)</h3>
               <p>News • Policy & SOP • Announcements</p>
             </div>
-            <button class="sheet-close-btn" onclick="closeUpdatesDirect()" aria-label="Close">✕</button>
+            <button class="sheet-close-btn" onclick="closeUpdatesDirect()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
           <div class="sheet-filter-bar">
@@ -1147,7 +1098,7 @@ class CompanyUpdatesSheet extends HTMLElement {
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-violet-bg); color: var(--tag-violet-text);" title="Company Uploaded Cover">
                   <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=100&auto=format&fit=crop&q=80" alt="Town Hall" class="item-thumb-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                  <span style="display:none;">📢</span>
+                  <span style="display:none;"><i class="fa-solid fa-bullhorn"></i></span>
                 </div>
                 <div class="item-info">
                   <h5>Town Hall this Friday: Q3 Strategy</h5>
@@ -1179,10 +1130,7 @@ class CompanyUpdatesSheet extends HTMLElement {
             <div class="sheet-item-card" data-update="news" onclick="openNewsDetail(this, 'PeopleHCM 3.0')">
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);" title="Smart Category Icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                  </svg>
+                  <i class="fa-solid fa-bell" style="font-size: 16px;"></i>
                 </div>
                 <div class="item-info">
                   <h5>PeopleHCM 3.0 Mobile Launch</h5>
@@ -1198,12 +1146,7 @@ class CompanyUpdatesSheet extends HTMLElement {
             <div class="sheet-item-card" data-update="policy" onclick="openPolicyDetail('DE001')">
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-teal-bg); color: var(--tag-teal-text);" title="Document Policy">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                  </svg>
+                  <i class="fa-solid fa-file-lines" style="font-size: 16px;"></i>
                 </div>
                 <div class="item-info">
                   <h5>PeopleTime User Guide v2</h5>
@@ -1219,11 +1162,7 @@ class CompanyUpdatesSheet extends HTMLElement {
             <div class="sheet-item-card" data-update="policy" onclick="openPolicyDetail('HR004')">
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-blue-bg); color: var(--tag-blue-text);" title="Company Policy">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                    <line x1="12" y1="10" x2="12" y2="14"></line>
-                    <line x1="8" y1="12" x2="16" y2="12"></line>
-                  </svg>
+                  <i class="fa-solid fa-building" style="font-size: 16px;"></i>
                 </div>
                 <div class="item-info">
                   <h5>Hybrid & Remote Work Policy 2026</h5>
@@ -1239,9 +1178,7 @@ class CompanyUpdatesSheet extends HTMLElement {
             <div class="sheet-item-card" data-update="policy" onclick="openPolicyDetail('FN012')">
               <div class="item-left-box">
                 <div class="item-icon-box" style="background: var(--tag-amber-bg); color: var(--tag-amber-text);" title="SOP Guide">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
+                  <i class="fa-solid fa-shield-halved" style="font-size: 16px;"></i>
                 </div>
                 <div class="item-info">
                   <h5>Medical & Travel Claims SOP</h5>
@@ -1270,19 +1207,13 @@ class PolicyDetailSheet extends HTMLElement {
 
           <div class="policy-sheet-header">
             <div class="policy-ref-badge" id="policyRefBadge">REF: DE001</div>
-            <button class="sheet-close-btn" onclick="closePolicyDetailDirect()" aria-label="Close">✕</button>
+            <button class="sheet-close-btn" onclick="closePolicyDetailDirect()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
           <div class="policy-title-section">
             <h3 class="policy-detail-title" id="policyDetailTitle">PeopleTime User Guide v2</h3>
             <div class="policy-dept-banner" id="policyDeptBanner">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16"></path>
-                <line x1="9" y1="9" x2="9" y2="9.01"></line>
-                <line x1="15" y1="9" x2="15" y2="9.01"></line>
-                <line x1="9" y1="13" x2="9" y2="13.01"></line>
-                <line x1="15" y1="13" x2="15" y2="13.01"></line>
-              </svg>
+              <i class="fa-solid fa-building" style="font-size: 13px; margin-right: 4px;"></i>
               <span id="policyDeptText">Attention to: ADMINISTRATION</span>
             </div>
           </div>
@@ -1296,20 +1227,14 @@ class PolicyDetailSheet extends HTMLElement {
               </div>
               <div class="doc-file-row" id="policyFileRow">
                 <div class="doc-file-icon pdf">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                  </svg>
+                  <i class="fa-solid fa-file-pdf" style="font-size: 20px; color: #ef4444;"></i>
                 </div>
                 <div class="doc-file-info">
                   <div class="doc-file-name" id="policyFileName">PeopleTime_UserGuide_v2.pdf</div>
                   <div class="doc-file-meta" id="policyFileMeta">3.91 MB • PDF Document</div>
                 </div>
                 <button class="doc-view-btn" onclick="previewPolicyDoc('PeopleTime_UserGuide_v2.pdf')" title="View Document" aria-label="View Document">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
+                  <i class="fa-solid fa-eye" style="font-size: 14px;"></i>
                 </button>
               </div>
             </div>
