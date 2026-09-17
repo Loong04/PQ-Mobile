@@ -1,329 +1,1903 @@
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!DOCTYPE html>
+  <!doctype html>
+/>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PeopleHCM - Team Attendance</title>
-  <script src="../../../js/components.js"></script>
-  <script src="../../../js/app.js" defer></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../../css/theme.css">
-  <link rel="stylesheet" href="../../../css/app.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>PeopleHCM - Team Attendance</title>
+    <script src="../../../js/components.js"></script>
+    <script src="../../../js/app.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/app.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-    body {
-      background-color: var(--bg-page);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: var(--text-primary);
-      padding: 20px 0;
-    }
+      body {
+        background-color: var(--bg-page);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: var(--text-primary);
+        padding: 20px 0;
+      }
 
-    .phone-container {
-      width: 100%;
-      max-width: 420px;
-      height: 900px;
-      background: var(--bg-phone);
-      border-radius: 44px;
-      overflow: hidden;
-      box-shadow: var(--shadow-phone);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
+      .phone-container {
+        width: 100%;
+        max-width: 420px;
+        height: 900px;
+        background: var(--bg-phone);
+        border-radius: 44px;
+        overflow: hidden;
+        box-shadow: var(--shadow-phone);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
 
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 16px 90px;
-      position: relative;
-      z-index: 10;
-      scrollbar-width: none;
-    }
-    .main-content::-webkit-scrollbar { display: none; }
+      .main-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 16px 90px;
+        position: relative;
+        z-index: 10;
+        scrollbar-width: none;
+      }
+      .main-content::-webkit-scrollbar {
+        display: none;
+      }
 
-    .cal-top-header {
-      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
-      padding: 12px 16px 14px;
-      border-bottom-left-radius: 22px;
-      border-bottom-right-radius: 22px;
-      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
-      position: relative;
-      z-index: 20;
-    }
+      .cal-top-header {
+        background: linear-gradient(
+          135deg,
+          #4c1d95 0%,
+          #6d28d9 50%,
+          #7c3aed 100%
+        );
+        padding: 12px 16px 14px;
+        border-bottom-left-radius: 22px;
+        border-bottom-right-radius: 22px;
+        box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+        position: relative;
+        z-index: 20;
+      }
 
-    /* Custom Switcher */
-    .view-mode-switcher {
-      display: flex;
-      background: var(--bg-input); /* Very dark background */
-      border: 1px solid var(--border-subtle);
-      padding: 4px;
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
-    .view-mode-tab {
-      flex: 1;
-      padding: 10px 14px;
-      border-radius: 16px;
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-    .view-mode-tab.active {
-      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-    }
+      /* Custom Switcher */
+      .view-mode-switcher {
+        display: flex;
+        background: var(--bg-input); /* Very dark background */
+        border: 1px solid var(--border-subtle);
+        padding: 4px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+      .view-mode-tab {
+        flex: 1;
+        padding: 10px 14px;
+        border-radius: 16px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+      }
+      .view-mode-tab.active {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+      }
 
-    /* Filters */
-    .filter-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .filter-btn {
-      background: var(--bg-card); /* Dark grey */
-      border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--text-primary);
-      cursor: pointer;
-    }
-    
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 24px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
+      /* Filters */
+      .filter-bar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .filter-btn {
+        background: var(--bg-card); /* Dark grey */
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+        cursor: pointer;
+      }
 
-    .list-item {
-      display: flex;
-      align-items: center;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border-subtle);
-      text-decoration: none;
-    }
-    .list-item:last-child {
-      border-bottom: none;
-      padding-bottom: 4px;
-    }
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 24px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
 
-    .progress-bar-bg {
-      height: 8px;
-      background: rgba(0,0,0,0.1);
-      border-radius: 4px;
-      width: 100%;
-      overflow: hidden;
-      display: flex;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      background: #10b981;
-    }
-    .progress-bar-fill-rose {
-      height: 100%;
-      background: #f43f5e;
-    }
-  </style>
-</head>
-<body>
+      .list-item {
+        display: flex;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border-subtle);
+        text-decoration: none;
+      }
+      .list-item:last-child {
+        border-bottom: none;
+        padding-bottom: 4px;
+      }
 
-  <preview-top-bar active-page="attendance"></preview-top-bar>
+      .progress-bar-bg {
+        height: 8px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background: #10b981;
+      }
+      .progress-bar-fill-rose {
+        height: 100%;
+        background: #f43f5e;
+      }
+    </style>
+  </head>
+  <body>
+    <preview-top-bar active-page="attendance"></preview-top-bar>
 
-  <div class="phone-container">
-    
-    <!-- Executive Purple Header -->
-    <div class="cal-top-header">
-      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+    <div class="phone-container">
+      <!-- Executive Purple Header -->
+      <div class="cal-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff"></phone-status-bar>
 
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back"
-            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
-            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-          </button>
-          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Attendance Dashboard</h1>
-        </div>
-        
-        <div style="display: flex; gap: 16px; align-items: center;">
-          <button style="background: transparent; border: none; cursor: pointer; color: #ffffff; display: flex; align-items: center; justify-content: center;">
-             <i class="fa-solid fa-bell" style="font-size: 18px;"></i>
-          </button>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 12px">
+            <button
+              class="me-back-btn"
+              onclick="javascript: history.back();"
+              aria-label="Back"
+              style="
+                background: rgba(255, 255, 255, 0.18);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                width: 36px;
+                height: 36px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                color: #ffffff;
+              "
+            >
+              <i class="fa-solid fa-chevron-left" style="font-size: 16px"></i>
+            </button>
+            <h1
+              style="
+                font-size: 19px;
+                font-weight: 800;
+                color: #ffffff;
+                margin: 0;
+              "
+            >
+              Attendance Dashboard
+            </h1>
+          </div>
+
+          <div style="display: flex; gap: 16px; align-items: center">
+            <button
+              style="
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <i class="fa-solid fa-bell" style="font-size: 18px"></i>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="main-content">
-      
-      <!-- Module Option Tabs Switcher -->
-      <div class="view-mode-switcher">
-         <a href="../index.html" class="view-mode-tab">
-            <i class="fa-solid fa-user" style="font-size: 15px;"></i>
+      <div class="main-content">
+        <!-- Module Option Tabs Switcher -->
+        <div class="view-mode-switcher">
+          <a href="../index.html" class="view-mode-tab">
+            <i class="fa-solid fa-user" style="font-size: 15px"></i>
             Individual
-         </a>
-         <a href="#" class="view-mode-tab active">
-            <i class="fa-solid fa-users" style="font-size: 15px;"></i>
+          </a>
+          <a href="#" class="view-mode-tab active">
+            <i class="fa-solid fa-users" style="font-size: 15px"></i>
             Team
-         </a>
-      </div>
+          </a>
+        </div>
 
-      <!-- Filter Bar -->
-      <div class="filter-bar">
-         <div class="filter-btn" style="flex: 1; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-               <i class="fa-solid fa-calendar-days" style="font-size: 14px; margin-right: 2px;"></i>
-               Mon, 14 Apr 2025
+        <!-- Consistent Filter Header Bar -->
+        <div
+          style="
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+          "
+        >
+          <div>
+            <div
+              style="
+                font-size: 10.5px;
+                font-weight: 700;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin-bottom: 3px;
+              "
+            >
+              Current Filter
             </div>
-            <i class="fa-solid fa-chevron-down" style="font-size: 13px;"></i>
-         </div>
-         <div class="filter-btn">
-            <i class="fa-solid fa-sliders" style="font-size: 14px; margin-right: 4px;"></i>
-            Filter
-         </div>
-      </div>
+            <div
+              style="
+                font-size: 13px;
+                font-weight: 800;
+                color: var(--text-primary);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+              "
+            >
+              <span style="font-size: 14px; opacity: 0.85">ஃ</span>
+              <span id="TeamFilterSummaryText">All Teams >> Apr 2025</span>
+            </div>
+          </div>
+          <!-- Sliders Filter Button Trigger -->
+          <button
+            type="button"
+            onclick="openTeamFilterModal()"
+            title="Open Filter Options"
+            style="
+              width: 44px;
+              height: 44px;
+              border-radius: 14px;
+              background: var(--bg-input);
+              border: 1px solid var(--border-subtle);
+              color: var(--purple-primary);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            "
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="4" y1="21" x2="4" y2="14"></line>
+              <line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line>
+              <line x1="20" y1="12" x2="20" y2="3"></line>
+              <line x1="1" y1="14" x2="7" y2="14"></line>
+              <line x1="9" y1="8" x2="15" y2="8"></line>
+              <line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
+          </button>
+        </div>
 
-      <!-- Workforce Plan Card -->
-      <div class="card" style="padding-top: 22px;">
-         <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 24px;">
-            <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #60a5fa;">
-               <i class="fa-solid fa-users" style="font-size: 20px;"></i>
+        <!-- Team Management Options Grid (11 Options) -->
+        <div style="margin-bottom: 24px">
+          <div
+            style="
+              font-size: 13.5px;
+              font-weight: 800;
+              color: var(--text-primary);
+              margin-bottom: 12px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <span>Quick Options</span>
+            <span
+              style="
+                font-size: 11.5px;
+                font-weight: 700;
+                color: var(--purple-primary);
+              "
+              >11 Modules</span
+            >
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 10px;
+            "
+          >
+            <!-- 1. Shift Plan -->
+            <a
+              href="shift-plan.html"
+              class="card"
+              style="
+                margin-bottom: 0;
+                padding: 12px 6px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                text-decoration: none;
+                box-sizing: border-box;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.96)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 12px;
+                  background: rgba(124, 58, 237, 0.15);
+                  color: var(--purple-primary);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-bottom: 8px;
+                "
+              >
+                <i
+                  class="fa-solid fa-calendar-days"
+                  style="font-size: 16px"
+                ></i>
+              </div>
+              <span
+                style="
+                  font-size: 12px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1.2;
+                "
+                >Shift<br />Plan</span
+              >
+            </a>
+
+            <!-- 2. OT Plan -->
+            <a
+              href="ot-plan.html"
+              class="card"
+              style="
+                margin-bottom: 0;
+                padding: 12px 6px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                text-decoration: none;
+                box-sizing: border-box;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.96)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 12px;
+                  background: rgba(245, 158, 11, 0.15);
+                  color: #f59e0b;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-bottom: 8px;
+                "
+              >
+                <i class="fa-solid fa-user-clock" style="font-size: 16px"></i>
+              </div>
+              <span
+                style="
+                  font-size: 12px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1.2;
+                "
+                >OT<br />Plan</span
+              >
+            </a>
+
+            <!-- 3. Daily OT -->
+            <a
+              href="daily-ot.html"
+              class="card"
+              style="
+                margin-bottom: 0;
+                padding: 12px 6px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                text-decoration: none;
+                box-sizing: border-box;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.96)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 12px;
+                  background: rgba(239, 68, 68, 0.15);
+                  color: #ef4444;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-bottom: 8px;
+                "
+              >
+                <i
+                  class="fa-solid fa-clock-rotate-left"
+                  style="font-size: 16px"
+                ></i>
+              </div>
+              <span
+                style="
+                  font-size: 12px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1.2;
+                "
+                >Daily<br />OT</span
+              >
+            </a>
+
+            <!-- 4. Daily Manpower -->
+            <a
+              href="daily-manpower.html"
+              class="card"
+              style="
+                margin-bottom: 0;
+                padding: 12px 6px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                text-decoration: none;
+                box-sizing: border-box;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.96)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 12px;
+                  background: rgba(16, 185, 129, 0.15);
+                  color: #10b981;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-bottom: 8px;
+                "
+              >
+                <i class="fa-solid fa-users-gear" style="font-size: 16px"></i>
+              </div>
+              <span
+                style="
+                  font-size: 12px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1.2;
+                "
+                >Daily<br />Manpower</span
+              >
+            </a>
+
+            <!-- 5. Work Hour Violation -->
+            <a
+              href="work-hour-violation.html"
+              class="card"
+              style="
+                margin-bottom: 0;
+                padding: 12px 6px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                text-decoration: none;
+                box-sizing: border-box;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.96)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 12px;
+                  background: rgba(244, 63, 94, 0.15);
+                  color: #f43f5e;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-bottom: 8px;
+                "
+              >
+                <i
+                  class="fa-solid fa-triangle-exclamation"
+                  style="font-size: 16px"
+                ></i>
+              </div>
+              <span
+                style="
+                  font-size: 12px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1.2;
+                "
+                >Work Hour<br />Violation</span
+              >
+            </a>
+
+            <!-- 6. View All -->
+            <button
+              type="button"
+              onclick="openTeamOptionsModal()"
+              class="card"
+              style="
+                margin-bottom: 0;
+                padding: 12px 6px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                border: 1px solid var(--border-subtle);
+                background: var(--bg-card);
+                cursor: pointer;
+                box-sizing: border-box;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.96)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 12px;
+                  background: rgba(124, 58, 237, 0.1);
+                  color: var(--purple-primary);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-bottom: 8px;
+                "
+              >
+                <i class="fa-solid fa-ellipsis" style="font-size: 16px"></i>
+              </div>
+              <span
+                style="
+                  font-size: 12px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1.2;
+                "
+                >View<br />All</span
+              >
+            </button>
+          </div>
+        </div>
+        <div class="card" style="padding-top: 22px">
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              margin-bottom: 24px;
+            "
+          >
+            <div
+              style="
+                width: 44px;
+                height: 44px;
+                border-radius: 22px;
+                background: rgba(59, 130, 246, 0.15);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #60a5fa;
+              "
+            >
+              <i class="fa-solid fa-users" style="font-size: 20px"></i>
             </div>
             <div>
-               <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Today's Workforce Plan</h3>
-               <p style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Here's how your team is planned for today</p>
+              <h3
+                style="
+                  font-size: 16px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                "
+              >
+                Today's Workforce Plan
+              </h3>
+              <p
+                style="
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              >
+                Here's how your team is planned for today
+              </p>
             </div>
-         </div>
-         
-         <div style="display: flex; gap: 16px;">
-            <div style="flex: 1;">
-               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                  <div style="width: 24px; height: 24px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #60a5fa;">
-                     <i class="fa-solid fa-user" style="font-size: 12px;"></i>
-                  </div>
-                  <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); line-height: 1.2;">Scheduled to Work<br>Today</div>
-               </div>
-               <div style="font-size: 32px; font-weight: 800; color: var(--text-primary); line-height: 1;">135</div>
-            </div>
-            
-            <div style="width: 1px; background: var(--border-subtle);"></div>
-            
-            <div style="flex: 1;">
-               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                  <div style="width: 24px; height: 24px; border-radius: 12px; background: rgba(139, 92, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #a78bfa;">
-                     <i class="fa-solid fa-clock" style="font-size: 12px;"></i>
-                  </div>
-                  <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); line-height: 1.2;">OT Planned Today<br>&nbsp;</div>
-               </div>
-               <div style="font-size: 32px; font-weight: 800; color: var(--text-primary); line-height: 1;">12</div>
-            </div>
-         </div>
-      </div>
+          </div>
 
-      <!-- Real-time Attendance Card -->
-      <div class="card">
-         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-            <div style="display: flex; gap: 12px; align-items: center;">
-               <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; color: var(--purple-primary);">
-                  <i class="fa-solid fa-chart-simple" style="font-size: 16px;"></i>
-               </div>
-               <div>
-                  <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0;">Attendance Today</h3>
-                  <p style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Real-time attendance at a glance</p>
-               </div>
+          <div style="display: flex; gap: 16px">
+            <div style="flex: 1">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 12px;
+                "
+              >
+                <div
+                  style="
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 12px;
+                    background: rgba(59, 130, 246, 0.15);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #60a5fa;
+                  "
+                >
+                  <i class="fa-solid fa-user" style="font-size: 12px"></i>
+                </div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: var(--text-secondary);
+                    line-height: 1.2;
+                  "
+                >
+                  Scheduled to Work<br />Today
+                </div>
+              </div>
+              <div
+                style="
+                  font-size: 32px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1;
+                "
+              >
+                135
+              </div>
             </div>
-            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 4px;">
-               <div style="width: 6px; height: 6px; border-radius: 3px; background: #10b981;"></div>
-               On track
-               <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
-            </div>
-         </div>
 
-         <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+            <div style="width: 1px; background: var(--border-subtle)"></div>
+
+            <div style="flex: 1">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 12px;
+                "
+              >
+                <div
+                  style="
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 12px;
+                    background: rgba(139, 92, 246, 0.15);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #a78bfa;
+                  "
+                >
+                  <i class="fa-solid fa-clock" style="font-size: 12px"></i>
+                </div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: var(--text-secondary);
+                    line-height: 1.2;
+                  "
+                >
+                  OT Planned Today<br />&nbsp;
+                </div>
+              </div>
+              <div
+                style="
+                  font-size: 32px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1;
+                "
+              >
+                12
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-time Attendance Card -->
+        <div class="card">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 24px;
+            "
+          >
+            <div style="display: flex; gap: 12px; align-items: center">
+              <div
+                style="
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 8px;
+                  background: rgba(124, 58, 237, 0.15);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: var(--purple-primary);
+                "
+              >
+                <i class="fa-solid fa-chart-simple" style="font-size: 16px"></i>
+              </div>
+              <div>
+                <h3
+                  style="
+                    font-size: 16px;
+                    font-weight: 800;
+                    color: var(--text-primary);
+                    margin: 0;
+                  "
+                >
+                  Attendance Today
+                </h3>
+                <p
+                  style="
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                    margin-top: 2px;
+                  "
+                >
+                  Real-time attendance at a glance
+                </p>
+              </div>
+            </div>
+            <div
+              style="
+                background: rgba(16, 185, 129, 0.15);
+                border: 1px solid rgba(16, 185, 129, 0.3);
+                color: #10b981;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 11.5px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+              "
+            >
+              <div
+                style="
+                  width: 6px;
+                  height: 6px;
+                  border-radius: 3px;
+                  background: #10b981;
+                "
+              ></div>
+              On track
+              <i class="fa-solid fa-chevron-right" style="font-size: 11px"></i>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 20px">
             <!-- Present Box -->
-            <div style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; position: relative; overflow: hidden;">
-               <div style="position: absolute; right: 12px; top: 12px; color: #10b981; opacity: 0.1;">
-                  <i class="fa-solid fa-user" style="font-size: 36px;"></i>
-               </div>
-               <div style="display: flex; align-items: center; gap: 6px; position: relative; z-index: 2;">
-                  <div style="width: 10px; height: 10px; border-radius: 5px; background: #10b981;"></div>
-                  <div style="font-size: 13px; font-weight: 800; color: #10b981;">Present</div>
-               </div>
-               <div style="font-size: 36px; font-weight: 800; color: var(--text-primary); line-height: 1; margin: 12px 0 8px; position: relative; z-index: 2;">128</div>
-               <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); position: relative; z-index: 2;"><span style="color: #10b981;">94.8%</span> of scheduled</div>
+            <div
+              style="
+                flex: 1;
+                background: var(--bg-input);
+                border: 1px solid var(--border-subtle);
+                border-radius: 20px;
+                padding: 16px;
+                position: relative;
+                overflow: hidden;
+              "
+            >
+              <div
+                style="
+                  position: absolute;
+                  right: 12px;
+                  top: 12px;
+                  color: #10b981;
+                  opacity: 0.1;
+                "
+              >
+                <i class="fa-solid fa-user" style="font-size: 36px"></i>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  position: relative;
+                  z-index: 2;
+                "
+              >
+                <div
+                  style="
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 5px;
+                    background: #10b981;
+                  "
+                ></div>
+                <div style="font-size: 13px; font-weight: 800; color: #10b981">
+                  Present
+                </div>
+              </div>
+              <div
+                style="
+                  font-size: 36px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  line-height: 1;
+                  margin: 12px 0 8px;
+                  position: relative;
+                  z-index: 2;
+                "
+              >
+                128
+              </div>
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: var(--text-muted);
+                  position: relative;
+                  z-index: 2;
+                "
+              >
+                <span style="color: #10b981">94.8%</span> of scheduled
+              </div>
             </div>
-            
-            <!-- No Show Box -->
-            <div style="flex: 1; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 20px; padding: 16px; position: relative; overflow: hidden;">
-               <div style="position: absolute; right: 12px; top: 12px; color: #f43f5e; opacity: 0.1;">
-                  <i class="fa-solid fa-user-xmark" style="font-size: 36px;"></i>
-               </div>
-               <div style="display: flex; align-items: center; gap: 6px; position: relative; z-index: 2;">
-                  <div style="width: 10px; height: 10px; border-radius: 5px; background: #f43f5e;"></div>
-                  <div style="font-size: 13px; font-weight: 800; color: #f43f5e;">No Show</div>
-               </div>
-               <div style="font-size: 36px; font-weight: 800; color: #f43f5e; line-height: 1; margin: 12px 0 8px; position: relative; z-index: 2;">7</div>
-               <div style="font-size: 11px; font-weight: 700; color: #f43f5e; opacity: 0.9; position: relative; z-index: 2;">5.2% <span style="color: var(--text-muted);">of scheduled</span></div>
-            </div>
-         </div>
-         
-         <div class="progress-bar-bg" style="background: var(--bg-input);">
-            <div class="progress-bar-fill" style="width: 94.8%; background: #10b981;"></div>
-            <div class="progress-bar-fill-rose" style="width: 5.2%; background: #f43f5e;"></div>
-         </div>
-         <div style="text-align: right; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 8px;">
-            135 scheduled
-         </div>
-      </div>
 
-      <!-- Need Your Attention -->
-      <div class="card" style="padding: 18px 20px;">
-         <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <div style="width: 36px; height: 36px; border-radius: 18px; background: rgba(244, 63, 94, 0.15); display: flex; align-items: center; justify-content: center; color: #f43f5e;">
-               <i class="fa-solid fa-circle-exclamation" style="font-size: 18px;"></i>
+            <!-- No Show Box -->
+            <div
+              style="
+                flex: 1;
+                background: rgba(244, 63, 94, 0.1);
+                border: 1px solid rgba(244, 63, 94, 0.2);
+                border-radius: 20px;
+                padding: 16px;
+                position: relative;
+                overflow: hidden;
+              "
+            >
+              <div
+                style="
+                  position: absolute;
+                  right: 12px;
+                  top: 12px;
+                  color: #f43f5e;
+                  opacity: 0.1;
+                "
+              >
+                <i class="fa-solid fa-user-xmark" style="font-size: 36px"></i>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  position: relative;
+                  z-index: 2;
+                "
+              >
+                <div
+                  style="
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 5px;
+                    background: #f43f5e;
+                  "
+                ></div>
+                <div style="font-size: 13px; font-weight: 800; color: #f43f5e">
+                  No Show
+                </div>
+              </div>
+              <div
+                style="
+                  font-size: 36px;
+                  font-weight: 800;
+                  color: #f43f5e;
+                  line-height: 1;
+                  margin: 12px 0 8px;
+                  position: relative;
+                  z-index: 2;
+                "
+              >
+                7
+              </div>
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: #f43f5e;
+                  opacity: 0.9;
+                  position: relative;
+                  z-index: 2;
+                "
+              >
+                5.2% <span style="color: var(--text-muted)">of scheduled</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress-bar-bg" style="background: var(--bg-input)">
+            <div
+              class="progress-bar-fill"
+              style="width: 94.8%; background: #10b981"
+            ></div>
+            <div
+              class="progress-bar-fill-rose"
+              style="width: 5.2%; background: #f43f5e"
+            ></div>
+          </div>
+          <div
+            style="
+              text-align: right;
+              font-size: 11px;
+              font-weight: 700;
+              color: var(--text-muted);
+              margin-top: 8px;
+            "
+          >
+            135 scheduled
+          </div>
+        </div>
+
+        <!-- Need Your Attention -->
+        <div class="card" style="padding: 18px 20px">
+          <div style="display: flex; gap: 12px; align-items: flex-start">
+            <div
+              style="
+                width: 36px;
+                height: 36px;
+                border-radius: 18px;
+                background: rgba(244, 63, 94, 0.15);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #f43f5e;
+              "
+            >
+              <i
+                class="fa-solid fa-circle-exclamation"
+                style="font-size: 18px"
+              ></i>
             </div>
             <div>
-               <div style="display: flex; align-items: center; gap: 8px;">
-                  <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Need Your Attention</h3>
-                  <span style="font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 10px; background: rgba(244, 63, 94, 0.2); color: #f43f5e;">26</span>
-               </div>
-               <p style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Items that need your action</p>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <h3
+                  style="
+                    font-size: 16px;
+                    font-weight: 800;
+                    color: var(--text-primary);
+                  "
+                >
+                  Need Your Attention
+                </h3>
+                <span
+                  style="
+                    font-size: 11px;
+                    font-weight: 800;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    background: rgba(244, 63, 94, 0.2);
+                    color: #f43f5e;
+                  "
+                  >26</span
+                >
+              </div>
+              <p
+                style="
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              >
+                Items that need your action
+              </p>
             </div>
-            <div style="margin-left: auto;">
-               <i class="fa-solid fa-chevron-right" style="font-size: 16px; color: var(--text-caption);"></i>
+            <div style="margin-left: auto">
+              <i
+                class="fa-solid fa-chevron-right"
+                style="font-size: 16px; color: var(--text-caption)"
+              ></i>
             </div>
-         </div>
+          </div>
+        </div>
       </div>
 
+      <!-- Active component for team layout is often bottom nav -->
+      <phone-bottom-nav active="apps"></phone-bottom-nav>
     </div>
 
-    <!-- Active component for team layout is often bottom nav -->
-    <phone-bottom-nav active="apps"></phone-bottom-nav>
-  </div>
-</body>
+    <!-- Bottom Sheet Filter Modal -->
+    <div
+      id="TeamFilterModalOverlay"
+      onclick="closeTeamFilterModal(event)"
+      style="
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      "
+    >
+      <div
+        class="filter-bottom-sheet-content"
+        onclick="event.stopPropagation()"
+        style="
+          width: 100%;
+          max-width: 480px;
+          background: var(--bg-card);
+          border-top-left-radius: 28px;
+          border-top-right-radius: 28px;
+          padding: 20px 20px 28px;
+          box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--border-subtle);
+          transform: translateY(100%);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        "
+      >
+        <!-- Drag handle pill -->
+        <div
+          style="
+            width: 36px;
+            height: 4px;
+            background: var(--border-subtle);
+            border-radius: 4px;
+            margin: 0 auto 16px;
+            opacity: 0.7;
+          "
+        ></div>
+
+        <!-- Header Row -->
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          "
+        >
+          <h3
+            style="
+              font-size: 18px;
+              font-weight: 800;
+              color: var(--text-primary);
+              margin: 0;
+            "
+          >
+            Filter
+          </h3>
+          <button
+            type="button"
+            onclick="resetTeamFilterModal()"
+            style="
+              padding: 7px 14px;
+              border-radius: 20px;
+              background: var(--bg-input);
+              border: 1px solid var(--border-subtle);
+              color: var(--text-primary);
+              font-size: 12px;
+              font-weight: 700;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            "
+          >
+            <span>↻</span> Reset
+          </button>
+        </div>
+
+        <!-- Filter Options Area (Dummy fields for demo) -->
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+          "
+        >
+          <div>
+            <label
+              style="
+                font-size: 12px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                margin-bottom: 6px;
+                display: block;
+              "
+              >Date Range</label
+            >
+            <div style="display: flex; gap: 8px">
+              <input
+                type="date"
+                value="2025-04-14"
+                style="
+                  flex: 1;
+                  padding: 10px;
+                  border-radius: 12px;
+                  border: 1px solid var(--border-subtle);
+                  background: var(--bg-input);
+                  color: var(--text-primary);
+                  font-size: 13px;
+                "
+              />
+              <input
+                type="date"
+                value="2025-04-14"
+                style="
+                  flex: 1;
+                  padding: 10px;
+                  border-radius: 12px;
+                  border: 1px solid var(--border-subtle);
+                  background: var(--bg-input);
+                  color: var(--text-primary);
+                  font-size: 13px;
+                "
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit CTA Button -->
+        <button
+          type="button"
+          onclick="submitTeamFilterModal()"
+          style="
+            width: 100%;
+            padding: 15px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #7c3aed, #6366f1);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+          "
+        >
+          Apply Filter
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Sheet Team Options Modal -->
+    <div
+      id="TeamOptionsModalOverlay"
+      onclick="closeTeamOptionsModal(event)"
+      style="
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      "
+    >
+      <div
+        class="options-bottom-sheet-content"
+        onclick="event.stopPropagation()"
+        style="
+          width: 100%;
+          max-width: 480px;
+          background: var(--bg-card);
+          border-top-left-radius: 28px;
+          border-top-right-radius: 28px;
+          padding: 20px 20px 28px;
+          box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--border-subtle);
+          transform: translateY(100%);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          max-height: 85vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <!-- Drag handle pill -->
+        <div
+          style="
+            width: 36px;
+            height: 4px;
+            background: var(--border-subtle);
+            border-radius: 4px;
+            margin: 0 auto 16px;
+            opacity: 0.7;
+            flex-shrink: 0;
+          "
+        ></div>
+
+        <!-- Header Row -->
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+          "
+        >
+          <h3
+            style="
+              font-size: 18px;
+              font-weight: 800;
+              color: var(--text-primary);
+              margin: 0;
+            "
+          >
+            All Quick Options
+          </h3>
+          <button
+            type="button"
+            onclick="closeTeamOptionsModal()"
+            style="
+              width: 32px;
+              height: 32px;
+              border-radius: 16px;
+              background: var(--bg-input);
+              border: 1px solid var(--border-subtle);
+              color: var(--text-primary);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            "
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Grid -->
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            overflow-y: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+          "
+        >
+          <!-- 1. Shift Plan -->
+          <a
+            href="shift-plan.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(124, 58, 237, 0.15);
+                color: var(--purple-primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-calendar-days" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Shift<br />Plan</span
+            >
+          </a>
+
+          <!-- 2. OT Plan -->
+          <a
+            href="ot-plan.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(245, 158, 11, 0.15);
+                color: #f59e0b;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-user-clock" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >OT<br />Plan</span
+            >
+          </a>
+
+          <!-- 3. Daily OT -->
+          <a
+            href="daily-ot.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(239, 68, 68, 0.15);
+                color: #ef4444;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i
+                class="fa-solid fa-clock-rotate-left"
+                style="font-size: 16px"
+              ></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Daily<br />OT</span
+            >
+          </a>
+
+          <!-- 4. Daily Manpower -->
+          <a
+            href="daily-manpower.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(16, 185, 129, 0.15);
+                color: #10b981;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-users-gear" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Daily<br />Manpower</span
+            >
+          </a>
+
+          <!-- 5. Work Hour Violation -->
+          <a
+            href="work-hour-violation.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(244, 63, 94, 0.15);
+                color: #f43f5e;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i
+                class="fa-solid fa-triangle-exclamation"
+                style="font-size: 16px"
+              ></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Work Hour<br />Violation</span
+            >
+          </a>
+
+          <!-- 6. Clocking Summary -->
+          <a
+            href="clocking-summary.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(99, 102, 241, 0.15);
+                color: #6366f1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i
+                class="fa-solid fa-clipboard-check"
+                style="font-size: 16px"
+              ></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Clocking<br />Summary</span
+            >
+          </a>
+
+          <!-- 7. Staff Attendance -->
+          <a
+            href="staff-attendance.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(5, 150, 105, 0.15);
+                color: #059669;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-clipboard-user" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Staff<br />Attendance</span
+            >
+          </a>
+
+          <!-- 8. Staff Hours Summary -->
+          <a
+            href="staff-hours-summary.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(14, 165, 233, 0.15);
+                color: #0ea5e9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-chart-pie" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Staff Hours<br />Summary</span
+            >
+          </a>
+
+          <!-- 9. Attendance Highlight -->
+          <a
+            href="attendance-highlight.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(236, 72, 153, 0.15);
+                color: #ec4899;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-circle-dot" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Attendance<br />Highlight</span
+            >
+          </a>
+
+          <!-- 10. Overtime Highlight -->
+          <a
+            href="overtime-highlight.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(234, 179, 8, 0.15);
+                color: #eab308;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-bolt" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Overtime<br />Highlight</span
+            >
+          </a>
+
+          <!-- 11. Overtime Costing -->
+          <a
+            href="overtime-costing.html"
+            class="card"
+            style="
+              margin-bottom: 0;
+              padding: 12px 6px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: transform 0.15s;
+            "
+            onmousedown="this.style.transform = 'scale(0.96)'"
+            onmouseup="this.style.transform = 'scale(1)'"
+          >
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                background: rgba(16, 185, 129, 0.15);
+                color: #10b981;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
+              "
+            >
+              <i class="fa-solid fa-sack-dollar" style="font-size: 16px"></i>
+            </div>
+            <span
+              style="
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--text-primary);
+                line-height: 1.2;
+              "
+              >Overtime<br />Costing</span
+            >
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function openTeamFilterModal() {
+        const overlay = document.getElementById("TeamFilterModalOverlay");
+        const sheet = overlay.querySelector(".filter-bottom-sheet-content");
+        overlay.style.display = "flex";
+        // Trigger reflow
+        void overlay.offsetWidth;
+        overlay.style.opacity = "1";
+        sheet.style.transform = "translateY(0)";
+      }
+
+      function closeTeamFilterModal(e) {
+        if (e) e.preventDefault();
+        const overlay = document.getElementById("TeamFilterModalOverlay");
+        const sheet = overlay.querySelector(".filter-bottom-sheet-content");
+        overlay.style.opacity = "0";
+        sheet.style.transform = "translateY(100%)";
+        setTimeout(() => {
+          overlay.style.display = "none";
+        }, 300);
+      }
+
+      function resetTeamFilterModal() {
+        document.getElementById("TeamFilterSummaryText").innerText =
+          "All Teams >> Apr 2025";
+        closeTeamFilterModal();
+      }
+
+      function submitTeamFilterModal() {
+        // In a real app, gather input values here
+        document.getElementById("TeamFilterSummaryText").innerText =
+          "Custom >> Apr 2025";
+        closeTeamFilterModal();
+      }
+
+      function openTeamOptionsModal() {
+        const overlay = document.getElementById("TeamOptionsModalOverlay");
+        const sheet = overlay.querySelector(".options-bottom-sheet-content");
+        overlay.style.display = "flex";
+        void overlay.offsetWidth;
+        overlay.style.opacity = "1";
+        sheet.style.transform = "translateY(0)";
+      }
+
+      function closeTeamOptionsModal(e) {
+        if (e) e.preventDefault();
+        const overlay = document.getElementById("TeamOptionsModalOverlay");
+        const sheet = overlay.querySelector(".options-bottom-sheet-content");
+        overlay.style.opacity = "0";
+        sheet.style.transform = "translateY(100%)";
+        setTimeout(() => {
+          overlay.style.display = "none";
+        }, 300);
+      }
+    </script>
+  </body>
 </html>
