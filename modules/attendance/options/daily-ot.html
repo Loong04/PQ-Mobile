@@ -8,165 +8,893 @@
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
-    .modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; }
+
+    /* Top Navigation Header (Matching Executive Purple Header) */
+    .cal-top-header { 
+      background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #6d28d9 100%); 
+      padding: 12px 16px 14px; 
+      border-bottom-left-radius: 26px; 
+      border-bottom-right-radius: 26px; 
+      box-shadow: 0 10px 28px rgba(76, 29, 149, 0.35); 
+      position: relative; 
+      z-index: 20; 
+    }
+
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.15); 
+      border: 1px solid rgba(255, 255, 255, 0.22); 
+      width: 38px; 
+      height: 38px; 
+      border-radius: 12px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      cursor: pointer; 
+      color: #ffffff; 
+      transition: all 0.2s ease;
+      backdrop-filter: blur(6px);
+    }
+    .header-btn-icon:active { transform: scale(0.92); }
+
+    /* Standard Current Filter Header Bar (FILTER_SPECIFICATION.md Standard) */
+    .filter-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Standard Card Styling */
+    .card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card-item:active { transform: scale(0.985); }
+    .card-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: #10b981;
+    }
+    .card-item.unapproved-border::before {
+      background: #f59e0b;
+    }
+
+    /* Standard Purple Header Pop-out Modal (Screenshot 2 Pop-out Style) */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 44px;
+      overflow: hidden;
+      padding: 16px;
+    }
+    .modal-overlay.bottom-sheet {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    .popup-modal-content {
+      width: 90%;
+      max-width: 390px;
+      background: var(--bg-card);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      border: 1px solid var(--border-subtle);
+      transform: scale(0.95);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bottom-sheet-content {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.35);
+      border: 1px solid var(--border-subtle);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header-purple {
+      background: linear-gradient(135deg, #3b0764 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+
+    .modal-close-round {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-close-round:hover {
+      background: rgba(0, 0, 0, 0.5);
+      transform: scale(1.05);
+    }
+
+    /* Pop-out Modal Details Table (Matching Screenshot 2 Table) */
+    .popup-details-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      margin-top: 8px;
+    }
+    .popup-details-table th {
+      background: rgba(168, 85, 247, 0.18);
+      color: var(--purple-primary);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    [data-theme="light"] .popup-details-table th {
+      background: #e9d5ff;
+      color: #4c1d95;
+    }
+    .popup-details-table td {
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .popup-details-table tr:last-child td { border-bottom: none; }
+
+    /* Approval Form Card (Matching Screenshot 3 Lime Green Bar) */
+    .approval-card-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .approval-card-lime-header {
+      background: #a3e635;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 900;
+      padding: 10px 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .approval-card-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-input-box {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 700;
+      font-family: monospace;
+      outline: none;
+    }
+
+    .btn-purple-action {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-purple-action:active { transform: scale(0.95); }
+
+    .toast-popup {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .toast-popup.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
   <preview-top-bar active-page="attendance"></preview-top-bar>
+  
   <div class="phone-container">
+    
+    <!-- Top Executive Purple Nav Header -->
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <button class="header-btn-icon" onclick="javascript:history.back()" aria-label="Back">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </button>
-          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Daily OT</h1>
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 0;">Daily OT</h1>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Main Scrollable Content -->
     <div class="main-content">
-      <!-- Filter Bar -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+
+      <!-- Standard Current Filter Header Bar (Matching Screenshot 1 & FILTER_SPECIFICATION.md) -->
+      <div class="filter-summary-bar">
         <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Filter</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);" id="filterSummaryText">16/08/2026 - 14/09/2026</div>
+          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px;">
+            Current Filter
+          </div>
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);" id="filterSummaryText">
+            16/09/2026
+          </div>
         </div>
-        <button type="button" onclick="openFilterModal()" style="width: 40px; height: 40px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <!-- Sliders Filter Button Trigger -->
+        <button type="button" onclick="openFilterModal()" title="Open Filter Options"
+          style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
           <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
         </button>
       </div>
 
-      <!-- KPI -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.05) 100%); border-color: rgba(239, 68, 68, 0.3);">
-        <div style="font-size: 12px; font-weight: 700; color: #ef4444; margin-bottom: 4px;">Today's Overtime Total</div>
-        <div style="font-size: 28px; font-weight: 800; color: var(--text-primary);">14.5 Hours</div>
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">1.5x OT Rate: 10.5h | 2.0x OT Rate: 4.0h</div>
-      </div>
-
-      <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Daily Overtime Entries</div>
-      <div class="card" onclick="openDetailModal('John Tan (EMP-014)', '2.5 Hours', '1.5x Normal Rate', 'Approved')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">John Tan (EMP-014)</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">2.5 Hours • 1.5x Rate</div>
-          </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 11px; font-weight: 800;">Approved</span>
+      <!-- KPI Summary Header (Matching Screenshot 1) -->
+      <div style="margin-bottom: 14px; padding: 2px 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);" id="kpiTotalRecordsText">Total Records:130</div>
+          <button type="button" onclick="openChartModal()" style="background: none; border: none; color: #0284c7; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <i class="fa-solid fa-chart-pie"></i> View Chart
+          </button>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 700; color: var(--text-primary);">
+          <div>Unapproved OT Hours: <strong style="color: var(--text-primary);" id="kpiUnapprovedHoursText">135.50</strong></div>
+          <div>Approved OT Hours: <strong style="color: var(--text-primary);" id="kpiApprovedHoursText">37.50</strong></div>
+          <div>Approved OT Cost: <strong style="color: var(--text-primary);" id="kpiApprovedCostText">773.86</strong></div>
         </div>
       </div>
 
-      <div class="card" onclick="openDetailModal('Sarah Lee (EMP-028)', '3.0 Hours', '2.0x Restday Rate', 'Pending')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Sarah Lee (EMP-028)</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">3.0 Hours • 2.0x Rate</div>
-          </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 11px; font-weight: 800;">Pending</span>
-        </div>
+      <!-- Employee List Container -->
+      <div id="employeeCardList">
+        <!-- Dynamically rendered by JS matching Screenshot 1 -->
       </div>
+
     </div>
+
+    <!-- Bottom Navigation -->
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
 
-  <!-- Bottom Sheet Filter Modal -->
-  <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)" style="align-items: flex-end; padding: 0;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 480px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+
+  <!-- ========================================================
+       MODAL 1: BOTTOM SHEET FILTER MODAL (Matching Screenshot 1 & Spec)
+       ======================================================== -->
+  <div class="modal-overlay bottom-sheet" id="filterModalOverlay" onclick="closeFilterModal(event)">
+    <div class="bottom-sheet-content" onclick="event.stopPropagation()">
       <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
+      
       <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
         <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
         <button type="button" onclick="resetFilterModal()" style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
           <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
         </button>
       </div>
-      <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;">
+
+      <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 14px; overflow-y: auto;">
+        
+        <!-- Date Row -->
         <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Start Date</label>
-          <input type="date" id="filterFromDate" value="2026-08-16" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Date:</label>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="text" id="filterDateInput" value="16/09/2026" class="form-input-box" style="flex: 1; font-family: inherit; font-size: 13.5px; font-weight: 700;">
+            <button type="button" onclick="stepFilterDate(-1)" class="header-btn-icon" style="background: var(--bg-input); border-color: var(--border-subtle); color: #0284c7; width: 38px; height: 38px; border-radius: 50%;">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <button type="button" onclick="stepFilterDate(1)" class="header-btn-icon" style="background: var(--bg-input); border-color: var(--border-subtle); color: #0284c7; width: 38px; height: 38px; border-radius: 50%;">
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
         </div>
+
+        <!-- Search Keyword -->
         <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">End Date</label>
-          <input type="date" id="filterToDate" value="2026-09-14" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Search Keyword:</label>
+          <input type="text" id="filterKeywordInput" placeholder="Employee Number or Name" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
         </div>
+
+        <!-- Section -->
         <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Status</label>
-          <select id="filterStatusSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
-            <option value="all">All Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Section:</label>
+          <select id="filterSectionSelect" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
+            <option value="all">- All Sections -</option>
+            <option value="production">Production</option>
+            <option value="assembly">Assembly</option>
+            <option value="qc">Quality Control</option>
           </select>
         </div>
-        <button type="button" onclick="applyFilterModal()" style="width: 100%; margin-top: 10px; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer;">Apply Filter</button>
+
+        <!-- Job Title -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Job Title:</label>
+          <select id="filterJobSelect" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
+            <option value="all">- All Jobs -</option>
+            <option value="technician">Technician</option>
+            <option value="operator">Operator</option>
+            <option value="supervisor">Supervisor</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Status:</label>
+          <select id="filterStatusSelect" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
+            <option value="all">All</option>
+            <option value="approved">Approved</option>
+            <option value="unapproved">Unapproved</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="button" onclick="resetFilterModal()" style="flex: 1; padding: 14px; border-radius: 14px; background: #e2e8f0; border: none; color: #475569; font-size: 14px; font-weight: 800; cursor: pointer;">Reset</button>
+          <button type="button" onclick="applyFilterModal()" style="flex: 2; padding: 14px; border-radius: 14px; background: #7c3aed; border: none; color: #ffffff; font-size: 14px; font-weight: 800; cursor: pointer;">Search</button>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- Popout Detail Modal -->
-  <div class="modal-overlay" id="detailModal" onclick="closeDetailModal(event)" style="align-items: center; justify-content: center; padding: 16px;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 380px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.85); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; padding: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary);" id="detailTitle">Daily OT Details</h3>
-        <button onclick="closeDetailModalDirect()" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-input); border: none; color: var(--text-primary); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+
+  <!-- ========================================================
+       MODAL 2: POP-OUT EMPLOYEE DETAILS MODAL (Exact Screenshot 2 Design)
+       ======================================================== -->
+  <div class="modal-overlay" id="employeeDetailsModal" onclick="closeModalOnOverlay(event, 'employeeDetailsModal')">
+    <div class="popup-modal-content" onclick="event.stopPropagation()">
+      
+      <!-- Purple Gradient Header (Exact Screenshot 2) -->
+      <div class="modal-header-purple">
+        <h3 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0;" id="detailsEmpTitle">0000101 - Lee Soon Hock</h3>
+        <button class="modal-close-round" onclick="closeModalDirect('employeeDetailsModal')" aria-label="Close">
+          <i class="fa-solid fa-xmark" style="font-size: 16px;"></i>
+        </button>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13.5px;">
-        <div><strong style="color: var(--text-muted);">OT Hours:</strong> <span id="detailTime" style="font-weight: 700; color: var(--text-primary);"></span></div>
-        <div><strong style="color: var(--text-muted);">OT Rate:</strong> <span id="detailStaff" style="font-weight: 700; color: var(--text-primary);"></span></div>
-        <div><strong style="color: var(--text-muted);">Status:</strong> <span id="detailStatus" style="font-weight: 700; color: #10b981;"></span></div>
+
+      <!-- Scrollable Solid Content Area -->
+      <div style="padding: 16px 18px 24px; overflow-y: auto; flex: 1;">
+        
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;" id="detailsRecordCountText">Total Records: 1</div>
+
+        <!-- Breakdown Details Table (Matching Screenshot 2 Table) -->
+        <table class="popup-details-table">
+          <thead>
+            <tr>
+              <th style="text-align: left;">Description</th>
+              <th style="text-align: center;">Actual</th>
+              <th style="text-align: center;">Approve</th>
+            </tr>
+          </thead>
+          <tbody id="detailsTableBody">
+            <!-- Dynamically populated by JS -->
+          </tbody>
+        </table>
+
+        <!-- Update Button Section (If Unapproved) -->
+        <div id="detailsActionArea" style="margin-top: 24px; display: flex; justify-content: flex-end;">
+          <!-- Dynamically populated: Update button if unapproved -->
+        </div>
+
       </div>
     </div>
   </div>
 
+
+  <!-- ========================================================
+       MODAL 3: DAILY OT APPROVAL MODAL (Exact Screenshot 3 Design)
+       ======================================================== -->
+  <div class="modal-overlay" id="approvalModal" onclick="closeModalOnOverlay(event, 'approvalModal')">
+    <div class="popup-modal-content" onclick="event.stopPropagation()" style="max-width: 400px;">
+      
+      <!-- Purple Gradient Header (Exact Screenshot 3 Header) -->
+      <div class="modal-header-purple">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button onclick="closeModalDirect('approvalModal')" style="background: none; border: none; color: #ffffff; font-size: 16px; cursor: pointer;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Daily OT Approval</h3>
+        </div>
+        <button class="modal-close-round" onclick="closeModalDirect('approvalModal')" aria-label="Close">
+          <i class="fa-solid fa-xmark" style="font-size: 16px;"></i>
+        </button>
+      </div>
+
+      <!-- Body Content with Lime Green Cards -->
+      <div style="padding: 16px 18px 24px; overflow-y: auto; flex: 1;">
+        
+        <div id="approvalCardContainer">
+          <!-- Dynamically rendered by JS (Screenshot 3 Lime Cards) -->
+        </div>
+
+        <!-- Bottom Right Update Button (Exact Screenshot 3) -->
+        <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+          <button type="button" class="btn-purple-action" onclick="submitApprovalChanges()">
+            Update
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+       MODAL 4: VIEW CHART MODAL
+       ======================================================== -->
+  <div class="modal-overlay" id="chartModal" onclick="closeModalOnOverlay(event, 'chartModal')">
+    <div class="popup-modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header-purple">
+        <h3 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0;">OT Distribution Chart</h3>
+        <button class="modal-close-round" onclick="closeModalDirect('chartModal')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div style="padding: 24px; text-align: center;">
+        <div style="width: 130px; height: 130px; border-radius: 50%; background: conic-gradient(#10b981 0% 22%, #f59e0b 22% 100%); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">
+            173.0h Total
+          </div>
+        </div>
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; justify-content: center; gap: 12px;">
+          <span style="color: #10b981;">● Approved: 37.5h</span>
+          <span style="color: #f59e0b;">● Unapproved: 135.5h</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastPopup" class="toast-popup">Action completed successfully!</div>
+
+
+  <!-- JavaScript Core Engine -->
   <script>
-    function openFilterModal() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'translateY(0)'; }, 10);
+    // Master Dataset matching Screenshot 1, 2, 3
+    let masterStaffList = [
+      {
+        id: "0000101",
+        name: "Lee Soon Hock",
+        shift: "8.30AM-5.30PM (W01)",
+        clockTime: "0740,1756",
+        actualHours: "0.50",
+        approvedHours: "0.50",
+        unapprovedHours: "0.00",
+        section: "production",
+        job: "technician",
+        items: [
+          { description: "OT 1.5 BEFORE WORK", actual: "0030", approve: "0030" }
+        ]
+      },
+      {
+        id: "000016",
+        name: "Raju kumar",
+        shift: "8.30AM-5.30PM (W01)",
+        clockTime: "0750,1906",
+        actualHours: "2.00",
+        approvedHours: "2.00",
+        unapprovedHours: "0.00",
+        section: "assembly",
+        job: "operator",
+        items: [
+          { description: "1.5 OT", actual: "0200", approve: "0200" }
+        ]
+      },
+      {
+        id: "000020",
+        name: "Tay siow kung",
+        shift: "8.30AM-5.30PM (W01)",
+        clockTime: "0741,1757",
+        actualHours: "0.50",
+        approvedHours: "0.50",
+        unapprovedHours: "0.00",
+        section: "qc",
+        job: "technician",
+        items: [
+          { description: "OT 1.5 BEFORE WORK", actual: "0030", approve: "0030" }
+        ]
+      },
+      {
+        id: "000022",
+        name: "Tan siow soon",
+        shift: "8.30AM-5.30PM (W01)",
+        clockTime: "0745,1915",
+        actualHours: "2.50",
+        approvedHours: "0.00",
+        unapprovedHours: "2.50",
+        section: "production",
+        job: "operator",
+        items: [
+          { description: "OT 1.5 BEFORE WORK", actual: "0030", approve: "0000" },
+          { description: "1.5 OT", actual: "0200", approve: "0000" }
+        ]
+      },
+      {
+        id: "000035",
+        name: "Ahmad Bin Zulkifli",
+        shift: "8.30AM-5.30PM (W01)",
+        clockTime: "0730,1830",
+        actualHours: "1.50",
+        approvedHours: "0.00",
+        unapprovedHours: "1.50",
+        section: "assembly",
+        job: "supervisor",
+        items: [
+          { description: "OT 1.5 BEFORE WORK", actual: "0030", approve: "0000" },
+          { description: "1.5 OT", actual: "0100", approve: "0000" }
+        ]
+      }
+    ];
+
+    let activeSelectedEmpId = null;
+
+    // Render Employee Cards matching Screenshot 1
+    function renderList(listData) {
+      const container = document.getElementById('employeeCardList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      listData.forEach(emp => {
+        const isUnapproved = parseFloat(emp.unapprovedHours) > 0;
+        
+        const card = document.createElement('div');
+        card.className = `card-item ${isUnapproved ? 'unapproved-border' : ''}`;
+        card.onclick = () => openEmployeeDetails(emp.id);
+
+        card.innerHTML = `
+          <!-- Header Banner (Pinkish background matching Screenshot 1) -->
+          <div style="background: #fbcfe8; border-radius: 8px; padding: 6px 12px; font-size: 14px; font-weight: 800; color: #0f172a; margin: -4px -6px 6px;">
+            ${emp.id} - ${emp.name}
+          </div>
+
+          <!-- Body Info matching Screenshot 1 -->
+          <div style="display: grid; grid-template-columns: 110px 1fr; gap: 4px; font-size: 13px; font-weight: 600;">
+            <div style="color: var(--text-primary);">Shift:</div>
+            <div style="color: var(--text-primary); font-weight: 700;">${emp.shift}</div>
+
+            <div style="color: var(--text-primary);">Clock Time:</div>
+            <div style="color: var(--text-primary); font-weight: 700;">${emp.clockTime}</div>
+
+            <div style="color: var(--text-primary);">Actual Hours:</div>
+            <div style="color: var(--text-primary); font-weight: 700;">${emp.actualHours}</div>
+
+            <div style="color: var(--text-primary);">Approved Hours:</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--text-primary); font-weight: 700;">${emp.approvedHours}</span>
+              <span style="color: var(--text-primary);">Unapproved Hours: <strong style="color: var(--text-primary); font-weight: 800;">${emp.unapprovedHours}</strong></span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
-    function closeFilterModal(e) { if (e && e.target !== e.currentTarget) return; closeFilterModalDirect(); }
-    function closeFilterModalDirect() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'translateY(100%)';
-      setTimeout(() => { m.style.display = 'none'; }, 280);
+
+    // Open Details Pop-out Modal (Exact Screenshot 2)
+    function openEmployeeDetails(empId) {
+      const emp = masterStaffList.find(e => e.id === empId);
+      if (!emp) return;
+
+      activeSelectedEmpId = empId;
+
+      document.getElementById('detailsEmpTitle').innerText = `${emp.id} - ${emp.name}`;
+      document.getElementById('detailsRecordCountText').innerText = `Total Records: ${emp.items.length}`;
+
+      // Populate Table Body matching Screenshot 2
+      const tbody = document.getElementById('detailsTableBody');
+      tbody.innerHTML = '';
+
+      emp.items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: left;">${item.description}</td>
+          <td style="text-align: center; font-family: monospace;">${item.actual}</td>
+          <td style="text-align: center; font-family: monospace;">${item.approve}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Show Update button if unapproved (Matching Screenshot 2 & user request)
+      const actionArea = document.getElementById('detailsActionArea');
+      const isUnapproved = parseFloat(emp.unapprovedHours) > 0;
+
+      if (isUnapproved) {
+        actionArea.innerHTML = `
+          <button type="button" class="btn-purple-action" onclick="openApprovalModal('${emp.id}')">
+            Update
+          </button>
+        `;
+      } else {
+        actionArea.innerHTML = `
+          <button type="button" class="btn-purple-action" onclick="openApprovalModal('${emp.id}')" style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); box-shadow: none;">
+            Update
+          </button>
+        `;
+      }
+
+      openModal('employeeDetailsModal');
+    }
+
+    // Open Daily OT Approval Modal (Exact Screenshot 3)
+    function openApprovalModal(empId) {
+      const emp = masterStaffList.find(e => e.id === empId);
+      if (!emp) return;
+
+      activeSelectedEmpId = empId;
+      closeModalDirect('employeeDetailsModal');
+
+      const cardContainer = document.getElementById('approvalCardContainer');
+      cardContainer.innerHTML = '';
+
+      emp.items.forEach((item, idx) => {
+        const box = document.createElement('div');
+        box.className = 'approval-card-box';
+
+        box.innerHTML = `
+          <!-- Lime Green Header Bar matching Screenshot 3 -->
+          <div class="approval-card-lime-header">
+            ${item.description}
+          </div>
+
+          <div class="approval-card-body">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: center; margin-bottom: 6px;">
+                Actual (HHMM)
+              </div>
+              <input type="text" id="actualHHMM_${idx}" class="form-input-box" value="${item.actual}" style="text-align: center; background: var(--bg-card);" readonly>
+            </div>
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: center; margin-bottom: 6px;">
+                Approve (HHMM)
+              </div>
+              <input type="text" id="approveHHMM_${idx}" class="form-input-box" value="${item.approve !== '0000' ? item.approve : item.actual}" style="text-align: center; border-color: var(--purple-primary);">
+            </div>
+          </div>
+        `;
+        cardContainer.appendChild(box);
+      });
+
+      openModal('approvalModal');
+    }
+
+    // Submit Approval Changes (Screenshot 3 Update Button)
+    function submitApprovalChanges() {
+      if (!activeSelectedEmpId) return;
+      const emp = masterStaffList.find(e => e.id === activeSelectedEmpId);
+      if (!emp) return;
+
+      let totalActualMins = 0;
+      let totalApproveMins = 0;
+
+      emp.items.forEach((item, idx) => {
+        const inputEl = document.getElementById(`approveHHMM_${idx}`);
+        if (inputEl) {
+          item.approve = inputEl.value.trim().padStart(4, '0');
+        }
+
+        const actH = parseInt(item.actual.substring(0, 2)) || 0;
+        const actM = parseInt(item.actual.substring(2, 4)) || 0;
+        totalActualMins += (actH * 60) + actM;
+
+        const appH = parseInt(item.approve.substring(0, 2)) || 0;
+        const appM = parseInt(item.approve.substring(2, 4)) || 0;
+        totalApproveMins += (appH * 60) + appM;
+      });
+
+      emp.actualHours = (totalActualMins / 60).toFixed(2);
+      emp.approvedHours = (totalApproveMins / 60).toFixed(2);
+      emp.unapprovedHours = Math.max(0, (totalActualMins - totalApproveMins) / 60).toFixed(2);
+
+      // Refresh UI
+      renderList(masterStaffList);
+      updateKpiTotals();
+
+      closeModalDirect('approvalModal');
+      showToastPopup(`Updated OT approval for ${emp.name}!`);
+    }
+
+    // Update KPI Header Text
+    function updateKpiTotals() {
+      let unappSum = 0;
+      let appSum = 0;
+      masterStaffList.forEach(e => {
+        unappSum += parseFloat(e.unapprovedHours);
+        appSum += parseFloat(e.approvedHours);
+      });
+
+      const unappEl = document.getElementById('kpiUnapprovedHoursText');
+      if (unappEl) unappEl.innerText = unappSum.toFixed(2);
+
+      const appEl = document.getElementById('kpiApprovedHoursText');
+      if (appEl) appEl.innerText = appSum.toFixed(2);
+    }
+
+    // Modal Display Logic
+    function openFilterModal() {
+      openModal('filterModalOverlay');
+    }
+    function closeFilterModal(e) {
+      if (e.target.id === 'filterModalOverlay' || e === true) {
+        closeModalDirect('filterModalOverlay');
+      }
     }
     function resetFilterModal() {
-      document.getElementById('filterFromDate').value = '2026-08-16';
-      document.getElementById('filterToDate').value = '2026-09-14';
+      document.getElementById('filterDateInput').value = '16/09/2026';
+      document.getElementById('filterKeywordInput').value = '';
+      document.getElementById('filterSectionSelect').value = 'all';
+      document.getElementById('filterJobSelect').value = 'all';
       document.getElementById('filterStatusSelect').value = 'all';
-      closeFilterModalDirect();
+      closeModalDirect('filterModalOverlay');
+      renderList(masterStaffList);
     }
-    function applyFilterModal() { closeFilterModalDirect(); }
-    function openDetailModal(title, time, staff, status) {
-      document.getElementById('detailTitle').innerText = title;
-      document.getElementById('detailTime').innerText = time;
-      document.getElementById('detailStaff').innerText = staff;
-      document.getElementById('detailStatus').innerText = status;
-      const m = document.getElementById('detailModal');
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'scale(1)'; }, 10);
+    function applyFilterModal() {
+      const keyword = (document.getElementById('filterKeywordInput')?.value || '').toLowerCase().trim();
+      const section = document.getElementById('filterSectionSelect')?.value || 'all';
+      const job = document.getElementById('filterJobSelect')?.value || 'all';
+      const status = document.getElementById('filterStatusSelect')?.value || 'all';
+
+      let filtered = masterStaffList.filter(emp => {
+        const matchKw = !keyword || emp.id.toLowerCase().includes(keyword) || emp.name.toLowerCase().includes(keyword);
+        const matchSec = section === 'all' || emp.section === section;
+        const matchJob = job === 'all' || emp.job === job;
+        const isUnapp = parseFloat(emp.unapprovedHours) > 0;
+        const matchStatus = status === 'all' || (status === 'approved' && !isUnapp) || (status === 'unapproved' && isUnapp);
+        return matchKw && matchSec && matchJob && matchStatus;
+      });
+
+      renderList(filtered);
+      closeModalDirect('filterModalOverlay');
+      showToastPopup('Filter applied');
     }
-    function closeDetailModal(e) { if (e && e.target !== e.currentTarget) return; closeDetailModalDirect(); }
-    function closeDetailModalDirect() {
-      const m = document.getElementById('detailModal');
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'scale(0.85)';
-      setTimeout(() => { m.style.display = 'none'; }, 250);
+
+    function stepFilterDate(days) {
+      const input = document.getElementById('filterDateInput');
+      if (!input) return;
+      const parts = input.value.split('/');
+      if (parts.length === 3) {
+        let dt = new Date(parts[2], parts[1] - 1, parts[0]);
+        dt.setDate(dt.getDate() + days);
+        const dd = String(dt.getDate()).padStart(2, '0');
+        const mm = String(dt.getMonth() + 1).padStart(2, '0');
+        input.value = `${dd}/${mm}/${dt.getFullYear()}`;
+      }
     }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = 'flex';
+      setTimeout(() => {
+        el.style.opacity = '1';
+        const inner = el.querySelector('.popup-modal-content, .bottom-sheet-content');
+        if (inner) {
+          inner.style.transform = inner.classList.contains('bottom-sheet-content') ? 'translateY(0)' : 'scale(1)';
+          inner.style.opacity = '1';
+        }
+      }, 15);
+    }
+
+    function closeModalOnOverlay(e, id) {
+      if (e.target.classList.contains('modal-overlay')) {
+        closeModalDirect(id);
+      }
+    }
+
+    function closeModalDirect(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.opacity = '0';
+      const inner = el.querySelector('.popup-modal-content, .bottom-sheet-content');
+      if (inner) {
+        inner.style.transform = inner.classList.contains('bottom-sheet-content') ? 'translateY(100%)' : 'scale(0.95)';
+        inner.style.opacity = '0';
+      }
+      setTimeout(() => { el.style.display = 'none'; }, 250);
+    }
+
+    function openChartModal() {
+      openModal('chartModal');
+    }
+
+    function showToastPopup(msg) {
+      const toast = document.getElementById('toastPopup');
+      if (!toast) return;
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderList(masterStaffList);
+    });
   </script>
 </body>
 </html>

@@ -1,9 +1,4 @@
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-
-  <!doctype html>
-/>
+<!doctype html>
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
@@ -19,6 +14,10 @@
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="../../../css/theme.css" />
     <link rel="stylesheet" href="../../../css/app.css" />
@@ -167,6 +166,40 @@
         height: 100%;
         background: #f43f5e;
       }
+
+      /* Opaque Solid Bottom Sheets & Hidden Scrollbars */
+      .staff-list-bottom-sheet,
+      .filter-bottom-sheet-content,
+      .options-bottom-sheet-content {
+        background: #14132b !important;
+        background-color: #14132b !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+      }
+
+      [data-theme="light"] .staff-list-bottom-sheet,
+      [data-theme="light"] .filter-bottom-sheet-content,
+      [data-theme="light"] .options-bottom-sheet-content {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .staff-list-bottom-sheet ::-webkit-scrollbar,
+      .filter-bottom-sheet-content ::-webkit-scrollbar,
+      .options-bottom-sheet-content ::-webkit-scrollbar,
+      #staffListContent::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+
+      .staff-list-bottom-sheet,
+      .filter-bottom-sheet-content,
+      .options-bottom-sheet-content,
+      #staffListContent {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
     </style>
   </head>
   <body>
@@ -246,88 +279,6 @@
             <i class="fa-solid fa-users" style="font-size: 15px"></i>
             Team
           </a>
-        </div>
-
-        <!-- Consistent Filter Header Bar -->
-        <div
-          style="
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 18px;
-            padding: 12px 16px;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow-sm);
-          "
-        >
-          <div>
-            <div
-              style="
-                font-size: 10.5px;
-                font-weight: 700;
-                color: var(--text-muted);
-                text-transform: uppercase;
-                letter-spacing: 0.4px;
-                margin-bottom: 3px;
-              "
-            >
-              Current Filter
-            </div>
-            <div
-              style="
-                font-size: 13px;
-                font-weight: 800;
-                color: var(--text-primary);
-                display: flex;
-                align-items: center;
-                gap: 6px;
-              "
-            >
-              <span style="font-size: 14px; opacity: 0.85">ஃ</span>
-              <span id="TeamFilterSummaryText">All Teams >> Apr 2025</span>
-            </div>
-          </div>
-          <!-- Sliders Filter Button Trigger -->
-          <button
-            type="button"
-            onclick="openTeamFilterModal()"
-            title="Open Filter Options"
-            style="
-              width: 44px;
-              height: 44px;
-              border-radius: 14px;
-              background: var(--bg-input);
-              border: 1px solid var(--border-subtle);
-              color: var(--purple-primary);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              cursor: pointer;
-            "
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="4" y1="21" x2="4" y2="14"></line>
-              <line x1="4" y1="10" x2="4" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="3"></line>
-              <line x1="20" y1="21" x2="20" y2="16"></line>
-              <line x1="20" y1="12" x2="20" y2="3"></line>
-              <line x1="1" y1="14" x2="7" y2="14"></line>
-              <line x1="9" y1="8" x2="15" y2="8"></line>
-              <line x1="17" y1="16" x2="23" y2="16"></line>
-            </svg>
-          </button>
         </div>
 
         <!-- Team Management Options Grid (11 Options) -->
@@ -684,98 +635,187 @@
             </div>
           </div>
 
-          <div style="display: flex; gap: 16px">
-            <div style="flex: 1">
+          <div style="display: flex; gap: 12px">
+            <!-- 1. Scheduled to Work Today -->
+            <div
+              style="
+                flex: 1;
+                background: var(--bg-input);
+                border: 1px solid var(--border-subtle);
+                border-radius: 18px;
+                padding: 14px;
+                cursor: pointer;
+                transition:
+                  transform 0.15s,
+                  border-color 0.15s;
+              "
+              onclick="
+                openStaffListModal('Scheduled to Work Today', 'scheduled')
+              "
+              onmousedown="this.style.transform = 'scale(0.97)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
               <div
                 style="
                   display: flex;
                   align-items: center;
                   gap: 8px;
-                  margin-bottom: 12px;
+                  margin-bottom: 10px;
                 "
               >
                 <div
                   style="
-                    width: 24px;
-                    height: 24px;
-                    border-radius: 12px;
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 8px;
                     background: rgba(59, 130, 246, 0.15);
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     color: #60a5fa;
+                    flex-shrink: 0;
                   "
                 >
-                  <i class="fa-solid fa-user" style="font-size: 12px"></i>
+                  <i class="fa-solid fa-user-check" style="font-size: 12px"></i>
                 </div>
                 <div
                   style="
-                    font-size: 11px;
+                    font-size: 11.5px;
                     font-weight: 700;
                     color: var(--text-secondary);
                     line-height: 1.2;
                   "
                 >
-                  Scheduled to Work<br />Today
+                  Scheduled to Work Today
                 </div>
               </div>
               <div
                 style="
-                  font-size: 32px;
-                  font-weight: 800;
-                  color: var(--text-primary);
-                  line-height: 1;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
                 "
               >
-                135
+                <span
+                  style="
+                    font-size: 28px;
+                    font-weight: 800;
+                    color: var(--text-primary);
+                    line-height: 1;
+                  "
+                  >135</span
+                >
+                <span
+                  style="
+                    font-size: 11.5px;
+                    font-weight: 700;
+                    color: #60a5fa;
+                    background: rgba(59, 130, 246, 0.12);
+                    padding: 3px 8px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                  "
+                >
+                  View
+                  <i
+                    class="fa-solid fa-chevron-right"
+                    style="font-size: 10px"
+                  ></i>
+                </span>
               </div>
             </div>
 
-            <div style="width: 1px; background: var(--border-subtle)"></div>
-
-            <div style="flex: 1">
+            <!-- 2. OT Planned Today -->
+            <div
+              style="
+                flex: 1;
+                background: var(--bg-input);
+                border: 1px solid var(--border-subtle);
+                border-radius: 18px;
+                padding: 14px;
+                cursor: pointer;
+                transition:
+                  transform 0.15s,
+                  border-color 0.15s;
+              "
+              onclick="openStaffListModal('OT Planned Today', 'ot')"
+              onmousedown="this.style.transform = 'scale(0.97)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
               <div
                 style="
                   display: flex;
                   align-items: center;
                   gap: 8px;
-                  margin-bottom: 12px;
+                  margin-bottom: 10px;
                 "
               >
                 <div
                   style="
-                    width: 24px;
-                    height: 24px;
-                    border-radius: 12px;
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 8px;
                     background: rgba(139, 92, 246, 0.15);
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     color: #a78bfa;
+                    flex-shrink: 0;
                   "
                 >
-                  <i class="fa-solid fa-clock" style="font-size: 12px"></i>
+                  <i
+                    class="fa-solid fa-clock-rotate-left"
+                    style="font-size: 12px"
+                  ></i>
                 </div>
                 <div
                   style="
-                    font-size: 11px;
+                    font-size: 11.5px;
                     font-weight: 700;
                     color: var(--text-secondary);
                     line-height: 1.2;
                   "
                 >
-                  OT Planned Today<br />&nbsp;
+                  OT Planned Today
                 </div>
               </div>
               <div
                 style="
-                  font-size: 32px;
-                  font-weight: 800;
-                  color: var(--text-primary);
-                  line-height: 1;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
                 "
               >
-                12
+                <span
+                  style="
+                    font-size: 28px;
+                    font-weight: 800;
+                    color: var(--text-primary);
+                    line-height: 1;
+                  "
+                  >12</span
+                >
+                <span
+                  style="
+                    font-size: 11.5px;
+                    font-weight: 700;
+                    color: #a78bfa;
+                    background: rgba(139, 92, 246, 0.12);
+                    padding: 3px 8px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                  "
+                >
+                  View
+                  <i
+                    class="fa-solid fa-chevron-right"
+                    style="font-size: 10px"
+                  ></i>
+                </span>
               </div>
             </div>
           </div>
@@ -830,6 +870,7 @@
               </div>
             </div>
             <div
+              onclick="openStaffListModal('Present Today', 'present')"
               style="
                 background: rgba(16, 185, 129, 0.15);
                 border: 1px solid rgba(16, 185, 129, 0.3);
@@ -841,7 +882,11 @@
                 display: flex;
                 align-items: center;
                 gap: 4px;
+                cursor: pointer;
+                transition: transform 0.15s;
               "
+              onmousedown="this.style.transform = 'scale(0.95)'"
+              onmouseup="this.style.transform = 'scale(1)'"
             >
               <div
                 style="
@@ -859,6 +904,7 @@
           <div style="display: flex; gap: 12px; margin-bottom: 20px">
             <!-- Present Box -->
             <div
+              onclick="openStaffListModal('Present Today', 'present')"
               style="
                 flex: 1;
                 background: var(--bg-input);
@@ -867,7 +913,13 @@
                 padding: 16px;
                 position: relative;
                 overflow: hidden;
+                cursor: pointer;
+                transition:
+                  transform 0.15s,
+                  border-color 0.15s;
               "
+              onmousedown="this.style.transform = 'scale(0.97)'"
+              onmouseup="this.style.transform = 'scale(1)'"
             >
               <div
                 style="
@@ -929,6 +981,7 @@
 
             <!-- No Show Box -->
             <div
+              onclick="openStaffListModal('No Show Today', 'noshow')"
               style="
                 flex: 1;
                 background: rgba(244, 63, 94, 0.1);
@@ -937,7 +990,13 @@
                 padding: 16px;
                 position: relative;
                 overflow: hidden;
+                cursor: pointer;
+                transition:
+                  transform 0.15s,
+                  border-color 0.15s;
               "
+              onmousedown="this.style.transform = 'scale(0.97)'"
+              onmouseup="this.style.transform = 'scale(1)'"
             >
               <div
                 style="
@@ -1022,65 +1081,241 @@
           </div>
         </div>
 
-        <!-- Need Your Attention -->
-        <div class="card" style="padding: 18px 20px">
-          <div style="display: flex; gap: 12px; align-items: flex-start">
-            <div
-              style="
-                width: 36px;
-                height: 36px;
-                border-radius: 18px;
-                background: rgba(244, 63, 94, 0.15);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #f43f5e;
-              "
-            >
-              <i
-                class="fa-solid fa-circle-exclamation"
-                style="font-size: 18px"
-              ></i>
-            </div>
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px">
+        <!-- Need Your Attention Section -->
+        <div class="card" style="padding: 20px">
+          <!-- Section Header -->
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 16px;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div
+                style="
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 10px;
+                  background: rgba(244, 63, 94, 0.15);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: #f43f5e;
+                "
+              >
+                <i
+                  class="fa-solid fa-circle-exclamation"
+                  style="font-size: 16px"
+                ></i>
+              </div>
+              <div>
                 <h3
                   style="
                     font-size: 16px;
                     font-weight: 800;
                     color: var(--text-primary);
+                    margin: 0;
+                    line-height: 1.2;
                   "
                 >
                   Need Your Attention
                 </h3>
+                <p
+                  style="
+                    font-size: 11.5px;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                    margin-top: 2px;
+                  "
+                >
+                  Items that require your action
+                </p>
+              </div>
+            </div>
+            <span
+              style="
+                font-size: 11.5px;
+                font-weight: 800;
+                padding: 3px 10px;
+                border-radius: 12px;
+                background: rgba(244, 63, 94, 0.15);
+                color: #f43f5e;
+              "
+              >26 Items</span
+            >
+          </div>
+
+          <!-- Action Items List -->
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <!-- 1. Pending Approval -->
+            <div
+              onclick="
+                openStaffListModal('Pending Approval', 'pending_approval')
+              "
+              style="
+                background: var(--bg-input);
+                border: 1px solid var(--border-subtle);
+                border-radius: 16px;
+                padding: 14px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                cursor: pointer;
+                transition:
+                  transform 0.15s,
+                  border-color 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.98)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div
+                  style="
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 12px;
+                    background: rgba(245, 158, 11, 0.15);
+                    color: #f59e0b;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <i
+                    class="fa-solid fa-clock-rotate-left"
+                    style="font-size: 17px"
+                  ></i>
+                </div>
+                <div>
+                  <div
+                    style="
+                      font-size: 14px;
+                      font-weight: 800;
+                      color: var(--text-primary);
+                      line-height: 1.2;
+                    "
+                  >
+                    Pending Approval
+                  </div>
+                  <div
+                    style="
+                      font-size: 11.5px;
+                      font-weight: 600;
+                      color: var(--text-muted);
+                      margin-top: 3px;
+                    "
+                  >
+                    OT plans & leave requests awaiting review
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
                 <span
                   style="
-                    font-size: 11px;
+                    font-size: 12px;
                     font-weight: 800;
-                    padding: 2px 8px;
+                    color: #f59e0b;
+                    background: rgba(245, 158, 11, 0.15);
+                    padding: 3px 10px;
                     border-radius: 10px;
-                    background: rgba(244, 63, 94, 0.2);
-                    color: #f43f5e;
                   "
-                  >26</span
                 >
+                  18
+                </span>
+                <i
+                  class="fa-solid fa-chevron-right"
+                  style="font-size: 13px; color: var(--text-caption)"
+                ></i>
               </div>
-              <p
-                style="
-                  font-size: 12px;
-                  font-weight: 600;
-                  color: var(--text-muted);
-                  margin-top: 2px;
-                "
-              >
-                Items that need your action
-              </p>
             </div>
-            <div style="margin-left: auto">
-              <i
-                class="fa-solid fa-chevron-right"
-                style="font-size: 16px; color: var(--text-caption)"
-              ></i>
+
+            <!-- 2. Attendance Verification -->
+            <div
+              onclick="
+                openStaffListModal(
+                  'Attendance Verification',
+                  'attendance_verification',
+                )
+              "
+              style="
+                background: var(--bg-input);
+                border: 1px solid var(--border-subtle);
+                border-radius: 16px;
+                padding: 14px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                cursor: pointer;
+                transition:
+                  transform 0.15s,
+                  border-color 0.15s;
+              "
+              onmousedown="this.style.transform = 'scale(0.98)'"
+              onmouseup="this.style.transform = 'scale(1)'"
+            >
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div
+                  style="
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 12px;
+                    background: rgba(124, 58, 237, 0.15);
+                    color: var(--purple-primary);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <i
+                    class="fa-solid fa-clipboard-check"
+                    style="font-size: 17px"
+                  ></i>
+                </div>
+                <div>
+                  <div
+                    style="
+                      font-size: 14px;
+                      font-weight: 800;
+                      color: var(--text-primary);
+                      line-height: 1.2;
+                    "
+                  >
+                    Attendance Verification
+                  </div>
+                  <div
+                    style="
+                      font-size: 11.5px;
+                      font-weight: 600;
+                      color: var(--text-muted);
+                      margin-top: 3px;
+                    "
+                  >
+                    Clocking exceptions & feedback audits
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span
+                  style="
+                    font-size: 12px;
+                    font-weight: 800;
+                    color: var(--purple-primary);
+                    background: rgba(124, 58, 237, 0.15);
+                    padding: 3px 10px;
+                    border-radius: 10px;
+                  "
+                >
+                  8
+                </span>
+                <i
+                  class="fa-solid fa-chevron-right"
+                  style="font-size: 13px; color: var(--text-caption)"
+                ></i>
+              </div>
             </div>
           </div>
         </div>
@@ -1088,6 +1323,599 @@
 
       <!-- Active component for team layout is often bottom nav -->
       <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+      <!-- Staff List Bottom Sheet Modal (inside phone container) -->
+      <div
+        id="StaffListModalOverlay"
+        style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.65);
+          z-index: 500;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+          border-radius: 44px;
+          overflow: hidden;
+          display: flex;
+          align-items: flex-end;
+        "
+        onclick="closeStaffListModal(event)"
+      >
+        <div
+          class="staff-list-bottom-sheet"
+          onclick="event.stopPropagation()"
+          style="
+            position: relative;
+            width: 100%;
+            max-height: 80%;
+            background: var(--bg-card);
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding: 20px 18px 24px;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+            border-top: 1px solid var(--border-subtle);
+          "
+        >
+          <!-- Drag Handle -->
+          <div
+            style="
+              width: 36px;
+              height: 4px;
+              background: var(--border-subtle);
+              border-radius: 2px;
+              margin: 0 auto 14px;
+              opacity: 0.8;
+            "
+          ></div>
+
+          <!-- Modal Header -->
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 14px;
+            "
+          >
+            <div>
+              <h3
+                id="staffListModalTitle"
+                style="
+                  font-size: 17px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  margin: 0;
+                  line-height: 1.2;
+                "
+              >
+                Scheduled to Work Today
+              </h3>
+              <p
+                id="staffListModalSub"
+                style="
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: var(--text-muted);
+                  margin-top: 3px;
+                "
+              >
+                Showing employees list
+              </p>
+            </div>
+            <button
+              type="button"
+              onclick="closeStaffListModal(event)"
+              style="
+                width: 32px;
+                height: 32px;
+                border-radius: 16px;
+                background: var(--bg-input);
+                border: 1px solid var(--border-subtle);
+                color: var(--text-muted);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+              "
+            >
+              <i class="fa-solid fa-xmark" style="font-size: 15px"></i>
+            </button>
+          </div>
+
+          <!-- Current Filter Bar (Replaces plain search bar) -->
+          <div
+            style="
+              background: var(--bg-input);
+              border: 1px solid var(--border-subtle);
+              border-radius: 18px;
+              padding: 12px 16px;
+              margin-bottom: 14px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              box-shadow: var(--shadow-sm);
+              cursor: pointer;
+            "
+            onclick="openStaffFilterModal()"
+          >
+            <div style="flex: 1; margin-right: 10px; overflow: hidden">
+              <div
+                style="
+                  font-size: 10.5px;
+                  font-weight: 700;
+                  color: #a78bfa;
+                  text-transform: uppercase;
+                  letter-spacing: 0.4px;
+                  margin-bottom: 3px;
+                "
+              >
+                Current Filter
+              </div>
+              <div
+                style="
+                  font-size: 13px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                "
+              >
+                <span style="font-size: 13px; color: var(--purple-primary, #7c3aed)">ஃ</span>
+                <span
+                  id="staffFilterSummaryText"
+                  style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+                >
+                  All Branches • All Departments
+                </span>
+              </div>
+            </div>
+
+            <!-- Filter Trigger Button -->
+            <button
+              type="button"
+              onclick="event.stopPropagation(); openStaffFilterModal()"
+              title="Open Filter Options"
+              style="
+                width: 42px;
+                height: 42px;
+                border-radius: 14px;
+                background: rgba(124, 58, 237, 0.15);
+                border: 1px solid var(--purple-border, rgba(124, 58, 237, 0.3));
+                color: var(--purple-primary, #7c3aed);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                flex-shrink: 0;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform='scale(0.95)'"
+              onmouseup="this.style.transform='scale(1)'"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Staff List Items Container -->
+          <div
+            id="staffListContent"
+            style="
+              flex: 1;
+              overflow-y: auto;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              padding-right: 2px;
+            "
+          >
+            <!-- Items populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Filter Modal Overlay (Matching User Photo Exactly) -->
+      <div
+        id="staffFilterModalOverlay"
+        onclick="closeStaffFilterModal(event)"
+        style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(15, 23, 42, 0.7);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          z-index: 600;
+          display: none;
+          align-items: flex-end;
+          justify-content: center;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+          border-radius: 44px;
+          overflow: hidden;
+        "
+      >
+        <div
+          class="staff-filter-bottom-sheet-content"
+          onclick="event.stopPropagation()"
+          style="
+            width: 100%;
+            background: var(--bg-card, #16162a);
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding: 20px 20px 28px;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+            border-bottom: none;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 85%;
+            overflow-y: auto;
+            box-sizing: border-box;
+          "
+        >
+          <!-- Top Drag Handle Pill -->
+          <div
+            style="
+              width: 36px;
+              height: 4px;
+              background: var(--border-subtle, rgba(255, 255, 255, 0.2));
+              border-radius: 4px;
+              margin: 0 auto 16px;
+              opacity: 0.7;
+            "
+          ></div>
+
+          <!-- Header Row: Title & Reset Button -->
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 20px;
+            "
+          >
+            <h3
+              style="
+                font-size: 18px;
+                font-weight: 800;
+                color: var(--text-primary, #ffffff);
+                margin: 0;
+              "
+            >
+              Filter History
+            </h3>
+            <button
+              type="button"
+              onclick="resetStaffFilterModal()"
+              style="
+                padding: 7px 14px;
+                border-radius: 20px;
+                background: var(--bg-input, rgba(255, 255, 255, 0.08));
+                border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.15));
+                color: var(--text-primary, #ffffff);
+                font-size: 12px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+              "
+            >
+              <span style="font-size: 14px">↻</span> Reset
+            </button>
+          </div>
+
+          <!-- 1. Search Keyword -->
+          <div style="margin-bottom: 16px">
+            <label
+              style="
+                font-size: 13px;
+                font-weight: 700;
+                color: #a78bfa;
+                margin-bottom: 8px;
+                display: block;
+              "
+            >
+              Search Keyword
+            </label>
+            <input
+              type="text"
+              id="staffFilterKeywordInput"
+              placeholder="Employee Number or Name"
+              style="
+                width: 100%;
+                padding: 14px 16px;
+                border-radius: 16px;
+                background: var(--bg-input, #1e1f38);
+                border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+                color: var(--text-primary, #ffffff);
+                font-size: 13.5px;
+                font-weight: 700;
+                outline: none;
+                box-sizing: border-box;
+              "
+            />
+          </div>
+
+          <!-- 2. Branch Selector -->
+          <div style="margin-bottom: 16px">
+            <label
+              style="
+                font-size: 13px;
+                font-weight: 700;
+                color: #a78bfa;
+                margin-bottom: 8px;
+                display: block;
+              "
+            >
+              Branch
+            </label>
+            <div style="position: relative">
+              <select
+                id="staffFilterBranchSelect"
+                style="
+                  width: 100%;
+                  padding: 14px 16px;
+                  border-radius: 16px;
+                  background: var(--bg-input, #1e1f38);
+                  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+                  color: var(--text-primary, #ffffff);
+                  font-size: 13.5px;
+                  font-weight: 700;
+                  outline: none;
+                  appearance: none;
+                  -webkit-appearance: none;
+                  cursor: pointer;
+                "
+              >
+                <option value="all">All Branches</option>
+                <option value="HQ - KUALA LUMPUR">HQ - KUALA LUMPUR</option>
+                <option value="TIMES SQUARE BRANCH">TIMES SQUARE BRANCH</option>
+                <option value="MID VALLEY BRANCH">MID VALLEY BRANCH</option>
+                <option value="SUNWAY BRANCH">SUNWAY BRANCH</option>
+                <option value="PENANG BRANCH">PENANG BRANCH</option>
+                <option value="JOHOR BAHRU BRANCH">JOHOR BAHRU BRANCH</option>
+              </select>
+              <div
+                style="
+                  position: absolute;
+                  right: 16px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  pointer-events: none;
+                  color: var(--text-primary, #ffffff);
+                "
+              >
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Department Selector -->
+          <div style="margin-bottom: 16px">
+            <label
+              style="
+                font-size: 13px;
+                font-weight: 700;
+                color: #a78bfa;
+                margin-bottom: 8px;
+                display: block;
+              "
+            >
+              Department
+            </label>
+            <div style="position: relative">
+              <select
+                id="staffFilterDeptSelect"
+                style="
+                  width: 100%;
+                  padding: 14px 16px;
+                  border-radius: 16px;
+                  background: var(--bg-input, #1e1f38);
+                  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+                  color: var(--text-primary, #ffffff);
+                  font-size: 13.5px;
+                  font-weight: 700;
+                  outline: none;
+                  appearance: none;
+                  -webkit-appearance: none;
+                  cursor: pointer;
+                "
+              >
+                <option value="all">All Departments</option>
+                <option value="Operations">Operations</option>
+                <option value="Production A">Production A</option>
+                <option value="Production B">Production B</option>
+                <option value="Quality Control">Quality Control</option>
+                <option value="Logistics">Logistics</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Assembly Line">Assembly Line</option>
+                <option value="Warehouse">Warehouse</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Packaging">Packaging</option>
+                <option value="IT Support">IT Support</option>
+              </select>
+              <div
+                style="
+                  position: absolute;
+                  right: 16px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  pointer-events: none;
+                  color: var(--text-primary, #ffffff);
+                "
+              >
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Cost Center Selector -->
+          <div style="margin-bottom: 16px">
+            <label
+              style="
+                font-size: 13px;
+                font-weight: 700;
+                color: #a78bfa;
+                margin-bottom: 8px;
+                display: block;
+              "
+            >
+              Cost Center
+            </label>
+            <div style="position: relative">
+              <select
+                id="staffFilterCostCenterSelect"
+                style="
+                  width: 100%;
+                  padding: 14px 16px;
+                  border-radius: 16px;
+                  background: var(--bg-input, #1e1f38);
+                  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+                  color: var(--text-primary, #ffffff);
+                  font-size: 13.5px;
+                  font-weight: 700;
+                  outline: none;
+                  appearance: none;
+                  -webkit-appearance: none;
+                  cursor: pointer;
+                "
+              >
+                <option value="all">All Cost Centers</option>
+                <option value="CC-101">CC-101 (Operations & HQ)</option>
+                <option value="CC-202">CC-202 (Production & Assembly)</option>
+                <option value="CC-303">CC-303 (Engineering & IT)</option>
+                <option value="CC-404">CC-404 (Logistics & Supply)</option>
+              </select>
+              <div
+                style="
+                  position: absolute;
+                  right: 16px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  pointer-events: none;
+                  color: var(--text-primary, #ffffff);
+                "
+              >
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Job Selector -->
+          <div style="margin-bottom: 24px">
+            <label
+              style="
+                font-size: 13px;
+                font-weight: 700;
+                color: #a78bfa;
+                margin-bottom: 8px;
+                display: block;
+              "
+            >
+              Job
+            </label>
+            <div style="position: relative">
+              <select
+                id="staffFilterJobSelect"
+                style="
+                  width: 100%;
+                  padding: 14px 16px;
+                  border-radius: 16px;
+                  background: var(--bg-input, #1e1f38);
+                  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+                  color: var(--text-primary, #ffffff);
+                  font-size: 13.5px;
+                  font-weight: 700;
+                  outline: none;
+                  appearance: none;
+                  -webkit-appearance: none;
+                  cursor: pointer;
+                "
+              >
+                <option value="all">All Jobs</option>
+                <option value="Operations Executive">Operations Executive</option>
+                <option value="Production Supervisor">Production Supervisor</option>
+                <option value="Logistics Lead">Logistics Lead</option>
+                <option value="QC Inspector">QC Inspector</option>
+                <option value="Software Engineer">Software Engineer</option>
+                <option value="Assembly Operator">Assembly Operator</option>
+                <option value="Warehouse Officer">Warehouse Officer</option>
+                <option value="Maintenance Technician">Maintenance Technician</option>
+              </select>
+              <div
+                style="
+                  position: absolute;
+                  right: 16px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  pointer-events: none;
+                  color: var(--text-primary, #ffffff);
+                "
+              >
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apply Filter Button -->
+          <button
+            type="button"
+            onclick="applyStaffFilterModal()"
+            style="
+              width: 100%;
+              padding: 15px;
+              border-radius: 18px;
+              background: linear-gradient(135deg, #7c3aed, #6366f1);
+              color: #ffffff;
+              font-size: 15px;
+              font-weight: 800;
+              border: none;
+              cursor: pointer;
+              box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+              transition: transform 0.2s;
+            "
+            onmousedown="this.style.transform='scale(0.98)'"
+            onmouseup="this.style.transform='scale(1)'"
+          >
+            Apply Filter
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Bottom Sheet Filter Modal -->
@@ -1095,16 +1923,19 @@
       id="TeamFilterModalOverlay"
       onclick="closeTeamFilterModal(event)"
       style="
-        position: fixed;
+        position: absolute;
         inset: 0;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(4px);
-        z-index: 9999;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(6px);
+        z-index: 999;
         display: none;
         align-items: flex-end;
         justify-content: center;
         opacity: 0;
+        pointer-events: none;
         transition: opacity 0.3s ease;
+        border-radius: 44px;
+        overflow: hidden;
       "
     >
       <div
@@ -1253,16 +2084,19 @@
       id="TeamOptionsModalOverlay"
       onclick="closeTeamOptionsModal(event)"
       style="
-        position: fixed;
+        position: absolute;
         inset: 0;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(4px);
-        z-index: 9999;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(6px);
+        z-index: 999;
         display: none;
         align-items: flex-end;
         justify-content: center;
         opacity: 0;
+        pointer-events: none;
         transition: opacity 0.3s ease;
+        border-radius: 44px;
+        overflow: hidden;
       "
     >
       <div
@@ -1849,7 +2683,7 @@
         const overlay = document.getElementById("TeamFilterModalOverlay");
         const sheet = overlay.querySelector(".filter-bottom-sheet-content");
         overlay.style.display = "flex";
-        // Trigger reflow
+        overlay.style.pointerEvents = "auto";
         void overlay.offsetWidth;
         overlay.style.opacity = "1";
         sheet.style.transform = "translateY(0)";
@@ -1860,6 +2694,7 @@
         const overlay = document.getElementById("TeamFilterModalOverlay");
         const sheet = overlay.querySelector(".filter-bottom-sheet-content");
         overlay.style.opacity = "0";
+        overlay.style.pointerEvents = "none";
         sheet.style.transform = "translateY(100%)";
         setTimeout(() => {
           overlay.style.display = "none";
@@ -1878,11 +2713,513 @@
           "Custom >> Apr 2025";
         closeTeamFilterModal();
       }
+    </script>
+
+    <script>
+      const staffDatabase = {
+        scheduled: [
+          {
+            name: "Alex Tan",
+            id: "EMP-1002",
+            dept: "Operations",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#4f46e5",
+          },
+          {
+            name: "Sarah Lim",
+            id: "EMP-1015",
+            dept: "Production A",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#0891b2",
+          },
+          {
+            name: "Jason Lee",
+            id: "EMP-1024",
+            dept: "Logistics",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#059669",
+          },
+          {
+            name: "Kevin Wong",
+            id: "EMP-1031",
+            dept: "Quality Control",
+            statusText: "Night Shift (20:00 – 05:00)",
+            badge: "N",
+            color: "#7c3aed",
+          },
+          {
+            name: "Michelle Chen",
+            id: "EMP-1048",
+            dept: "Engineering",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#db2777",
+          },
+          {
+            name: "David Miller",
+            id: "EMP-1052",
+            dept: "Assembly Line",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#d97706",
+          },
+          {
+            name: "Amanda Lee",
+            id: "EMP-1066",
+            dept: "Warehouse",
+            statusText: "Night Shift (20:00 – 05:00)",
+            badge: "N",
+            color: "#2563eb",
+          },
+          {
+            name: "Kenji Sato",
+            id: "EMP-1073",
+            dept: "Maintenance",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#059669",
+          },
+          {
+            name: "Maria Garcia",
+            id: "EMP-1089",
+            dept: "Packaging",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#9333ea",
+          },
+          {
+            name: "Daniel Park",
+            id: "EMP-1094",
+            dept: "IT Support",
+            statusText: "Day Shift (08:00 – 17:00)",
+            badge: "D",
+            color: "#0284c7",
+          },
+        ],
+        present: [
+          {
+            name: "Alex Tan",
+            id: "EMP-1002",
+            dept: "Operations",
+            statusText: "Clocked In: 07:55 AM (HQ Main Gate)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "Sarah Lim",
+            id: "EMP-1015",
+            dept: "Production A",
+            statusText: "Clocked In: 08:02 AM (Turnstile #2)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "Jason Lee",
+            id: "EMP-1024",
+            dept: "Logistics",
+            statusText: "Clocked In: 07:48 AM (Warehouse South)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "Kevin Wong",
+            id: "EMP-1031",
+            dept: "Quality Control",
+            statusText: "Clocked In: 07:58 AM (Lab A)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "Michelle Chen",
+            id: "EMP-1048",
+            dept: "Engineering",
+            statusText: "Clocked In: 08:10 AM (Office Block)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "David Miller",
+            id: "EMP-1052",
+            dept: "Assembly Line",
+            statusText: "Clocked In: 07:50 AM (Line 1 Gate)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "Kenji Sato",
+            id: "EMP-1073",
+            dept: "Maintenance",
+            statusText: "Clocked In: 07:42 AM (Workshop Main)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "Maria Garcia",
+            id: "EMP-1089",
+            dept: "Packaging",
+            statusText: "Clocked In: 08:05 AM (Pack Station)",
+            badge: "Present",
+            color: "#10b981",
+          },
+          {
+            name: "Daniel Park",
+            id: "EMP-1094",
+            dept: "IT Support",
+            statusText: "Clocked In: 08:00 AM (HQ IT Hub)",
+            badge: "Present",
+            color: "#10b981",
+          },
+        ],
+        noshow: [
+          {
+            name: "Amanda Lee",
+            id: "EMP-1066",
+            dept: "Warehouse",
+            statusText: "Unexcused Absence • Shift started 08:00 AM",
+            badge: "No Show",
+            color: "#f43f5e",
+          },
+          {
+            name: "Robert Taylor",
+            id: "EMP-1142",
+            dept: "Logistics",
+            statusText: "No Clock In Recorded",
+            badge: "No Show",
+            color: "#f43f5e",
+          },
+          {
+            name: "Chung Wei",
+            id: "EMP-1158",
+            dept: "Production B",
+            statusText: "Pending Emergency Leave Verification",
+            badge: "No Show",
+            color: "#f43f5e",
+          },
+          {
+            name: "Siti Nur",
+            id: "EMP-1167",
+            dept: "Assembly Line",
+            statusText: "Unexcused Absence",
+            badge: "No Show",
+            color: "#f43f5e",
+          },
+          {
+            name: "John Smith",
+            id: "EMP-1175",
+            dept: "Quality Control",
+            statusText: "No Clock In Recorded",
+            badge: "No Show",
+            color: "#f43f5e",
+          },
+        ],
+        ot: [
+          {
+            name: "Alex Tan",
+            id: "EMP-1002",
+            dept: "Operations",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#4f46e5",
+          },
+          {
+            name: "Sarah Lim",
+            id: "EMP-1015",
+            dept: "Production A",
+            statusText: "OT Plan: 17:00 – 18:30 (1.5h)",
+            badge: "OT 1.5h",
+            color: "#0891b2",
+          },
+          {
+            name: "Jason Lee",
+            id: "EMP-1024",
+            dept: "Logistics",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#059669",
+          },
+          {
+            name: "Michelle Chen",
+            id: "EMP-1048",
+            dept: "Engineering",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#db2777",
+          },
+          {
+            name: "David Miller",
+            id: "EMP-1052",
+            dept: "Assembly Line",
+            statusText: "OT Plan: 17:00 – 18:00 (1h)",
+            badge: "OT 1h",
+            color: "#d97706",
+          },
+          {
+            name: "Kenji Sato",
+            id: "EMP-1073",
+            dept: "Maintenance",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#059669",
+          },
+          {
+            name: "Maria Garcia",
+            id: "EMP-1089",
+            dept: "Packaging",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#9333ea",
+          },
+          {
+            name: "Daniel Park",
+            id: "EMP-1094",
+            dept: "IT Support",
+            statusText: "OT Plan: 17:00 – 18:30 (1.5h)",
+            badge: "OT 1.5h",
+            color: "#0284c7",
+          },
+          {
+            name: "Rachel Adams",
+            id: "EMP-1102",
+            dept: "QA Testing",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#e11d48",
+          },
+          {
+            name: "Victor Hugo",
+            id: "EMP-1115",
+            dept: "Safety",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#059669",
+          },
+          {
+            name: "Emily Watson",
+            id: "EMP-1120",
+            dept: "Procurement",
+            statusText: "OT Plan: 17:00 – 18:00 (1h)",
+            badge: "OT 1h",
+            color: "#7c3aed",
+          },
+          {
+            name: "Brian Schmidt",
+            id: "EMP-1134",
+            dept: "Facilities",
+            statusText: "OT Plan: 17:00 – 19:00 (2h)",
+            badge: "OT 2h",
+            color: "#d97706",
+          },
+        ],
+        attention: [
+          {
+            name: "Amanda Lee",
+            id: "EMP-1066",
+            dept: "Warehouse",
+            statusText: "No Clock In • Shift started 08:00 AM",
+            badge: "No Show",
+            color: "#f43f5e",
+          },
+          {
+            name: "Robert Taylor",
+            id: "EMP-1142",
+            dept: "Logistics",
+            statusText: "Late Clock In (+45 mins)",
+            badge: "Late",
+            color: "#f59e0b",
+          },
+          {
+            name: "Chung Wei",
+            id: "EMP-1158",
+            dept: "Production B",
+            statusText: "Overtime Request Pending Approval",
+            badge: "Pending OT",
+            color: "#8b5cf6",
+          },
+          {
+            name: "Siti Nur",
+            id: "EMP-1167",
+            dept: "Assembly Line",
+            statusText: "Clock Out Missing (Yesterday)",
+            badge: "Missing Out",
+            color: "#ec4899",
+          },
+          {
+            name: "John Smith",
+            id: "EMP-1175",
+            dept: "Quality Control",
+            statusText: "Work Hour Violation (>12 hrs)",
+            badge: "Violation",
+            color: "#ef4444",
+          },
+        ],
+      };
+
+      let currentStaffType = "scheduled";
+
+      function openStaffListModal(title, type) {
+        currentStaffType = type;
+        document.getElementById("staffListModalTitle").textContent = title;
+        const list = staffDatabase[type] || [];
+        const countMap = {
+          scheduled: 135,
+          present: 128,
+          noshow: 7,
+          ot: 12,
+          attention: 26,
+        };
+        const totalCount = countMap[type] || list.length;
+        document.getElementById("staffListModalSub").textContent =
+          `Showing ${list.length} of ${totalCount} employees`;
+
+        filterStaffList();
+
+        const overlay = document.getElementById("StaffListModalOverlay");
+        const sheet = overlay.querySelector(".staff-list-bottom-sheet");
+        overlay.style.display = "flex";
+        overlay.style.pointerEvents = "auto";
+        void overlay.offsetWidth;
+        overlay.style.opacity = "1";
+        sheet.style.transform = "translateY(0)";
+      }
+
+      function renderStaffList(list) {
+        const container = document.getElementById("staffListContent");
+        if (!list || list.length === 0) {
+          container.innerHTML = `<div style="text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 13px;">No employee found</div>`;
+          return;
+        }
+        container.innerHTML = list
+          .map(
+            (item) => `
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${item.name}</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">${item.id} • ${item.dept}${item.branch ? ` • ${item.branch}` : ''}</div>
+            <div style="font-size: 12px; font-weight: 800; color: #a78bfa; margin-top: 3px;">${item.statusText}</div>
+          </div>
+        `,
+          )
+          .join("");
+      }
+
+      function filterStaffList() {
+        const keywordInput = document.getElementById("staffFilterKeywordInput");
+        const branchSelect = document.getElementById("staffFilterBranchSelect");
+        const deptSelect = document.getElementById("staffFilterDeptSelect");
+        const costCenterSelect = document.getElementById("staffFilterCostCenterSelect");
+        const jobSelect = document.getElementById("staffFilterJobSelect");
+
+        const q = keywordInput ? keywordInput.value.toLowerCase().trim() : "";
+        const branch = branchSelect ? branchSelect.value : "all";
+        const dept = deptSelect ? deptSelect.value : "all";
+        const costCenter = costCenterSelect ? costCenterSelect.value : "all";
+        const job = jobSelect ? jobSelect.value : "all";
+
+        const list = staffDatabase[currentStaffType] || [];
+        const filtered = list.filter((s) => {
+          const matchQ = !q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q) || (s.dept && s.dept.toLowerCase().includes(q)) || (s.job && s.job.toLowerCase().includes(q));
+          const matchBranch = branch === "all" || !s.branch || s.branch === branch;
+          const matchDept = dept === "all" || !s.dept || s.dept.toLowerCase() === dept.toLowerCase();
+          const matchCostCenter = costCenter === "all" || !s.costCenter || s.costCenter === costCenter;
+          const matchJob = job === "all" || !s.job || s.job.toLowerCase() === job.toLowerCase();
+
+          return matchQ && matchBranch && matchDept && matchCostCenter && matchJob;
+        });
+
+        renderStaffList(filtered);
+
+        // Update summary text
+        const summaryParts = [];
+        if (q) summaryParts.push(`"${q}"`);
+        if (branch !== "all") summaryParts.push(branch);
+        if (dept !== "all") summaryParts.push(dept);
+        if (costCenter !== "all") summaryParts.push(costCenter);
+        if (job !== "all") summaryParts.push(job);
+
+        const summaryEl = document.getElementById("staffFilterSummaryText");
+        if (summaryEl) {
+          summaryEl.textContent = summaryParts.length > 0 ? summaryParts.join(" • ") : "All Branches • All Departments";
+        }
+
+        const countMap = {
+          scheduled: 135,
+          present: 128,
+          noshow: 7,
+          ot: 12,
+          attention: 26,
+        };
+        const totalCount = countMap[currentStaffType] || list.length;
+        const subEl = document.getElementById("staffListModalSub");
+        if (subEl) {
+          subEl.textContent = `Showing ${filtered.length} of ${totalCount} employees`;
+        }
+      }
+
+      function openStaffFilterModal() {
+        const overlay = document.getElementById("staffFilterModalOverlay");
+        if (!overlay) return;
+        const sheet = overlay.querySelector(".staff-filter-bottom-sheet-content");
+        overlay.style.display = "flex";
+        overlay.style.pointerEvents = "auto";
+        void overlay.offsetWidth;
+        overlay.style.opacity = "1";
+        if (sheet) sheet.style.transform = "translateY(0)";
+      }
+
+      function closeStaffFilterModal(e) {
+        if (e) e.preventDefault();
+        const overlay = document.getElementById("staffFilterModalOverlay");
+        if (!overlay) return;
+        const sheet = overlay.querySelector(".staff-filter-bottom-sheet-content");
+        overlay.style.opacity = "0";
+        overlay.style.pointerEvents = "none";
+        if (sheet) sheet.style.transform = "translateY(100%)";
+        setTimeout(() => {
+          overlay.style.display = "none";
+        }, 300);
+      }
+
+      function resetStaffFilterModal() {
+        const keywordInput = document.getElementById("staffFilterKeywordInput");
+        const branchSelect = document.getElementById("staffFilterBranchSelect");
+        const deptSelect = document.getElementById("staffFilterDeptSelect");
+        const costCenterSelect = document.getElementById("staffFilterCostCenterSelect");
+        const jobSelect = document.getElementById("staffFilterJobSelect");
+
+        if (keywordInput) keywordInput.value = "";
+        if (branchSelect) branchSelect.value = "all";
+        if (deptSelect) deptSelect.value = "all";
+        if (costCenterSelect) costCenterSelect.value = "all";
+        if (jobSelect) jobSelect.value = "all";
+
+        filterStaffList();
+        closeStaffFilterModal();
+      }
+
+      function applyStaffFilterModal() {
+        filterStaffList();
+        closeStaffFilterModal();
+      }
+
+      function closeStaffListModal(e) {
+        if (e) e.preventDefault();
+        const overlay = document.getElementById("StaffListModalOverlay");
+        const sheet = overlay.querySelector(".staff-list-bottom-sheet");
+        overlay.style.opacity = "0";
+        overlay.style.pointerEvents = "none";
+        sheet.style.transform = "translateY(100%)";
+        setTimeout(() => {
+          overlay.style.display = "none";
+        }, 300);
+      }
 
       function openTeamOptionsModal() {
         const overlay = document.getElementById("TeamOptionsModalOverlay");
         const sheet = overlay.querySelector(".options-bottom-sheet-content");
         overlay.style.display = "flex";
+        overlay.style.pointerEvents = "auto";
         void overlay.offsetWidth;
         overlay.style.opacity = "1";
         sheet.style.transform = "translateY(0)";
@@ -1893,6 +3230,7 @@
         const overlay = document.getElementById("TeamOptionsModalOverlay");
         const sheet = overlay.querySelector(".options-bottom-sheet-content");
         overlay.style.opacity = "0";
+        overlay.style.pointerEvents = "none";
         sheet.style.transform = "translateY(100%)";
         setTimeout(() => {
           overlay.style.display = "none";
