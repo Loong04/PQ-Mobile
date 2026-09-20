@@ -22,6 +22,26 @@
     <link rel="stylesheet" href="../../../css/theme.css" />
     <link rel="stylesheet" href="../../../css/app.css" />
     <style>
+      .filter-pill {
+        padding: 7px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-muted);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+
+      .filter-pill.active {
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -169,6 +189,7 @@
 
       /* Opaque Solid Bottom Sheets & Hidden Scrollbars */
       .staff-list-bottom-sheet,
+      .staff-filter-bottom-sheet-content,
       .filter-bottom-sheet-content,
       .options-bottom-sheet-content {
         background: #14132b !important;
@@ -177,11 +198,78 @@
       }
 
       [data-theme="light"] .staff-list-bottom-sheet,
+      [data-theme="light"] .staff-filter-bottom-sheet-content,
       [data-theme="light"] .filter-bottom-sheet-content,
       [data-theme="light"] .options-bottom-sheet-content {
+        background: #f8fafc !important;
+        background-color: #f8fafc !important;
+        box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.15);
+        border-top: 1px solid #e2e8f0;
+      }
+
+      /* Card Styling inside Staff List & Filter Modal */
+      .staff-card-item,
+      .staff-filter-summary-bar {
+        background: var(--bg-input);
+        border: 1px solid var(--border-subtle);
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s ease;
+      }
+
+      [data-theme="light"] .staff-card-item,
+      [data-theme="light"] .staff-filter-summary-bar {
         background: #ffffff !important;
-        background-color: #ffffff !important;
-        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+      }
+
+      [data-theme="light"] #staffFilterKeywordInput,
+      [data-theme="light"] #staffFilterBranchSelect,
+      [data-theme="light"] #staffFilterDeptSelect,
+      [data-theme="light"] #staffFilterCostCenterSelect,
+      [data-theme="light"] #staffFilterJobSelect,
+      [data-theme="light"] #staffSearchKeywordInput {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+      }
+
+      .time-chip {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(124, 58, 237, 0.08);
+        border: 1px solid rgba(124, 58, 237, 0.2);
+        color: var(--purple-primary, #7c3aed);
+        font-size: 11.5px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 10px;
+        width: fit-content;
+      }
+      [data-theme="light"] .time-chip {
+        background: #f5f3ff !important;
+        border: 1px solid #ddd6fe !important;
+        color: #6d28d9 !important;
+      }
+
+      .active-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(124, 58, 237, 0.12);
+        border: 1px solid var(--purple-border, rgba(124, 58, 237, 0.3));
+        color: var(--purple-primary, #7c3aed);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 12px;
+      }
+      .active-chip i {
+        cursor: pointer;
+        opacity: 0.75;
+      }
+      .active-chip i:hover {
+        opacity: 1;
       }
 
       .staff-list-bottom-sheet ::-webkit-scrollbar,
@@ -828,7 +916,7 @@
               display: flex;
               justify-content: space-between;
               align-items: flex-start;
-              margin-bottom: 24px;
+              margin-bottom: 16px;
             "
           >
             <div style="display: flex; gap: 12px; align-items: center">
@@ -869,39 +957,9 @@
                 </p>
               </div>
             </div>
-            <div
-              onclick="openStaffListModal('Present Today', 'present')"
-              style="
-                background: rgba(16, 185, 129, 0.15);
-                border: 1px solid rgba(16, 185, 129, 0.3);
-                color: #10b981;
-                padding: 4px 10px;
-                border-radius: 20px;
-                font-size: 11.5px;
-                font-weight: 700;
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                cursor: pointer;
-                transition: transform 0.15s;
-              "
-              onmousedown="this.style.transform = 'scale(0.95)'"
-              onmouseup="this.style.transform = 'scale(1)'"
-            >
-              <div
-                style="
-                  width: 6px;
-                  height: 6px;
-                  border-radius: 3px;
-                  background: #10b981;
-                "
-              ></div>
-              On track
-              <i class="fa-solid fa-chevron-right" style="font-size: 11px"></i>
-            </div>
           </div>
 
-          <div style="display: flex; gap: 12px; margin-bottom: 20px">
+          <div style="display: flex; gap: 12px; margin-bottom: 0">
             <!-- Present Box -->
             <div
               onclick="openStaffListModal('Present Today', 'present')"
@@ -1057,30 +1115,7 @@
               </div>
             </div>
           </div>
-
-          <div class="progress-bar-bg" style="background: var(--bg-input)">
-            <div
-              class="progress-bar-fill"
-              style="width: 94.8%; background: #10b981"
-            ></div>
-            <div
-              class="progress-bar-fill-rose"
-              style="width: 5.2%; background: #f43f5e"
-            ></div>
-          </div>
-          <div
-            style="
-              text-align: right;
-              font-size: 11px;
-              font-weight: 700;
-              color: var(--text-muted);
-              margin-top: 8px;
-            "
-          >
-            135 scheduled
-          </div>
         </div>
-
         <!-- Need Your Attention Section -->
         <div class="card" style="padding: 20px">
           <!-- Section Header -->
@@ -1430,18 +1465,26 @@
             </button>
           </div>
 
+          <!-- 3 CATEGORY TABS (LEAVE | LEAVE CREDIT | TIME OFF) FOR PENDING APPROVAL -->
+          <div id="staffPendingApprovalTabs" style="display: none; gap: 8px; margin-bottom: 14px;">
+            <button type="button" id="staffTabLeave" class="filter-pill active" onclick="switchStaffApprovalTab('leave')"
+              style="flex: 1; text-align: center; padding: 9px 8px; font-weight: 700; font-size: 12.5px; border-radius: 22px;">Leave</button>
+            <button type="button" id="staffTabCredit" class="filter-pill" onclick="switchStaffApprovalTab('credit')"
+              style="flex: 1; text-align: center; padding: 9px 8px; font-weight: 700; font-size: 12.5px; border-radius: 22px;">Leave Credit</button>
+            <button type="button" id="staffTabOfftime" class="filter-pill" onclick="switchStaffApprovalTab('offtime')"
+              style="flex: 1; text-align: center; padding: 9px 8px; font-weight: 700; font-size: 12.5px; border-radius: 22px;">Time Off</button>
+          </div>
+
           <!-- Current Filter Bar (Replaces plain search bar) -->
           <div
+            class="staff-filter-summary-bar"
             style="
-              background: var(--bg-input);
-              border: 1px solid var(--border-subtle);
               border-radius: 18px;
               padding: 12px 16px;
               margin-bottom: 14px;
               display: flex;
               align-items: center;
               justify-content: space-between;
-              box-shadow: var(--shadow-sm);
               cursor: pointer;
             "
             onclick="openStaffFilterModal()"
@@ -3055,20 +3098,99 @@
             color: "#ef4444",
           },
         ],
+        pending_approval: [
+          { name: "Afifah Nasir", id: "Emp #004177", dept: "QA Manager", type: "Annual Leave", isUnplanned: true, reason: "Personnel Issues", startDate: "Tue, 23/02/2026", endDate: "Thu, 25/02/2026", duration: "3 Days", requestedBy: { name: "Benjamin Lee", title: "Business Development Executive" }, remark: "Urgent personnel emergency leave for home repair & family assistance.", statusText: "Annual Leave Request (3 Days)" },
+          { name: "Sarah Lim", id: "Emp #001015", dept: "Production Lead", type: "Annual Leave", isUnplanned: false, reason: "Family Vacation", startDate: "Mon, 02/03/2026", endDate: "Wed, 04/03/2026", duration: "3 Days", remark: "Pre-scheduled annual leave for family trip.", statusText: "Annual Leave Request (Full Day)" },
+          { name: "David Miller", id: "Emp #001052", dept: "Assembly Supervisor", type: "Medical Leave", isUnplanned: true, reason: "Health & MC", startDate: "Wed, 25/02/2026", endDate: "Wed, 25/02/2026", duration: "1 Day", remark: "Doctor recommended rest due to fever & flu.", statusText: "Medical Leave Request (1 Day)" },
+          { name: "Victor Hugo", id: "Emp #001115", dept: "Safety Specialist", type: "Unpaid Leave", isUnplanned: false, reason: "Personal Affairs", startDate: "Thu, 12/03/2026", endDate: "Fri, 13/03/2026", duration: "2 Days", remark: "Personal matters requiring extended absence.", statusText: "Unpaid Leave Request (2 Days)" },
+          { name: "Chung Wei", id: "Emp #001158", dept: "Production Specialist", type: "Emergency Leave", isUnplanned: true, reason: "Family Emergency", startDate: "Fri, 27/02/2026", endDate: "Fri, 27/02/2026", duration: "1 Day", remark: "Urgent family situation.", statusText: "Emergency Leave Request" },
+          
+          { name: "Daniel Park", id: "Emp #001094", dept: "IT Support Specialist", type: "Compensatory Off", isUnplanned: false, reason: "System Maintenance OT", startDate: "Mon, 09/03/2026", endDate: "Mon, 09/03/2026", duration: "1 Day", remark: "Claiming off-in-lieu earned from Sunday server migration.", statusText: "Compensatory Off Request" },
+          { name: "Amanda Lee", id: "Emp #001140", dept: "Warehouse Coordinator", type: "Replacement Leave", isUnplanned: false, reason: "Weekend Stock Take", startDate: "Tue, 10/03/2026", endDate: "Tue, 10/03/2026", duration: "1 Day", remark: "Worked full day on Saturday stock count.", statusText: "Replacement Leave Request" },
+          { name: "Kevin Wong", id: "Emp #001031", dept: "Quality Controller", type: "Training Leave", isUnplanned: false, reason: "ISO Certification Course", startDate: "Thu, 19/03/2026", endDate: "Fri, 20/03/2026", duration: "2 Days", remark: "Attending required ISO auditor training.", statusText: "Training Leave Request" },
+          
+          { name: "Alex Tan", id: "Emp #001002", dept: "Operations Exec", type: "OT Plan Request", isUnplanned: false, reason: "Project Deadline", startDate: "Wed, 25/02/2026", endDate: "Wed, 25/02/2026", duration: "2.5 Hours", remark: "OT Plan: 17:00 – 19:30 (2.5h) for monthly batch processing.", statusText: "OT Plan Request: 17:00 – 19:30 (2.5h)" },
+          { name: "Jason Lee", id: "Emp #001024", dept: "Logistics Officer", type: "Shift Swap Request", isUnplanned: false, reason: "Shift Alignment", startDate: "Thu, 26/02/2026", endDate: "Thu, 26/02/2026", duration: "1 Shift", remark: "Swapping Day Shift (08:00–17:00) to Night Shift with Marcus.", statusText: "Shift Swap Request (Day to Night)" },
+          { name: "Michelle Chen", id: "Emp #001048", dept: "Senior Engineer", type: "OT Plan Request", isUnplanned: false, reason: "Emergency Repair", startDate: "Fri, 27/02/2026", endDate: "Fri, 27/02/2026", duration: "2.0 Hours", remark: "OT Plan: 18:00 – 20:00 (2.0h) for machine calibration.", statusText: "OT Plan Request: 18:00 – 20:00 (2.0h)" },
+          { name: "Rachel Adams", id: "Emp #001102", dept: "QA Tester", type: "OT Plan Request", isUnplanned: false, reason: "Release Verification", startDate: "Mon, 02/03/2026", endDate: "Mon, 02/03/2026", duration: "1.5 Hours", remark: "OT Plan: 17:00 – 18:30 (1.5h) testing release candidate.", statusText: "OT Plan Request: 17:00 – 18:30 (1.5h)" },
+          { name: "Emily Watson", id: "Emp #001120", dept: "Procurement Exec", type: "Time-Off In Lieu", isUnplanned: false, reason: "Vendor Audit", startDate: "Tue, 03/03/2026", endDate: "Tue, 03/03/2026", duration: "0.5 Day", remark: "Afternoon time-off earned from weekend audit travel.", statusText: "Time-Off In Lieu Request" },
+          { name: "John Smith", id: "Emp #001175", dept: "QC Inspector", type: "OT Plan Request", isUnplanned: false, reason: "Urgent Batch Inspection", startDate: "Wed, 04/03/2026", endDate: "Wed, 04/03/2026", duration: "3.0 Hours", remark: "OT Plan: 17:00 – 20:00 (3.0h) inspecting incoming shipment.", statusText: "OT Plan Request: 17:00 – 20:00 (3.0h)" }
+        ],
+        attendance_verification: [
+          { name: "Amanda Lee", id: "EMP-1066", dept: "Warehouse", statusText: "Missing Clock In • Geo-location Override" },
+          { name: "Robert Taylor", id: "EMP-1142", dept: "Logistics", statusText: "Late Clock In (+45 mins) • Traffic Delay" },
+          { name: "Chung Wei", id: "EMP-1158", dept: "Production B", statusText: "Missing Clock Out (Yesterday Evening)" },
+          { name: "Siti Nur", id: "EMP-1167", dept: "Assembly Line", statusText: "Early Clock Out (-30 mins) • Unverified" },
+          { name: "John Smith", id: "EMP-1175", dept: "Quality Control", statusText: "Biometric Scan Failure • Manual Verification" },
+          { name: "Michael Chang", id: "EMP-1180", dept: "Maintenance", statusText: "Clock In Outside Shift Boundary" },
+          { name: "Laura Croft", id: "EMP-1192", dept: "Operations", statusText: "Break Duration Exceeded (+25 mins)" },
+          { name: "David Kim", id: "EMP-1205", dept: "Engineering", statusText: "Multiple Punch Discrepancy (3 Logs)" }
+        ],
       };
 
       let currentStaffType = "scheduled";
+      let currentStaffApprovalCategory = 'leave';
+
+      function switchStaffApprovalTab(cat) {
+        currentStaffApprovalCategory = cat || 'leave';
+        const tabs = [
+          { id: 'staffTabLeave', cat: 'leave' },
+          { id: 'staffTabCredit', cat: 'credit' },
+          { id: 'staffTabOfftime', cat: 'offtime' }
+        ];
+        tabs.forEach(t => {
+          const btn = document.getElementById(t.id);
+          if (btn) {
+            if (t.cat === currentStaffApprovalCategory) btn.classList.add('active');
+            else btn.classList.remove('active');
+          }
+        });
+        filterStaffList();
+      }
+
+      function handleStaffApprove(id, btn) {
+        const card = btn.closest('.approval-request-card');
+        if (card) {
+          card.style.opacity = '0.5';
+          card.style.pointerEvents = 'none';
+        }
+        if (typeof showToast === 'function') showToast(`Approved request for ${id}`);
+      }
+
+      function handleStaffReject(id, btn) {
+        const card = btn.closest('.approval-request-card');
+        if (card) {
+          card.style.opacity = '0.5';
+          card.style.pointerEvents = 'none';
+        }
+        if (typeof showToast === 'function') showToast(`Rejected request for ${id}`);
+      }
 
       function openStaffListModal(title, type) {
         currentStaffType = type;
         document.getElementById("staffListModalTitle").textContent = title;
-        const list = staffDatabase[type] || [];
+
+        const tabsEl = document.getElementById("staffPendingApprovalTabs");
+        if (tabsEl) {
+          if (type === 'pending_approval') {
+            tabsEl.style.display = 'flex';
+            switchStaffApprovalTab(currentStaffApprovalCategory || 'leave');
+          } else {
+            tabsEl.style.display = 'none';
+          }
+        }
+
+        const list = staffDatabase[type] || staffDatabase["attention"] || [];
         const countMap = {
           scheduled: 135,
           present: 128,
           noshow: 7,
           ot: 12,
-          attention: 26,
+          attention: 43,
+          pending_approval: 14,
+          attendance_verification: 8,
+          late_departure: 12,
+          work_compliance: 5,
         };
         const totalCount = countMap[type] || list.length;
         document.getElementById("staffListModalSub").textContent =
@@ -3088,36 +3210,168 @@
       function renderStaffList(list) {
         const container = document.getElementById("staffListContent");
         if (!list || list.length === 0) {
-          container.innerHTML = `<div style="text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 13px;">No employee found</div>`;
+          container.innerHTML = `<div style="text-align: center; padding: 35px 0; color: var(--text-muted); font-size: 13px;">No employee matching filter</div>`;
           return;
         }
+
+        if (currentStaffType === 'pending_approval') {
+          container.innerHTML = list.map((item, idx) => {
+            const typeStr = item.type || (item.statusText ? item.statusText.split(':')[0] : 'Leave Request');
+            const reasonStr = item.reason || 'Personnel Issues';
+            const startDateStr = item.startDate || 'Tue, 23/02/2026';
+            const endDateStr = item.endDate || 'Thu, 25/02/2026';
+            const durationStr = item.duration || '3 Days';
+            const isUnplanned = item.isUnplanned ? '<div style="font-size: 11px; font-weight: 800; color: #ef4444; margin-top: 1px;">(Unplanned)</div>' : '';
+            const requestedByHtml = item.requestedBy ? `
+              <div style="margin-bottom: 12px;">
+                <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Requested On Behalf By</div>
+                <div style="display: flex; align-items: center; gap: 8px; background: rgba(124, 58, 237, 0.05); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 8px 10px;">
+                  <div style="font-size: 13px;">👤</div>
+                  <div>
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">${item.requestedBy.name}</div>
+                    <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">${item.requestedBy.title}</div>
+                  </div>
+                </div>
+              </div>` : '';
+            const remarkHtml = item.remark ? `
+              <div style="margin-bottom: 14px;">
+                <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remark</div>
+                <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+                  ${item.remark}
+                </div>
+              </div>` : '';
+
+            return `
+              <div class="approval-request-card" id="staffApprovalCard_${idx}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; margin-bottom: 14px; text-align: left;">
+                
+                <!-- 1. Header Banner (Executive Purple Brand Bar) -->
+                <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="display: flex; align-items: center;">
+                      <input type="checkbox" class="approval-card-checkbox" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
+                    </div>
+                    <div>
+                      <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.name}</div>
+                      <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">${item.dept || 'Staff'} • ${item.id}</div>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+                      <i class="fa-solid fa-ellipsis-vertical" style="font-size: 13px;"></i>
+                    </button>
+                    <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Pending</span>
+                  </div>
+                </div>
+
+                <!-- 2. Card Content Body -->
+                <div style="padding: 14px;">
+                  
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                    <div>
+                      <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Type</div>
+                      <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${typeStr}</div>
+                      ${isUnplanned}
+                    </div>
+                    <div>
+                      <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Reason</div>
+                      <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${reasonStr}</div>
+                    </div>
+                  </div>
+
+                  <!-- Date Timeline Section -->
+                  <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                    <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                      <span>Date Start</span>
+                      <span>Date End</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                      <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                        <span>${startDateStr}</span>
+                        <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                      </div>
+
+                      <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                        <span style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: -2px;">${durationStr}</span>
+                        <div style="width: 100%; height: 2px; background: var(--purple-primary); position: relative;">
+                          <div style="position: absolute; right: 0; top: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid var(--purple-primary);"></div>
+                        </div>
+                      </div>
+
+                      <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                        <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                        <span>${endDateStr}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  ${requestedByHtml}
+                  ${remarkHtml}
+
+                  <!-- Bottom Approve / Reject Buttons -->
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" onclick="handleStaffApprove('${item.id}', this)" style="flex: 1; padding: 9.5px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12.5px; border: none; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);">
+                      Approve ✔
+                    </button>
+                    <button type="button" onclick="handleStaffReject('${item.id}', this)" style="flex: 1; padding: 9.5px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12.5px; cursor: pointer;">
+                      Reject ✕
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            `;
+          }).join("");
+          return;
+        }
+
         container.innerHTML = list
-          .map(
-            (item) => `
-          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${item.name}</div>
-            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">${item.id} • ${item.dept}${item.branch ? ` • ${item.branch}` : ''}</div>
-            <div style="font-size: 12px; font-weight: 800; color: #a78bfa; margin-top: 3px;">${item.statusText}</div>
+          .map((item) => {
+            return `
+          <div class="staff-card-item" style="border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">
+              ${item.name}
+            </div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">
+              ${item.id} • ${item.dept}${item.branch ? ` • ${item.branch}` : ''}
+            </div>
+            <div style="font-size: 12px; font-weight: 800; color: var(--purple-primary, #7c3aed); margin-top: 3px;">
+              ${item.statusText}
+            </div>
           </div>
-        `,
-          )
+        `;
+          })
           .join("");
       }
 
       function filterStaffList() {
-        const keywordInput = document.getElementById("staffFilterKeywordInput");
+        const modalKeyword = (document.getElementById("staffFilterKeywordInput")?.value || "").toLowerCase().trim();
+        const q = modalKeyword;
+
         const branchSelect = document.getElementById("staffFilterBranchSelect");
         const deptSelect = document.getElementById("staffFilterDeptSelect");
         const costCenterSelect = document.getElementById("staffFilterCostCenterSelect");
         const jobSelect = document.getElementById("staffFilterJobSelect");
 
-        const q = keywordInput ? keywordInput.value.toLowerCase().trim() : "";
         const branch = branchSelect ? branchSelect.value : "all";
         const dept = deptSelect ? deptSelect.value : "all";
         const costCenter = costCenterSelect ? costCenterSelect.value : "all";
         const job = jobSelect ? jobSelect.value : "all";
 
-        const list = staffDatabase[currentStaffType] || [];
+        let list = staffDatabase[currentStaffType] || [];
+        if (currentStaffType === 'pending_approval') {
+          list = list.filter(s => {
+            const txt = (s.statusText || '').toLowerCase();
+            if (currentStaffApprovalCategory === 'leave') {
+              return txt.includes('leave') && !txt.includes('replacement') && !txt.includes('compensatory') && !txt.includes('time-off in lieu');
+            } else if (currentStaffApprovalCategory === 'credit') {
+              return txt.includes('replacement') || txt.includes('compensatory') || txt.includes('credit');
+            } else if (currentStaffApprovalCategory === 'offtime') {
+              return txt.includes('ot') || txt.includes('shift') || txt.includes('time-off');
+            }
+            return true;
+          });
+        }
         const filtered = list.filter((s) => {
           const matchQ = !q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q) || (s.dept && s.dept.toLowerCase().includes(q)) || (s.job && s.job.toLowerCase().includes(q));
           const matchBranch = branch === "all" || !s.branch || s.branch === branch;
@@ -3130,17 +3384,47 @@
 
         renderStaffList(filtered);
 
-        // Update summary text
-        const summaryParts = [];
-        if (q) summaryParts.push(`"${q}"`);
-        if (branch !== "all") summaryParts.push(branch);
-        if (dept !== "all") summaryParts.push(dept);
-        if (costCenter !== "all") summaryParts.push(costCenter);
-        if (job !== "all") summaryParts.push(job);
+        // Update summary text in current filter bar
+        const summaryTextEl = document.getElementById("staffFilterSummaryText");
+        if (summaryTextEl) {
+          const bText = branch === "all" ? "All Branches" : branch;
+          const dText = dept === "all" ? "All Departments" : dept;
+          summaryTextEl.textContent = `${bText} • ${dText}`;
+        }
 
-        const summaryEl = document.getElementById("staffFilterSummaryText");
-        if (summaryEl) {
-          summaryEl.textContent = summaryParts.length > 0 ? summaryParts.join(" • ") : "All Branches • All Departments";
+        // Active filters count
+        let activeCount = 0;
+        if (modalKeyword) activeCount++;
+        if (branch !== "all") activeCount++;
+        if (dept !== "all") activeCount++;
+        if (costCenter !== "all") activeCount++;
+        if (job !== "all") activeCount++;
+
+        const badgeCount = document.getElementById("staffFilterBadgeCount");
+        if (badgeCount) {
+          if (activeCount > 0) {
+            badgeCount.textContent = activeCount;
+            badgeCount.style.display = "inline-block";
+          } else {
+            badgeCount.style.display = "none";
+          }
+        }
+
+        // Render Active Filter Chips
+        const chipsContainer = document.getElementById("staffActiveFilterChips");
+        if (chipsContainer) {
+          let chipHtml = "";
+          if (branch !== "all") chipHtml += `<span class="active-chip">${branch} <i class="fa-solid fa-xmark" onclick="removeFilterItem('branch')"></i></span>`;
+          if (dept !== "all") chipHtml += `<span class="active-chip">${dept} <i class="fa-solid fa-xmark" onclick="removeFilterItem('dept')"></i></span>`;
+          if (costCenter !== "all") chipHtml += `<span class="active-chip">${costCenter} <i class="fa-solid fa-xmark" onclick="removeFilterItem('costCenter')"></i></span>`;
+          if (job !== "all") chipHtml += `<span class="active-chip">${job} <i class="fa-solid fa-xmark" onclick="removeFilterItem('job')"></i></span>`;
+
+          if (chipHtml) {
+            chipsContainer.innerHTML = chipHtml;
+            chipsContainer.style.display = "flex";
+          } else {
+            chipsContainer.style.display = "none";
+          }
         }
 
         const countMap = {
@@ -3148,13 +3432,25 @@
           present: 128,
           noshow: 7,
           ot: 12,
-          attention: 26,
+          attention: 43,
+          pending_approval: 18,
+          attendance_verification: 8,
+          late_departure: 12,
+          work_compliance: 5,
         };
         const totalCount = countMap[currentStaffType] || list.length;
         const subEl = document.getElementById("staffListModalSub");
         if (subEl) {
           subEl.textContent = `Showing ${filtered.length} of ${totalCount} employees`;
         }
+      }
+
+      function removeFilterItem(key) {
+        if (key === 'branch') document.getElementById("staffFilterBranchSelect").value = "all";
+        if (key === 'dept') document.getElementById("staffFilterDeptSelect").value = "all";
+        if (key === 'costCenter') document.getElementById("staffFilterCostCenterSelect").value = "all";
+        if (key === 'job') document.getElementById("staffFilterJobSelect").value = "all";
+        filterStaffList();
       }
 
       function openStaffFilterModal() {

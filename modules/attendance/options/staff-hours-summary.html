@@ -13,77 +13,633 @@
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; overflow-y: auto; padding: 0 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
-    .modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* ================= ENTERPRISE TOAST FILTER BAR ================= */
+    .enterprise-toast-bar {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.75) 0%, rgba(17, 24, 39, 0.85) 100%);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      border-radius: 22px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: relative;
+    }
+    .toast-info-col {
+      flex: 1;
+      min-width: 0;
+    }
+    .toast-subtitle {
+      font-size: 10px;
+      font-weight: 800;
+      color: #a78bfa;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .toast-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .toast-filter-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(124, 58, 237, 0.18);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      color: #c4b5fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast-filter-btn:active {
+      transform: scale(0.92);
+      background: rgba(124, 58, 237, 0.35);
+    }
+
+    /* ================= SECTION HEADERS ================= */
+    .dashboard-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      margin-top: 8px;
+    }
+    .dashboard-section-header h2 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-title-icon {
+      font-size: 15px;
+    }
+    .section-badge {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+
+    /* ================= BENTO & MODERN CARDS ================= */
+    .bento-group-work,
+    .ot-grid-matrix,
+    .exceptions-bento-matrix {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .modern-card {
+      border-radius: 18px !important;
+      padding: 13px 13px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      cursor: pointer !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
+    }
+    .modern-card:hover {
+      transform: translateY(-2px) !important;
+    }
+    .modern-card:active {
+      transform: scale(0.97) !important;
+    }
+    .modern-card.full-width {
+      grid-column: span 2;
+    }
+
+    .card-text-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .card-icon-bubble {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important;
+      transition: transform 0.15s ease;
+    }
+    .modern-card:hover .card-icon-bubble {
+      transform: scale(1.06);
+    }
+    .card-theme-title {
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      line-height: 1.2 !important;
+      margin-bottom: 2px !important;
+      letter-spacing: -0.1px;
+    }
+    .card-theme-sub {
+      font-size: 10.5px !important;
+      font-weight: 600 !important;
+      line-height: 1.2 !important;
+    }
+    .card-big-num {
+      font-size: 14px !important;
+      font-weight: 800 !important;
+    }
+
+    /* Section 1: Work & Attendance */
+    .card-work-section {
+      background: var(--bento-mint-bg, rgba(16, 185, 129, 0.12)) !important;
+      border: 1px solid var(--bento-mint-border, rgba(52, 211, 153, 0.25)) !important;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.06);
+    }
+    .bubble-green {
+      background: rgba(16, 185, 129, 0.2) !important;
+      color: #34d399 !important;
+    }
+    .green-title {
+      color: var(--bento-mint-title, #a7f3d0) !important;
+    }
+    .green-sub {
+      color: var(--bento-mint-sub, #6ee7b7) !important;
+    }
+    .green-progress-bg {
+      background: rgba(16, 185, 129, 0.2) !important;
+    }
+    .green-progress-fill {
+      background: #34d399 !important;
+    }
+
+    /* Section 2: Overtime Analytics */
+    .card-ot-section {
+      background: var(--bento-blue-bg, rgba(59, 130, 246, 0.12)) !important;
+      border: 1px solid var(--bento-blue-border, rgba(96, 165, 250, 0.25)) !important;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.06);
+    }
+    .bubble-blue {
+      background: rgba(59, 130, 246, 0.2) !important;
+      color: #60a5fa !important;
+    }
+    .blue-title {
+      color: var(--bento-blue-title, #bfdbfe) !important;
+    }
+    .blue-sub {
+      color: var(--bento-blue-sub, #93c5fd) !important;
+    }
+
+    /* Section 3: Exceptions & Leave */
+    .card-ex-section {
+      background: var(--bento-rose-bg, rgba(244, 63, 94, 0.12)) !important;
+      border: 1px solid var(--bento-rose-border, rgba(251, 113, 133, 0.25)) !important;
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.06);
+    }
+    .bubble-rose {
+      background: rgba(244, 63, 94, 0.2) !important;
+      color: #fb7185 !important;
+    }
+    .rose-title {
+      color: var(--bento-rose-title, #fecdd3) !important;
+    }
+    .rose-sub {
+      color: var(--bento-rose-sub, #fda4af) !important;
+    }
+    .rose-progress-bg {
+      background: rgba(244, 63, 94, 0.2) !important;
+    }
+    .rose-progress-fill {
+      background: #fb7185 !important;
+    }
+
+    /* Detail List Item Styling (Matches Individual hours-summary.html) */
+    .detail-list-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .detail-list-item:hover { transform: translateY(-2px); }
+    .detail-list-item:active { transform: scale(0.98); }
+
+    .staff-avatar-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 800;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(167, 139, 250, 0.15) 100%);
+      border: 1.5px solid rgba(167, 139, 250, 0.3);
+      color: #c4b5fd;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+    }
+    
+    .list-info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 800; color: var(--text-primary); }
+    .list-info-sub { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .list-info-val { font-weight: 700; color: var(--text-primary); }
+    .list-badge-count { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 12px; transition: all 0.2s ease; }
+
+    /* Theme Variations for List Items */
+    [data-theme="dark"] .detail-list-item.theme-green {
+      background: var(--bento-mint-bg, rgba(16, 185, 129, 0.12)) !important;
+      border: 1px solid rgba(16, 185, 129, 0.28) !important;
+    }
+    [data-theme="dark"] .detail-list-item.theme-blue {
+      background: var(--bento-blue-bg, rgba(59, 130, 246, 0.12)) !important;
+      border: 1px solid rgba(59, 130, 246, 0.28) !important;
+    }
+    [data-theme="dark"] .detail-list-item.theme-rose {
+      background: var(--bento-rose-bg, rgba(244, 63, 94, 0.12)) !important;
+      border: 1px solid rgba(244, 63, 94, 0.28) !important;
+    }
+
+    [data-theme="light"] .detail-list-item.theme-green {
+      background: #f0fdf4 !important;
+      border: 1px solid #a7f3d0 !important;
+    }
+    [data-theme="light"] .detail-list-item.theme-blue {
+      background: #eff6ff !important;
+      border: 1px solid #bfdbfe !important;
+    }
+    [data-theme="light"] .detail-list-item.theme-rose {
+      background: #fff1f2 !important;
+      border: 1px solid #fecdd3 !important;
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+      opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;
+    }
+    .modal-content {
+      width: 100%; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px;
+      padding: 0; max-height: 88%; overflow-y: auto; display: flex; flex-direction: column;
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35); border: 1px solid var(--border-subtle);
+    }
+    
+    /* Form Inputs */
+    .modern-form-group { margin-bottom: 16px; }
+    .modern-label { font-size: 12px; font-weight: 700; color: var(--purple-text, #a78bfa); margin-bottom: 6px; display: block; }
+    .modern-input {
+      width: 100%; padding: 13px 16px; border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      color: var(--text-primary); font-size: 13.5px; font-weight: 700;
+      outline: none; transition: all 0.2s;
+    }
+    .modern-input:focus { border-color: rgba(124, 58, 237, 0.5); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
+    .modern-select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%3Ca78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
+
+    /* Buttons */
+    .modern-btn-primary {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff; border: none; border-radius: 16px; padding: 15px;
+      font-size: 15px; font-weight: 800; cursor: pointer; text-align: center;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35); transition: all 0.2s;
+    }
+    .modern-btn-primary:active { transform: scale(0.98); }
+
+    /* Detail Popup Modal */
+    .popup-modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      z-index: 9999; display: none; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 44px; overflow: hidden;
+    }
+    .popup-modal-content {
+      width: 90%; max-width: 380px; background: var(--bg-card);
+      border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      border: 1px solid var(--border-subtle); transform: scale(0.95);
+      opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85%; overflow: hidden; display: flex; flex-direction: column;
+    }
+    .modal-header-purple {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 4px 16px rgba(76, 29, 149, 0.25); position: relative; z-index: 2;
+    }
+    .modal-header-purple h3 { font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; }
+    .modal-close-round {
+      background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3);
+      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; color: #ffffff; cursor: pointer; backdrop-filter: blur(4px);
+    }
+
+    /* Light Mode Overrides */
+    [data-theme="light"] .enterprise-toast-bar {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+    [data-theme="light"] .toast-subtitle { color: #7c3aed; }
+    [data-theme="light"] .toast-filter-btn {
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid #ddd6fe;
+      color: #7c3aed;
+    }
+    [data-theme="light"] .card-work-section {
+      background: #f0fdf4 !important;
+      border-color: #a7f3d0 !important;
+    }
+    [data-theme="light"] .green-title { color: #065f46 !important; }
+    [data-theme="light"] .green-sub { color: #047857 !important; }
+    [data-theme="light"] .card-ot-section {
+      background: #eff6ff !important;
+      border-color: #bfdbfe !important;
+    }
+    [data-theme="light"] .blue-title { color: #1e3a8a !important; }
+    [data-theme="light"] .blue-sub { color: #1d4ed8 !important; }
+    [data-theme="light"] .card-ex-section {
+      background: #fff1f2 !important;
+      border-color: #fecdd3 !important;
+    }
+    [data-theme="light"] .rose-title { color: #9f1239 !important; }
+    [data-theme="light"] .rose-sub { color: #be123c !important; }
+    [data-theme="light"] .staff-avatar-badge {
+      background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+      border-color: #c084fc;
+      color: #7e22ce;
+    }
   </style>
 </head>
 <body>
   <preview-top-bar active-page="attendance"></preview-top-bar>
+
   <div class="phone-container">
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <button onclick="goBack()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; backdrop-filter: blur(8px);">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </button>
-          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Staff Hours Summary</h1>
+          <h1 id="headerTitle" style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: 0.2px;">Staff Hours Summary</h1>
         </div>
       </div>
     </div>
 
-    <div class="main-content">
-      <!-- Filter Bar -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Filter</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);" id="filterSummaryText">16/08/2026 - 14/09/2026</div>
-        </div>
-        <button type="button" onclick="openFilterModal()" style="width: 40px; height: 40px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
-        </button>
-      </div>
+    <div class="main-content" style="padding-top: 16px;">
+      
+      <!-- ================= DASHBOARD VIEW ================= -->
+      <div id="view-dashboard" style="display: block;">
 
-      <!-- KPI -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(3, 105, 161, 0.05) 100%); border-color: rgba(14, 165, 233, 0.3);">
-        <div style="font-size: 12px; font-weight: 700; color: #0ea5e9; margin-bottom: 4px;">Total Accumulated Work Hours</div>
-        <div style="font-size: 28px; font-weight: 800; color: var(--text-primary);">22,480 Hours</div>
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Regular: 20,400h | OT Hours: 2,080h</div>
-      </div>
-
-      <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Staff Work Hours Breakdown</div>
-      <div class="card" onclick="openDetailModal('John Tan', '176 Regular Hours', '24 OT Hours', 'Verified')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">John Tan</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">176h Regular • 24h OT</div>
+        <!-- Enterprise Toast Filter Bar -->
+        <div class="enterprise-toast-bar">
+          <div class="toast-info-col" style="padding-left: 4px;">
+            <div class="toast-subtitle">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #a78bfa; display: inline-block; margin-right: 6px;"></span>
+              SUMMARY PERIOD
+            </div>
+            <div class="toast-title" id="filterSummaryText">
+              16/08/2026 – 14/09/2026
+            </div>
           </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 11px; font-weight: 800;">Verified</span>
+          <button class="toast-filter-btn" type="button" onclick="openFilterModal()" title="Open Filter Options">
+            <i class="fa-solid fa-sliders" style="font-size: 17px;"></i>
+          </button>
         </div>
+
+        <!-- Section 1: Work & Attendance (3 Metrics) -->
+        <div class="dashboard-section-header">
+          <h2><span class="section-title-icon">⚡</span> Work & Attendance</h2>
+          <span class="section-badge badge-green">3 Metrics</span>
+        </div>
+
+        <div class="bento-group-work">
+          <!-- 1. Scheduled Work Days -->
+          <div class="modern-card card-work-section" onclick="openListDetails('Scheduled Work Days')">
+            <div class="card-icon-bubble bubble-green">
+              <i class="fa-solid fa-calendar-days" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title green-title">Scheduled Days</div>
+              <div class="card-theme-sub green-sub"><span class="card-big-num">22</span> Days • 100% Target</div>
+            </div>
+          </div>
+
+          <!-- 2. Normal Present Days -->
+          <div class="modern-card card-work-section" onclick="openListDetails('Normal Present Days')">
+            <div class="card-icon-bubble bubble-green">
+              <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title green-title">Present Days</div>
+              <div class="card-theme-sub green-sub"><span class="card-big-num" id="statPresentDays">21</span> Days • 95% Present</div>
+            </div>
+          </div>
+
+          <!-- 3. Normal Work Hours (full width) -->
+          <div class="modern-card card-work-section full-width" onclick="openListDetails('Normal Work Hours')">
+            <div class="card-icon-bubble bubble-green">
+              <i class="fa-solid fa-clock" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col" style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                <div class="card-theme-title green-title">Normal Work Hours</div>
+                <span class="card-big-num green-title" id="statNormalWorkHours">20,400.0 <span style="font-size: 12px; font-weight: 700;">Hrs</span></span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="green-progress-bg" style="flex: 1; height: 5px; border-radius: 4px; overflow: hidden;">
+                  <div class="green-progress-fill" style="width: 100%; height: 100%; border-radius: 4px;"></div>
+                </div>
+                <div class="card-theme-sub green-sub" style="font-size: 10.5px;">100% Target</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Overtime Analytics (4 Metrics) -->
+        <div class="dashboard-section-header">
+          <h2><span class="section-title-icon">🔥</span> Overtime Analytics</h2>
+          <span class="section-badge badge-blue">4 Metrics</span>
+        </div>
+
+        <div class="ot-grid-matrix">
+          <!-- 4. Normal OT Hours -->
+          <div class="modern-card card-ot-section" onclick="openListDetails('Normal OT Hours')">
+            <div class="card-icon-bubble bubble-blue">
+              <i class="fa-solid fa-stopwatch" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title blue-title">Normal OT</div>
+              <div class="card-theme-sub blue-sub"><span class="card-big-num" id="statNormalOt">1,650.0</span> Hrs • Active</div>
+            </div>
+          </div>
+
+          <!-- 5. Other OT Hours -->
+          <div class="modern-card card-ot-section" onclick="openListDetails('Other OT Hours')">
+            <div class="card-icon-bubble bubble-blue">
+              <i class="fa-solid fa-moon" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title blue-title">Other OT</div>
+              <div class="card-theme-sub blue-sub"><span class="card-big-num" id="statOtherOt">430.0</span> Hrs</div>
+            </div>
+          </div>
+
+          <!-- 6. Planned OT Hours -->
+          <div class="modern-card card-ot-section" onclick="openListDetails('Planned OT Hours')">
+            <div class="card-icon-bubble bubble-blue">
+              <i class="fa-solid fa-calendar-check" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title blue-title">Plan OT</div>
+              <div class="card-theme-sub blue-sub"><span class="card-big-num" id="statPlannedOt">120.0</span> Hrs</div>
+            </div>
+          </div>
+
+          <!-- 7. Unapproved OT Hours -->
+          <div class="modern-card card-ot-section" onclick="openListDetails('Unapproved OT Hours')">
+            <div class="card-icon-bubble bubble-blue">
+              <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title blue-title">Unapproved OT</div>
+              <div class="card-theme-sub blue-sub"><span class="card-big-num" id="statUnapprovedOt">12.0</span> Hrs • Pending</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Exceptions & Leave (5 Metrics) -->
+        <div class="dashboard-section-header">
+          <h2><span class="section-title-icon">🛡️</span> Exceptions & Leave</h2>
+          <span class="section-badge badge-rose">5 Metrics</span>
+        </div>
+
+        <div class="exceptions-bento-matrix">
+          <!-- 8. Absent Days -->
+          <div class="modern-card card-ex-section" onclick="openListDetails('Absent Days')">
+            <div class="card-icon-bubble bubble-rose">
+              <i class="fa-solid fa-user-xmark" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title rose-title">Absent Days</div>
+              <div class="card-theme-sub rose-sub"><span class="card-big-num" id="statAbsentDays">0</span> Days Recorded</div>
+            </div>
+          </div>
+
+          <!-- 9. Absent OT Hours -->
+          <div class="modern-card card-ex-section" onclick="openListDetails('Absent OT Hours')">
+            <div class="card-icon-bubble bubble-rose">
+              <i class="fa-solid fa-clock-rotate-left" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title rose-title">Absent OT</div>
+              <div class="card-theme-sub rose-sub"><span class="card-big-num" id="statAbsentOt">0.00</span> Hrs</div>
+            </div>
+          </div>
+
+          <!-- 10. Odd Clocking Days -->
+          <div class="modern-card card-ex-section" onclick="openListDetails('Odd Clocking Days')">
+            <div class="card-icon-bubble bubble-rose">
+              <i class="fa-solid fa-circle-exclamation" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title rose-title">Odd Clocking</div>
+              <div class="card-theme-sub rose-sub"><span class="card-big-num" id="statOddClocking">0</span> Days</div>
+            </div>
+          </div>
+
+          <!-- 11. Leave Hours -->
+          <div class="modern-card card-ex-section" onclick="openListDetails('Leave Hours')">
+            <div class="card-icon-bubble bubble-rose">
+              <i class="fa-solid fa-plane-departure" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col">
+              <div class="card-theme-title rose-title">Leave Hours</div>
+              <div class="card-theme-sub rose-sub"><span class="card-big-num" id="statLeaveHours">0.00</span> Hrs</div>
+            </div>
+          </div>
+
+          <!-- 12. Lost Hours (full width) -->
+          <div class="modern-card card-ex-section full-width" onclick="openListDetails('Lost Hours')">
+            <div class="card-icon-bubble bubble-rose">
+              <i class="fa-solid fa-circle-minus" style="font-size: 16px;"></i>
+            </div>
+            <div class="card-text-col" style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                <div class="card-theme-title rose-title">Lost Hours</div>
+                <span class="card-big-num rose-title" id="statLostHours">0.00 <span style="font-size: 12px; font-weight: 700;">Hrs</span></span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="rose-progress-bg" style="flex: 1; height: 5px; border-radius: 4px; overflow: hidden;">
+                  <div class="rose-progress-fill" style="width: 0%; height: 100%; border-radius: 4px;"></div>
+                </div>
+                <div class="card-theme-sub rose-sub" style="font-size: 10.5px;">0 Lost Hours</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <div class="card" onclick="openDetailModal('Sarah Lee', '160 Regular Hours', '32 OT Hours', 'Verified')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Sarah Lee</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">160h Regular • 32h OT</div>
-          </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 11px; font-weight: 800;">Verified</span>
+      <!-- ================= LIST DETAILS VIEW (STAFF LIST FOR CLICKED CARD) ================= -->
+      <div id="view-list" style="display: none; padding-top: 4px;">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <h2 id="list-title" style="font-size: 16px; font-weight: 800; color: var(--text-primary); max-width: 70%; line-height: 1.3;">Details</h2>
+          <div id="list-record-count" class="list-badge-count badge-green">5 Staff Members</div>
         </div>
+
+        <!-- STAFF LIST CONTAINER -->
+        <div id="details-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Dynamically populated by JS -->
+        </div>
+
       </div>
+
     </div>
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
 
   <!-- Bottom Sheet Filter Modal -->
   <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)" style="align-items: flex-end; padding: 0;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 480px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+    <div class="modal-content" onclick="event.stopPropagation()">
       <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
       <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
         <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
@@ -91,82 +647,612 @@
           <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
         </button>
       </div>
-      <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;">
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Start Date</label>
-          <input type="date" id="filterFromDate" value="2026-08-16" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+
+      <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;">
+        
+        <!-- 1. Search Keyword -->
+        <div class="modern-form-group">
+          <label class="modern-label">Search Keyword</label>
+          <input type="text" id="filterKeyword" class="modern-input" placeholder="Search name, emp ID, department...">
         </div>
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">End Date</label>
-          <input type="date" id="filterToDate" value="2026-09-14" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+
+        <!-- 2. Start Date & 3. End Date Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+          <div class="modern-form-group">
+            <label class="modern-label">Start Date</label>
+            <input type="date" id="filterStartDate" class="modern-input" value="2026-08-16">
+          </div>
+          <div class="modern-form-group">
+            <label class="modern-label">End Date</label>
+            <input type="date" id="filterEndDate" class="modern-input" value="2026-09-14">
+          </div>
         </div>
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Status</label>
-          <select id="filterStatusSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
-            <option value="all">All Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
+
+        <!-- 4. Minimum Present Hours -->
+        <div class="modern-form-group">
+          <label class="modern-label">Minimum Present Hours</label>
+          <input type="number" id="filterMinHours" class="modern-input" placeholder="e.g. 150" value="0" min="0">
+        </div>
+
+        <!-- 5. Company -->
+        <div class="modern-form-group">
+          <label class="modern-label">Company</label>
+          <select id="filterCompany" class="modern-input modern-select">
+            <option value="all">All Companies</option>
+            <option value="ACME Corporation">ACME Corporation</option>
+            <option value="Tech Global Ltd">Tech Global Ltd</option>
+            <option value="Apex Logistics">Apex Logistics</option>
+            <option value="Nexus Solutions">Nexus Solutions</option>
           </select>
         </div>
-        <button type="button" onclick="applyFilterModal()" style="width: 100%; margin-top: 10px; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer;">Apply Filter</button>
+
+        <!-- 6. Cost Centre -->
+        <div class="modern-form-group">
+          <label class="modern-label">Cost Centre</label>
+          <select id="filterCostCentre" class="modern-input modern-select">
+            <option value="all">All Cost Centres</option>
+            <option value="CC-101 IT & Tech">CC-101 IT & Tech</option>
+            <option value="CC-102 Sales & Marketing">CC-102 Sales & Marketing</option>
+            <option value="CC-103 HR & Admin">CC-103 HR & Admin</option>
+            <option value="CC-104 Operations">CC-104 Operations</option>
+            <option value="CC-105 Finance">CC-105 Finance</option>
+          </select>
+        </div>
+
+        <button type="button" onclick="applyFilterModal()" class="modern-btn-primary" style="width: 100%; margin-top: 10px;">Apply Filter</button>
       </div>
     </div>
   </div>
 
-  <!-- Popout Detail Modal -->
-  <div class="modal-overlay" id="detailModal" onclick="closeDetailModal(event)" style="align-items: center; justify-content: center; padding: 16px;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 380px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.85); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; padding: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary);" id="detailTitle">Staff Hours Details</h3>
-        <button onclick="closeDetailModalDirect()" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-input); border: none; color: var(--text-primary); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+  <!-- Attendance Details Pop-out Modal Window (Matches Individual Hours Summary Popout Modal) -->
+  <div id="modal-attendance-details" class="popup-modal-overlay" onclick="closeAttendanceDetails(event)">
+    <div class="popup-modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header-purple">
+        <h3>Attendance Details</h3>
+        <button class="modal-close-round" onclick="closeAttendanceDetails(true)" aria-label="Close">
+          <i class="fa-solid fa-xmark" style="font-size: 16px;"></i>
+        </button>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13.5px;">
-        <div><strong style="color: var(--text-muted);">Regular Hours:</strong> <span id="detailTime" style="font-weight: 700; color: var(--text-primary);"></span></div>
-        <div><strong style="color: var(--text-muted);">OT Hours:</strong> <span id="detailStaff" style="font-weight: 700; color: var(--text-primary);"></span></div>
-        <div><strong style="color: var(--text-muted);">Audit Status:</strong> <span id="detailStatus" style="font-weight: 700; color: #10b981;"></span></div>
+
+      <div class="sheet-content" style="padding: 16px 20px 24px; overflow-y: auto; background: var(--bg-card); flex: 1;">
+        <div style="display: flex; flex-direction: column;">
+          
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Employee #</span>
+            <span id="ad-emp-no" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">EBB01</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Staff Name</span>
+            <span id="ad-name" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">John Tan</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Company</span>
+            <span id="ad-company" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">ACME Corporation</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Cost Centre</span>
+            <span id="ad-cost-centre" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">CC-101 IT & Tech</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Shift / Group</span>
+            <span id="ad-shift" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">8:30 AM - 5:30 PM (GROUP A)</span>
+          </div>
+
+          <div style="padding: 12px 0 4px;">
+            <span style="font-size: 12px; font-weight: 800; color: #34d399; text-transform: uppercase;">⚡ Work & Attendance</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Scheduled Work Days</span>
+            <span id="ad-sched-days" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">22 Days</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Normal Present Days</span>
+            <span id="ad-present-days" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">22 Days</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Normal Work Hours</span>
+            <span id="ad-normal-hours" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">176.0 Hrs</span>
+          </div>
+
+          <div style="padding: 12px 0 4px;">
+            <span style="font-size: 12px; font-weight: 800; color: #60a5fa; text-transform: uppercase;">🔥 Overtime Analytics</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Normal OT Hours</span>
+            <span id="ad-normal-ot" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">24.0 Hrs</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Other OT Hours</span>
+            <span id="ad-other-ot" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">0.0 Hrs</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Planned OT Hours</span>
+            <span id="ad-planned-ot" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">0.0 Hrs</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Unapproved OT Hours</span>
+            <span id="ad-unapproved-ot" style="font-size: 13px; font-weight: 700; color: #fbbf24;">0.0 Hrs</span>
+          </div>
+
+          <div style="padding: 12px 0 4px;">
+            <span style="font-size: 12px; font-weight: 800; color: #fb7185; text-transform: uppercase;">🛡️ Exceptions & Leave</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Absent Days</span>
+            <span id="ad-absent-days" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">0 Days</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Absent OT Hours</span>
+            <span id="ad-absent-ot" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">0.00 Hrs</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Odd Clocking Days</span>
+            <span id="ad-odd-clocking" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">0 Days</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Leave Hours</span>
+            <span id="ad-leave-hours" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">0.00 Hrs</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Lost Hours</span>
+            <span id="ad-lost-hours" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">0.00 Hrs</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding: 12px 0 4px;">
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary);">Audit Status</span>
+            <span id="ad-status" style="font-size: 13.5px; font-weight: 800; color: #10b981;">Verified</span>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    let currentView = "dashboard"; // dashboard | list
+    let mainTitle = "Staff Hours Summary";
+    let listActiveTitle = "Details";
+
+    // Sample Staff Dataset with 12 Metrics breakdown per staff
+    const sampleStaffData = [
+      {
+        empNo: "EBB01",
+        name: "John Tan",
+        department: "IT Dept",
+        company: "ACME Corporation",
+        costCentre: "CC-101 IT & Tech",
+        scheduledDays: 22,
+        presentDays: 22,
+        normalWorkHours: 176,
+        normalOt: 24,
+        otherOt: 0,
+        plannedOt: 0,
+        unapprovedOt: 0,
+        absentDays: 0,
+        absentOt: 0,
+        oddClocking: 0,
+        leaveHours: 0,
+        lostHours: 0,
+        status: "Verified",
+        shift: "8:30 AM - 5:30 PM (GROUP A)"
+      },
+      {
+        empNo: "EBB02",
+        name: "Sarah Lee",
+        department: "Sales & Marketing",
+        company: "Tech Global Ltd",
+        costCentre: "CC-102 Sales & Marketing",
+        scheduledDays: 22,
+        presentDays: 20,
+        normalWorkHours: 160,
+        normalOt: 32,
+        otherOt: 0,
+        plannedOt: 8,
+        unapprovedOt: 0,
+        absentDays: 0,
+        absentOt: 0,
+        oddClocking: 1,
+        leaveHours: 16,
+        lostHours: 0,
+        status: "Verified",
+        shift: "9:00 AM - 6:00 PM (GROUP B)"
+      },
+      {
+        empNo: "EBB03",
+        name: "Alex Wong",
+        department: "Human Resources",
+        company: "ACME Corporation",
+        costCentre: "CC-103 HR & Admin",
+        scheduledDays: 22,
+        presentDays: 21,
+        normalWorkHours: 168,
+        normalOt: 12,
+        otherOt: 0,
+        plannedOt: 0,
+        unapprovedOt: 0,
+        absentDays: 0,
+        absentOt: 0,
+        oddClocking: 0,
+        leaveHours: 8,
+        lostHours: 0,
+        status: "Verified",
+        shift: "8:30 AM - 5:30 PM (GROUP A)"
+      },
+      {
+        empNo: "EBB04",
+        name: "Michael Chen",
+        department: "Operations",
+        company: "Apex Logistics",
+        costCentre: "CC-104 Operations",
+        scheduledDays: 22,
+        presentDays: 22,
+        normalWorkHours: 172,
+        normalOt: 28,
+        otherOt: 12,
+        plannedOt: 10,
+        unapprovedOt: 12,
+        absentDays: 0,
+        absentOt: 0,
+        oddClocking: 2,
+        leaveHours: 0,
+        lostHours: 0,
+        status: "Exception",
+        shift: "8:00 AM - 5:00 PM (GROUP C)"
+      },
+      {
+        empNo: "EBB05",
+        name: "Emily Davis",
+        department: "Finance",
+        company: "Nexus Solutions",
+        costCentre: "CC-105 Finance",
+        scheduledDays: 22,
+        presentDays: 20,
+        normalWorkHours: 160,
+        normalOt: 0,
+        otherOt: 0,
+        plannedOt: 0,
+        unapprovedOt: 0,
+        absentDays: 1,
+        absentOt: 0,
+        oddClocking: 0,
+        leaveHours: 8,
+        lostHours: 8,
+        status: "Pending",
+        shift: "9:00 AM - 6:00 PM (GROUP B)"
+      }
+    ];
+
+    function setView(view) {
+      currentView = view;
+      document.getElementById("view-dashboard").style.display = view === "dashboard" ? "block" : "none";
+      document.getElementById("view-list").style.display = view === "list" ? "block" : "none";
+      
+      if (view === "list") {
+        document.getElementById("headerTitle").innerText = listActiveTitle;
+      } else {
+        document.getElementById("headerTitle").innerText = mainTitle;
+      }
+    }
+
+    function goBack() {
+      if (currentView === "list") {
+        setView("dashboard");
+      } else {
+        javascript:history.back();
+      }
+    }
+
+    function openListDetails(title) {
+      listActiveTitle = title;
+      renderDetailsList(title);
+      setView("list");
+    }
+
+    function getMetricValueForStaff(item, title) {
+      const t = title.toLowerCase();
+      if (t.includes("scheduled")) return `${item.scheduledDays} Days`;
+      if (t.includes("present days") || t.includes("normal present")) return `${item.presentDays} Days`;
+      if (t.includes("normal work hours") || t.includes("work hours")) return `${item.normalWorkHours}.0 Hrs`;
+      if (t.includes("normal ot")) return `${item.normalOt}.0 Hrs`;
+      if (t.includes("other ot")) return `${item.otherOt}.0 Hrs`;
+      if (t.includes("plan") || t.includes("planned ot")) return `${item.plannedOt}.0 Hrs`;
+      if (t.includes("unapproved")) return `${item.unapprovedOt}.0 Hrs`;
+      if (t.includes("absent days")) return `${item.absentDays} Days`;
+      if (t.includes("absent ot")) return `${item.absentOt}.00 Hrs`;
+      if (t.includes("odd")) return `${item.oddClocking} Days`;
+      if (t.includes("leave")) return `${item.leaveHours}.00 Hrs`;
+      if (t.includes("lost")) return `${item.lostHours}.00 Hrs`;
+      return `${item.normalWorkHours}.0 Hrs`;
+    }
+
+    function renderDetailsList(title) {
+      const container = document.getElementById("details-list-container");
+      const countBadge = document.getElementById("list-record-count");
+      if (!container) return;
+
+      const activeStaff = filterStaffData();
+
+      // Filter or filter subset depending on clicked card title
+      let items = activeStaff;
+      const t = title.toLowerCase();
+      if (t.includes("unapproved")) {
+        items = activeStaff.filter(s => s.unapprovedOt > 0 || s.status === "Exception");
+      } else if (t.includes("absent days")) {
+        items = activeStaff.filter(s => s.absentDays > 0 || s.status === "Pending");
+      } else if (t.includes("odd")) {
+        items = activeStaff.filter(s => s.oddClocking > 0 || s.status === "Exception");
+      } else if (t.includes("leave")) {
+        items = activeStaff.filter(s => s.leaveHours > 0 || s.status === "Pending");
+      } else if (t.includes("lost")) {
+        items = activeStaff.filter(s => s.lostHours > 0 || s.status === "Pending");
+      } else if (t.includes("planned")) {
+        items = activeStaff.filter(s => s.plannedOt > 0 || s.status === "Verified");
+      } else if (t.includes("other ot")) {
+        items = activeStaff.filter(s => s.otherOt > 0 || s.status === "Exception");
+      }
+
+      let themeColor = "green";
+      if (t.includes("absent") || t.includes("odd") || t.includes("leave") || t.includes("lost")) {
+        themeColor = "rose";
+      } else if (t.includes("ot") || t.includes("overtime")) {
+        themeColor = "blue";
+      } else {
+        themeColor = "green";
+      }
+
+      if (countBadge) {
+        countBadge.innerText = `${items.length} Staff Records`;
+        countBadge.className = `list-badge-count badge-${themeColor}`;
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--text-muted); background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 32px; margin-bottom: 8px; opacity: 0.6;">🤷‍♂️</div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">No Staff Records for ${title}</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map((item, idx) => {
+        const initials = item.name.split(' ').map(n => n[0]).join('');
+        const valStr = getMetricValueForStaff(item, title);
+
+        return `
+          <div class="detail-list-item theme-${themeColor}" onclick="openAttendanceDetailsByIndex(${idx}, '${title}')">
+            <div class="staff-avatar-badge" style="width: 46px; height: 46px; font-size: 15px;">
+              ${initials}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div class="list-info-row">
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-left: auto;">${item.empNo}</span>
+              </div>
+              <div class="list-info-sub" style="margin-bottom: 3px;">
+                Shift: <span class="list-info-val">${item.shift}</span>
+              </div>
+              <div class="list-info-sub">
+                ${title}: <span class="list-info-val">${valStr}</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; color: var(--text-muted);">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openAttendanceDetailsByIndex(index, title) {
+      const activeStaff = filterStaffData();
+      const item = activeStaff[index] || sampleStaffData[0];
+      
+      document.getElementById("ad-emp-no").innerText = item.empNo;
+      document.getElementById("ad-name").innerText = item.name;
+      document.getElementById("ad-company").innerText = item.company;
+      document.getElementById("ad-cost-centre").innerText = item.costCentre;
+      document.getElementById("ad-shift").innerText = item.shift;
+
+      // 12 Metrics mapping
+      document.getElementById("ad-sched-days").innerText = `${item.scheduledDays} Days`;
+      document.getElementById("ad-present-days").innerText = `${item.presentDays} Days`;
+      document.getElementById("ad-normal-hours").innerText = `${item.normalWorkHours}.0 Hrs`;
+      
+      document.getElementById("ad-normal-ot").innerText = `${item.normalOt}.0 Hrs`;
+      document.getElementById("ad-other-ot").innerText = `${item.otherOt}.0 Hrs`;
+      document.getElementById("ad-planned-ot").innerText = `${item.plannedOt}.0 Hrs`;
+      document.getElementById("ad-unapproved-ot").innerText = `${item.unapprovedOt}.0 Hrs`;
+
+      document.getElementById("ad-absent-days").innerText = `${item.absentDays} Days`;
+      document.getElementById("ad-absent-ot").innerText = `${item.absentOt}.00 Hrs`;
+      document.getElementById("ad-odd-clocking").innerText = `${item.oddClocking} Days`;
+      document.getElementById("ad-leave-hours").innerText = `${item.leaveHours}.00 Hrs`;
+      document.getElementById("ad-lost-hours").innerText = `${item.lostHours}.00 Hrs`;
+
+      const statusElem = document.getElementById("ad-status");
+      statusElem.innerText = item.status;
+      if (item.status === "Verified") statusElem.style.color = "#10b981";
+      else if (item.status === "Pending") statusElem.style.color = "#f59e0b";
+      else statusElem.style.color = "#fb7185";
+
+      const overlay = document.getElementById("modal-attendance-details");
+      const popup = overlay.querySelector(".popup-modal-content");
+      overlay.style.display = "flex";
+      setTimeout(() => {
+        overlay.style.opacity = "1";
+        if (popup) {
+          popup.style.transform = "scale(1)";
+          popup.style.opacity = "1";
+        }
+      }, 10);
+    }
+
+    function closeAttendanceDetails(e) {
+      if (e === true || (e && (e.target.id === "modal-attendance-details" || e.target.closest(".modal-close-round")))) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        const overlay = document.getElementById("modal-attendance-details");
+        const popup = overlay.querySelector(".popup-modal-content");
+        overlay.style.opacity = "0";
+        if (popup) {
+          popup.style.transform = "scale(0.95)";
+          popup.style.opacity = "0";
+        }
+        setTimeout(() => { overlay.style.display = "none"; }, 300);
+      }
+    }
+
+    // Modal Filter Functions
     function openFilterModal() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'translateY(0)'; }, 10);
+      const overlay = document.getElementById('filterModal');
+      const content = overlay.querySelector('.modal-content');
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.style.opacity = '1';
+        content.style.transform = 'translateY(0)';
+      }, 10);
     }
-    function closeFilterModal(e) { if (e && e.target !== e.currentTarget) return; closeFilterModalDirect(); }
-    function closeFilterModalDirect() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'translateY(100%)';
-      setTimeout(() => { m.style.display = 'none'; }, 280);
+
+    function closeFilterModal(e) {
+      if (e === true || (e && e.target.id === 'filterModal')) {
+        const overlay = document.getElementById('filterModal');
+        const content = overlay.querySelector('.modal-content');
+        content.style.transform = 'translateY(100%)';
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+      }
     }
+
     function resetFilterModal() {
-      document.getElementById('filterFromDate').value = '2026-08-16';
-      document.getElementById('filterToDate').value = '2026-09-14';
-      document.getElementById('filterStatusSelect').value = 'all';
-      closeFilterModalDirect();
+      document.getElementById('filterKeyword').value = '';
+      document.getElementById('filterStartDate').value = '2026-08-16';
+      document.getElementById('filterEndDate').value = '2026-09-14';
+      document.getElementById('filterMinHours').value = '0';
+      document.getElementById('filterCompany').value = 'all';
+      document.getElementById('filterCostCentre').value = 'all';
+
+      applyFilterModal();
     }
-    function applyFilterModal() { closeFilterModalDirect(); }
-    function openDetailModal(title, time, staff, status) {
-      document.getElementById('detailTitle').innerText = title;
-      document.getElementById('detailTime').innerText = time;
-      document.getElementById('detailStaff').innerText = staff;
-      document.getElementById('detailStatus').innerText = status;
-      const m = document.getElementById('detailModal');
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'scale(1)'; }, 10);
+
+    function filterStaffData() {
+      const keyword = document.getElementById('filterKeyword').value.trim().toLowerCase();
+      const minHours = parseFloat(document.getElementById('filterMinHours').value) || 0;
+      const company = document.getElementById('filterCompany').value;
+      const costCentre = document.getElementById('filterCostCentre').value;
+
+      return sampleStaffData.filter(item => {
+        if (keyword) {
+          const matchName = item.name.toLowerCase().includes(keyword);
+          const matchEmp = item.empNo.toLowerCase().includes(keyword);
+          const matchDept = item.department.toLowerCase().includes(keyword);
+          if (!matchName && !matchEmp && !matchDept) return false;
+        }
+
+        const totalStaffHours = item.normalWorkHours + item.normalOt + item.otherOt;
+        if (minHours > 0 && totalStaffHours < minHours) {
+          return false;
+        }
+
+        if (company !== 'all' && item.company !== company) {
+          return false;
+        }
+
+        if (costCentre !== 'all' && item.costCentre !== costCentre) {
+          return false;
+        }
+
+        return true;
+      });
     }
-    function closeDetailModal(e) { if (e && e.target !== e.currentTarget) return; closeDetailModalDirect(); }
-    function closeDetailModalDirect() {
-      const m = document.getElementById('detailModal');
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'scale(0.85)';
-      setTimeout(() => { m.style.display = 'none'; }, 250);
+
+    function formatDate(dStr) {
+      if (!dStr) return '';
+      const parts = dStr.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return dStr;
     }
+
+    function applyFilterModal() {
+      const filtered = filterStaffData();
+
+      // Update Filter Summary Header Text
+      const startDate = document.getElementById('filterStartDate').value;
+      const endDate = document.getElementById('filterEndDate').value;
+      const company = document.getElementById('filterCompany').value;
+      const costCentre = document.getElementById('filterCostCentre').value;
+      const minHours = parseFloat(document.getElementById('filterMinHours').value) || 0;
+      const keyword = document.getElementById('filterKeyword').value.trim();
+
+      let text = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+      let extra = [];
+      if (keyword) extra.push(`"${keyword}"`);
+      if (company !== 'all') extra.push(company);
+      if (costCentre !== 'all') extra.push(costCentre);
+      if (minHours > 0) extra.push(`Min ${minHours}h`);
+
+      if (extra.length > 0) {
+        text += ` • ${extra.join(' • ')}`;
+      }
+
+      document.getElementById('filterSummaryText').innerText = text;
+
+      // Recalculate 12 metric totals for active staff selection
+      let totPresentDays = 0;
+      let totNormalHours = 0;
+      let totNormalOt = 0;
+      let totOtherOt = 0;
+      let totPlannedOt = 0;
+      let totUnapprovedOt = 0;
+      let totAbsentDays = 0;
+      let totAbsentOt = 0;
+      let totOddClocking = 0;
+      let totLeaveHours = 0;
+      let totLostHours = 0;
+
+      filtered.forEach(s => {
+        totPresentDays += s.presentDays;
+        totNormalHours += s.normalWorkHours;
+        totNormalOt += s.normalOt;
+        totOtherOt += s.otherOt;
+        totPlannedOt += s.plannedOt;
+        totUnapprovedOt += s.unapprovedOt;
+        totAbsentDays += s.absentDays;
+        totAbsentOt += s.absentOt;
+        totOddClocking += s.oddClocking;
+        totLeaveHours += s.leaveHours;
+        totLostHours += s.lostHours;
+      });
+
+      // Update 12 metric DOM elements
+      document.getElementById('statPresentDays').innerText = Math.round(totPresentDays / (filtered.length || 1));
+      document.getElementById('statNormalWorkHours').innerHTML = `${totNormalHours.toLocaleString('en-US', {minimumFractionDigits: 1})} <span style="font-size: 12px; font-weight: 700;">Hrs</span>`;
+      document.getElementById('statNormalOt').innerText = `${totNormalOt.toLocaleString('en-US', {minimumFractionDigits: 1})}`;
+      document.getElementById('statOtherOt').innerText = `${totOtherOt.toLocaleString('en-US', {minimumFractionDigits: 1})}`;
+      document.getElementById('statPlannedOt').innerText = `${totPlannedOt.toLocaleString('en-US', {minimumFractionDigits: 1})}`;
+      document.getElementById('statUnapprovedOt').innerText = `${totUnapprovedOt.toLocaleString('en-US', {minimumFractionDigits: 1})}`;
+      document.getElementById('statAbsentDays').innerText = `${totAbsentDays}`;
+      document.getElementById('statAbsentOt').innerText = `${totAbsentOt.toFixed(2)}`;
+      document.getElementById('statOddClocking').innerText = `${totOddClocking}`;
+      document.getElementById('statLeaveHours').innerText = `${totLeaveHours.toFixed(2)}`;
+      document.getElementById('statLostHours').innerHTML = `${totLostHours.toFixed(2)} <span style="font-size: 12px; font-weight: 700;">Hrs</span>`;
+
+      if (currentView === "list") {
+        renderDetailsList(listActiveTitle);
+      }
+
+      closeFilterModal(true);
+    }
+
+    // Initialize Theme
+    function initTheme() {
+      const savedTheme = localStorage.getItem('peoplehcm_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+    initTheme();
   </script>
 </body>
 </html>

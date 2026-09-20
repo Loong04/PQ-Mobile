@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PeopleHCM - Attendance Highlight</title>
+  <title>PeopleHCM - Attendance Highlights</title>
   <script src="../../../js/components.js"></script>
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
@@ -16,157 +16,1041 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
-    .modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .action-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .action-icon-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      border-radius: 44px;
+      overflow: hidden;
+    }
+
+    .filter-bottom-sheet {
+      width: 100%;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 20px 20px 36px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.35);
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85%;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    /* Custom scrollbar for table */
+    .table-scroll-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(124, 58, 237, 0.2);
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
   <preview-top-bar active-page="attendance"></preview-top-bar>
+
   <div class="phone-container">
+    <!-- Top Header -->
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <button class="me-back-btn" onclick="handleBackNavigation()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </button>
-          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Attendance Highlight</h1>
+          <h1 id="pageHeaderTitle" style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Attendance Highlights</h1>
         </div>
       </div>
     </div>
 
+    <!-- Main Scrollable Content -->
     <div class="main-content">
-      <!-- Filter Bar -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Filter</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);" id="filterSummaryText">16/08/2026 - 14/09/2026</div>
+
+      <!-- ========================================================
+           VIEW 1: ATTENDANCE HIGHLIGHT TABLE VIEW (DEFAULT)
+           ======================================================== -->
+      <div id="viewAttendanceHighlightTable" style="display: block;">
+        
+        <!-- 1. Current Filter Bar -->
+        <div class="filter-summary-bar" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
+              CURRENT FILTER
+            </div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 14px; opacity: 0.85; color: var(--purple-primary);">ஃ</span>
+              <span id="highlightFilterSummaryText">All Employees &gt;&gt; Total Late Hours</span>
+            </div>
+          </div>
+          <button type="button" onclick="openHighlightFilterModal()" title="Open Filter Options"
+            style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+            <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
+          </button>
         </div>
-        <button type="button" onclick="openFilterModal()" style="width: 40px; height: 40px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
+
+        <!-- 2. Action Summary Bar (KPIs + Actions) -->
+        <div class="action-summary-bar" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(99, 102, 241, 0.05)); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 16px; box-shadow: var(--shadow-sm);">
+          
+          <!-- Row 1: Total Records + Donut Chart Button -->
+          <div class="action-summary-row" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="summary-label" style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Total Records</div>
+              <div id="highlightTotalRecords" class="summary-value" style="color: var(--purple-primary); font-size: 19px; font-weight: 800; margin-top: 1px;">127</div>
+            </div>
+            <div class="action-icons" style="display: flex; gap: 12px;">
+              <div class="action-icon-btn chart" title="View Chart" onclick="showAttendanceSection('chart')" style="color: #f59e0b;">
+                <i class="fa-solid fa-chart-pie" style="font-size: 16px;"></i>
+              </div>
+            </div>
+          </div>
+
+          <div style="height: 1px; background: var(--border-subtle); width: 100%;"></div>
+
+          <!-- Row 2: Metric + Export Buttons -->
+          <div class="action-summary-row" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div id="highlightMetricLabel" class="summary-label" style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Total Late Hours</div>
+              <div id="highlightMetricValue" class="summary-value" style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-top: 1px;">84.50 hrs</div>
+            </div>
+            <div class="action-icons" style="display: flex; gap: 10px;">
+              <div class="action-icon-btn pdf" title="Export PDF" onclick="handleExportAction('PDF')" style="color: #ef4444;">
+                <i class="fa-solid fa-file-pdf" style="font-size: 16px;"></i>
+              </div>
+              <div class="action-icon-btn excel" title="Export Excel" onclick="handleExportAction('Excel')" style="color: #10b981;">
+                <i class="fa-solid fa-file-excel" style="font-size: 16px;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Data List Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Employee Attendance Highlights Table</div>
+          <div id="tableRecordCountBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-input); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+            Total: 6 records
+          </div>
+        </div>
+
+        <!-- 4. Full Height Data Table Container (Enterprise Zebra + Purple Accents) -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+          <div class="table-scroll-container" style="overflow-x: auto; flex: 1; -webkit-overflow-scrolling: touch;">
+            <table style="width: 100%; min-width: 720px; border-collapse: collapse; text-align: left; font-size: 12px;">
+              <thead>
+                <tr style="background: var(--purple-subtle); border-bottom: 2px solid var(--purple-border);">
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">EMP#</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">NAME</th>
+                  <th id="tableMetricHeaderCol" style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">HOURS</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">BRANCH</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">DEPARTMENT</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">POSITION</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceHighlightTableBody">
+                <!-- Row 1 -->
+                <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">004177</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">AHMAD RAFY BIN ZULKIPLE</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">4.50 hrs</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">ADMINISTRATION DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">ADMIN MANAGER</td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">TEST69</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">TEST69 Test</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">8.00 hrs</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">FINANCE & ACCOUNTING DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">ACCOUNT EXECUTIVE</td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">007216</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">HAILIZAM BIN MOHAMED IKHSAN</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">2.50 hrs</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">SOUTHERN REGION BRANCH</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">SALES & MARKETING DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">SALES REPRESENTATIVE</td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">006611</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">POR SUAT BEE</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">12.00 hrs</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">FINANCE & ACCOUNTING DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">PAYABLES EXECUTIVE</td>
+                </tr>
+
+                <!-- Row 5 -->
+                <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">008004</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">NURFARHANA BINTI MOHAMAD</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">3.50 hrs</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">SUNWAY BRANCH</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">FINANCE & BANKING</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">FINANCE OFFICER</td>
+                </tr>
+
+                <!-- Row 6 -->
+                <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">009102</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">ALEX TAN CHIN HOCK</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">6.00 hrs</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">TIMES SQUARE BRANCH</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">TECH & IT DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">IT SUPPORT SPECIALIST</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           VIEW 2: ATTENDANCE HIGHLIGHT CHART VIEW (DONUT BREAKDOWN)
+           ======================================================== -->
+      <div id="viewAttendanceHighlightChart" style="display: none;">
+        
+        <!-- Navigation back to table view -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <button type="button" onclick="showAttendanceSection('table')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); padding: 6px 14px; border-radius: 12px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back to Table</span>
+          </button>
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">
+            Analytical Breakdown
+          </div>
+        </div>
+
+        <!-- Card 1: Breakdown Selector -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow-card);">
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">BREAKDOWN BY</label>
+            <div style="position: relative;">
+              <select id="highlightChartMetricSelect" onchange="changeHighlightChartMetric(this.value)" style="width: 100%; padding: 13px 40px 13px 16px; background: var(--bg-input); color: var(--text-primary); border: 1.5px solid var(--purple-border); border-radius: 16px; font-size: 14.5px; font-weight: 800; outline: none; cursor: pointer; appearance: none; transition: all 0.2s ease;">
+                <option value="branch" selected>Branch</option>
+                <option value="department">Department</option>
+                <option value="section">Section</option>
+                <option value="grade">Grade</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="anomaly_type">Attendance Anomaly Type</option>
+                <option value="month">Month</option>
+              </select>
+              <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 12px; font-weight: 900;">▼</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span id="highlightChartSubTitle">16 Aug – 14 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Donut Chart Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 20px 24px; margin-bottom: 14px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+          <div style="width: 100%; display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div>
+              <h3 id="highlightChartMainTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; line-height: 1.3;">Late hours by branch</h3>
+              <p style="font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0;">Share of total late hours</p>
+            </div>
+            <button type="button" onclick="showAttendanceSection('trend')" style="background: var(--purple-subtle); color: var(--purple-primary); border: 1.5px solid var(--purple-border); padding: 7px 14px; border-radius: 14px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm); flex-shrink: 0;">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>View Trend</span>
+            </button>
+          </div>
+
+          <!-- SVG Donut Chart -->
+          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 195px; height: 195px; margin: 10px 0 14px;">
+            <svg id="highlightDonutSvg" width="195" height="195" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 20px rgba(124, 58, 237, 0.15));">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22"></circle>
+              <g id="highlightDonutCircles"></g>
+            </svg>
+            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 110px;">
+              <div id="highlightCenterTotal" style="font-size: 21px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap;">84.50</div>
+              <div id="highlightCenterBadge" style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.2px;">Total late hours</div>
+            </div>
+          </div>
+
+          <!-- Note under chart -->
+          <div id="highlightChartNote" style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple-primary);"></span>
+            <span id="highlightChartNoteText">Top 5 categories + other branches</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Data Table Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 18px 18px; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 75px 75px; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+            <div id="tableColHeaderKey">BRANCH</div>
+            <div style="text-align: right;">HOURS</div>
+            <div style="text-align: right;">% OF TOTAL</div>
+          </div>
+
+          <div id="highlightChartLegendGrid" style="display: flex; flex-direction: column; gap: 16px; padding-top: 16px;">
+            <!-- Generated dynamically -->
+          </div>
+
+          <div id="highlightViewAllFooter" style="text-align: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+            <button type="button" onclick="toggleHighlightViewAll()" style="background: none; border: none; color: var(--purple-text); font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px;">
+              <span id="highlightViewAllBtnText">View all branches</span> <span id="highlightViewAllChevron" style="font-size: 14px;">›</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           VIEW 3: ATTENDANCE HIGHLIGHT TREND VIEW (12 MONTHS)
+           ======================================================== -->
+      <div id="viewAttendanceHighlightTrend" style="display: none;">
+        
+        <!-- Card 1: Time Range Filter Selector -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px;">
+              LAST 12 MONTHS
+            </div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+              <span>Annual Overview</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; color: var(--text-primary);">
+              <i class="fa-solid fa-calendar-days" style="color: var(--purple-primary); font-size: 16px;"></i>
+              <span>1 Oct 2025 – 30 Sep 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Total Late Hours Metric Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 18px 20px; margin-bottom: 16px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: linear-gradient(180deg, #7c3aed 0%, #a855f7 100%);"></div>
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+              Total Late Hours
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+              Full 12-Month Accumulation
+            </div>
+          </div>
+          <div style="font-size: 30px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">
+            542.50
+          </div>
+        </div>
+
+        <!-- Card 3: Monthly Breakdown Horizontal Bars -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 22px 18px 18px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">
+            Monthly late hours
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">
+            October 2025 – September 2026
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px 10px; font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+            <div>MONTH</div>
+            <div>HOURS</div>
+          </div>
+
+          <!-- Monthly Rows -->
+          <div id="trendMonthlyBarsContainer" style="display: flex; flex-direction: column; gap: 11px;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           VIEW 4: ATTENDANCE MONTHLY BREAKDOWN DETAIL VIEW
+           ======================================================== -->
+      <div id="viewAttendanceMonthlyDetail" style="display: none;">
+        
+        <!-- Card 1: Month Summary Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span id="monthlyDetailBadge" style="font-size: 11px; font-weight: 800; color: var(--purple-primary); background: var(--purple-subtle); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--purple-border); text-transform: uppercase; letter-spacing: 0.5px;">October 2025</span>
+            <span id="monthlyDetailTotalHours" style="font-size: 22px; font-weight: 900; color: var(--text-primary);">42.50 hrs</span>
+          </div>
+          <h3 id="monthlyDetailTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 6px 0 4px;">Late hours breakdown</h3>
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--text-muted);">
+            <i class="fa-solid fa-calendar-days" style="color: var(--purple-primary);"></i>
+            <span id="monthlyDetailDateRange">between 1 Oct 2025 and 31 Oct 2025</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Horizontal Bar Chart -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 22px 18px 18px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">
+            Department Breakdown
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">
+            Late hours distribution for this period
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px 10px; font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+            <div>DEPARTMENT</div>
+            <div>HOURS (% TOTAL)</div>
+          </div>
+
+          <div id="monthlyDetailBarsContainer" style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================
+         BOTTOM SHEET FILTER MODAL (MULTI-FIELD)
+         ======================================================== -->
+    <div class="modal-overlay" id="highlightFilterModal" onclick="closeHighlightFilterModal(event)">
+      <div class="filter-bottom-sheet" onclick="event.stopPropagation()">
+        <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 0 auto 16px; opacity: 0.7;"></div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
+          <button type="button" onclick="resetHighlightFilterModal()" style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px; max-height: 58vh; overflow-y: auto; padding-right: 4px; padding-bottom: 4px; scrollbar-width: thin;">
+          <!-- 1. Search Keyword -->
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--purple-text); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Search Keyword</label>
+            <input type="text" id="filterKeyword" placeholder="Employee Name or Number" style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+          </div>
+
+          <!-- 2. Department -->
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--purple-text); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Department</label>
+            <div style="position: relative;">
+              <select id="filterDepartment" style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; box-sizing: border-box;">
+                <option value="all">- All Departments -</option>
+                <option value="Administration">Administration Department</option>
+                <option value="Finance">Finance & Accounting Department</option>
+                <option value="Sales">Sales & Marketing Department</option>
+                <option value="Production">Production Department</option>
+                <option value="Customer Care">Customer Care Department</option>
+                <option value="Tech">Tech & IT Department</option>
+                <option value="HR">Human Resources Department</option>
+              </select>
+              <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 11px; font-weight: 900;">▼</div>
+            </div>
+          </div>
+
+          <!-- 3. Cost Center -->
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--purple-text); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Cost Center</label>
+            <div style="position: relative;">
+              <select id="filterCostCenter" style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; box-sizing: border-box;">
+                <option value="all">- All Cost Centers -</option>
+                <option value="CC-101">CC-101 (Admin & Corporate)</option>
+                <option value="CC-102">CC-102 (Finance & Accounts)</option>
+                <option value="CC-201">CC-201 (Sales & Marketing)</option>
+                <option value="CC-301">CC-301 (Plant & Production)</option>
+                <option value="CC-401">CC-401 (IT & Engineering)</option>
+                <option value="CC-501">CC-501 (HR & Operations)</option>
+              </select>
+              <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 11px; font-weight: 900;">▼</div>
+            </div>
+          </div>
+
+          <!-- 4 & 5. Start Date & End Date Row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 800; color: var(--purple-text); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Start Date</label>
+              <input type="date" id="filterFromDate" value="2026-08-16" style="width: 100%; padding: 12px 10px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; outline: none; box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 800; color: var(--purple-text); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">End Date</label>
+              <input type="date" id="filterToDate" value="2026-09-14" style="width: 100%; padding: 12px 10px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; outline: none; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <!-- 6. Highlight Type -->
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--purple-text); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Highlight Type</label>
+            <div style="position: relative;">
+              <select id="filterHighlightType" style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; box-sizing: border-box;">
+                <option value="Total Late Hours" selected>Total Late Hours</option>
+                <option value="Early Departure Hours">Early Departure Hours</option>
+                <option value="Total Absent Days">Total Absent Days</option>
+                <option value="Missing Clock Punch">Missing Clock Punch</option>
+                <option value="Total Incomplete Attendance">Total Incomplete Attendance</option>
+              </select>
+              <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 11px; font-weight: 900;">▼</div>
+            </div>
+          </div>
+
+          <!-- 7. Hours Range -->
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--purple-text); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Hours Range</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="number" id="filterRangeMin" placeholder="Min" value="0" style="flex: 1; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+              <span style="color: var(--text-muted); font-weight: 800;">-</span>
+              <input type="number" id="filterRangeMax" placeholder="Max" value="999" style="flex: 1; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Apply Button -->
+        <button type="button" onclick="submitHighlightFilterModal()" style="width: 100%; margin-top: 14px; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed, #6366f1); color: #ffffff; font-size: 14.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35); transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+          Apply Filter
         </button>
       </div>
-
-      <!-- KPI -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(190, 24, 93, 0.05) 100%); border-color: rgba(236, 72, 153, 0.3);">
-        <div style="font-size: 12px; font-weight: 700; color: #ec4899; margin-bottom: 4px;">Attendance Highlights & Anomalies</div>
-        <div style="font-size: 28px; font-weight: 800; color: var(--text-primary);">12 Flagged Items</div>
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Consecutive Lates: 5 | Unexcused Absences: 4 | Missing Punch: 3</div>
-      </div>
-
-      <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Flagged Attendance Items</div>
-      <div class="card" onclick="openDetailModal('Kelvin Lim', '3 Consecutive Lates This Week', 'Punctuality Review Needed', 'Action Required')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Kelvin Lim</div>
-            <div style="font-size: 12px; font-weight: 600; color: #ec4899; margin-top: 2px;">3 Consecutive Lates</div>
-          </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(236, 72, 153, 0.15); color: #ec4899; font-size: 11px; font-weight: 800;">Action</span>
-        </div>
-      </div>
-
-      <div class="card" onclick="openDetailModal('Jason Roy', 'Missing Out-Clock Badge Punch', 'Needs Manager Correction', 'Pending Review')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Jason Roy</div>
-            <div style="font-size: 12px; font-weight: 600; color: #f59e0b; margin-top: 2px;">Missing Clock Out</div>
-          </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 11px; font-weight: 800;">Pending</span>
-        </div>
-      </div>
     </div>
+
+    <!-- Bottom Navigation -->
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
 
-  <!-- Bottom Sheet Filter Modal -->
-  <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)" style="align-items: flex-end; padding: 0;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 480px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
-      <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
-      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
-        <button type="button" onclick="resetFilterModal()" style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-          <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
-        </button>
-      </div>
-      <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;">
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Start Date</label>
-          <input type="date" id="filterFromDate" value="2026-08-16" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
-        </div>
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">End Date</label>
-          <input type="date" id="filterToDate" value="2026-09-14" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
-        </div>
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Status</label>
-          <select id="filterStatusSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
-            <option value="all">All Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
-        <button type="button" onclick="applyFilterModal()" style="width: 100%; margin-top: 10px; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer;">Apply Filter</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Popout Detail Modal -->
-  <div class="modal-overlay" id="detailModal" onclick="closeDetailModal(event)" style="align-items: center; justify-content: center; padding: 16px;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 380px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.85); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; padding: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary);" id="detailTitle">Highlight Details</h3>
-        <button onclick="closeDetailModalDirect()" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-input); border: none; color: var(--text-primary); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13.5px;">
-        <div><strong style="color: var(--text-muted);">Issue:</strong> <span id="detailTime" style="font-weight: 700; color: #ec4899;"></span></div>
-        <div><strong style="color: var(--text-muted);">Action Required:</strong> <span id="detailStaff" style="font-weight: 700; color: var(--text-primary);"></span></div>
-        <div><strong style="color: var(--text-muted);">Status:</strong> <span id="detailStatus" style="font-weight: 700; color: #f59e0b;"></span></div>
-      </div>
-    </div>
-  </div>
-
+  <!-- JavaScript Logic -->
   <script>
-    function openFilterModal() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'translateY(0)'; }, 10);
+    let currentSection = 'table';
+    let isHighlightViewAllExpanded = false;
+
+    // Dataset for Attendance Breakdown by Dimension
+    const attendanceChartDataset = {
+      'branch': {
+        title: 'Branch',
+        subtitle: '16 Aug – 14 Sep 2026',
+        total: '84.50',
+        badge: 'Total late hours',
+        unit: 'Hours',
+        items: [
+          { code: 'HQ', name: 'Headquarters (HQ)', pct: 42.60, val: '36.00', color: '#7c3aed' },
+          { code: 'TS', name: 'Times Square Branch', pct: 21.30, val: '18.00', color: '#10b981' },
+          { code: 'SW', name: 'Sunway Branch', pct: 15.38, val: '13.00', color: '#3b82f6' },
+          { code: 'SR', name: 'Southern Region Branch', pct: 11.24, val: '9.50', color: '#f59e0b' },
+          { code: 'PG', name: 'Penang Tech Hub', pct: 5.92, val: '5.00', color: '#ec4899' },
+          { code: 'JB', name: 'Johor Bahru Logistics', pct: 3.56, val: '3.00', color: '#06b6d4' }
+        ]
+      },
+      'department': {
+        title: 'Department',
+        subtitle: '16 Aug – 14 Sep 2026',
+        total: '84.50',
+        badge: 'Total late hours',
+        unit: 'Hours',
+        items: [
+          { code: 'FA', name: 'Finance & Accounting Dept', pct: 35.50, val: '30.00', color: '#7c3aed' },
+          { code: 'IT', name: 'Tech & IT Department', pct: 23.67, val: '20.00', color: '#3b82f6' },
+          { code: 'AD', name: 'Administration Department', pct: 17.75, val: '15.00', color: '#10b981' },
+          { code: 'SM', name: 'Sales & Marketing Dept', pct: 14.20, val: '12.00', color: '#f59e0b' },
+          { code: 'OP', name: 'Operations & Logistics', pct: 8.88, val: '7.50', color: '#ec4899' }
+        ]
+      },
+      'section': {
+        title: 'Section',
+        subtitle: '16 Aug – 14 Sep 2026',
+        total: '84.50',
+        badge: 'Total late hours',
+        unit: 'Hours',
+        items: [
+          { code: 'AP', name: 'Accounts Payable', pct: 28.40, val: '24.00', color: '#7c3aed' },
+          { code: 'FS', name: 'Field Sales', pct: 21.30, val: '18.00', color: '#10b981' },
+          { code: 'SE', name: 'Software Engineering', pct: 20.12, val: '17.00', color: '#3b82f6' },
+          { code: 'GA', name: 'General Administration', pct: 16.57, val: '14.00', color: '#f59e0b' },
+          { code: 'WH', name: 'Warehouse Ops', pct: 13.61, val: '11.50', color: '#ec4899' }
+        ]
+      },
+      'grade': {
+        title: 'Grade',
+        subtitle: '16 Aug – 14 Sep 2026',
+        total: '84.50',
+        badge: 'Total late hours',
+        unit: 'Hours',
+        items: [
+          { code: 'E2', name: 'Grade E2 - Executive', pct: 37.87, val: '32.00', color: '#7c3aed' },
+          { code: 'E1', name: 'Grade E1 - Junior Exec', pct: 27.22, val: '23.00', color: '#10b981' },
+          { code: 'E3', name: 'Grade E3 - Senior Exec', pct: 18.93, val: '16.00', color: '#3b82f6' },
+          { code: 'M1', name: 'Grade M1 - Manager', pct: 11.83, val: '10.00', color: '#f59e0b' },
+          { code: 'N1', name: 'Grade N1 - Non-Exec', pct: 4.15, val: '3.50', color: '#ec4899' }
+        ]
+      },
+      'supervisor': {
+        title: 'Supervisor',
+        subtitle: '16 Aug – 14 Sep 2026',
+        total: '84.50',
+        badge: 'Total late hours',
+        unit: 'Hours',
+        items: [
+          { code: 'AR', name: 'Ahmad Rafy Bin Zulkiple', pct: 33.14, val: '28.00', color: '#7c3aed' },
+          { code: 'PS', name: 'Por Suat Bee', pct: 29.59, val: '25.00', color: '#10b981' },
+          { code: 'HM', name: 'Hailizam Bin Mohamed', pct: 20.12, val: '17.00', color: '#3b82f6' },
+          { code: 'AT', name: 'Alex Tan Chin Hock', pct: 17.15, val: '14.50', color: '#f59e0b' }
+        ]
+      },
+      'anomaly_type': {
+        title: 'Anomaly Type',
+        subtitle: '16 Aug – 14 Sep 2026',
+        total: '84.50',
+        badge: 'Total late hours',
+        unit: 'Hours',
+        items: [
+          { code: 'L1', name: 'Late In > 15 mins', pct: 48.52, val: '41.00', color: '#7c3aed' },
+          { code: 'L2', name: 'Late In > 30 mins', pct: 27.22, val: '23.00', color: '#f59e0b' },
+          { code: 'L3', name: 'Late In > 60 mins', pct: 15.38, val: '13.00', color: '#ef4444' },
+          { code: 'UN', name: 'Unexcused Tardiness', pct: 8.88, val: '7.50', color: '#ec4899' }
+        ]
+      },
+      'month': {
+        title: 'Month',
+        subtitle: '16 Aug – 14 Sep 2026',
+        total: '84.50',
+        badge: 'Total late hours',
+        unit: 'Hours',
+        items: [
+          { code: 'AU', name: 'August 2026', pct: 54.44, val: '46.00', color: '#7c3aed' },
+          { code: 'SE', name: 'September 2026', pct: 45.56, val: '38.50', color: '#10b981' }
+        ]
+      }
+    };
+
+    // 12 Months Trend Data
+    const monthlyTrendData = [
+      { month: 'Oct 2025', hours: 42.50, pct: 65 },
+      { month: 'Nov 2025', hours: 38.00, pct: 58 },
+      { month: 'Dec 2025', hours: 55.00, pct: 85 },
+      { month: 'Jan 2026', hours: 48.00, pct: 74 },
+      { month: 'Feb 2026', hours: 32.00, pct: 50 },
+      { month: 'Mar 2026', hours: 45.00, pct: 70 },
+      { month: 'Apr 2026', hours: 40.00, pct: 62 },
+      { month: 'May 2026', hours: 52.00, pct: 80 },
+      { month: 'Jun 2026', hours: 36.00, pct: 55 },
+      { month: 'Jul 2026', hours: 49.00, pct: 76 },
+      { month: 'Aug 2026', hours: 58.50, pct: 90 },
+      { month: 'Sep 2026', hours: 46.50, pct: 72 }
+    ];
+
+    // Navigation Switcher
+    function showAttendanceSection(section) {
+      currentSection = section;
+      const vTable = document.getElementById('viewAttendanceHighlightTable');
+      const vChart = document.getElementById('viewAttendanceHighlightChart');
+      const vTrend = document.getElementById('viewAttendanceHighlightTrend');
+      const vDetail = document.getElementById('viewAttendanceMonthlyDetail');
+      const headerTitle = document.getElementById('pageHeaderTitle');
+
+      if (section === 'table') {
+        vTable.style.display = 'block';
+        vChart.style.display = 'none';
+        vTrend.style.display = 'none';
+        if (vDetail) vDetail.style.display = 'none';
+        headerTitle.innerText = 'Attendance Highlights';
+      } else if (section === 'chart') {
+        vTable.style.display = 'none';
+        vChart.style.display = 'block';
+        vTrend.style.display = 'none';
+        if (vDetail) vDetail.style.display = 'none';
+        headerTitle.innerText = 'Highlight Breakdown';
+        renderHighlightChart(document.getElementById('highlightChartMetricSelect').value);
+      } else if (section === 'trend') {
+        vTable.style.display = 'none';
+        vChart.style.display = 'none';
+        vTrend.style.display = 'block';
+        if (vDetail) vDetail.style.display = 'none';
+        headerTitle.innerText = 'Attendance Trends';
+        renderTrendMonthlyBars();
+      } else if (section === 'monthDetail') {
+        vTable.style.display = 'none';
+        vChart.style.display = 'none';
+        vTrend.style.display = 'none';
+        if (vDetail) vDetail.style.display = 'block';
+        headerTitle.innerText = 'Attendance Trends';
+      }
     }
-    function closeFilterModal(e) { if (e && e.target !== e.currentTarget) return; closeFilterModalDirect(); }
-    function closeFilterModalDirect() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'translateY(100%)';
-      setTimeout(() => { m.style.display = 'none'; }, 280);
+
+    function handleBackNavigation() {
+      if (currentSection === 'monthDetail') {
+        showAttendanceSection('trend');
+      } else if (currentSection === 'trend') {
+        showAttendanceSection('chart');
+      } else if (currentSection === 'chart') {
+        showAttendanceSection('table');
+      } else {
+        window.location.href = 'team.html';
+      }
     }
-    function resetFilterModal() {
-      document.getElementById('filterFromDate').value = '2026-08-16';
-      document.getElementById('filterToDate').value = '2026-09-14';
-      document.getElementById('filterStatusSelect').value = 'all';
-      closeFilterModalDirect();
+
+    // Monthly Breakdown Detail Dataset
+    const monthlyDetailsDataset = {
+      'Oct 2025': {
+        range: 'between 1 Oct 2025 and 31 Oct 2025',
+        badge: 'October 2025',
+        total: '42.50 hrs',
+        items: [
+          { name: 'Finance & Accounting Dept', pct: 40.0, val: '17.00 hrs', color: '#7c3aed' },
+          { name: 'Tech & IT Department', pct: 28.2, val: '12.00 hrs', color: '#3b82f6' },
+          { name: 'Administration Dept', pct: 18.8, val: '8.00 hrs', color: '#10b981' },
+          { name: 'Sales & Marketing Dept', pct: 13.0, val: '5.50 hrs', color: '#f59e0b' }
+        ]
+      },
+      'Nov 2025': {
+        range: 'between 1 Nov 2025 and 30 Nov 2025',
+        badge: 'November 2025',
+        total: '38.00 hrs',
+        items: [
+          { name: 'Tech & IT Department', pct: 39.5, val: '15.00 hrs', color: '#7c3aed' },
+          { name: 'Finance & Accounting Dept', pct: 31.6, val: '12.00 hrs', color: '#3b82f6' },
+          { name: 'Administration Dept', pct: 18.4, val: '7.00 hrs', color: '#10b981' },
+          { name: 'Sales & Marketing Dept', pct: 10.5, val: '4.00 hrs', color: '#f59e0b' }
+        ]
+      },
+      'Dec 2025': {
+        range: 'between 1 Dec 2025 and 31 Dec 2025',
+        badge: 'December 2025',
+        total: '55.00 hrs',
+        items: [
+          { name: 'Finance & Accounting Dept', pct: 41.8, val: '23.00 hrs', color: '#7c3aed' },
+          { name: 'Sales & Marketing Dept', pct: 27.3, val: '15.00 hrs', color: '#3b82f6' },
+          { name: 'Tech & IT Department', pct: 18.2, val: '10.00 hrs', color: '#10b981' },
+          { name: 'Administration Dept', pct: 12.7, val: '7.00 hrs', color: '#f59e0b' }
+        ]
+      }
+    };
+
+    function getMonthDetails(monthStr, hoursVal) {
+      if (monthlyDetailsDataset[monthStr]) return monthlyDetailsDataset[monthStr];
+      const parts = monthStr.split(' ');
+      const mName = parts[0] || 'Selected';
+      const year = parts[1] || '2026';
+      
+      const monthDaysMap = {
+        'Jan': 31, 'Feb': 28, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30,
+        'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31
+      };
+      const days = monthDaysMap[mName] || 30;
+      
+      const totalHrs = hoursVal ? `${hoursVal.toFixed(2)} hrs` : '45.00 hrs';
+      const numericHrs = hoursVal || 45.00;
+      
+      return {
+        range: `between 1 ${mName} ${year} and ${days} ${mName} ${year}`,
+        badge: `${mName} ${year}`,
+        total: totalHrs,
+        items: [
+          { name: 'Finance & Accounting Dept', pct: 38.0, val: `${(numericHrs * 0.38).toFixed(2)} hrs`, color: '#7c3aed' },
+          { name: 'Tech & IT Department', pct: 28.0, val: `${(numericHrs * 0.28).toFixed(2)} hrs`, color: '#3b82f6' },
+          { name: 'Administration Dept', pct: 20.0, val: `${(numericHrs * 0.20).toFixed(2)} hrs`, color: '#10b981' },
+          { name: 'Sales & Marketing Dept', pct: 14.0, val: `${(numericHrs * 0.14).toFixed(2)} hrs`, color: '#f59e0b' }
+        ]
+      };
     }
-    function applyFilterModal() { closeFilterModalDirect(); }
-    function openDetailModal(title, time, staff, status) {
-      document.getElementById('detailTitle').innerText = title;
-      document.getElementById('detailTime').innerText = time;
-      document.getElementById('detailStaff').innerText = staff;
-      document.getElementById('detailStatus').innerText = status;
-      const m = document.getElementById('detailModal');
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'scale(1)'; }, 10);
+
+    function openMonthlyDetail(monthStr, hoursVal) {
+      const detail = getMonthDetails(monthStr, hoursVal);
+      
+      const badgeEl = document.getElementById('monthlyDetailBadge');
+      const totalEl = document.getElementById('monthlyDetailTotalHours');
+      const rangeEl = document.getElementById('monthlyDetailDateRange');
+      const container = document.getElementById('monthlyDetailBarsContainer');
+
+      if (badgeEl) badgeEl.innerText = detail.badge;
+      if (totalEl) totalEl.innerText = detail.total;
+      if (rangeEl) rangeEl.innerText = detail.range;
+
+      if (container) {
+        let html = '';
+        detail.items.forEach(it => {
+          html += `
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; margin-bottom: 6px;">
+                <span style="font-weight: 700; color: var(--text-primary);">${it.name}</span>
+                <span style="font-weight: 800; color: var(--text-primary);">${it.val} <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">(${it.pct.toFixed(1)}%)</span></span>
+              </div>
+              <div style="background: var(--bg-input); height: 10px; border-radius: 6px; overflow: hidden; position: relative;">
+                <div style="width: ${it.pct}%; height: 100%; background: ${it.color}; border-radius: 6px;"></div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+
+      showAttendanceSection('monthDetail');
     }
-    function closeDetailModal(e) { if (e && e.target !== e.currentTarget) return; closeDetailModalDirect(); }
-    function closeDetailModalDirect() {
-      const m = document.getElementById('detailModal');
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'scale(0.85)';
-      setTimeout(() => { m.style.display = 'none'; }, 250);
+
+    // Donut Chart Renderer
+    function renderHighlightChart(metricKey) {
+      const data = attendanceChartDataset[metricKey] || attendanceChartDataset['branch'];
+      const rawItems = data.items || [];
+
+      document.getElementById('highlightChartMainTitle').innerText = `Late hours by ${data.title.toLowerCase()}`;
+      document.getElementById('tableColHeaderKey').innerText = data.title.toUpperCase();
+      document.getElementById('highlightChartSubTitle').innerText = data.subtitle;
+      document.getElementById('highlightCenterTotal').innerText = data.total;
+      document.getElementById('highlightCenterBadge').innerText = data.badge;
+
+      let displayItems = [];
+      const singularKey = data.title.toLowerCase();
+      const pluralKey = singularKey === 'branch' ? 'branches' : (singularKey.endsWith('s') ? singularKey : singularKey + 's');
+
+      if (rawItems.length > 5 && !isHighlightViewAllExpanded) {
+        const top5 = rawItems.slice(0, 5);
+        const rest = rawItems.slice(5);
+
+        let otherValSum = 0;
+        let otherPctSum = 0;
+        rest.forEach(it => {
+          otherValSum += parseFloat(it.val) || 0;
+          otherPctSum += (it.pct || 0);
+        });
+
+        displayItems = [...top5, {
+          code: 'OTHER',
+          name: `Other ${pluralKey}`,
+          val: otherValSum.toFixed(2),
+          pct: parseFloat(otherPctSum.toFixed(2)),
+          color: '#a855f7'
+        }];
+
+        document.getElementById('highlightChartNoteText').innerText = `Top 5 categories + other ${pluralKey}`;
+        document.getElementById('highlightViewAllFooter').style.display = 'block';
+        document.getElementById('highlightViewAllBtnText').innerText = `View all ${pluralKey}`;
+        document.getElementById('highlightViewAllChevron').innerText = '›';
+      } else {
+        displayItems = rawItems;
+        document.getElementById('highlightChartNoteText').innerText = rawItems.length > 5 ? `Showing all ${rawItems.length} ${pluralKey}` : `Share of total late hours`;
+        const footer = document.getElementById('highlightViewAllFooter');
+        if (rawItems.length > 5) {
+          footer.style.display = 'block';
+          document.getElementById('highlightViewAllBtnText').innerText = 'Show top 5 only';
+          document.getElementById('highlightViewAllChevron').innerText = '‹';
+        } else {
+          footer.style.display = 'none';
+        }
+      }
+
+      // Render SVG Donut Rings
+      const svgGroup = document.getElementById('highlightDonutCircles');
+      if (svgGroup) {
+        const C = 439.82; // 2 * PI * 70
+        let currentOffset = 0;
+        let circlesHtml = '';
+
+        displayItems.forEach(item => {
+          const pct = item.pct / 100;
+          const dashLen = pct * C;
+          const dashOffset = -currentOffset;
+          currentOffset += dashLen;
+
+          circlesHtml += `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${item.color}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+        });
+        svgGroup.innerHTML = circlesHtml;
+      }
+
+      // Render Legend Table Rows
+      const grid = document.getElementById('highlightChartLegendGrid');
+      if (grid) {
+        let listHtml = '';
+        displayItems.forEach(item => {
+          listHtml += `
+            <div style="display: grid; grid-template-columns: 1fr 75px 75px; gap: 10px; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${item.color}; flex-shrink: 0;"></span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right;">${item.val}</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: right;">${item.pct.toFixed(2)}%</div>
+            </div>
+          `;
+        });
+        grid.innerHTML = listHtml;
+      }
     }
+
+    function changeHighlightChartMetric(value) {
+      isHighlightViewAllExpanded = false;
+      renderHighlightChart(value);
+      if (typeof showToast === 'function') {
+        const d = attendanceChartDataset[value];
+        showToast(`📊 Grouping by: ${d ? d.title : value}`);
+      }
+    }
+
+    function toggleHighlightViewAll() {
+      isHighlightViewAllExpanded = !isHighlightViewAllExpanded;
+      renderHighlightChart(document.getElementById('highlightChartMetricSelect').value);
+    }
+
+    // Render 12 Months Trend Bars
+    function renderTrendMonthlyBars() {
+      const container = document.getElementById('trendMonthlyBarsContainer');
+      if (!container) return;
+
+      let html = '';
+      monthlyTrendData.forEach(item => {
+        html += `
+          <div onclick="openMonthlyDetail('${item.month}', ${item.hours})" style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; cursor: pointer; padding: 6px 8px; border-radius: 12px; transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='transparent'">
+            <div style="width: 75px; font-weight: 700; color: var(--text-muted); white-space: nowrap;">${item.month}</div>
+            <div style="flex: 1; margin: 0 12px; background: var(--bg-input); height: 9px; border-radius: 6px; overflow: hidden; position: relative;">
+              <div style="width: ${item.pct}%; height: 100%; background: linear-gradient(90deg, #7c3aed, #a855f7); border-radius: 6px;"></div>
+            </div>
+            <div style="width: 75px; text-align: right; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+              <span>${item.hours.toFixed(2)} hrs</span>
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: var(--purple-primary);"></i>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // Export Feedback
+    function handleExportAction(type) {
+      if (typeof showToast === 'function') {
+        showToast(`📄 Generating ${type} report export...`);
+      } else {
+        alert(`Generating ${type} report export...`);
+      }
+    }
+
+    // Filter Modal Logic
+    function openHighlightFilterModal() {
+      const modal = document.getElementById('highlightFilterModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(0)';
+      }, 10);
+    }
+
+    function closeHighlightFilterModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const modal = document.getElementById('highlightFilterModal');
+      if (!modal) return;
+      modal.style.opacity = '0';
+      modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(100%)';
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
+    }
+
+    function resetHighlightFilterModal() {
+      if (document.getElementById('filterKeyword')) document.getElementById('filterKeyword').value = '';
+      if (document.getElementById('filterDepartment')) document.getElementById('filterDepartment').value = 'all';
+      if (document.getElementById('filterCostCenter')) document.getElementById('filterCostCenter').value = 'all';
+      if (document.getElementById('filterFromDate')) document.getElementById('filterFromDate').value = '2026-08-16';
+      if (document.getElementById('filterToDate')) document.getElementById('filterToDate').value = '2026-09-14';
+      if (document.getElementById('filterHighlightType')) document.getElementById('filterHighlightType').value = 'Total Late Hours';
+      if (document.getElementById('filterRangeMin')) document.getElementById('filterRangeMin').value = '0';
+      if (document.getElementById('filterRangeMax')) document.getElementById('filterRangeMax').value = '999';
+      closeHighlightFilterModal();
+      submitHighlightFilterModal();
+    }
+
+    function submitHighlightFilterModal() {
+      const kw = document.getElementById('filterKeyword')?.value.trim() || '';
+      const dept = document.getElementById('filterDepartment')?.value || 'all';
+      const type = document.getElementById('filterHighlightType')?.value || 'Total Late Hours';
+      
+      let summaryParts = ['16/08/2026 – 14/09/2026'];
+      if (kw) summaryParts.push(`"${kw}"`);
+      else if (dept !== 'all') summaryParts.push(dept);
+      
+      const sumEl = document.getElementById('highlightFilterSummaryText');
+      if (sumEl) {
+        sumEl.innerHTML = `<span>${summaryParts.join(' • ')}</span><span style="color: var(--purple-primary);">• ${type}</span>`;
+      }
+      
+      const metricLbl = document.getElementById('highlightMetricLabel');
+      if (metricLbl) metricLbl.innerText = type;
+
+      const colHdr = document.getElementById('tableMetricHeaderCol');
+      if (colHdr) colHdr.innerText = 'HOURS';
+
+      closeHighlightFilterModal();
+      if (typeof showToast === 'function') {
+        showToast(`🔍 Filter applied: ${type}`);
+      }
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderHighlightChart('branch');
+    });
   </script>
 </body>
 </html>
