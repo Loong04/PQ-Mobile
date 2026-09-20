@@ -291,7 +291,7 @@
       </div>
 
       <!-- ========================================================
-           VIEW 2: OVERTIME HIGHLIGHT CHART VIEW (DONUT BREAKDOWN)
+           VIEW 2: OVERTIME HIGHLIGHT BREAKDOWN CHART VIEW
            ======================================================== -->
       <div id="viewOvertimeHighlightChart" style="display: none;">
         
@@ -301,7 +301,7 @@
             <i class="fa-solid fa-arrow-left"></i> <span>Back to Table</span>
           </button>
           <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">
-            Overtime Distribution
+            Analytical Breakdown
           </div>
         </div>
 
@@ -316,7 +316,7 @@
                 <option value="section">Section</option>
                 <option value="grade">Grade</option>
                 <option value="supervisor">Supervisor</option>
-                <option value="ot_tier">Overtime Tier / Category</option>
+                <option value="ot_category">Overtime Category</option>
                 <option value="month">Month</option>
               </select>
               <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 12px; font-weight: 900;">▼</div>
@@ -336,7 +336,7 @@
               <h3 id="highlightChartMainTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; line-height: 1.3;">Overtime hours by branch</h3>
               <p style="font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0;">Share of total overtime hours</p>
             </div>
-            <button type="button" onclick="showOvertimeSection('trend')" style="background: var(--purple-subtle); color: var(--purple-primary); border: 1.5px solid var(--purple-border); padding: 7px 14px; border-radius: 14px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm); flex-shrink: 0;">
+            <button type="button" onclick="openMonthlyDetail('Oct 2025', 0)" style="background: var(--purple-subtle); color: var(--purple-primary); border: 1.5px solid var(--purple-border); padding: 7px 14px; border-radius: 14px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm); flex-shrink: 0;">
               <i class="fa-solid fa-chart-line"></i>
               <span>View Trend</span>
             </button>
@@ -350,7 +350,7 @@
             </svg>
             <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 110px;">
               <div id="highlightCenterTotal" style="font-size: 21px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap;">168.50</div>
-              <div id="highlightCenterBadge" style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.2px;">Total overtime hours</div>
+              <div id="highlightCenterBadge" style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.2px;">Total OT hours</div>
             </div>
           </div>
 
@@ -442,40 +442,91 @@
       </div>
 
       <!-- ========================================================
-           VIEW 4: OVERTIME MONTHLY BREAKDOWN DETAIL VIEW
+           VIEW 3B: OVERTIME TRENDS (STADIUM CAPSULE BARS - REF IMAGE 1)
            ======================================================== -->
       <div id="viewOvertimeMonthlyDetail" style="display: none;">
         
-        <!-- Card 1: Month Summary Card -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <span id="monthlyDetailBadge" style="font-size: 11px; font-weight: 800; color: var(--purple-primary); background: var(--purple-subtle); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--purple-border); text-transform: uppercase; letter-spacing: 0.5px;">October 2025</span>
-            <span id="monthlyDetailTotalHours" style="font-size: 22px; font-weight: 900; color: var(--text-primary);">98.00 hrs</span>
+        <!-- Main Chart Card Container -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 24px 18px 22px; margin-bottom: 24px; box-shadow: var(--shadow-card);">
+          
+          <!-- Subtitle: Date Range -->
+          <div style="text-align: center; font-size: 16.5px; font-weight: 900; color: var(--text-primary); margin-bottom: 24px; letter-spacing: -0.2px;">
+            Between <span id="monthlyDetailDateRange">21/08/2026 and 20/09/2026</span>
           </div>
-          <h3 id="monthlyDetailTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 6px 0 4px;">Overtime hours breakdown</h3>
-          <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--text-muted);">
-            <i class="fa-solid fa-calendar-days" style="color: var(--purple-primary);"></i>
-            <span id="monthlyDetailDateRange">between 1 Oct 2025 and 31 Oct 2025</span>
+
+          <!-- Chart Container with Y-Axis, Grid, Bars & X-Axis -->
+          <div style="position: relative; margin-bottom: 20px; padding-left: 65px; padding-bottom: 30px; padding-right: 55px; min-height: 260px;">
+            
+            <!-- Vertical Grid Lines -->
+            <div style="position: absolute; left: 65px; right: 55px; top: 0; bottom: 30px; display: flex; justify-content: space-between; pointer-events: none;">
+              <div style="border-right: 1px dashed var(--border-subtle); height: 100%; opacity: 0.6;"></div>
+              <div style="border-right: 1px dashed var(--border-subtle); height: 100%; opacity: 0.6;"></div>
+              <div style="border-right: 1px dashed var(--border-subtle); height: 100%; opacity: 0.6;"></div>
+              <div style="border-right: 1px dashed var(--border-subtle); height: 100%; opacity: 0.6;"></div>
+              <div style="border-right: 1px dashed var(--border-subtle); height: 100%; opacity: 0.6;"></div>
+            </div>
+
+            <!-- Left Y-Axis Axis Line -->
+            <div style="position: absolute; left: 65px; top: 0; bottom: 30px; width: 1.5px; background: var(--text-muted); opacity: 0.35;"></div>
+
+            <!-- Bottom X-Axis Axis Line -->
+            <div style="position: absolute; left: 65px; right: 55px; bottom: 30px; height: 1.5px; background: var(--text-muted); opacity: 0.35;"></div>
+
+            <!-- Bars Container (Thick Stadium Capsule Bars) -->
+            <div id="monthlyDetailBarsContainer" style="display: flex; flex-direction: column; gap: 28px; position: relative; z-index: 2; padding: 12px 0;">
+              <!-- Rendered by JS -->
+            </div>
+
+            <!-- X-Axis Numeric Labels -->
+            <div style="position: absolute; left: 65px; right: 55px; bottom: 6px; display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--text-muted);">
+              <span>0</span>
+              <span>2000</span>
+              <span>4000</span>
+              <span>6000</span>
+              <span>8000</span>
+              <span>10000</span>
+            </div>
+          </div>
+
+          <!-- Bottom Total Lost Hours Caption -->
+          <div style="text-align: center; font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-top: 14px;">
+            Overtime Total Hours
           </div>
         </div>
+      </div>
 
-        <!-- Card 2: Horizontal Bar Chart -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 22px 18px 18px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
-          <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">
-            Overtime Type Breakdown
+      <!-- ========================================================
+           VIEW 4: OVERTIME HOURS ANALYSIS (MATCHES REF IMAGE 2)
+           ======================================================== -->
+      <div id="viewOvertimeHoursAnalysis" style="display: none;">
+        
+        <!-- White/Dark Card Container matching Reference Image 2 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 24px 20px 28px; margin-bottom: 20px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+          
+          <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; text-align: center;">
+            Hours by Branch
           </div>
-          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">
-            Overtime hours distribution for this period
+          <div id="hoursAnalysisSubtitle" style="font-size: 13.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 18px; text-align: center;">
+            As At Sep 2026
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px 10px; font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
-            <div>OVERTIME TYPE</div>
-            <div>HOURS (% TOTAL)</div>
+          <!-- SVG Donut Chart -->
+          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 210px; height: 210px; margin: 8px 0 20px;">
+            <svg id="hoursAnalysisDonutSvg" width="210" height="210" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 18px rgba(0,0,0,0.12));">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="24"></circle>
+              <g id="hoursAnalysisDonutCircles"></g>
+            </svg>
+            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div id="hoursAnalysisCenterTotal" style="font-size: 26px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.5px;">8,075</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Hours</div>
+            </div>
           </div>
 
-          <div id="monthlyDetailBarsContainer" style="display: flex; flex-direction: column; gap: 14px;">
-            <!-- Rendered by JS -->
+          <!-- Legend Breakdown List (Exact match to Reference Image 2) -->
+          <div id="hoursAnalysisLegendList" style="width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+            <!-- Populated dynamically matching Image 2 -->
           </div>
+
         </div>
       </div>
 
@@ -679,110 +730,67 @@
       const vChart = document.getElementById('viewOvertimeHighlightChart');
       const vTrend = document.getElementById('viewOvertimeHighlightTrend');
       const vDetail = document.getElementById('viewOvertimeMonthlyDetail');
+      const vHoursAnalysis = document.getElementById('viewOvertimeHoursAnalysis');
       const headerTitle = document.getElementById('pageHeaderTitle');
 
+      if (vTable) vTable.style.display = (section === 'table') ? 'block' : 'none';
+      if (vChart) vChart.style.display = (section === 'chart') ? 'block' : 'none';
+      if (vTrend) vTrend.style.display = (section === 'trend') ? 'block' : 'none';
+      if (vDetail) vDetail.style.display = (section === 'monthDetail') ? 'block' : 'none';
+      if (vHoursAnalysis) vHoursAnalysis.style.display = (section === 'hoursAnalysis') ? 'block' : 'none';
+
       if (section === 'table') {
-        vTable.style.display = 'block';
-        vChart.style.display = 'none';
-        vTrend.style.display = 'none';
-        if (vDetail) vDetail.style.display = 'none';
         headerTitle.innerText = 'Overtime Highlights';
       } else if (section === 'chart') {
-        vTable.style.display = 'none';
-        vChart.style.display = 'block';
-        vTrend.style.display = 'none';
-        if (vDetail) vDetail.style.display = 'none';
         headerTitle.innerText = 'Highlight Breakdown';
-        renderHighlightChart(document.getElementById('highlightChartMetricSelect').value);
+        renderHighlightChart(document.getElementById('highlightChartMetricSelect')?.value || 'branch');
       } else if (section === 'trend') {
-        vTable.style.display = 'none';
-        vChart.style.display = 'none';
-        vTrend.style.display = 'block';
-        if (vDetail) vDetail.style.display = 'none';
-        headerTitle.innerText = 'Overtime Trends';
+        headerTitle.innerText = 'Overtime Hours Trend Analysis';
         renderTrendMonthlyBars();
       } else if (section === 'monthDetail') {
-        vTable.style.display = 'none';
-        vChart.style.display = 'none';
-        vTrend.style.display = 'none';
-        if (vDetail) vDetail.style.display = 'block';
-        headerTitle.innerText = 'Overtime Trends';
+        headerTitle.innerText = 'Overtime Hours Trend Analysis';
+      } else if (section === 'hoursAnalysis') {
+        headerTitle.innerText = 'Overtime Hours Analysis';
       }
     }
 
     function handleBackNavigation() {
-      if (currentSection === 'monthDetail') {
-        showOvertimeSection('trend');
-      } else if (currentSection === 'trend') {
+      if (currentSection === 'hoursAnalysis') {
+        showOvertimeSection('monthDetail');
+      } else if (currentSection === 'monthDetail') {
         showOvertimeSection('chart');
-      } else if (currentSection === 'chart') {
+      } else if (currentSection === 'chart' || currentSection === 'trend') {
         showOvertimeSection('table');
       } else {
         window.location.href = 'team.html';
       }
     }
 
-    // Monthly Breakdown Detail Dataset for Overtime
+    // Monthly Breakdown Detail Dataset for Stadium Pill Bars Chart (Reference Image 1 & 2)
     const monthlyDetailsDataset = {
       'Oct 2025': {
-        range: 'between 1 Oct 2025 and 31 Oct 2025',
-        badge: 'October 2025',
-        total: '98.00 hrs',
+        range: '21/08/2026 and 20/09/2026',
         items: [
-          { name: 'Normal Workday OT (1.5x)', pct: 58.2, val: '57.00 hrs', color: '#7c3aed' },
-          { name: 'Rest Day OT (2.0x)', pct: 25.5, val: '25.00 hrs', color: '#10b981' },
-          { name: 'Public Holiday OT (3.0x)', pct: 11.2, val: '11.00 hrs', color: '#f59e0b' },
-          { name: 'Weekend Emergency OT', pct: 5.1, val: '5.00 hrs', color: '#ef4444' }
+          { shortLabel: 'Sep 2026', name: 'September 2026', val: '8,075', pct: 85, color: '#facc15' },
+          { shortLabel: 'Aug 2026', name: 'August 2026', val: '5,064', pct: 54, color: '#38bdf8' }
         ]
       },
       'Nov 2025': {
-        range: 'between 1 Nov 2025 and 30 Nov 2025',
-        badge: 'November 2025',
-        total: '112.50 hrs',
+        range: '01/11/2025 and 30/11/2025',
         items: [
-          { name: 'Normal Workday OT (1.5x)', pct: 60.0, val: '67.50 hrs', color: '#7c3aed' },
-          { name: 'Rest Day OT (2.0x)', pct: 24.0, val: '27.00 hrs', color: '#10b981' },
-          { name: 'Public Holiday OT (3.0x)', pct: 12.0, val: '13.50 hrs', color: '#f59e0b' },
-          { name: 'Weekend Emergency OT', pct: 4.0, val: '4.50 hrs', color: '#ef4444' }
-        ]
-      },
-      'Dec 2025': {
-        range: 'between 1 Dec 2025 and 31 Dec 2025',
-        badge: 'December 2025',
-        total: '145.00 hrs',
-        items: [
-          { name: 'Normal Workday OT (1.5x)', pct: 55.2, val: '80.00 hrs', color: '#7c3aed' },
-          { name: 'Rest Day OT (2.0x)', pct: 27.6, val: '40.00 hrs', color: '#10b981' },
-          { name: 'Public Holiday OT (3.0x)', pct: 13.8, val: '20.00 hrs', color: '#f59e0b' },
-          { name: 'Weekend Emergency OT', pct: 3.4, val: '5.00 hrs', color: '#ef4444' }
+          { shortLabel: 'Nov 2025', name: 'November 2025', val: '6,420', pct: 68, color: '#a855f7' },
+          { shortLabel: 'Oct 2025', name: 'October 2025', val: '4,150', pct: 45, color: '#10b981' }
         ]
       }
     };
 
     function getMonthDetails(monthStr, hoursVal) {
       if (monthlyDetailsDataset[monthStr]) return monthlyDetailsDataset[monthStr];
-      const parts = monthStr.split(' ');
-      const mName = parts[0] || 'Selected';
-      const year = parts[1] || '2026';
-      
-      const monthDaysMap = {
-        'Jan': 31, 'Feb': 28, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30,
-        'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31
-      };
-      const days = monthDaysMap[mName] || 30;
-      
-      const totalHrs = hoursVal ? `${hoursVal.toFixed(2)} hrs` : '100.00 hrs';
-      const numericHrs = hoursVal || 100.00;
-      
       return {
-        range: `between 1 ${mName} ${year} and ${days} ${mName} ${year}`,
-        badge: `${mName} ${year}`,
-        total: totalHrs,
+        range: '21/08/2026 and 20/09/2026',
         items: [
-          { name: 'Normal Workday OT (1.5x)', pct: 58.0, val: `${(numericHrs * 0.58).toFixed(2)} hrs`, color: '#7c3aed' },
-          { name: 'Rest Day OT (2.0x)', pct: 26.0, val: `${(numericHrs * 0.26).toFixed(2)} hrs`, color: '#10b981' },
-          { name: 'Public Holiday OT (3.0x)', pct: 11.0, val: `${(numericHrs * 0.11).toFixed(2)} hrs`, color: '#f59e0b' },
-          { name: 'Weekend Emergency OT', pct: 5.0, val: `${(numericHrs * 0.05).toFixed(2)} hrs`, color: '#ef4444' }
+          { shortLabel: 'Sep 2026', name: 'September 2026', val: '8,075', pct: 85, color: '#facc15' },
+          { shortLabel: 'Aug 2026', name: 'August 2026', val: '5,064', pct: 54, color: '#38bdf8' }
         ]
       };
     }
@@ -790,26 +798,27 @@
     function openMonthlyDetail(monthStr, hoursVal) {
       const detail = getMonthDetails(monthStr, hoursVal);
       
-      const badgeEl = document.getElementById('monthlyDetailBadge');
-      const totalEl = document.getElementById('monthlyDetailTotalHours');
       const rangeEl = document.getElementById('monthlyDetailDateRange');
       const container = document.getElementById('monthlyDetailBarsContainer');
 
-      if (badgeEl) badgeEl.innerText = detail.badge;
-      if (totalEl) totalEl.innerText = detail.total;
       if (rangeEl) rangeEl.innerText = detail.range;
 
       if (container) {
         let html = '';
         detail.items.forEach(it => {
           html += `
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; margin-bottom: 6px;">
-                <span style="font-weight: 700; color: var(--text-primary);">${it.name}</span>
-                <span style="font-weight: 800; color: var(--text-primary);">${it.val} <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">(${it.pct.toFixed(1)}%)</span></span>
+            <div onclick="openHoursAnalysis('${it.shortLabel}', '${it.val}')" style="position: relative; display: flex; align-items: center; min-height: 52px; cursor: pointer;" title="Click to view Overtime Hours Analysis">
+              <!-- Left Y-Axis Label -->
+              <div style="position: absolute; right: calc(100% + 12px); width: 60px; text-align: right; font-size: 10px; font-weight: 600; color: var(--text-muted); line-height: 1.2; white-space: nowrap;">
+                ${it.shortLabel}
               </div>
-              <div style="background: var(--bg-input); height: 10px; border-radius: 6px; overflow: hidden; position: relative;">
-                <div style="width: ${it.pct}%; height: 100%; background: ${it.color}; border-radius: 6px;"></div>
+              
+              <!-- Thick Capsule Stadium Bar -->
+              <div style="width: ${it.pct}%; height: 46px; border-radius: 23px; background: ${it.color}; box-shadow: 0 4px 14px rgba(0,0,0,0.12); transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+              
+              <!-- Value Label Next to Bar -->
+              <div style="margin-left: 12px; font-size: 14px; font-weight: 800; font-style: italic; color: var(--text-primary); white-space: nowrap;">
+                ${it.val}
               </div>
             </div>
           `;
@@ -818,6 +827,68 @@
       }
 
       showOvertimeSection('monthDetail');
+    }
+
+    function openHoursAnalysis(monthLabel, totalVal) {
+      const subtitle = document.getElementById('hoursAnalysisSubtitle');
+      if (subtitle) subtitle.innerText = `As At ${monthLabel}`;
+      
+      const totalEl = document.getElementById('hoursAnalysisCenterTotal');
+      if (totalEl) totalEl.innerText = totalVal;
+
+      renderHoursAnalysisDonutAndLegend(totalVal);
+      showOvertimeSection('hoursAnalysis');
+    }
+
+    // Render Donut Chart & Legend List Matching Reference Image 2 for Stage 4
+    function renderHoursAnalysisDonutAndLegend(totalVal) {
+      const items = [
+        { name: 'Unspecified', pct: '79.82%', count: '6,445', color: '#00c49f' },
+        { name: 'TIMES SQUARE BR...', pct: '16.37%', count: '1,322', color: '#333333' },
+        { name: 'USJ 20', pct: '2.26%', count: '183', color: '#2563eb' },
+        { name: 'BANGI', pct: '0.44%', count: '35', color: '#ec4899' },
+        { name: 'GEORGETOWN', pct: '0.30%', count: '24', color: '#f97316' },
+        { name: 'KUALA LUMPUR', pct: '0.28%', count: '22', color: '#65a30d' },
+        { name: 'ALOR SETAR', pct: '0.22%', count: '18', color: '#a855f7' },
+        { name: 'MAHKOTA CHERAS', pct: '0.20%', count: '16', color: '#6366f1' },
+        { name: 'BUKIT BINTANG', pct: '0.12%', count: '10', color: '#38bdf8' }
+      ];
+
+      // Donut SVG Circles
+      const svgGroup = document.getElementById('hoursAnalysisDonutCircles');
+      if (svgGroup) {
+        const C = 439.82; // 2 * PI * 70
+        let currentOffset = 0;
+        let circlesHtml = '';
+
+        items.forEach(it => {
+          const numPct = parseFloat(it.pct) / 100;
+          const dashLen = numPct * C;
+          const dashOffset = -currentOffset;
+          currentOffset += dashLen;
+
+          circlesHtml += `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${it.color}" stroke-width="24" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+        });
+        svgGroup.innerHTML = circlesHtml;
+      }
+
+      // Legend List Matching Image 2
+      const grid = document.getElementById('hoursAnalysisLegendList');
+      if (grid) {
+        let listHtml = '';
+        items.forEach(it => {
+          listHtml += `
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; padding-right: 8px;">
+                <span style="width: 14px; height: 14px; border-radius: 3.5px; background: ${it.color}; flex-shrink: 0;"></span>
+                <span style="font-weight: 600; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${it.name}</span>
+              </div>
+              <div style="font-weight: 700; color: var(--text-muted); white-space: nowrap; flex-shrink: 0;">${it.pct},${it.count}</div>
+            </div>
+          `;
+        });
+        grid.innerHTML = listHtml;
+      }
     }
 
     // Donut Chart Renderer
