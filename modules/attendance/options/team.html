@@ -309,7 +309,7 @@
           <div style="display: flex; align-items: center; gap: 12px">
             <button
               class="me-back-btn"
-              onclick="javascript: history.back();"
+              onclick="handleHeaderBack()"
               aria-label="Back"
               style="
                 background: rgba(255, 255, 255, 0.18);
@@ -327,6 +327,7 @@
               <i class="fa-solid fa-chevron-left" style="font-size: 16px"></i>
             </button>
             <h1
+              id="topHeaderTitle"
               style="
                 font-size: 19px;
                 font-weight: 800;
@@ -357,7 +358,9 @@
       </div>
 
       <div class="main-content">
-        <!-- Module Option Tabs Switcher -->
+        <!-- Main Dashboard View Container -->
+        <div id="viewMainDashboard">
+          <!-- Module Option Tabs Switcher -->
         <div class="view-mode-switcher">
           <a href="../index.html" class="view-mode-tab">
             <i class="fa-solid fa-user" style="font-size: 15px"></i>
@@ -1186,9 +1189,7 @@
           <div style="display: flex; flex-direction: column; gap: 10px">
             <!-- 1. Pending Approval -->
             <div
-              onclick="
-                openStaffListModal('Pending Approval', 'pending_approval')
-              "
+              onclick="showPendingApprovalPage()"
               style="
                 background: var(--bg-input);
                 border: 1px solid var(--border-subtle);
@@ -1353,6 +1354,105 @@
               </div>
             </div>
           </div>
+        </div><!-- End Need Your Attention Card -->
+      </div><!-- End viewMainDashboard -->
+
+      <!-- Dedicated Page View Section: Pending Approval -->
+      <div id="viewPendingApprovalSection" style="display: none;">
+          <!-- 3 CATEGORY TABS FOR PENDING APPROVAL (Final OT Request | OT Plan Request | Attendance Feedback) -->
+          <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+            <button type="button" id="staffTabFinalOT" class="filter-pill active" onclick="switchStaffApprovalTab('final_ot')"
+              style="flex: 1; text-align: center; padding: 9px 4px; font-weight: 700; font-size: 11.5px; border-radius: 22px;">Final OT Request</button>
+            <button type="button" id="staffTabOTPlan" class="filter-pill" onclick="switchStaffApprovalTab('ot_plan')"
+              style="flex: 1; text-align: center; padding: 9px 4px; font-weight: 700; font-size: 11.5px; border-radius: 22px;">OT Plan Request</button>
+            <button type="button" id="staffTabFeedback" class="filter-pill" onclick="switchStaffApprovalTab('feedback')"
+              style="flex: 1; text-align: center; padding: 9px 4px; font-weight: 700; font-size: 11.5px; border-radius: 22px;">Attendance Feedback</button>
+          </div>
+
+          <!-- Current Filter Bar -->
+          <div
+            class="staff-filter-summary-bar"
+            style="
+              border-radius: 18px;
+              padding: 12px 16px;
+              margin-bottom: 14px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              cursor: pointer;
+            "
+            onclick="openStaffFilterModal()"
+          >
+            <div style="flex: 1; margin-right: 10px; overflow: hidden">
+              <div
+                style="
+                  font-size: 10.5px;
+                  font-weight: 700;
+                  color: #a78bfa;
+                  text-transform: uppercase;
+                  letter-spacing: 0.4px;
+                  margin-bottom: 3px;
+                "
+              >
+                Current Filter
+              </div>
+              <div
+                style="
+                  font-size: 13px;
+                  font-weight: 800;
+                  color: var(--text-primary);
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                "
+              >
+                <span style="font-size: 13px; color: var(--purple-primary, #7c3aed)">ஃ</span>
+                <span id="pendingApprovalFilterSummaryText">All Branches • All Departments</span>
+              </div>
+            </div>
+
+            <!-- Filter Trigger Button -->
+            <button
+              type="button"
+              onclick="event.stopPropagation(); openStaffFilterModal()"
+              title="Open Filter Options"
+              style="
+                width: 42px;
+                height: 42px;
+                border-radius: 14px;
+                background: rgba(124, 58, 237, 0.15);
+                border: 1px solid var(--purple-border, rgba(124, 58, 237, 0.3));
+                color: var(--purple-primary, #7c3aed);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                flex-shrink: 0;
+                transition: transform 0.15s;
+              "
+              onmousedown="this.style.transform='scale(0.95)'"
+              onmouseup="this.style.transform='scale(1)'"
+            >
+              <i class="fa-solid fa-sliders"></i>
+            </button>
+          </div>
+
+          <!-- Pending Approvals Batch Control & Subtitle -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+              Pending Approvals (<span id="pendingApprovalCountBadge">5</span>)
+            </div>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--purple-primary); cursor: pointer; user-select: none;">
+              <input type="checkbox" id="selectAllPendingCheckbox" onchange="toggleSelectAllPending(this.checked)" style="width: 17px; height: 17px; accent-color: var(--purple-primary); cursor: pointer;">
+              Select All
+            </label>
+          </div>
+
+          <!-- Pending Items List Container -->
+          <div id="pendingApprovalListContent" style="display: flex; flex-direction: column; gap: 14px;"></div>
         </div>
       </div>
 
@@ -3099,22 +3199,24 @@
           },
         ],
         pending_approval: [
-          { name: "Afifah Nasir", id: "Emp #004177", dept: "QA Manager", type: "Annual Leave", isUnplanned: true, reason: "Personnel Issues", startDate: "Tue, 23/02/2026", endDate: "Thu, 25/02/2026", duration: "3 Days", requestedBy: { name: "Benjamin Lee", title: "Business Development Executive" }, remark: "Urgent personnel emergency leave for home repair & family assistance.", statusText: "Annual Leave Request (3 Days)" },
-          { name: "Sarah Lim", id: "Emp #001015", dept: "Production Lead", type: "Annual Leave", isUnplanned: false, reason: "Family Vacation", startDate: "Mon, 02/03/2026", endDate: "Wed, 04/03/2026", duration: "3 Days", remark: "Pre-scheduled annual leave for family trip.", statusText: "Annual Leave Request (Full Day)" },
-          { name: "David Miller", id: "Emp #001052", dept: "Assembly Supervisor", type: "Medical Leave", isUnplanned: true, reason: "Health & MC", startDate: "Wed, 25/02/2026", endDate: "Wed, 25/02/2026", duration: "1 Day", remark: "Doctor recommended rest due to fever & flu.", statusText: "Medical Leave Request (1 Day)" },
-          { name: "Victor Hugo", id: "Emp #001115", dept: "Safety Specialist", type: "Unpaid Leave", isUnplanned: false, reason: "Personal Affairs", startDate: "Thu, 12/03/2026", endDate: "Fri, 13/03/2026", duration: "2 Days", remark: "Personal matters requiring extended absence.", statusText: "Unpaid Leave Request (2 Days)" },
-          { name: "Chung Wei", id: "Emp #001158", dept: "Production Specialist", type: "Emergency Leave", isUnplanned: true, reason: "Family Emergency", startDate: "Fri, 27/02/2026", endDate: "Fri, 27/02/2026", duration: "1 Day", remark: "Urgent family situation.", statusText: "Emergency Leave Request" },
-          
-          { name: "Daniel Park", id: "Emp #001094", dept: "IT Support Specialist", type: "Compensatory Off", isUnplanned: false, reason: "System Maintenance OT", startDate: "Mon, 09/03/2026", endDate: "Mon, 09/03/2026", duration: "1 Day", remark: "Claiming off-in-lieu earned from Sunday server migration.", statusText: "Compensatory Off Request" },
-          { name: "Amanda Lee", id: "Emp #001140", dept: "Warehouse Coordinator", type: "Replacement Leave", isUnplanned: false, reason: "Weekend Stock Take", startDate: "Tue, 10/03/2026", endDate: "Tue, 10/03/2026", duration: "1 Day", remark: "Worked full day on Saturday stock count.", statusText: "Replacement Leave Request" },
-          { name: "Kevin Wong", id: "Emp #001031", dept: "Quality Controller", type: "Training Leave", isUnplanned: false, reason: "ISO Certification Course", startDate: "Thu, 19/03/2026", endDate: "Fri, 20/03/2026", duration: "2 Days", remark: "Attending required ISO auditor training.", statusText: "Training Leave Request" },
-          
-          { name: "Alex Tan", id: "Emp #001002", dept: "Operations Exec", type: "OT Plan Request", isUnplanned: false, reason: "Project Deadline", startDate: "Wed, 25/02/2026", endDate: "Wed, 25/02/2026", duration: "2.5 Hours", remark: "OT Plan: 17:00 – 19:30 (2.5h) for monthly batch processing.", statusText: "OT Plan Request: 17:00 – 19:30 (2.5h)" },
-          { name: "Jason Lee", id: "Emp #001024", dept: "Logistics Officer", type: "Shift Swap Request", isUnplanned: false, reason: "Shift Alignment", startDate: "Thu, 26/02/2026", endDate: "Thu, 26/02/2026", duration: "1 Shift", remark: "Swapping Day Shift (08:00–17:00) to Night Shift with Marcus.", statusText: "Shift Swap Request (Day to Night)" },
-          { name: "Michelle Chen", id: "Emp #001048", dept: "Senior Engineer", type: "OT Plan Request", isUnplanned: false, reason: "Emergency Repair", startDate: "Fri, 27/02/2026", endDate: "Fri, 27/02/2026", duration: "2.0 Hours", remark: "OT Plan: 18:00 – 20:00 (2.0h) for machine calibration.", statusText: "OT Plan Request: 18:00 – 20:00 (2.0h)" },
-          { name: "Rachel Adams", id: "Emp #001102", dept: "QA Tester", type: "OT Plan Request", isUnplanned: false, reason: "Release Verification", startDate: "Mon, 02/03/2026", endDate: "Mon, 02/03/2026", duration: "1.5 Hours", remark: "OT Plan: 17:00 – 18:30 (1.5h) testing release candidate.", statusText: "OT Plan Request: 17:00 – 18:30 (1.5h)" },
-          { name: "Emily Watson", id: "Emp #001120", dept: "Procurement Exec", type: "Time-Off In Lieu", isUnplanned: false, reason: "Vendor Audit", startDate: "Tue, 03/03/2026", endDate: "Tue, 03/03/2026", duration: "0.5 Day", remark: "Afternoon time-off earned from weekend audit travel.", statusText: "Time-Off In Lieu Request" },
-          { name: "John Smith", id: "Emp #001175", dept: "QC Inspector", type: "OT Plan Request", isUnplanned: false, reason: "Urgent Batch Inspection", startDate: "Wed, 04/03/2026", endDate: "Wed, 04/03/2026", duration: "3.0 Hours", remark: "OT Plan: 17:00 – 20:00 (3.0h) inspecting incoming shipment.", statusText: "OT Plan Request: 17:00 – 20:00 (3.0h)" }
+          // Final OT Requests (Final Overtime Claim submissions after working OT)
+          { name: "Alex Tan", id: "Emp #001002", dept: "Operations Exec", category: "final_ot", type: "Final OT Request", reason: "Monthly Operations Closing", startDate: "Wed, 25/02/2026", endDate: "Wed, 25/02/2026", duration: "2.5 Hours (17:00 – 19:30)", remark: "Actual overtime hours worked for month-end system batch operations.", statusText: "Final OT Request (2.5 Hours)" },
+          { name: "Sarah Lim", id: "Emp #001015", dept: "Production Lead", category: "final_ot", type: "Final OT Request", reason: "Emergency Line Maintenance", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "2.0 Hours (17:00 – 19:00)", remark: "Completed urgent repair on Line A main conveyor belt post-shift.", statusText: "Final OT Request (2.0 Hours)" },
+          { name: "David Miller", id: "Emp #001052", dept: "Assembly Supervisor", category: "final_ot", type: "Final OT Request", reason: "Urgent Export Order", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "3.0 Hours (17:00 – 20:00)", remark: "Supervised extra packing shift for international container shipment.", statusText: "Final OT Request (3.0 Hours)" },
+          { name: "Chung Wei", id: "Emp #001158", dept: "Production Specialist", category: "final_ot", type: "Final OT Request", reason: "Machine Tooling", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "1.5 Hours (17:00 – 18:30)", remark: "Assisted CNC tool replacement for early morning production run.", statusText: "Final OT Request (1.5 Hours)" },
+          { name: "Kevin Wong", id: "Emp #001031", dept: "Quality Controller", category: "final_ot", type: "Final OT Request", reason: "Raw Material Inspection", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "2.0 Hours (17:00 – 19:00)", remark: "Inspected incoming raw material batch QA report post-delivery.", statusText: "Final OT Request (2.0 Hours)" },
+
+          // OT Plan Requests (Pre-approved OT planning prior to work)
+          { name: "Michelle Chen", id: "Emp #001048", dept: "Senior Engineer", category: "ot_plan", type: "OT Plan Request", reason: "PLC Calibration", startDate: "Fri, 27/02/2026", endDate: "Fri, 27/02/2026", duration: "2.0 Hours (18:00 – 20:00)", remark: "Pre-scheduled maintenance for main plant PLC controller unit.", statusText: "OT Plan Request (2.0 Hours)" },
+          { name: "Rachel Adams", id: "Emp #001102", dept: "QA Tester", category: "ot_plan", type: "OT Plan Request", reason: "Release Verification", startDate: "Mon, 02/03/2026", endDate: "Mon, 02/03/2026", duration: "1.5 Hours (17:00 – 18:30)", remark: "Planned regression test execution for v4.2 staging build.", statusText: "OT Plan Request (1.5 Hours)" },
+          { name: "John Smith", id: "Emp #001175", dept: "QC Inspector", category: "ot_plan", type: "OT Plan Request", reason: "Cargo Inspection", startDate: "Wed, 04/03/2026", endDate: "Wed, 04/03/2026", duration: "3.0 Hours (17:00 – 20:00)", remark: "Planned inspection for incoming container shipment from port.", statusText: "OT Plan Request (3.0 Hours)" },
+          { name: "Amanda Lee", id: "Emp #001140", dept: "Warehouse Coordinator", category: "ot_plan", type: "OT Plan Request", reason: "Quarterly Stock Audit", startDate: "Sat, 07/03/2026", endDate: "Sat, 07/03/2026", duration: "4.0 Hours (08:00 – 12:00)", remark: "Pre-approved weekend inventory counting & warehouse audit.", statusText: "OT Plan Request (4.0 Hours)" },
+
+          // Attendance Feedback (Exceptions, clocking adjustments & reason submissions)
+          { name: "Afifah Nasir", id: "Emp #004177", dept: "QA Manager", category: "feedback", type: "Attendance Feedback", reason: "Missing Clock Out", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "Full Shift", remark: "Turnstile reader offline at 17:05 PM during site exit. Verified by supervisor.", statusText: "Attendance Feedback (Missing Clock Out)" },
+          { name: "Victor Hugo", id: "Emp #001115", dept: "Safety Specialist", category: "feedback", type: "Attendance Feedback", reason: "Geo-Location Override", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "Offsite Duty", remark: "Conducted external site safety audit at Port Klang facility.", statusText: "Attendance Feedback (Offsite Punch)" },
+          { name: "Daniel Park", id: "Emp #001094", dept: "IT Support Specialist", category: "feedback", type: "Attendance Feedback", reason: "Late Clock In (+35m)", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "Shift Adjustment", remark: "Emergency server room dispatch at 06:30 AM before shift.", statusText: "Attendance Feedback (Late Arrival)" },
+          { name: "Kenji Sato", id: "Emp #001073", dept: "Maintenance Tech", category: "feedback", type: "Attendance Feedback", reason: "Biometric Punch Fail", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "Manual Verification", remark: "Fingerprint scanner rejected punch due to grease; manual sign-in sheet provided.", statusText: "Attendance Feedback (Biometric Failure)" }
         ],
         attendance_verification: [
           { name: "Amanda Lee", id: "EMP-1066", dept: "Warehouse", statusText: "Missing Clock In • Geo-location Override" },
@@ -3129,14 +3231,50 @@
       };
 
       let currentStaffType = "scheduled";
-      let currentStaffApprovalCategory = 'leave';
+      let currentStaffApprovalCategory = 'final_ot';
+      let currentViewSection = 'main';
+
+      function showPendingApprovalPage() {
+        currentViewSection = 'pending_approval';
+        const mainEl = document.getElementById("viewMainDashboard");
+        const secEl = document.getElementById("viewPendingApprovalSection");
+        const titleEl = document.getElementById("topHeaderTitle");
+        const container = document.querySelector(".main-content");
+
+        if (mainEl) mainEl.style.display = "none";
+        if (secEl) secEl.style.display = "block";
+        if (titleEl) titleEl.textContent = "Pending Approval";
+        if (container) container.scrollTop = 0;
+
+        switchStaffApprovalTab('final_ot');
+      }
+
+      function handleHeaderBack() {
+        if (currentViewSection === 'pending_approval') {
+          currentViewSection = 'main';
+          const mainEl = document.getElementById("viewMainDashboard");
+          const secEl = document.getElementById("viewPendingApprovalSection");
+          const titleEl = document.getElementById("topHeaderTitle");
+          const container = document.querySelector(".main-content");
+
+          if (secEl) secEl.style.display = "none";
+          if (mainEl) mainEl.style.display = "block";
+          if (titleEl) titleEl.textContent = "Attendance Dashboard";
+          if (container) container.scrollTop = 0;
+        } else {
+          javascript: history.back();
+        }
+      }
 
       function switchStaffApprovalTab(cat) {
-        currentStaffApprovalCategory = cat || 'leave';
+        currentStaffApprovalCategory = cat || 'final_ot';
         const tabs = [
-          { id: 'staffTabLeave', cat: 'leave' },
-          { id: 'staffTabCredit', cat: 'credit' },
-          { id: 'staffTabOfftime', cat: 'offtime' }
+          { id: 'staffTabFinalOT', cat: 'final_ot' },
+          { id: 'staffTabOTPlan', cat: 'ot_plan' },
+          { id: 'staffTabFeedback', cat: 'feedback' },
+          { id: 'staffTabLeave', cat: 'final_ot' },
+          { id: 'staffTabCredit', cat: 'ot_plan' },
+          { id: 'staffTabOfftime', cat: 'feedback' }
         ];
         tabs.forEach(t => {
           const btn = document.getElementById(t.id);
@@ -3145,7 +3283,133 @@
             else btn.classList.remove('active');
           }
         });
-        filterStaffList();
+        
+        renderPendingApprovalList();
+        if (typeof filterStaffList === 'function' && currentStaffType === 'pending_approval') {
+          filterStaffList();
+        }
+      }
+
+      function renderPendingApprovalList() {
+        const container = document.getElementById("pendingApprovalListContent");
+        if (!container) return;
+
+        const allList = staffDatabase.pending_approval || [];
+        const filtered = allList.filter(item => {
+          if (currentStaffApprovalCategory === 'final_ot') {
+            return item.category === 'final_ot' || (item.type && item.type.toLowerCase().includes('final ot'));
+          } else if (currentStaffApprovalCategory === 'ot_plan') {
+            return item.category === 'ot_plan' || (item.type && item.type.toLowerCase().includes('ot plan'));
+          } else if (currentStaffApprovalCategory === 'feedback') {
+            return item.category === 'feedback' || (item.type && item.type.toLowerCase().includes('feedback'));
+          }
+          return true;
+        });
+
+        const badgeEl = document.getElementById("pendingApprovalCountBadge");
+        if (badgeEl) badgeEl.textContent = filtered.length;
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div style="text-align: center; padding: 35px 0; color: var(--text-muted); font-size: 13px;">No pending approvals in this category</div>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map((item, idx) => {
+          const typeStr = item.type || 'Final OT Request';
+          const reasonStr = item.reason || 'Operations';
+          const startDateStr = item.startDate || 'Wed, 25/02/2026';
+          const endDateStr = item.endDate || 'Wed, 25/02/2026';
+          const durationStr = item.duration || '2.0 Hours';
+          const remarkHtml = item.remark ? `
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remark</div>
+              <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+                ${item.remark}
+              </div>
+            </div>` : '';
+
+          return `
+            <div class="approval-request-card" id="pendingCard_${idx}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left;">
+              
+              <!-- 1. Executive Purple Header Banner -->
+              <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="display: flex; align-items: center;">
+                    <input type="checkbox" class="approval-card-checkbox" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
+                  </div>
+                  <div>
+                    <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.name}</div>
+                    <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">${item.dept || 'Staff'} • ${item.id}</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+                    <i class="fa-solid fa-ellipsis-vertical" style="font-size: 13px;"></i>
+                  </button>
+                  <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Pending</span>
+                </div>
+              </div>
+
+              <!-- 2. Card Content Body -->
+              <div style="padding: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Type</div>
+                    <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${typeStr}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Reason</div>
+                    <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${reasonStr}</div>
+                  </div>
+                </div>
+
+                <!-- Date Timeline Box -->
+                <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                  <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                    <span>Date Start</span>
+                    <span>Date End</span>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                      <span>${startDateStr}</span>
+                      <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                    </div>
+
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                      <span style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: -2px;">${durationStr}</span>
+                      <div style="width: 100%; height: 2px; background: var(--purple-primary); position: relative;">
+                        <div style="position: absolute; right: 0; top: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid var(--purple-primary);"></div>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
+                      <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                      <span>${endDateStr}</span>
+                    </div>
+                  </div>
+                </div>
+
+                ${remarkHtml}
+
+                <!-- Bottom Action Buttons -->
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" onclick="handleStaffApprove('${item.id}', this)" style="flex: 1; padding: 9.5px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 12.5px; border: none; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);">
+                    Approve ✔
+                  </button>
+                  <button type="button" onclick="handleStaffReject('${item.id}', this)" style="flex: 1; padding: 9.5px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--danger); font-weight: 800; font-size: 12.5px; cursor: pointer;">
+                    Reject ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function toggleSelectAllPending(checked) {
+        const checkboxes = document.querySelectorAll("#pendingApprovalListContent .approval-card-checkbox");
+        checkboxes.forEach(cb => cb.checked = checked);
       }
 
       function handleStaffApprove(id, btn) {

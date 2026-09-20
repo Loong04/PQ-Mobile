@@ -8,7 +8,7 @@
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
@@ -16,157 +16,1096 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
-    .modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; }
+    
+    /* Top Header Bar */
+    .cal-top-header {
+      background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(46, 16, 101, 0.3);
+      position: relative;
+      z-index: 20;
+    }
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.15s ease;
+      backdrop-filter: blur(4px);
+    }
+    .header-btn-icon:active { transform: scale(0.94); }
+
+    /* Executive Filter Summary Bar */
+    .filter-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-summary-bar:hover {
+      border-color: rgba(124, 58, 237, 0.35);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+    }
+    .filter-bar-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #a78bfa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .filter-bar-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 270px;
+    }
+    .filter-trigger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .filter-trigger-btn:active { transform: scale(0.92); }
+
+    /* Executive Date Navigation Card */
+    .date-switcher-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 6px 8px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+    .date-nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .date-nav-btn:hover {
+      background: var(--purple-subtle);
+      color: var(--purple-primary);
+      border-color: var(--purple-border);
+    }
+    .date-nav-btn:active { transform: scale(0.92); }
+    .date-current-badge {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 12px;
+    }
+
+    /* Summary Stats Row */
+    .summary-info-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .summary-counts-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .count-label-line {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .count-label-line strong {
+      font-weight: 800;
+      color: var(--purple-primary);
+    }
+
+    .view-chart-btn {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #f59e0b;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.15s ease;
+    }
+    .view-chart-btn:active { transform: scale(0.95); }
+
+    /* Modern Summary Table */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 1.6fr 1.6fr 1fr;
+      background: rgba(124, 58, 237, 0.18);
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #a78bfa;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .summary-table-hdr div:last-child {
+      text-align: right;
+    }
+
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 1.6fr 1.6fr 1fr;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: var(--bg-input); }
+    .summary-table-row:active { transform: scale(0.995); }
+
+    .cell-section { font-weight: 800; color: var(--text-primary); }
+    .cell-cc { color: var(--text-muted); font-size: 12.5px; }
+    .cell-count { text-align: right; font-weight: 900; color: var(--purple-primary); }
+
+    /* Modal Overlay & Bottom Sheet */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 44px;
+      overflow: hidden;
+    }
+    .modal-overlay.active { opacity: 1; }
+
+    .bottom-sheet-content {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      padding: 16px 20px 28px;
+      box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.45);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 84vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .modal-overlay.active .bottom-sheet-content { transform: translateY(0); }
+    .sheet-handle-pill {
+      width: 38px;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: 4px;
+      margin: 0 auto 16px;
+      opacity: 0.7;
+    }
+
+    /* Personnel Card in Details List */
+    .staff-clock-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .staff-avatar-bubble {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .staff-info-col { flex: 1; min-width: 0; }
+    .staff-name-text { font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.25; }
+    
+    /* REPOSITORY RULE (AGENTS.md):
+       Employee ID placed directly BELOW name with leading # and muted typography */
+    .staff-emp-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.8;
+      font-family: monospace, sans-serif;
+      margin-bottom: 4px;
+      display: block;
+    }
+    
+    .staff-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .clock-type-tag {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .type-in { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .type-out { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    /* Filter Form Elements */
+    .filter-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .filter-modal-title { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0; }
+    .filter-reset-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group-item { margin-bottom: 14px; }
+    .form-field-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .form-field-select {
+      width: 100%;
+      padding: 12px 36px 12px 14px;
+      border-radius: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    .form-field-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .form-field-input::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+      cursor: pointer;
+    }
+    .select-chevron-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--purple-primary);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .form-apply-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      font-size: 14.5px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+    }
+
+    .feedback-toast {
+      position: absolute;
+      bottom: 85px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .feedback-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
   <preview-top-bar active-page="attendance"></preview-top-bar>
+
   <div class="phone-container">
+    
+    <!-- Top Executive Header -->
     <div class="cal-top-header">
-      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <phone-status-bar time="13:10" style="color: #ffffff;"></phone-status-bar>
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <button class="header-btn-icon" onclick="handleHeaderBack()" aria-label="Back" title="Back">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </button>
-          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Clocking Summary</h1>
+          <div>
+            <h1 id="pageHeaderTitle" style="font-size: 18.5px; font-weight: 800; color: #ffffff; margin: 0;">Clocking Summary</h1>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Main Content Area -->
     <div class="main-content">
-      <!-- Filter Bar -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Filter</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);" id="filterSummaryText">16/08/2026 - 14/09/2026</div>
-        </div>
-        <button type="button" onclick="openFilterModal()" style="width: 40px; height: 40px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
-        </button>
-      </div>
-
-      <!-- KPI -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(67, 56, 202, 0.05) 100%); border-color: rgba(99, 102, 241, 0.3);">
-        <div style="font-size: 12px; font-weight: 700; color: #6366f1; margin-bottom: 4px;">Total Clocking Logs</div>
-        <div style="font-size: 28px; font-weight: 800; color: var(--text-primary);">3,420 Records</div>
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">GPS Mobile: 85% | Biometric Terminal: 15%</div>
-      </div>
-
-      <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Clocking Log Highlights</div>
-      <div class="card" onclick="openDetailModal('HQ Main Entrance (GPS)', '1,840 Clocks Registered', '09:00 AM Peak Window', 'Verified')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">HQ Main Entrance (GPS)</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">1,840 Records • Mobile Geofence</div>
+      
+      <!-- ================= VIEW 1: SUMMARY TABLE VIEW ================= -->
+      <div id="view-summary" style="display: block;">
+        
+        <!-- 1. Executive Filter Summary Bar -->
+        <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter clocking records">
+          <div style="flex: 1; min-width: 0; padding-right: 8px;">
+            <div class="filter-bar-label">
+              <span>CURRENT FILTER</span>
+            </div>
+            <div class="filter-bar-value" id="filterSummaryText">
+              20 Sep 2026 • All Companies
+            </div>
           </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 11px; font-weight: 800;">Verified</span>
+          <button type="button" class="filter-trigger-btn" onclick="event.stopPropagation(); openFilterModal();" title="Filter Options" aria-label="Filter Options">
+            <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
+          </button>
+        </div>
+
+        <!-- Summary Stats Line & View Chart Button -->
+        <div class="summary-info-row">
+          <div class="summary-counts-col">
+            <div class="count-label-line">Total Records: <strong id="totalRecordsVal">1</strong></div>
+            <div class="count-label-line">Total Count: <strong id="totalCountVal">3</strong></div>
+          </div>
+          <button type="button" class="view-chart-btn" onclick="showSectionView('chart')">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>View Chart</span>
+          </button>
+        </div>
+
+        <!-- Section & Cost Centre Table -->
+        <div class="summary-table-card">
+          <div class="summary-table-hdr">
+            <div>Section</div>
+            <div>Cost Centre</div>
+            <div style="text-align: right;">Count</div>
+          </div>
+          <div id="summaryTableBody">
+            <!-- Dynamically populated table rows -->
+          </div>
         </div>
       </div>
 
-      <div class="card" onclick="openDetailModal('Branch Warehouse (Biometric)', '1,580 Clocks Registered', '08:00 AM Peak Window', 'Verified')">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Branch Warehouse</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">1,580 Records • Face Kiosk</div>
+      <!-- ================= VIEW 2: DEDICATED CHART PAGE VIEW ================= -->
+      <div id="view-chart" style="display: none;">
+        <!-- Top Action Bar inside Chart Page -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px;">
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-chart-pie" style="color: #f59e0b;"></i>
+            <span>Clocking Distribution Chart</span>
           </div>
-          <span style="padding: 4px 10px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 11px; font-weight: 800;">Verified</span>
+        </div>
+
+        <!-- SVG Donut Chart Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 20px 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 210px; height: 210px; margin: 6px 0 14px;">
+            <svg id="summaryDonutSvg" width="210" height="210" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 20px rgba(124, 58, 237, 0.18));">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22"></circle>
+              <g id="summaryDonutCircles"></g>
+            </svg>
+            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 120px;">
+              <div id="summaryCenterTotal" style="font-size: 24px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px;">24</div>
+              <div id="summaryCenterBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 4px;">Total Clockings</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown Legend Table Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-sm);">
+          <div style="display: grid; grid-template-columns: 1fr 60px 75px; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+            <div>SECTION</div>
+            <div style="text-align: right;">COUNT</div>
+            <div style="text-align: right;">% TOTAL</div>
+          </div>
+
+          <div id="summaryChartLegendGrid" style="display: flex; flex-direction: column; gap: 12px; padding-top: 12px;">
+            <!-- Generated dynamically -->
+          </div>
         </div>
       </div>
+
     </div>
+
+    <!-- Bottom Navigation -->
     <phone-bottom-nav active="apps"></phone-bottom-nav>
-  </div>
 
-  <!-- Bottom Sheet Filter Modal -->
-  <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)" style="align-items: flex-end; padding: 0;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 480px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
-      <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
-      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
-        <button type="button" onclick="resetFilterModal()" style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-          <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
-        </button>
-      </div>
-      <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;">
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Start Date</label>
-          <input type="date" id="filterFromDate" value="2026-08-16" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+    <!-- Feedback Toast -->
+    <div class="feedback-toast" id="feedbackToast">
+      <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+      <span id="toastMessage">Filter applied</span>
+    </div>
+
+    <!-- MODAL 1: BOTTOM SHEET DATA FILTER MODAL -->
+    <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)">
+      <div class="bottom-sheet-content" onclick="event.stopPropagation()">
+        <div class="sheet-handle-pill"></div>
+        
+        <div class="filter-header-row">
+          <h3 class="filter-modal-title">Data Filter</h3>
+          <button type="button" class="filter-reset-btn" onclick="resetFilterModal()">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
+          </button>
         </div>
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">End Date</label>
-          <input type="date" id="filterToDate" value="2026-09-14" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+
+        <div style="display: flex; flex-direction: column; overflow-y: auto; max-height: 60vh; padding-right: 2px;">
+          <!-- 1. Date -->
+          <div class="form-group-item">
+            <label class="form-field-label">Date</label>
+            <input type="date" id="filterDateInput" class="form-field-input" value="2026-09-20">
+          </div>
+
+          <!-- 2. Start Time & End Time -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="form-group-item">
+            <div>
+              <label class="form-field-label">Start Time</label>
+              <input type="time" id="filterStartTimeInput" class="form-field-input" value="00:00">
+            </div>
+            <div>
+              <label class="form-field-label">End Time</label>
+              <input type="time" id="filterEndTimeInput" class="form-field-input" value="23:59">
+            </div>
+          </div>
+
+          <!-- 3. Branch -->
+          <div class="form-group-item">
+            <label class="form-field-label">Branch</label>
+            <div style="position: relative;">
+              <select id="filterBranchSelect" class="form-field-select">
+                <option value="all" selected>- All Branches -</option>
+                <option value="HQ - KL Main">HQ - KL Main</option>
+                <option value="Penang Branch">Penang Branch</option>
+                <option value="Johor Bahru Branch">Johor Bahru Branch</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 4. Department -->
+          <div class="form-group-item">
+            <label class="form-field-label">Department</label>
+            <div style="position: relative;">
+              <select id="filterDeptSelect" class="form-field-select">
+                <option value="all" selected>- All Departments -</option>
+                <option value="HUMAN RESOURCE">Human Resources Department</option>
+                <option value="ACCOUNTS">Accounts Department</option>
+                <option value="PLANT OPERATIONS">Plant Operations Department</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 5. Section -->
+          <div class="form-group-item">
+            <label class="form-field-label">Section</label>
+            <div style="position: relative;">
+              <select id="filterSectionSelect" class="form-field-select">
+                <option value="all" selected>- All Sections -</option>
+                <option value="BENEFITS">BENEFITS</option>
+                <option value="CORPORATE">CORPORATE</option>
+                <option value="GENERAL HR">GENERAL HR</option>
+                <option value="ASSEMBLY">ASSEMBLY</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 6. Cost Center -->
+          <div class="form-group-item">
+            <label class="form-field-label">Cost Center</label>
+            <div style="position: relative;">
+              <select id="filterCostCenterSelect" class="form-field-select">
+                <option value="all" selected>- All Cost Centers -</option>
+                <option value="MANAGEMENT">MANAGEMENT</option>
+                <option value="CC-101 MANAGEMENT">CC-101 MANAGEMENT</option>
+                <option value="CC-501 HR & OPS">CC-501 HR & OPS</option>
+                <option value="CC-301 PRODUCTION">CC-301 PRODUCTION</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 7. Clocking Type -->
+          <div class="form-group-item">
+            <label class="form-field-label">Clocking Type</label>
+            <div style="position: relative;">
+              <select id="filterClockTypeSelect" class="form-field-select">
+                <option value="all" selected>- All Clocking Types -</option>
+                <option value="Clock In">Clock In</option>
+                <option value="Clock Out">Clock Out</option>
+                <option value="Break Out">Break Out</option>
+                <option value="Break In">Break In</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <button type="button" class="form-apply-btn" onclick="applyFilterModal()">
+            <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
+            <span>Apply Filter</span>
+          </button>
         </div>
-        <div>
-          <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Status</label>
-          <select id="filterStatusSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
-            <option value="all">All Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
-        <button type="button" onclick="applyFilterModal()" style="width: 100%; margin-top: 10px; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer;">Apply Filter</button>
       </div>
     </div>
-  </div>
 
-  <!-- Popout Detail Modal -->
-  <div class="modal-overlay" id="detailModal" onclick="closeDetailModal(event)" style="align-items: center; justify-content: center; padding: 16px;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 380px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.85); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; padding: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary);" id="detailTitle">Clocking Log Details</h3>
-        <button onclick="closeDetailModalDirect()" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-input); border: none; color: var(--text-primary); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13.5px;">
-        <div><strong style="color: var(--text-muted);">Total Volume:</strong> <span id="detailTime" style="font-weight: 700; color: var(--text-primary);"></span></div>
-        <div><strong style="color: var(--text-muted);">Peak Window:</strong> <span id="detailStaff" style="font-weight: 700; color: var(--text-primary);"></span></div>
-        <div><strong style="color: var(--text-muted);">Status:</strong> <span id="detailStatus" style="font-weight: 700; color: #10b981;"></span></div>
+    <!-- MODAL 2: PERSONNEL CLOCKING DETAILS MODAL -->
+    <div class="modal-overlay" id="detailsModal" onclick="closeDetailsModal(event)">
+      <div class="bottom-sheet-content" onclick="event.stopPropagation()" style="max-height: 84vh;">
+        <div class="sheet-handle-pill"></div>
+        
+        <div class="filter-header-row">
+          <div>
+            <h3 class="filter-modal-title" id="modalSectionTitle">BENEFITS</h3>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;" id="modalSectionMeta">Cost Centre: MANAGEMENT</div>
+          </div>
+          <button type="button" class="filter-reset-btn" onclick="closeDetailsModalDirect()">
+            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Close
+          </button>
+        </div>
+
+        <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Personnel Clocking Details</span>
+          <span id="modalRecordCount" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">3 Records</span>
+        </div>
+
+        <div id="detailsListContainer" style="display: flex; flex-direction: column; overflow-y: auto; flex: 1; padding-right: 2px;">
+          <!-- Dynamically populated personnel list with name, id (below name), clock type/time, clock mode -->
+        </div>
       </div>
     </div>
+
   </div>
 
   <script>
+    const masterClockingTableDataset = [
+      {
+        id: 1,
+        branch: 'HQ - KL Main',
+        dept: 'HUMAN RESOURCE',
+        section: 'BENEFITS',
+        costCenter: 'MANAGEMENT',
+        count: 3,
+        details: [
+          { empNo: '#EBB15', name: 'Asmawi idris', date: '20 Sep 2026', startTime: '08:04 AM', endTime: '05:30 PM', time: '08:04 AM', type: 'Clock In', mode: 'Manual Input(People HR)', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MANAGEMENT' },
+          { empNo: '#A0001', name: 'Natasha thean mei hoi', date: '20 Sep 2026', startTime: '08:00 AM', endTime: '05:30 PM', time: '08:00 AM', type: 'Clock In', mode: 'Manual Input(People HR)', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MANAGEMENT' },
+          { empNo: '#EBB12', name: 'Farhan binti rahmat', date: '20 Sep 2026', startTime: '07:34 AM', endTime: '05:30 PM', time: '07:34 AM', type: 'Clock In', mode: 'Manual Input(People HR)', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MANAGEMENT' }
+        ]
+      },
+      {
+        id: 2,
+        branch: 'HQ - KL Main',
+        dept: 'HUMAN RESOURCE',
+        section: 'CORPORATE',
+        costCenter: 'CC-101 MANAGEMENT',
+        count: 8,
+        details: [
+          { empNo: '#EBB01', name: 'Lee Soon Hock', date: '20 Sep 2026', startTime: '08:00 AM', endTime: '05:30 PM', time: '08:00 AM', type: 'Clock In', mode: 'Face Kiosk', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'CORPORATE', costCenter: 'CC-101 MANAGEMENT' },
+          { empNo: '#004177', name: 'Siti Nurhaliza', date: '20 Sep 2026', startTime: '08:15 AM', endTime: '05:45 PM', time: '08:15 AM', type: 'Clock In', mode: 'Mobile Geofence', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'CORPORATE', costCenter: 'CC-101 MANAGEMENT' },
+          { empNo: '#0000101', name: 'Tan Wei Ming', date: '20 Sep 2026', startTime: '08:30 AM', endTime: '05:30 PM', time: '05:30 PM', type: 'Clock Out', mode: 'Face Kiosk', typeClass: 'type-out', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'CORPORATE', costCenter: 'CC-101 MANAGEMENT' }
+        ]
+      },
+      {
+        id: 3,
+        branch: 'Penang Branch',
+        dept: 'HUMAN RESOURCE',
+        section: 'GENERAL HR',
+        costCenter: 'CC-501 HR & OPS',
+        count: 1,
+        details: [
+          { empNo: '#EBB02', name: 'Wong Kah Fai', date: '20 Sep 2026', startTime: '08:30 AM', endTime: '05:30 PM', time: '08:30 AM', type: 'Clock In', mode: 'Mobile Geofence', typeClass: 'type-in', branch: 'Penang Branch', dept: 'HUMAN RESOURCE', section: 'GENERAL HR', costCenter: 'CC-501 HR & OPS' }
+        ]
+      },
+      {
+        id: 4,
+        branch: 'Johor Bahru Branch',
+        dept: 'PLANT OPERATIONS',
+        section: 'ASSEMBLY',
+        costCenter: 'CC-301 PRODUCTION',
+        count: 12,
+        details: [
+          { empNo: '#EBB03', name: 'Chok Ching Hou', date: '20 Sep 2026', startTime: '07:45 AM', endTime: '05:15 PM', time: '07:45 AM', type: 'Clock In', mode: 'Biometric Scanner', typeClass: 'type-in', branch: 'Johor Bahru Branch', dept: 'PLANT OPERATIONS', section: 'ASSEMBLY', costCenter: 'CC-301 PRODUCTION' },
+          { empNo: '#004199', name: 'Kavitha Raj', date: '20 Sep 2026', startTime: '07:50 AM', endTime: '05:20 PM', time: '07:50 AM', type: 'Clock In', mode: 'Biometric Scanner', typeClass: 'type-in', branch: 'Johor Bahru Branch', dept: 'PLANT OPERATIONS', section: 'ASSEMBLY', costCenter: 'CC-301 PRODUCTION' }
+        ]
+      }
+    ];
+
+    let currentDateObj = new Date(2026, 8, 20);
+    let currentActiveSection = 'summary'; // 'summary' or 'chart'
+
+    function handleHeaderBack() {
+      if (currentActiveSection === 'chart') {
+        showSectionView('summary');
+      } else {
+        javascript:history.back();
+      }
+    }
+
+    function showSectionView(sec) {
+      currentActiveSection = sec;
+      const summaryView = document.getElementById('view-summary');
+      const chartView = document.getElementById('view-chart');
+      const pageTitle = document.getElementById('pageHeaderTitle');
+
+      if (sec === 'chart') {
+        if (summaryView) summaryView.style.display = 'none';
+        if (chartView) chartView.style.display = 'block';
+        if (pageTitle) pageTitle.innerText = 'Clocking Distribution Chart';
+        renderDonutChartData();
+      } else {
+        if (chartView) chartView.style.display = 'none';
+        if (summaryView) summaryView.style.display = 'block';
+        if (pageTitle) pageTitle.innerText = 'Clocking Summary';
+      }
+    }
+
+    function formatDateDisplay(d) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = d.getDate();
+      const month = months[d.getMonth()];
+      const year = d.getFullYear();
+      return `${day < 10 ? '0' + day : day} ${month} ${year}`;
+    }
+
+    function shiftDate(deltaDays) {
+      currentDateObj.setDate(currentDateObj.getDate() + deltaDays);
+      const displayStr = formatDateDisplay(currentDateObj);
+      const dateElem = document.getElementById('currentDateDisplay');
+      if (dateElem) dateElem.innerText = displayStr;
+      
+      const dateInput = document.getElementById('filterDateInput');
+      if (dateInput) {
+        const y = currentDateObj.getFullYear();
+        const m = String(currentDateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDateObj.getDate()).padStart(2, '0');
+        dateInput.value = `${y}-${m}-${day}`;
+      }
+
+      updateFilterSummaryDisplay();
+      renderTable();
+      if (currentActiveSection === 'chart') {
+        renderDonutChartData();
+      }
+      showToastNotification(`Date shifted to ${displayStr}`);
+    }
+
+    function updateFilterSummaryDisplay() {
+      const dateVal = document.getElementById('filterDateInput')?.value;
+      const displayDate = dateVal ? dateVal : formatDateDisplay(currentDateObj);
+      const branch = document.getElementById('filterBranchSelect')?.value || 'all';
+      const dept = document.getElementById('filterDeptSelect')?.value || 'all';
+      const sec = document.getElementById('filterSectionSelect')?.value || 'all';
+      const cc = document.getElementById('filterCostCenterSelect')?.value || 'all';
+      const type = document.getElementById('filterClockTypeSelect')?.value || 'all';
+
+      let parts = [displayDate];
+      if (branch !== 'all') parts.push(branch);
+      if (dept !== 'all') parts.push(dept);
+      if (sec !== 'all') parts.push(sec);
+      if (cc !== 'all') parts.push(cc);
+      if (type !== 'all') parts.push(type);
+
+      if (parts.length === 1) parts.push('All Branches');
+
+      document.getElementById('filterSummaryText').innerText = parts.join(' • ');
+    }
+
+    function renderTable() {
+      const branchFilter = document.getElementById('filterBranchSelect')?.value || 'all';
+      const deptFilter = document.getElementById('filterDeptSelect')?.value || 'all';
+      const sectionFilter = document.getElementById('filterSectionSelect')?.value || 'all';
+      const costCenterFilter = document.getElementById('filterCostCenterSelect')?.value || 'all';
+      const clockTypeFilter = document.getElementById('filterClockTypeSelect')?.value || 'all';
+
+      const filtered = masterClockingTableDataset.filter(item => {
+        const matchBranch = (branchFilter === 'all' || item.branch === branchFilter);
+        const matchDept = (deptFilter === 'all' || item.dept === deptFilter);
+        const matchSection = (sectionFilter === 'all' || item.section === sectionFilter);
+        const matchCostCenter = (costCenterFilter === 'all' || item.costCenter === costCenterFilter);
+        
+        let matchClockType = true;
+        if (clockTypeFilter !== 'all') {
+          matchClockType = item.details && item.details.some(d => d.type === clockTypeFilter);
+        }
+        return matchBranch && matchDept && matchSection && matchCostCenter && matchClockType;
+      });
+
+      let totalCount = 0;
+      filtered.forEach(item => { totalCount += item.count; });
+      
+      document.getElementById('totalRecordsVal').innerText = filtered.length;
+      document.getElementById('totalCountVal').innerText = totalCount;
+
+      const container = document.getElementById('summaryTableBody');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 30px 16px; color: var(--text-muted); font-size: 13px;">
+            No clocking summary records found matching filters.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div class="summary-table-row" onclick="openDetailsModal(${item.id})">
+          <div class="cell-section">${item.section}</div>
+          <div class="cell-cc">${item.costCenter}</div>
+          <div class="cell-count">${item.count}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderDonutChartData() {
+      const branchFilter = document.getElementById('filterBranchSelect')?.value || 'all';
+      const deptFilter = document.getElementById('filterDeptSelect')?.value || 'all';
+      const sectionFilter = document.getElementById('filterSectionSelect')?.value || 'all';
+      const costCenterFilter = document.getElementById('filterCostCenterSelect')?.value || 'all';
+      const clockTypeFilter = document.getElementById('filterClockTypeSelect')?.value || 'all';
+
+      const filtered = masterClockingTableDataset.filter(item => {
+        const matchBranch = (branchFilter === 'all' || item.branch === branchFilter);
+        const matchDept = (deptFilter === 'all' || item.dept === deptFilter);
+        const matchSection = (sectionFilter === 'all' || item.section === sectionFilter);
+        const matchCostCenter = (costCenterFilter === 'all' || item.costCenter === costCenterFilter);
+
+        let matchClockType = true;
+        if (clockTypeFilter !== 'all') {
+          matchClockType = item.details && item.details.some(d => d.type === clockTypeFilter);
+        }
+        return matchBranch && matchDept && matchSection && matchCostCenter && matchClockType;
+      });
+
+      let grandTotal = 0;
+      filtered.forEach(item => { grandTotal += item.count; });
+
+      document.getElementById('summaryCenterTotal').innerText = grandTotal;
+
+      const colors = ['#7c3aed', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
+      
+      const chartItems = filtered.map((item, idx) => {
+        const pct = grandTotal > 0 ? (item.count / grandTotal) * 100 : 0;
+        return {
+          name: item.section,
+          val: item.count,
+          pct: pct,
+          color: colors[idx % colors.length]
+        };
+      });
+
+      // Render SVG Donut Slices
+      const svgGroup = document.getElementById('summaryDonutCircles');
+      if (svgGroup) {
+        const C = 439.82; // 2 * PI * 70
+        let currentOffset = 0;
+        let circlesHtml = '';
+
+        chartItems.forEach(item => {
+          const pctFraction = item.pct / 100;
+          const dashLen = pctFraction * C;
+          const dashOffset = -currentOffset;
+          currentOffset += dashLen;
+
+          circlesHtml += `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${item.color}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+        });
+        svgGroup.innerHTML = circlesHtml;
+      }
+
+      // Render Legend Grid Rows
+      const grid = document.getElementById('summaryChartLegendGrid');
+      if (grid) {
+        let listHtml = '';
+        chartItems.forEach(item => {
+          listHtml += `
+            <div style="display: grid; grid-template-columns: 1fr 60px 75px; gap: 10px; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${item.color}; flex-shrink: 0;"></span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right;">${item.val}</div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary); text-align: right;">${item.pct.toFixed(1)}%</div>
+            </div>
+          `;
+        });
+        grid.innerHTML = listHtml;
+      }
+    }
+
+    function openDetailsModal(id) {
+      const item = masterClockingTableDataset.find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('modalSectionTitle').innerText = item.section;
+      document.getElementById('modalSectionMeta').innerText = `Branch: ${item.branch} • Cost Centre: ${item.costCenter}`;
+
+      const details = item.details || [];
+      document.getElementById('modalRecordCount').innerText = `${details.length} Record${details.length === 1 ? '' : 's'}`;
+
+      const container = document.getElementById('detailsListContainer');
+      if (details.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;">
+            No detailed personnel records for this section.
+          </div>
+        `;
+      } else {
+        container.innerHTML = details.map(d => `
+          <div class="staff-clock-card">
+            <div class="staff-avatar-bubble">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="staff-info-col">
+              <!-- Personnel Name -->
+              <div class="staff-name-text">${d.name}</div>
+              
+              <!-- Personnel ID: REPOSITORY RULE (AGENTS.md) - placed directly BELOW name with leading # -->
+              <div class="staff-emp-badge">${d.empNo}</div>
+              
+              <!-- Date, Start Time & End Time -->
+              <div class="staff-meta-row">
+                <i class="fa-regular fa-calendar" style="font-size: 10.5px; color: var(--purple-primary);"></i>
+                <span>${d.date || '20 Sep 2026'}</span>
+                <span>•</span>
+                <i class="fa-regular fa-clock" style="font-size: 10.5px; color: var(--purple-primary);"></i>
+                <span>${d.startTime || '08:00 AM'} - ${d.endTime || '05:30 PM'}</span>
+              </div>
+
+              <!-- Branch, Department, Section & Cost Center -->
+              <div class="staff-meta-row" style="margin-top: 3px; font-size: 11px; opacity: 0.85;">
+                <span>${d.branch || item.branch}</span>
+                <span>•</span>
+                <span>${d.dept || item.dept}</span>
+              </div>
+              <div class="staff-meta-row" style="margin-top: 2px; font-size: 11px; opacity: 0.85;">
+                <span>Sec: ${d.section || item.section}</span>
+                <span>•</span>
+                <span>CC: ${d.costCenter || item.costCenter}</span>
+                <span>•</span>
+                <span>${d.mode}</span>
+              </div>
+            </div>
+            <!-- Clock Type Badge -->
+            <div class="clock-type-tag ${d.typeClass || (d.type === 'Clock Out' ? 'type-out' : 'type-in')}">
+              ${d.type}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const modal = document.getElementById('detailsModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      setTimeout(() => { modal.classList.add('active'); }, 10);
+    }
+
+    function closeDetailsModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      closeDetailsModalDirect();
+    }
+
+    function closeDetailsModalDirect() {
+      const modal = document.getElementById('detailsModal');
+      if (!modal) return;
+      modal.classList.remove('active');
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
+    }
+
     function openFilterModal() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'translateY(0)'; }, 10);
+      const modal = document.getElementById('filterModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      setTimeout(() => { modal.classList.add('active'); }, 10);
     }
-    function closeFilterModal(e) { if (e && e.target !== e.currentTarget) return; closeFilterModalDirect(); }
-    function closeFilterModalDirect() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'translateY(100%)';
-      setTimeout(() => { m.style.display = 'none'; }, 280);
+
+    function closeFilterModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const modal = document.getElementById('filterModal');
+      if (!modal) return;
+      modal.classList.remove('active');
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
     }
+
     function resetFilterModal() {
-      document.getElementById('filterFromDate').value = '2026-08-16';
-      document.getElementById('filterToDate').value = '2026-09-14';
-      document.getElementById('filterStatusSelect').value = 'all';
-      closeFilterModalDirect();
+      if (document.getElementById('filterDateInput')) document.getElementById('filterDateInput').value = '2026-09-20';
+      if (document.getElementById('filterStartTimeInput')) document.getElementById('filterStartTimeInput').value = '00:00';
+      if (document.getElementById('filterEndTimeInput')) document.getElementById('filterEndTimeInput').value = '23:59';
+      if (document.getElementById('filterBranchSelect')) document.getElementById('filterBranchSelect').value = 'all';
+      if (document.getElementById('filterDeptSelect')) document.getElementById('filterDeptSelect').value = 'all';
+      if (document.getElementById('filterSectionSelect')) document.getElementById('filterSectionSelect').value = 'all';
+      if (document.getElementById('filterCostCenterSelect')) document.getElementById('filterCostCenterSelect').value = 'all';
+      if (document.getElementById('filterClockTypeSelect')) document.getElementById('filterClockTypeSelect').value = 'all';
+      updateFilterSummaryDisplay();
+      closeFilterModal();
+      renderTable();
+      if (currentActiveSection === 'chart') {
+        renderDonutChartData();
+      }
+      showToastNotification('Filters reset to default');
     }
-    function applyFilterModal() { closeFilterModalDirect(); }
-    function openDetailModal(title, time, staff, status) {
-      document.getElementById('detailTitle').innerText = title;
-      document.getElementById('detailTime').innerText = time;
-      document.getElementById('detailStaff').innerText = staff;
-      document.getElementById('detailStatus').innerText = status;
-      const m = document.getElementById('detailModal');
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'scale(1)'; }, 10);
+
+    function applyFilterModal() {
+      updateFilterSummaryDisplay();
+      closeFilterModal();
+      renderTable();
+      if (currentActiveSection === 'chart') {
+        renderDonutChartData();
+      }
+      showToastNotification('Filter applied successfully');
     }
-    function closeDetailModal(e) { if (e && e.target !== e.currentTarget) return; closeDetailModalDirect(); }
-    function closeDetailModalDirect() {
-      const m = document.getElementById('detailModal');
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'scale(0.85)';
-      setTimeout(() => { m.style.display = 'none'; }, 250);
+
+    function showToastNotification(msg) {
+      const toast = document.getElementById('feedbackToast');
+      const text = document.getElementById('toastMessage');
+      if (!toast || !text) return;
+      text.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2200);
     }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeFilterModal();
+        closeDetailsModalDirect();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateFilterSummaryDisplay();
+      renderTable();
+    });
   </script>
 </body>
 </html>
