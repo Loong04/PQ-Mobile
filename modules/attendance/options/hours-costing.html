@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Hours Costing</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+    
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.15s ease;
+      backdrop-filter: blur(4px);
+    }
+    .header-btn-icon:active { transform: scale(0.94); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Standardized Filter Summary Bar Specification */
+    .filter-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-summary-bar:hover {
+      border-color: rgba(124, 58, 237, 0.35);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+    }
+    .filter-bar-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .filter-bar-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 270px;
+    }
+    .filter-trigger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .filter-trigger-btn:active { transform: scale(0.92); }
+
+    /* Standardized Bottom Sheet Modal Specification */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 44px;
+      overflow: hidden;
+    }
+    .modal-overlay.active { opacity: 1; }
+
+    .bottom-sheet-content {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      padding: 16px 20px 28px;
+      box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.45);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 84vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .modal-overlay.active .bottom-sheet-content { transform: translateY(0); }
+
+    .sheet-handle-pill {
+      width: 38px;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: 4px;
+      margin: 0 auto 16px;
+      opacity: 0.7;
+    }
+
+    .emp-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: transform 0.15s ease;
+    }
+    .emp-card:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    <!-- Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <button class="header-btn-icon" onclick="window.location.href='team.html'" aria-label="Back" title="Back">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        
+        <div style="text-align: center;">
+          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;">Hours Costing</h1>
+          <div style="font-size: 11.5px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 2px;">Work Hours Expense &amp; Cost Analysis</div>
+        </div>
+        
+        <div style="width: 36px;"></div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      
+      <!-- Standardized Executive Filter Summary Bar -->
+      <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter records">
+        <div style="flex: 1; min-width: 0; padding-right: 8px;">
+          <div class="filter-bar-label">
+            <span>CURRENT FILTER</span>
+          </div>
+          <div class="filter-bar-value" id="filterSummaryText">
+            20 Sep 2026 – 20 Sep 2026 • Total Work hours • All Cost Centers
+          </div>
+        </div>
+        <button type="button" class="filter-trigger-btn" onclick="event.stopPropagation(); openFilterModal();" title="Filter Options" aria-label="Filter Options">
+          <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
+        </button>
+      </div>
+
+      <!-- Executive KPI Cards Row: Total Records & Total Cost (Mandated Design Consistency) -->
+      <div class="summary-info-row" style="display: flex; align-items: stretch; justify-content: space-between; margin-bottom: 14px; gap: 10px; border-bottom: none; padding: 0 2px;">
+        
+        <!-- Card 1: Total Records -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-sm); flex: 1; min-width: 0;">
+          <div style="width: 38px; height: 38px; border-radius: 12px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <div style="display: flex; flex-direction: column; min-width: 0;">
+            <span style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">TOTAL RECORDS</span>
+            <span id="totalRecordsVal" style="font-size: 18px; font-weight: 900; color: var(--text-primary); line-height: 1.1;">181</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Total Cost -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-sm); flex: 1.25; min-width: 0;">
+          <div style="width: 38px; height: 38px; border-radius: 12px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </div>
+          <div style="display: flex; flex-direction: column; min-width: 0;">
+            <span style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">TOTAL COST</span>
+            <span id="totalCostVal" style="font-size: 16.5px; font-weight: 900; color: var(--purple-primary); line-height: 1.1;">RM 29,523.38</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <div style="position: relative; flex: 1;">
+          <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-muted);"></i>
+          <input type="text" id="empSearchInput" onkeyup="syncKeywordAndFilter()" placeholder="Search staff name or #ID..." style="width: 100%; padding: 10px 12px 10px 34px; border-radius: 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 600; outline: none;">
+        </div>
+      </div>
+
+      <!-- Table Header Bar -->
+      <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; margin-bottom: 10px; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+        <div>DATE</div>
+        <div>EMPLOYEE INFO</div>
+        <div style="text-align: right;">AMOUNT</div>
+      </div>
+
+      <!-- Employee Hours Costing List (Loaded from user's screenshot dataset) -->
+      <div id="employeeCostingList">
+
+        <!-- 1. Lee Soon Hock (#004101) -> RM 192.00 -->
+        <div class="emp-card" data-name="Lee Soon Hock" data-id="004101" data-cost="192.00" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <!-- NAME -->
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Lee Soon Hock</div>
+              <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004101</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Operations • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 192.00
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Jinny wat (#004102) -> RM 168.96 -->
+        <div class="emp-card" data-name="Jinny wat" data-id="004102" data-cost="168.96" data-date="2026-09-20" data-cc="CC-102" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Jinny wat</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004102</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Quality Control • CC-102</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 168.96
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Raju kumar (#004103) -> RM 53.76 -->
+        <div class="emp-card" data-name="Raju kumar" data-id="004103" data-cost="53.76" data-date="2026-09-20" data-cc="CC-202" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Raju kumar</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004103</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Production • CC-202</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 53.76
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Tee ang lung (#004104) -> RM 42.00 -->
+        <div class="emp-card" data-name="Tee ang lung" data-id="004104" data-cost="42.00" data-date="2026-09-20" data-cc="CC-404" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Tee ang lung</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004104</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Logistics • CC-404</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 42.00
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Tay siow kung (#004105) -> RM 69.12 -->
+        <div class="emp-card" data-name="Tay siow kung" data-id="004105" data-cost="69.12" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Tay siow kung</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004105</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Operations • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 69.12
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Tan siow soon (#004106) -> RM 124.80 -->
+        <div class="emp-card" data-name="Tan siow soon" data-id="004106" data-cost="124.80" data-date="2026-09-20" data-cc="CC-102" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Tan siow soon</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004106</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Quality Control • CC-102</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 124.80
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Jason ling soon kam (#004107) -> RM 107.26 -->
+        <div class="emp-card" data-name="Jason ling soon kam" data-id="004107" data-cost="107.26" data-date="2026-09-20" data-cc="CC-202" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Jason ling soon kam</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004107</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Production • CC-202</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 107.26
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Navin (#004108) -> RM 69.95 -->
+        <div class="emp-card" data-name="Navin" data-id="004108" data-cost="69.95" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Navin</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004108</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Operations • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 69.95
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Philip (#004109) -> RM 69.95 -->
+        <div class="emp-card" data-name="Philip" data-id="004109" data-cost="69.95" data-date="2026-09-20" data-cc="CC-404" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Philip</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004109</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Logistics • CC-404</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 69.95
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. Tony stunk (#004110) -> RM 94.50 -->
+        <div class="emp-card" data-name="Tony stunk" data-id="004110" data-cost="94.50" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Tony stunk</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004110</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Engineering • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 94.50
+            </div>
+          </div>
+        </div>
+
+        <!-- 11. Anderson ng (#004111) -> RM 324.80 -->
+        <div class="emp-card" data-name="Anderson ng" data-id="004111" data-cost="324.80" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Anderson ng</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004111</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Operations • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 324.80
+            </div>
+          </div>
+        </div>
+
+        <!-- 12. Kamala razak (#004112) -> RM 134.40 -->
+        <div class="emp-card" data-name="Kamala razak" data-id="004112" data-cost="134.40" data-date="2026-09-20" data-cc="CC-102" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Kamala razak</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004112</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Quality Control • CC-102</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 134.40
+            </div>
+          </div>
+        </div>
+
+        <!-- 13. Jocelyn huan (#004113) -> RM 57.60 -->
+        <div class="emp-card" data-name="Jocelyn huan" data-id="004113" data-cost="57.60" data-date="2026-09-20" data-cc="CC-202" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Jocelyn huan</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004113</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Production • CC-202</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 57.60
+            </div>
+          </div>
+        </div>
+
+        <!-- 14. Kelly (#004114) -> RM 1,344.00 -->
+        <div class="emp-card" data-name="Kelly" data-id="004114" data-cost="1344.00" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Kelly</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004114</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Operations • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 1,344.00
+            </div>
+          </div>
+        </div>
+
+        <!-- 15. Hanish (#004115) -> RM 96.00 -->
+        <div class="emp-card" data-name="Hanish" data-id="004115" data-cost="96.00" data-date="2026-09-20" data-cc="CC-404" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Hanish</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004115</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Logistics • CC-404</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 96.00
+            </div>
+          </div>
+        </div>
+
+        <!-- 16. Yee seong liew (#004116) -> RM 177.20 -->
+        <div class="emp-card" data-name="Yee seong liew" data-id="004116" data-cost="177.20" data-date="2026-09-20" data-cc="CC-102" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Yee seong liew</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004116</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Quality Control • CC-102</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 177.20
+            </div>
+          </div>
+        </div>
+
+        <!-- 17. Hector (#004117) -> RM 38.40 -->
+        <div class="emp-card" data-name="Hector" data-id="004117" data-cost="38.40" data-date="2026-09-20" data-cc="CC-202" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Hector</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004117</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Production • CC-202</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 38.40
+            </div>
+          </div>
+        </div>
+
+        <!-- 18. Ang hin kee (#004118) -> RM 91.20 -->
+        <div class="emp-card" data-name="Ang hin kee" data-id="004118" data-cost="91.20" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Ang hin kee</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004118</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Operations • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 91.20
+            </div>
+          </div>
+        </div>
+
+        <!-- 19. Lee (#004119) -> RM 96.00 -->
+        <div class="emp-card" data-name="Lee" data-id="004119" data-cost="96.00" data-date="2026-09-20" data-cc="CC-101" data-type="Total Work hours">
+          <div style="display: grid; grid-template-columns: 90px 1fr 95px; gap: 10px; align-items: center;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">20 Sep 2026</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Lee</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#004119</div>
+              <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">Operations • CC-101</div>
+            </div>
+            <div style="text-align: right; font-size: 14px; font-weight: 900; color: var(--purple-primary);">
+              RM 96.00
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Nav -->
+    <phone-bottom-nav active="attendance"></phone-bottom-nav>
+  </div>
+
+  <!-- Standardized Bottom Sheet Filter Modal with 5 Required Fields: Keywords, Start Date, End Date, Costing Type, Cost Center -->
+  <div class="modal-overlay" id="filterModalOverlay" onclick="closeFilterModal(event)">
+    <div class="bottom-sheet-content" onclick="event.stopPropagation()">
+      <div class="sheet-handle-pill"></div>
+
+      <!-- Header Row -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Filter Options</h3>
+        <button type="button" onclick="resetFilterModal()" style="padding: 7px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-rotate-left" style="font-size: 12px;"></i> Reset
+        </button>
+      </div>
+
+      <!-- Filter Controls Area: Keywords, Start Date, End Date, Costing Type, Cost Center -->
+      <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+        
+        <!-- 1. Keywords Field -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">Keywords</label>
+          <input type="text" id="filterKeywordInput" placeholder="Search staff name or #ID..." style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+        </div>
+
+        <!-- 2 & 3. Start Date & End Date Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">Start Date</label>
+            <input type="date" id="filterStartDateInput" value="2026-09-20" style="width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13px; font-weight: 700;">
+          </div>
+          <div>
+            <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">End Date</label>
+            <input type="date" id="filterEndDateInput" value="2026-09-20" style="width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13px; font-weight: 700;">
+          </div>
+        </div>
+
+        <!-- 4. Costing Type Selector -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">Costing Type</label>
+          <div style="position: relative;">
+            <select id="filterCostingTypeSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+              <option value="Total Work hours">Total Work hours</option>
+              <option value="Regular Work hours">Regular Work hours</option>
+              <option value="Overtime hours">Overtime hours</option>
+            </select>
+            <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Cost Center Selector -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">Cost Center</label>
+          <div style="position: relative;">
+            <select id="filterCostCenterSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+              <option value="all">All Cost Centers</option>
+              <option value="CC-101">CC-101 (Operations &amp; HQ)</option>
+              <option value="CC-102">CC-102 (Quality Control)</option>
+              <option value="CC-202">CC-202 (Production &amp; Assembly)</option>
+              <option value="CC-404">CC-404 (Logistics &amp; Warehouse)</option>
+            </select>
+            <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Apply Filter Button -->
+      <button type="button" onclick="applyFilterModal()" style="width: 100%; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed, #6366f1); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);">
+        Apply Filter
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function openFilterModal() {
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.style.pointerEvents = 'auto';
+        void modal.offsetWidth;
+        modal.classList.add('active');
+      }
+    }
+
+    function closeFilterModal(event) {
+      if (event && event.target && event.target.id !== 'filterModalOverlay' && !event.target.classList.contains('popout-close-btn')) {
+        return;
+      }
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+          modal.style.display = 'none';
+          modal.style.pointerEvents = 'none';
+        }, 280);
+      }
+    }
+
+    function formatDateDisplayStr(isoStr) {
+      if (!isoStr) return '';
+      const p = isoStr.split('-');
+      if (p.length !== 3) return isoStr;
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = parseInt(p[2]);
+      const month = months[parseInt(p[1]) - 1];
+      const year = p[0];
+      return `${day < 10 ? '0' + day : day} ${month} ${year}`;
+    }
+
+    function syncKeywordAndFilter() {
+      const query = document.getElementById('empSearchInput').value;
+      document.getElementById('filterKeywordInput').value = query;
+      filterEmpList();
+    }
+
+    function applyFilterModal() {
+      const keyword = document.getElementById('filterKeywordInput').value.trim();
+      const sDate = document.getElementById('filterStartDateInput').value;
+      const eDate = document.getElementById('filterEndDateInput').value;
+      const costingType = document.getElementById('filterCostingTypeSelect').value;
+      const cc = document.getElementById('filterCostCenterSelect').value;
+      
+      document.getElementById('empSearchInput').value = keyword;
+
+      const sDisp = formatDateDisplayStr(sDate);
+      const eDisp = formatDateDisplayStr(eDate);
+
+      const parts = [];
+      if (keyword) parts.push(`"${keyword}"`);
+      if (sDisp && eDisp) parts.push(`${sDisp} – ${eDisp}`);
+      parts.push(costingType);
+      parts.push(cc === 'all' ? 'All Cost Centers' : cc);
+
+      document.getElementById('filterSummaryText').innerText = parts.join(' • ');
+
+      filterEmpList();
+      closeFilterModal();
+    }
+
+    function resetFilterModal() {
+      document.getElementById('filterKeywordInput').value = '';
+      document.getElementById('empSearchInput').value = '';
+      document.getElementById('filterStartDateInput').value = '2026-09-20';
+      document.getElementById('filterEndDateInput').value = '2026-09-20';
+      document.getElementById('filterCostingTypeSelect').value = 'Total Work hours';
+      document.getElementById('filterCostCenterSelect').value = 'all';
+      document.getElementById('filterSummaryText').innerText = '20 Sep 2026 – 20 Sep 2026 • Total Work hours • All Cost Centers';
+      filterEmpList();
+    }
+
+    function filterEmpList() {
+      const keywordModal = document.getElementById('filterKeywordInput').value.toLowerCase();
+      const queryQuick = document.getElementById('empSearchInput').value.toLowerCase();
+      const query = keywordModal || queryQuick;
+
+      const sDateVal = document.getElementById('filterStartDateInput').value;
+      const eDateVal = document.getElementById('filterEndDateInput').value;
+      const costingTypeVal = document.getElementById('filterCostingTypeSelect').value;
+      const ccSelect = document.getElementById('filterCostCenterSelect').value;
+
+      const cards = document.querySelectorAll('#employeeCostingList .emp-card');
+      let visibleCount = 0;
+      let totalCostSum = 0;
+
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name').toLowerCase();
+        const id = card.getAttribute('data-id').toLowerCase();
+        const cc = card.getAttribute('data-cc');
+        const cardDate = card.getAttribute('data-date');
+        const cardType = card.getAttribute('data-type');
+        const costVal = parseFloat(card.getAttribute('data-cost')) || 0;
+
+        const matchesQuery = !query || name.includes(query) || id.includes(query);
+        const matchesDate = (!sDateVal || cardDate >= sDateVal) && (!eDateVal || cardDate <= eDateVal);
+        const matchesCc = (ccSelect === 'all' || cc === ccSelect);
+        const matchesType = (!costingTypeVal || cardType === costingTypeVal);
+
+        if (matchesQuery && matchesDate && matchesCc && matchesType) {
+          card.style.display = 'block';
+          visibleCount++;
+          totalCostSum += costVal;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      document.getElementById('totalRecordsVal').textContent = visibleCount;
+      document.getElementById('totalCostVal').textContent = 'RM ' + totalCostSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+  </script>
+</body>
+</html>

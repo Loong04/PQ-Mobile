@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Attendance Performance</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+    
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.15s ease;
+      backdrop-filter: blur(4px);
+    }
+    .header-btn-icon:active { transform: scale(0.94); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Standardized Filter Summary Bar Specification */
+    .filter-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-summary-bar:hover {
+      border-color: rgba(124, 58, 237, 0.35);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+    }
+    .filter-bar-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .filter-bar-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 270px;
+    }
+    .filter-trigger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .filter-trigger-btn:active { transform: scale(0.92); }
+
+    /* Donut Chart Styling */
+    .chart-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      gap: 16px;
+      padding: 10px 0 6px;
+    }
+    .chart-svg-wrap {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chart-center-text {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .chart-legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+    .chart-legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      padding: 8px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .chart-legend-item:active { transform: scale(0.97); }
+
+    /* Standardized Bottom Sheet Modal Specification */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 44px;
+      overflow: hidden;
+    }
+    .modal-overlay.active { opacity: 1; }
+
+    .bottom-sheet-content {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      padding: 16px 20px 28px;
+      box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.45);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 84vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .modal-overlay.active .bottom-sheet-content { transform: translateY(0); }
+
+    .sheet-handle-pill {
+      width: 38px;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: 4px;
+      margin: 0 auto 16px;
+      opacity: 0.7;
+    }
+
+    .segmented-tab-container {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px;
+      border-radius: 22px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .segmented-tab-container::-webkit-scrollbar { display: none; }
+
+    .filter-pill {
+      flex: 1;
+      min-width: max-content;
+      padding: 9px 12px;
+      border-radius: 16px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .filter-pill:hover {
+      color: var(--text-primary);
+    }
+    .filter-pill.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+
+    .emp-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: transform 0.15s ease, border-color 0.2s ease;
+    }
+    .emp-card:active { transform: scale(0.98); }
+
+    /* API Band Badges */
+    .band-badge-good {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .band-badge-caution {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .band-badge-poor {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: #f43f5e;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot-good { width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; }
+    .dot-caution { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block; }
+    .dot-poor { width: 8px; height: 8px; border-radius: 50%; background: #f43f5e; display: inline-block; }
+  </style>
+</head>
+<body>
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    <!-- Executive Top Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <button class="header-btn-icon" onclick="window.location.href='team.html'" aria-label="Back" title="Back">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        
+        <div style="text-align: center;">
+          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;">Attendance Performance</h1>
+          <div style="font-size: 11.5px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 2px;">API Band Analytics &amp; Staff Ratings</div>
+        </div>
+        
+        <div style="width: 36px;"></div>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Content -->
+    <div class="main-content">
+      
+      <!-- Standardized Executive Filter Summary Bar -->
+      <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter records">
+        <div style="flex: 1; min-width: 0; padding-right: 8px;">
+          <div class="filter-bar-label">
+            <span>CURRENT FILTER</span>
+          </div>
+          <div class="filter-bar-value" id="filterSummaryText">
+            All Cost Centers • All Departments • All API Bands
+          </div>
+        </div>
+        <button type="button" class="filter-trigger-btn" onclick="event.stopPropagation(); openFilterModal();" title="Filter Options" aria-label="Filter Options">
+          <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
+        </button>
+      </div>
+
+      <!-- Donut Chart & Distribution Breakdown Card -->
+      <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div>
+            <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Attendance Performance</h3>
+            <p style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Distribution by API Performance Bands</p>
+          </div>
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); background: var(--bg-input); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+            Total: 284
+          </div>
+        </div>
+
+        <!-- Donut Chart & Legend Component -->
+        <div class="chart-container">
+          <!-- Donut SVG -->
+          <div class="chart-svg-wrap">
+            <svg width="130" height="130" viewBox="0 0 100 100">
+              <!-- Outer track background circle -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="var(--bg-input)" stroke-width="14" />
+              
+              <!-- Segment 1: Good (Green) - 38.38% -> Dash 91.6, Gap 147.2 -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#10b981" stroke-width="14"
+                      stroke-dasharray="91.6 147.2" stroke-dashoffset="0"
+                      style="transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.5s ease;" />
+              
+              <!-- Segment 2: Caution (Amber) - 28.52% -> Dash 68.1, Gap 170.7 -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" stroke-width="14"
+                      stroke-dasharray="68.1 170.7" stroke-dashoffset="-91.6"
+                      style="transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.5s ease;" />
+              
+              <!-- Segment 3: Poor (Red) - 33.09% -> Dash 79.0, Gap 159.8 -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#f43f5e" stroke-width="14"
+                      stroke-dasharray="79.0 159.8" stroke-dashoffset="-159.7"
+                      style="transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.5s ease;" />
+            </svg>
+
+            <div class="chart-center-text">
+              <div style="font-size: 20px; font-weight: 900; color: var(--text-primary); line-height: 1;">284</div>
+              <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 2px;">Staff API</div>
+            </div>
+          </div>
+
+          <!-- Interactive Legend Items -->
+          <div class="chart-legend-list">
+            <!-- Good -->
+            <div class="chart-legend-item" onclick="setBandFilter('Good', document.getElementById('pill-good'))">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="dot-good"></span>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Good</span>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 12.5px; font-weight: 900; color: #10b981;">38.38%</span>
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">109 staff</div>
+              </div>
+            </div>
+
+            <!-- Caution -->
+            <div class="chart-legend-item" onclick="setBandFilter('Caution', document.getElementById('pill-caution'))">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="dot-caution"></span>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Caution</span>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 12.5px; font-weight: 900; color: #f59e0b;">28.52%</span>
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">81 staff</div>
+              </div>
+            </div>
+
+            <!-- Poor -->
+            <div class="chart-legend-item" onclick="setBandFilter('Poor', document.getElementById('pill-poor'))">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="dot-poor"></span>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Poor</span>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 12.5px; font-weight: 900; color: #f43f5e;">33.09%</span>
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">94 staff</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee Performance Table/List Section -->
+      <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; padding: 0 4px;">
+        <h3 style="font-size: 13px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Employee API Directory</h3>
+      </div>
+
+      <!-- Search Box (Quick Keywords Input) -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <div style="position: relative; flex: 1;">
+          <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-muted);"></i>
+          <input type="text" id="empSearchInput" onkeyup="syncKeywordAndFilter()" placeholder="Search employee name or #ID..." style="width: 100%; padding: 10px 12px 10px 34px; border-radius: 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 600; outline: none;">
+        </div>
+      </div>
+
+      <!-- API Band Quick Filter Pills (Matching exact system tab design) -->
+      <div class="segmented-tab-container">
+        <button id="pill-all" type="button" class="filter-pill active" onclick="setBandFilter('all', this)">
+          <span>All Bands</span>
+          <span style="font-size: 10.5px; opacity: 0.85;">(284)</span>
+        </button>
+        <button id="pill-good" type="button" class="filter-pill" onclick="setBandFilter('Good', this)">
+          <span class="dot-good"></span>
+          <span>Good</span>
+          <span style="font-size: 10.5px; opacity: 0.85;">(109)</span>
+        </button>
+        <button id="pill-caution" type="button" class="filter-pill" onclick="setBandFilter('Caution', this)">
+          <span class="dot-caution"></span>
+          <span>Caution</span>
+          <span style="font-size: 10.5px; opacity: 0.85;">(81)</span>
+        </button>
+        <button id="pill-poor" type="button" class="filter-pill" onclick="setBandFilter('Poor', this)">
+          <span class="dot-poor"></span>
+          <span>Poor</span>
+          <span style="font-size: 10.5px; opacity: 0.85;">(94)</span>
+        </button>
+      </div>
+
+      <!-- Table Header Bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; margin-bottom: 10px; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+        <span>Employee Info</span>
+        <span>API Performance</span>
+      </div>
+
+      <!-- Employee Performance List Items -->
+      <div id="employeePerformanceList">
+
+        <!-- 1. Aaron kwok wei yik (#1231234) -> Caution -->
+        <div class="emp-card" data-band="Caution" data-name="Aaron kwok wei yik" data-id="1231234" data-dept="Operations" data-cc="CC-101">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AK
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Aaron kwok wei yik</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#1231234</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Operations • CC-101 • TIMES SQUARE</div>
+              </div>
+            </div>
+            <div class="band-badge-caution">
+              <span class="dot-caution"></span> Caution
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. ABDUL AZIM BIN ABDUL GHANI (#004188) -> Poor -->
+        <div class="emp-card" data-band="Poor" data-name="ABDUL AZIM BIN ABDUL GHANI" data-id="004188" data-dept="Quality Control" data-cc="CC-102">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #f43f5e, #be123c); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AA
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">ABDUL AZIM BIN ABDUL GHANI</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004188</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Quality Control • CC-102 • HQ KL</div>
+              </div>
+            </div>
+            <div class="band-badge-poor">
+              <span class="dot-poor"></span> Poor
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ABDUL KADIR JALANI BIN JAAFAR (#004189) -> Good -->
+        <div class="emp-card" data-band="Good" data-name="ABDUL KADIR JALANI BIN JAAFAR" data-id="004189" data-dept="Production Line A" data-cc="CC-202">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #047857); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AK
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">ABDUL KADIR JALANI BIN JAAFAR</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004189</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Production Line A • CC-202 • SUNWAY</div>
+              </div>
+            </div>
+            <div class="band-badge-good">
+              <span class="dot-good"></span> Good
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. AHMAD AIMAN FIRDAUS BIN AHMAD RAFY (#004190) -> Good -->
+        <div class="emp-card" data-band="Good" data-name="AHMAD AIMAN FIRDAUS BIN AHMAD RAFY" data-id="004190" data-dept="Logistics" data-cc="CC-404">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #059669, #047857); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AA
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">AHMAD AIMAN FIRDAUS BIN AHMAD RAFY</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004190</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Logistics • CC-404 • MID VALLEY</div>
+              </div>
+            </div>
+            <div class="band-badge-good">
+              <span class="dot-good"></span> Good
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. AHMAD AISAMUDDIN SYAFIQ BIN MOHD AFANDI (#004191) -> Poor -->
+        <div class="emp-card" data-band="Poor" data-name="AHMAD AISAMUDDIN SYAFIQ BIN MOHD AFANDI" data-id="004191" data-dept="Operations" data-cc="CC-101">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #e11d48, #9f1239); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AA
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">AHMAD AISAMUDDIN SYAFIQ BIN MOHD AFANDI</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004191</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Operations • CC-101 • PENANG</div>
+              </div>
+            </div>
+            <div class="band-badge-poor">
+              <span class="dot-poor"></span> Poor
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Ahmad ali (#004192) -> Good -->
+        <div class="emp-card" data-band="Good" data-name="Ahmad ali" data-id="004192" data-dept="Engineering" data-cc="CC-101">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #0369a1); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AA
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Ahmad ali</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004192</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Engineering &amp; IT • CC-101 • HQ KL</div>
+              </div>
+            </div>
+            <div class="band-badge-good">
+              <span class="dot-good"></span> Good
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Ahmad bin ali (#004193) -> Caution -->
+        <div class="emp-card" data-band="Caution" data-name="Ahmad bin ali" data-id="004193" data-dept="Logistics" data-cc="CC-404">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #d97706, #b45309); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AB
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Ahmad bin ali</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004193</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Warehouse • CC-404 • JOHOR BAHRU</div>
+              </div>
+            </div>
+            <div class="band-badge-caution">
+              <span class="dot-caution"></span> Caution
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Ahmad bin musa (#004194) -> Poor -->
+        <div class="emp-card" data-band="Poor" data-name="Ahmad bin musa" data-id="004194" data-dept="Production Line A" data-cc="CC-202">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #be123c, #881337); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AM
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Ahmad bin musa</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004194</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Assembly Line • CC-202 • SUNWAY</div>
+              </div>
+            </div>
+            <div class="band-badge-poor">
+              <span class="dot-poor"></span> Poor
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Ahmad bin sulong (#004195) -> Caution -->
+        <div class="emp-card" data-band="Caution" data-name="Ahmad bin sulong" data-id="004195" data-dept="Operations" data-cc="CC-101">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #b45309, #78350f); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AS
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Ahmad bin sulong</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004195</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Maintenance • CC-101 • MID VALLEY</div>
+              </div>
+            </div>
+            <div class="band-badge-caution">
+              <span class="dot-caution"></span> Caution
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. AHMAD NIZAMUDDIN BIN MUHAMAD (#004196) -> Poor -->
+        <div class="emp-card" data-band="Poor" data-name="AHMAD NIZAMUDDIN BIN MUHAMAD" data-id="004196" data-dept="Production Line A" data-cc="CC-202">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #e11d48, #9f1239); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AN
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">AHMAD NIZAMUDDIN BIN MUHAMAD</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004196</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Packaging • CC-202 • TIMES SQUARE</div>
+              </div>
+            </div>
+            <div class="band-badge-poor">
+              <span class="dot-poor"></span> Poor
+            </div>
+          </div>
+        </div>
+
+        <!-- 11. AHMAD RAFY BIN ZULKIFLE (#004197) -> Good -->
+        <div class="emp-card" data-band="Good" data-name="AHMAD RAFY BIN ZULKIFLE" data-id="004197" data-dept="Quality Control" data-cc="CC-102">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AR
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">AHMAD RAFY BIN ZULKIFLE</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004197</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Quality Control • CC-102 • HQ KL</div>
+              </div>
+            </div>
+            <div class="band-badge-good">
+              <span class="dot-good"></span> Good
+            </div>
+          </div>
+        </div>
+
+        <!-- 12. Afifah Nasir (#004177) -> Good -->
+        <div class="emp-card" data-band="Good" data-name="Afifah Nasir" data-id="004177" data-dept="Quality Control" data-cc="CC-102">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800;">
+                AN
+              </div>
+              <div>
+                <!-- NAME -->
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">Afifah Nasir</div>
+                <!-- EMPLOYEE ID directly BELOW NAME per AGENTS.md rule -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004177</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Quality Control • CC-102 • TIMES SQUARE</div>
+              </div>
+            </div>
+            <div class="band-badge-good">
+              <span class="dot-good"></span> Good
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Component -->
+    <phone-bottom-nav active="attendance"></phone-bottom-nav>
+  </div>
+
+  <!-- Standardized Bottom Sheet Filter Modal with Mandatory Fields: Keywords, Cost Center, Department, API Band -->
+  <div class="modal-overlay" id="filterModalOverlay" onclick="closeFilterModal(event)">
+    <div class="bottom-sheet-content" onclick="event.stopPropagation()">
+      <div class="sheet-handle-pill"></div>
+
+      <!-- Header Row -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Filter Options</h3>
+        <button type="button" onclick="resetFilterModal()" style="padding: 7px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-rotate-left" style="font-size: 12px;"></i> Reset
+        </button>
+      </div>
+
+      <!-- Filter Controls Area: Keywords, Cost Center, Department, API Band -->
+      <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+        
+        <!-- 1. Keywords Field -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">Keywords</label>
+          <input type="text" id="filterKeywordInput" placeholder="Search staff name or #ID..." style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+        </div>
+
+        <!-- 2. Cost Center Selector -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">Cost Center</label>
+          <div style="position: relative;">
+            <select id="filterCostCenterSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+              <option value="all">All Cost Centers</option>
+              <option value="CC-101">CC-101 (Operations &amp; HQ)</option>
+              <option value="CC-102">CC-102 (Quality Control)</option>
+              <option value="CC-202">CC-202 (Production &amp; Assembly)</option>
+              <option value="CC-404">CC-404 (Logistics &amp; Warehouse)</option>
+            </select>
+            <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Department Selector -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">Department</label>
+          <div style="position: relative;">
+            <select id="filterDeptSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+              <option value="all">All Departments</option>
+              <option value="Operations">Operations</option>
+              <option value="Quality Control">Quality Control</option>
+              <option value="Production Line A">Production Line A</option>
+              <option value="Logistics">Logistics &amp; Warehouse</option>
+              <option value="Engineering">Engineering &amp; IT</option>
+            </select>
+            <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. API Performance Band Selector -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: block;">API Band</label>
+          <div style="position: relative;">
+            <select id="filterBandSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+              <option value="all">All API Bands</option>
+              <option value="Good">Good (38.38%)</option>
+              <option value="Caution">Caution (28.52%)</option>
+              <option value="Poor">Poor (33.09%)</option>
+            </select>
+            <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit CTA Button -->
+      <button type="button" onclick="applyFilterModal()" style="width: 100%; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed, #6366f1); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);">
+        Apply Filter
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let activeBand = 'all';
+
+    function openFilterModal() {
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.style.pointerEvents = 'auto';
+        void modal.offsetWidth;
+        modal.classList.add('active');
+      }
+    }
+
+    function closeFilterModal(event) {
+      if (event && event.target && event.target.id !== 'filterModalOverlay' && !event.target.classList.contains('popout-close-btn')) {
+        return;
+      }
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+          modal.style.display = 'none';
+          modal.style.pointerEvents = 'none';
+        }, 280);
+      }
+    }
+
+    function syncKeywordAndFilter() {
+      const query = document.getElementById('empSearchInput').value;
+      document.getElementById('filterKeywordInput').value = query;
+      filterEmpList();
+    }
+
+    function applyFilterModal() {
+      const keyword = document.getElementById('filterKeywordInput').value.trim();
+      const cc = document.getElementById('filterCostCenterSelect').value;
+      const dept = document.getElementById('filterDeptSelect').value;
+      const band = document.getElementById('filterBandSelect').value;
+      
+      // Sync quick search input
+      document.getElementById('empSearchInput').value = keyword;
+
+      const parts = [];
+      if (keyword) parts.push(`"${keyword}"`);
+      parts.push(cc === 'all' ? 'All Cost Centers' : cc);
+      parts.push(dept === 'all' ? 'All Departments' : dept);
+      parts.push(band === 'all' ? 'All API Bands' : band + ' Band');
+
+      document.getElementById('filterSummaryText').innerText = parts.join(' • ');
+
+      // Sync active band pill
+      activeBand = band;
+      document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+      const pillId = 'pill-' + band.toLowerCase();
+      const pillEl = document.getElementById(pillId);
+      if (pillEl) pillEl.classList.add('active');
+
+      filterEmpList();
+      closeFilterModal();
+    }
+
+    function resetFilterModal() {
+      document.getElementById('filterKeywordInput').value = '';
+      document.getElementById('empSearchInput').value = '';
+      document.getElementById('filterCostCenterSelect').value = 'all';
+      document.getElementById('filterDeptSelect').value = 'all';
+      document.getElementById('filterBandSelect').value = 'all';
+      document.getElementById('filterSummaryText').innerText = 'All Cost Centers • All Departments • All API Bands';
+      setBandFilter('all', document.getElementById('pill-all'));
+    }
+
+    function setBandFilter(band, element) {
+      activeBand = band;
+      document.getElementById('filterBandSelect').value = band;
+      document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+      if (element) element.classList.add('active');
+      filterEmpList();
+    }
+
+    function filterEmpList() {
+      const keywordModal = document.getElementById('filterKeywordInput').value.toLowerCase();
+      const queryQuick = document.getElementById('empSearchInput').value.toLowerCase();
+      const query = keywordModal || queryQuick;
+
+      const ccSelect = document.getElementById('filterCostCenterSelect').value;
+      const deptSelect = document.getElementById('filterDeptSelect').value;
+
+      const cards = document.querySelectorAll('#employeePerformanceList .emp-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name').toLowerCase();
+        const id = card.getAttribute('data-id').toLowerCase();
+        const band = card.getAttribute('data-band');
+        const dept = card.getAttribute('data-dept');
+        const cc = card.getAttribute('data-cc');
+
+        const matchesQuery = !query || name.includes(query) || id.includes(query);
+        const matchesBand = (activeBand === 'all' || band === activeBand);
+        const matchesDept = (deptSelect === 'all' || dept === deptSelect);
+        const matchesCc = (ccSelect === 'all' || cc === ccSelect);
+
+        if (matchesQuery && matchesBand && matchesDept && matchesCc) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
