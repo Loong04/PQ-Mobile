@@ -1,351 +1,469 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PeopleHCM - Work Hour Violation</title>
-  <script src="../../../js/components.js"></script>
-  <script src="../../../js/app.js" defer></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../../../css/theme.css">
-  <link rel="stylesheet" href="../../../css/app.css">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
-    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
-    .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
-    .modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; }
-    
-    /* Segmented Tab Switcher */
-    .hist-tab-switcher { display: flex; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 4px; border-radius: 20px; box-shadow: var(--shadow-card); gap: 4px; margin-bottom: 16px; }
-    .hist-tab-btn { flex: 1; padding: 9px 6px; border-radius: 16px; background: transparent; color: var(--text-muted); border: none; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
-    .hist-tab-btn.active { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4); }
-  </style>
-</head>
-<body>
-  <preview-top-bar active-page="attendance"></preview-top-bar>
-  <div class="phone-container">
-    <div class="cal-top-header">
-      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
-            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-          </button>
-          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Work Hour Violation</h1>
-        </div>
-      </div>
-    </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PeopleHCM - Work Hour Violations</title>
+    <script src="../../../js/components.js"></script>
+    <script src="../../../js/app.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/app.css" />
+    <style>
+      body {
+        background-color: var(--bg-page);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: var(--text-primary);
+        padding: 20px 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      .phone-container {
+        width: 100%;
+        max-width: 420px;
+        height: 900px;
+        background: var(--bg-phone);
+        border-radius: 44px;
+        overflow: hidden;
+        box-shadow: var(--shadow-phone);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .cal-top-header {
+        background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+        padding: 12px 16px 14px;
+        border-bottom-left-radius: 22px;
+        border-bottom-right-radius: 22px;
+        box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+        position: relative;
+        z-index: 20;
+      }
+      .main-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 14px 90px;
+        position: relative;
+        z-index: 10;
+        scrollbar-width: none;
+      }
+      .main-content::-webkit-scrollbar {
+        display: none;
+      }
+      
+      /* Stat Box Toggle Switchers */
+      .stat-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 14px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow-sm);
+      }
+      .stat-box.active {
+        border: 2px solid #7c3aed;
+        background: rgba(124, 58, 237, 0.05);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+      }
+      .stat-number {
+        font-size: 26px;
+        font-weight: 900;
+        color: var(--text-primary);
+        line-height: 1.1;
+      }
+      .stat-box.active .stat-number {
+        color: #7c3aed;
+      }
+      .stat-label {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-top: 4px;
+      }
+      .stat-box.active .stat-label {
+        color: #7c3aed;
+      }
 
-    <div class="main-content">
-      <!-- Filter Bar -->
-      <div class="enterprise-toast-bar">
-        <div style="display: flex; flex-direction: column;">
-          <div class="enterprise-toast-label">
-            <span class="enterprise-toast-dot"></span>
-            DATA FILTER
+      /* Card Styling */
+      .violation-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .violation-card:active {
+        transform: scale(0.98);
+      }
+
+      /* Warning Badges inside cards */
+      .badge-warning-amber {
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        border-radius: 14px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .badge-warning-rose {
+        background: rgba(244, 63, 94, 0.12);
+        border: 1px solid rgba(244, 63, 94, 0.25);
+        border-radius: 14px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* Modal Overlay & Bottom Sheet */
+      .modal-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 1000;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        opacity: 0;
+        border-radius: 44px;
+        overflow: hidden;
+      }
+
+      /* Consistent Executive Filter Summary Bar */
+      .filter-summary-bar {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .filter-summary-bar:hover {
+        border-color: rgba(124, 58, 237, 0.35);
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+      }
+      .filter-summary-bar:active {
+        transform: scale(0.99);
+      }
+      .filter-bar-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--purple-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+      }
+      .filter-bar-value {
+        font-size: 13.5px;
+        font-weight: 800;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 270px;
+      }
+      .filter-trigger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 13px;
+        background: var(--bg-input);
+        border: 1px solid var(--border-subtle);
+        color: var(--purple-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+        flex-shrink: 0;
+      }
+      .filter-trigger-btn:active { transform: scale(0.92); }
+    </style>
+  </head>
+  <body>
+    <preview-top-bar active-page="attendance"></preview-top-bar>
+
+    <div class="phone-container">
+      <!-- Top Header -->
+      <div class="cal-top-header">
+        <phone-status-bar time="4:20" style="color: #ffffff;"></phone-status-bar>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button onclick="javascript:history.back()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+              <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+            </button>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Work Hour Violations</h1>
           </div>
-          <div class="enterprise-toast-value" id="filterSummaryText">20 Sep 2026</div>
-        </div>
-        <button type="button" onclick="openFilterModal()" class="enterprise-toast-btn">
-          <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
-        </button>
-      </div>
-
-      <!-- KPI Summary Card -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, rgba(190, 18, 60, 0.04) 100%); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 20px; padding: 16px; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div>
-            <div style="font-size: 11.5px; font-weight: 700; color: #f43f5e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Active Work Hour Violations</div>
-            <div style="font-size: 26px; font-weight: 900; color: var(--text-primary); line-height: 1.1;">4 Flags</div>
-          </div>
-          <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(244, 63, 94, 0.15); color: #f43f5e; display: flex; align-items: center; justify-content: center; font-size: 18px;">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-          </div>
-        </div>
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 8px; border-top: 1px solid rgba(244, 63, 94, 0.15); padding-top: 8px;">
-          Max OT Exceeded: 2 &bull; Min Rest Interval Violations: 2
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="hist-tab-switcher">
-        <button id="tabContinuous" class="hist-tab-btn active" onclick="switchTab('continuous')">
-          <i class="fa-solid fa-business-time"></i> Continuous Work (83)
-        </button>
-        <button id="tabRest" class="hist-tab-btn" onclick="switchTab('rest')">
-          <i class="fa-solid fa-bed"></i> Below 30 Rest Hour (249)
-        </button>
-      </div>
-
-      <!-- Continuous Work Content -->
-      <div id="contentContinuous" style="display: flex; flex-direction: column; gap: 12px;">
+      <!-- Main Scrollable Content -->
+      <div class="main-content">
         
-        <div class="card" onclick="openDetailModal('LSH', '#0000100', 'ACCOUNTS', 'ACCOUNT EXECUTIVE', 'Continuous Work between 10/01/2026 and 16/01/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);">
-                LSH
-              </div>
-              <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">LSH</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#0000100</div>
-              </div>
-            </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
+        <!-- 1. Executive Date Switcher Row -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 8px 12px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
+          <button onclick="shiftDate(-1)" aria-label="Previous Day" style="width: 34px; height: 34px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 13px;"></i>
+          </button>
+          
+          <div onclick="openFilterModal()" style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: var(--text-primary); cursor: pointer;" title="Change Date">
+            <i class="fa-regular fa-calendar-check" style="color: #7c3aed; font-size: 15px;"></i>
+            <span id="currentDateDisplay">16 Jan 2026</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: var(--text-muted);"></i>
           </div>
 
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNTS</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNT EXECUTIVE</span></div>
-          </div>
+          <button onclick="shiftDate(1)" aria-label="Next Day" style="width: 34px; height: 34px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-chevron-right" style="font-size: 13px;"></i>
+          </button>
+        </div>
 
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.18); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-calendar-week" style="color: #7c3aed;"></i> Continuous Work between 10/01/2026 and 16/01/2026
+        <!-- 2. Top 2 Stat Boxes (Continuous Work / Rest < 30 hours) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div id="boxContinuous" class="stat-box active" onclick="switchViolationTab('continuous')">
+            <div id="numContinuous" class="stat-number">83</div>
+            <div class="stat-label">Continuous work</div>
+          </div>
+          <div id="boxRest" class="stat-box" onclick="switchViolationTab('rest')">
+            <div id="numRest" class="stat-number">0</div>
+            <div class="stat-label">Rest &lt; 30 hours</div>
           </div>
         </div>
 
-        <div class="card" onclick="openDetailModal('TAY SIOW KUNG', '#000020', 'HUMAN RESOURCE', 'BFT & COM.EXECUTIVE', 'Continuous Work between 10/01/2026 and 16/01/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
-                TK
-              </div>
-              <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">TAY SIOW KUNG</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000020</div>
-              </div>
+        <!-- 3. Consistent Executive Filter Summary Bar -->
+        <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter records">
+          <div style="flex: 1; min-width: 0; padding-right: 8px;">
+            <div class="filter-bar-label">
+              <span>CURRENT FILTER</span>
             </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
+            <div class="filter-bar-value" id="filterSummaryText">
+              All Branches • All Departments
             </div>
           </div>
-
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">HUMAN RESOURCE</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">BFT & COM.EXECUTIVE</span></div>
-          </div>
-
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.18); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-calendar-week" style="color: #7c3aed;"></i> Continuous Work between 10/01/2026 and 16/01/2026
-          </div>
+          <button type="button" class="filter-trigger-btn" onclick="event.stopPropagation(); openFilterModal();" title="Filter Options" aria-label="Filter Options">
+            <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
+          </button>
         </div>
 
-        <div class="card" onclick="openDetailModal('TAN SIOW SOON', '#000022', 'ACCOUNTS', 'ACCOUNT MANAGER', 'Continuous Work between 10/01/2026 and 16/01/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);">
-                TS
-              </div>
-              <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">TAN SIOW SOON</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000022</div>
-              </div>
-            </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
-          </div>
-
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNTS</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNT MANAGER</span></div>
-          </div>
-
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.18); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-calendar-week" style="color: #7c3aed;"></i> Continuous Work between 10/01/2026 and 16/01/2026
-          </div>
+        <!-- 4. Section Count Header -->
+        <div id="employeeCountHeader" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">
+          83 employees
         </div>
 
-        <div class="card" onclick="openDetailModal('Tony Stunk', '#000053', 'ADMINISTRATION', 'BARISTA', 'Continuous Work between 10/01/2026 and 16/01/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);">
-                TS
+        <!-- 5. Continuous Work Cards View -->
+        <div id="viewContinuous" style="display: flex; flex-direction: column;">
+          
+          <div class="violation-card" onclick="openDetailModal('LSH', '#0000100', 'ACCOUNTS', 'Account Executive', 'Continuous work between 10/01/2026 and 16/01/2026')">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">LSH</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#0000100 &bull; Accounts</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">Account Executive</div>
+            
+            <div class="badge-warning-amber">
+              <div style="width: 26px; height: 26px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
               <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Tony Stunk</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000053</div>
+                <div style="font-size: 12px; font-weight: 800; color: #b45309;">Continuous work</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #d97706;">10 &ndash; 16 Jan 2026</div>
               </div>
             </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
           </div>
 
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">ADMINISTRATION</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">BARISTA</span></div>
-          </div>
-
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.18); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-calendar-week" style="color: #7c3aed;"></i> Continuous Work between 10/01/2026 and 16/01/2026
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Below 30 Rest Hour Content -->
-      <div id="contentRest" style="display: none; flex-direction: column; gap: 12px;">
-
-        <div class="card" onclick="openDetailModal('Aqilah antasha', '#000008', 'ADMINISTRATION', 'ADMIN EXECUTIVE', 'Below 30 Rest Hours at 10/07/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3);">
-                AA
+          <div class="violation-card" onclick="openDetailModal('Tay Siow Kung', '#000020', 'HUMAN RESOURCE', 'BFT & Com. Executive', 'Continuous work between 10/01/2026 and 16/01/2026')">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Tay Siow Kung</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000020 &bull; Human Resource</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">BFT &amp; Com. Executive</div>
+            
+            <div class="badge-warning-amber">
+              <div style="width: 26px; height: 26px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
               <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Aqilah antasha</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000008</div>
+                <div style="font-size: 12px; font-weight: 800; color: #b45309;">Continuous work</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #d97706;">10 &ndash; 16 Jan 2026</div>
               </div>
             </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
           </div>
 
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">ADMINISTRATION</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">ADMIN EXECUTIVE</span></div>
-          </div>
-
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-clock" style="color: #f59e0b;"></i> Below 30 Rest Hours at 10/07/2026
-          </div>
-        </div>
-
-        <div class="card" onclick="openDetailModal('Chan mee ling', '#000009', 'ADMINISTRATION', 'BARISTA', 'Below 30 Rest Hours at 10/07/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);">
-                CM
+          <div class="violation-card" onclick="openDetailModal('Tan Siow Soon', '#000022', 'ACCOUNTS', 'Account Manager', 'Continuous work between 10/01/2026 and 16/01/2026')">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Tan Siow Soon</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000022 &bull; Accounts</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">Account Manager</div>
+            
+            <div class="badge-warning-amber">
+              <div style="width: 26px; height: 26px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
               <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Chan mee ling</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000009</div>
+                <div style="font-size: 12px; font-weight: 800; color: #b45309;">Continuous work</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #d97706;">10 &ndash; 16 Jan 2026</div>
               </div>
             </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
           </div>
 
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">ADMINISTRATION</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">BARISTA</span></div>
-          </div>
-
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-clock" style="color: #f59e0b;"></i> Below 30 Rest Hours at 10/07/2026
-          </div>
-        </div>
-
-        <div class="card" onclick="openDetailModal('Loh Siew Hong', '#0000100', 'ACCOUNTS', 'ACCOUNT EXECUTIVE', 'Below 30 Rest Hours at 10/07/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(3, 105, 161, 0.3);">
-                LS
+          <div class="violation-card" onclick="openDetailModal('Tony Stunk', '#000053', 'ADMINISTRATION', 'Barista', 'Continuous work between 10/01/2026 and 16/01/2026')">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Tony Stunk</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000053 &bull; Administration</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">Barista</div>
+            
+            <div class="badge-warning-amber">
+              <div style="width: 26px; height: 26px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
               <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Loh Siew Hong</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#0000100</div>
+                <div style="font-size: 12px; font-weight: 800; color: #b45309;">Continuous work</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #d97706;">10 &ndash; 16 Jan 2026</div>
               </div>
             </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
           </div>
 
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNTS</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNT EXECUTIVE</span></div>
-          </div>
-
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-clock" style="color: #f59e0b;"></i> Below 30 Rest Hours at 10/07/2026
-          </div>
         </div>
 
-        <div class="card" onclick="openDetailModal('Lee Soon Hock', '#0000101', 'ACCOUNTS', 'ACCOUNT MANAGER', 'Below 30 Rest Hours at 10/07/2026')" style="cursor: pointer; position: relative; padding: 16px; border-radius: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);">
-                LS
+        <!-- 6. Rest Hours Cards View -->
+        <div id="viewRest" style="display: none; flex-direction: column;">
+          
+          <div class="violation-card" onclick="openDetailModal('Aqilah Antasha', '#000008', 'ADMINISTRATION', 'Admin Executive', 'Below 30 Rest Hours at 10/07/2026')">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Aqilah Antasha</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000008 &bull; Administration</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">Admin Executive</div>
+            
+            <div class="badge-warning-rose">
+              <div style="width: 26px; height: 26px; border-radius: 8px; background: rgba(244, 63, 94, 0.2); color: #e11d48; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
               <div>
-                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Lee Soon Hock</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#0000101</div>
+                <div style="font-size: 12px; font-weight: 800; color: #be123c;">Rest below 30 hours</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #e11d48;">10 Jul 2026</div>
               </div>
             </div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px;">
-              <i class="fa-solid fa-chevron-right"></i>
+          </div>
+
+          <div class="violation-card" onclick="openDetailModal('Chan Mee Ling', '#000009', 'ADMINISTRATION', 'Barista', 'Below 30 Rest Hours at 10/07/2026')">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Chan Mee Ling</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#000009 &bull; Administration</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">Barista</div>
+            
+            <div class="badge-warning-rose">
+              <div style="width: 26px; height: 26px; border-radius: 8px; background: rgba(244, 63, 94, 0.2); color: #e11d48; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div>
+                <div style="font-size: 12px; font-weight: 800; color: #be123c;">Rest below 30 hours</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #e11d48;">10 Jul 2026</div>
+              </div>
             </div>
           </div>
 
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-            <div><strong style="color: var(--text-muted);">Department:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNTS</span></div>
-            <div><strong style="color: var(--text-muted);">Job Title:</strong> <span style="color: var(--text-primary); font-weight: 700;">ACCOUNT MANAGER</span></div>
+          <div class="violation-card" onclick="openDetailModal('Loh Siew Hong', '#0000100', 'ACCOUNTS', 'Account Executive', 'Below 30 Rest Hours at 10/07/2026')">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Loh Siew Hong</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#0000100 &bull; Accounts</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">Account Executive</div>
+            
+            <div class="badge-warning-rose">
+              <div style="width: 26px; height: 26px; border-radius: 8px; background: rgba(244, 63, 94, 0.2); color: #e11d48; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div>
+                <div style="font-size: 12px; font-weight: 800; color: #be123c;">Rest below 30 hours</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #e11d48;">10 Jul 2026</div>
+              </div>
+            </div>
           </div>
 
-          <div style="margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--text-secondary); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-clock" style="color: #f59e0b;"></i> Below 30 Rest Hours at 10/07/2026
-          </div>
         </div>
 
-      </div>
-    </div>
+      </div> <!-- End main-content -->
 
-      <!-- Bottom Sheet Filter Modal -->
+      <!-- 7. Bottom Sheet Data Filter Modal (Consistent Design) -->
       <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)" style="align-items: flex-end; padding: 0;">
-        <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 480px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
-          <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
-          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
-            <button type="button" onclick="resetFilterModal()" style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 480px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.45); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+          
+          <div style="width: 38px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
+          
+          <div style="padding: 14px 20px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle);">
+            <h3 style="font-size: 18px; font-weight: 900; color: var(--text-primary); margin: 0;">Data Filter</h3>
+            <button type="button" onclick="resetFilterModal()" style="border-radius: 20px; font-size: 12px; padding: 5px 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
             </button>
           </div>
-          <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;">
+
+          <div style="padding: 16px 20px 24px; flex: 1; display: flex; flex-direction: column; gap: 14px; overflow-y: auto;">
+            
+            <!-- Keyword -->
             <div>
-              <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Date</label>
-              <input type="date" id="filterDate" value="2026-09-20" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+              <label style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block;">Keyword</label>
+              <input type="text" id="filterKeyword" placeholder="Search by name or employee ID..." oninput="applySearchFilter()" style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
             </div>
+
+            <!-- Branch -->
             <div>
-              <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Branch</label>
-              <select id="filterBranchSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none;">
-                <option value="all">- All Branches -</option>
-                <option value="HQ">Headquarters (HQ)</option>
-                <option value="NORTH">Northern Branch</option>
-                <option value="SOUTH">Southern Branch</option>
-              </select>
+              <label style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block;">Branch</label>
+              <div style="position: relative;">
+                <select id="filterBranchSelect" style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none;">
+                  <option value="all" selected>- All Branches -</option>
+                  <option value="HQ">Headquarters (HQ)</option>
+                  <option value="NORTH">Northern Branch</option>
+                  <option value="SOUTH">Southern Branch</option>
+                </select>
+                <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 12px;"><i class="fa-solid fa-chevron-down"></i></div>
+              </div>
             </div>
+
+            <!-- Department -->
             <div>
-              <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Department</label>
-              <select id="filterDeptSelect" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none;">
-                <option value="all">- All Departments -</option>
-                <option value="HR">Human Resources</option>
-                <option value="IT">Information Technology</option>
-                <option value="FINANCE">Finance & Accounts</option>
-              </select>
+              <label style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block;">Department</label>
+              <div style="position: relative;">
+                <select id="filterDeptSelect" style="width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none;">
+                  <option value="all" selected>- All Departments -</option>
+                  <option value="HR">Human Resources</option>
+                  <option value="ACCOUNTS">Accounts</option>
+                  <option value="ADMINISTRATION">Administration</option>
+                  <option value="OPERATIONS">Operations</option>
+                </select>
+                <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 12px;"><i class="fa-solid fa-chevron-down"></i></div>
+              </div>
             </div>
-            <button type="button" onclick="applyFilterModal()" style="width: 100%; margin-top: 10px; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer;">Apply Filter</button>
+
+            <!-- Result Tag -->
+            <div style="padding: 10px 14px; border-radius: 14px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.18); color: var(--purple-primary); font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+              <i class="fa-regular fa-calendar-check" style="font-size: 14px;"></i>
+              <span id="filterModalResultTag">Results for 16 Jan 2026</span>
+            </div>
+
+            <!-- Apply Filter CTA Button -->
+            <button type="button" onclick="applyFilterModal()" style="width: 100%; margin-top: 6px; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 14.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35); transition: transform 0.15s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
+              <span>Apply Filter</span>
+            </button>
+
           </div>
         </div>
       </div>
 
-      <!-- Popout Detail Modal (With Executive Purple Header & Date/Shift Table) -->
+      <!-- 8. Popout Employee Detail Modal (With Table Showing Date & Shift) -->
       <div class="modal-overlay" id="detailModal" onclick="closeDetailModal(event)" style="align-items: center; justify-content: center; padding: 16px;">
         <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 380px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.9); transition: transform 0.3s ease; overflow: hidden; max-height: 85vh; display: flex; flex-direction: column;">
           
-          <!-- Executive Purple Header Bar (Consistent with Page Header) -->
+          <!-- Executive Purple Header Bar -->
           <div style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-top-left-radius: 24px; border-top-right-radius: 24px; flex-shrink: 0;">
             <div>
               <h3 style="font-size: 16.5px; font-weight: 800; color: #ffffff; margin: 0;" id="detailName">Employee Details</h3>
@@ -354,7 +472,7 @@
             <button onclick="closeDetailModalDirect()" style="width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: none; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i class="fa-solid fa-xmark"></i></button>
           </div>
 
-          <!-- Body Content -->
+          <!-- Body Content (Table) -->
           <div style="padding: 16px 18px 18px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px;">
             <div style="overflow-y: auto; flex: 1; max-height: 320px; border: 1px solid var(--border-subtle); border-radius: 14px; overflow: hidden;">
               <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
@@ -372,126 +490,211 @@
         </div>
       </div>
 
-    <phone-bottom-nav active="apps"></phone-bottom-nav>
-  </div>
+      <phone-bottom-nav active="apps"></phone-bottom-nav>
+      <left-profile-drawer></left-profile-drawer>
+      <notification-sheet></notification-sheet>
+      <favourite-sheet></favourite-sheet>
+    </div> <!-- End phone-container -->
 
-  <script>
-    function openFilterModal() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.display = 'flex';
-      setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'translateY(0)'; }, 10);
-    }
-    function closeFilterModal(e) { if (e && e.target !== e.currentTarget) return; closeFilterModalDirect(); }
-    function closeFilterModalDirect() {
-      const m = document.getElementById('filterModal');
-      if (!m) return;
-      m.style.opacity = '0';
-      m.querySelector('.modal-content').style.transform = 'translateY(100%)';
-      setTimeout(() => { m.style.display = 'none'; }, 280);
-    }
-    function resetFilterModal() {
-      document.getElementById('filterDate').value = '2026-09-20';
-      document.getElementById('filterBranchSelect').value = 'all';
-      document.getElementById('filterDeptSelect').value = 'all';
-      closeFilterModalDirect();
-    }
-    function applyFilterModal() { closeFilterModalDirect(); }
-    function switchTab(tabId) {
-      const tabContinuous = document.getElementById('tabContinuous');
-      const tabRest = document.getElementById('tabRest');
-      const contentContinuous = document.getElementById('contentContinuous');
-      const contentRest = document.getElementById('contentRest');
-      
-      tabContinuous.classList.remove('active');
-      tabRest.classList.remove('active');
-      
-      if (tabId === 'continuous') {
-        tabContinuous.classList.add('active');
-        contentContinuous.style.display = 'flex';
-        contentRest.style.display = 'none';
-      } else {
-        tabRest.classList.add('active');
-        contentRest.style.display = 'flex';
-        contentContinuous.style.display = 'none';
-      }
-    }
-    function openDetailModal(name, empNo, dept, job, info) {
-      document.getElementById('detailName').innerText = name;
-      document.getElementById('detailEmpNo').innerText = empNo;
-      
-      const isRest = info.includes('Below 30 Rest');
-      const tbody = document.getElementById('detailTableBody');
-      
-      if (isRest) {
-        tbody.innerHTML = `
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">09/07/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Night Shift (22:00 - 07:00)</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">10/07/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
-          </tr>
-        `;
-      } else {
-        tbody.innerHTML = `
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">10/01/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">11/01/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">12/01/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">General Shift (08:30 - 17:30)</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">13/01/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">14/01/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Flexi Shift (09:00 - 18:00)</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">15/01/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">16/01/2026</td>
-            <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
-          </tr>
-        `;
+    <script>
+      let currentDateObj = new Date(2026, 0, 16); // Default 16 Jan 2026
+      let activeTab = 'continuous';
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      function formatDateDisplay(d) {
+        return `${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
       }
 
-      const m = document.getElementById('detailModal');
-      if (!m) return;
-      m.style.display = 'flex';
-      setTimeout(() => {
-        m.style.opacity = '1';
+      function shiftDate(deltaDays) {
+        currentDateObj.setDate(currentDateObj.getDate() + deltaDays);
+        const str = formatDateDisplay(currentDateObj);
+        document.getElementById('currentDateDisplay').innerText = str;
+        document.getElementById('filterModalResultTag').innerText = `Results for ${str}`;
+      }
+
+      function switchViolationTab(tabId) {
+        activeTab = tabId;
+        const boxContinuous = document.getElementById('boxContinuous');
+        const boxRest = document.getElementById('boxRest');
+        const viewContinuous = document.getElementById('viewContinuous');
+        const viewRest = document.getElementById('viewRest');
+        const employeeCountHeader = document.getElementById('employeeCountHeader');
+        
+        boxContinuous.classList.remove('active');
+        boxRest.classList.remove('active');
+        
+        if (tabId === 'continuous') {
+          boxContinuous.classList.add('active');
+          viewContinuous.style.display = 'flex';
+          viewRest.style.display = 'none';
+          employeeCountHeader.innerText = '83 employees';
+        } else {
+          boxRest.classList.add('active');
+          viewRest.style.display = 'flex';
+          viewContinuous.style.display = 'none';
+          employeeCountHeader.innerText = '249 employees';
+          document.getElementById('numRest').innerText = '249';
+        }
+      }
+
+      function applySearchFilter() {
+        const kw = (document.getElementById('filterKeyword')?.value || '').toLowerCase().trim();
+        const bFilter = document.getElementById('filterBranchSelect')?.value || 'all';
+        const dFilter = document.getElementById('filterDeptSelect')?.value || 'all';
+        
+        const activeView = activeTab === 'continuous' ? document.getElementById('viewContinuous') : document.getElementById('viewRest');
+        if (!activeView) return;
+        const cards = activeView.getElementsByClassName('violation-card');
+        
+        let visibleCount = 0;
+        for (let card of cards) {
+          const text = card.innerText.toLowerCase();
+          const matchKw = (!kw || text.includes(kw));
+          const matchBranch = (bFilter === 'all' || text.includes(bFilter.toLowerCase()));
+          const matchDept = (dFilter === 'all' || text.includes(dFilter.toLowerCase()));
+          
+          if (matchKw && matchBranch && matchDept) {
+            card.style.display = 'block';
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        }
+        
+        const countHeader = document.getElementById('employeeCountHeader');
+        if (countHeader) {
+          countHeader.innerText = `${visibleCount} employee${visibleCount === 1 ? '' : 's'}`;
+        }
+      }
+
+      function openFilterModal() {
+        const m = document.getElementById('filterModal');
+        if (!m) return;
+        m.style.display = 'flex';
+        setTimeout(() => { m.style.opacity = '1'; m.querySelector('.modal-content').style.transform = 'translateY(0)'; }, 10);
+      }
+
+      function closeFilterModal(e) {
+        if (e && e.target !== e.currentTarget) return;
+        closeFilterModalDirect();
+      }
+
+      function closeFilterModalDirect() {
+        const m = document.getElementById('filterModal');
+        if (!m) return;
+        m.style.opacity = '0';
+        m.querySelector('.modal-content').style.transform = 'translateY(100%)';
+        setTimeout(() => { m.style.display = 'none'; }, 280);
+      }
+
+      function resetFilterModal() {
+        if (document.getElementById('filterBranchSelect')) document.getElementById('filterBranchSelect').value = 'all';
+        if (document.getElementById('filterDeptSelect')) document.getElementById('filterDeptSelect').value = 'all';
+        if (document.getElementById('filterKeyword')) document.getElementById('filterKeyword').value = '';
+        updateFilterSummaryLabel();
+        closeFilterModalDirect();
+        applySearchFilter();
+      }
+
+      function applyFilterModal() {
+        updateFilterSummaryLabel();
+        closeFilterModalDirect();
+        applySearchFilter();
+      }
+
+      function updateFilterSummaryLabel() {
+        const b = document.getElementById('filterBranchSelect')?.value || 'all';
+        const d = document.getElementById('filterDeptSelect')?.value || 'all';
+        const kw = document.getElementById('filterKeyword')?.value.trim() || '';
+        
+        let parts = [];
+        if (kw) parts.push(`"${kw}"`);
+        parts.push(b === 'all' ? 'All Branches' : (b === 'HQ' ? 'HQ' : b));
+        parts.push(d === 'all' ? 'All Departments' : d);
+        
+        const summaryElem = document.getElementById('filterSummaryText');
+        if (summaryElem) {
+          summaryElem.innerText = parts.join(' • ');
+        }
+      }
+
+      function openDetailModal(name, empNo, dept, job, info) {
+        document.getElementById('detailName').innerText = name;
+        document.getElementById('detailEmpNo').innerText = empNo;
+        
+        const isRest = info.includes('Below 30 Rest') || info.includes('Rest below');
+        const tbody = document.getElementById('detailTableBody');
+        
+        if (isRest) {
+          tbody.innerHTML = `
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">09/07/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Night Shift (22:00 - 07:00)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">10/07/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML = `
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">10/01/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">11/01/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">12/01/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">General Shift (08:30 - 17:30)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">13/01/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">14/01/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Flexi Shift (09:00 - 18:00)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">15/01/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 12px; font-weight: 700; color: var(--text-primary);">16/01/2026</td>
+              <td style="padding: 10px 12px; color: var(--text-secondary);">Morning Shift (08:00 - 17:00)</td>
+            </tr>
+          `;
+        }
+
+        const m = document.getElementById('detailModal');
+        if (!m) return;
+        m.style.display = 'flex';
+        setTimeout(() => {
+          m.style.opacity = '1';
+          const mc = m.querySelector('.modal-content');
+          if (mc) mc.style.transform = 'scale(1)';
+        }, 10);
+      }
+
+      function closeDetailModal(e) {
+        if (e && e.target !== e.currentTarget) return;
+        closeDetailModalDirect();
+      }
+
+      function closeDetailModalDirect() {
+        const m = document.getElementById('detailModal');
+        if (!m) return;
+        m.style.opacity = '0';
         const mc = m.querySelector('.modal-content');
-        if (mc) mc.style.transform = 'scale(1)';
-      }, 10);
-    }
-
-    function closeDetailModal(e) {
-      if (e && e.target !== e.currentTarget) return;
-      closeDetailModalDirect();
-    }
-
-    function closeDetailModalDirect() {
-      const m = document.getElementById('detailModal');
-      if (!m) return;
-      m.style.opacity = '0';
-      const mc = m.querySelector('.modal-content');
-      if (mc) mc.style.transform = 'scale(0.9)';
-      setTimeout(() => {
-        m.style.display = 'none';
-      }, 250);
-    }
-  </script>
-</body>
+        if (mc) mc.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+          m.style.display = 'none';
+        }, 250);
+      }
+    </script>
+  </body>
 </html>

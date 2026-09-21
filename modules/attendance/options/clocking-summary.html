@@ -66,7 +66,7 @@
     .filter-bar-label {
       font-size: 10.5px;
       font-weight: 700;
-      color: #a78bfa;
+      color: var(--purple-primary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 2px;
@@ -245,6 +245,89 @@
       overflow: hidden;
     }
     .modal-overlay.active { opacity: 1; }
+
+    /* Centered Popout Modal Dialog styling */
+    .modal-overlay.popout-mode {
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 18px;
+    }
+    .popout-dialog-card {
+      width: 100%;
+      max-width: 380px;
+      max-height: 82vh;
+      background: var(--bg-card);
+      border-radius: 22px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+      box-sizing: border-box;
+    }
+    .modal-overlay.active .popout-dialog-card {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    /* Executive Colored Header Bar */
+    .popout-hdr-colored {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      padding: 14px 18px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .popout-hdr-title {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      letter-spacing: 0.3px;
+    }
+    .popout-close-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .popout-close-btn:hover { background: rgba(255, 255, 255, 0.35); }
+    .popout-close-btn:active { transform: scale(0.92); }
+
+    .popout-body-content {
+      padding: 14px 18px;
+      overflow-y: auto;
+      flex: 1;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .popout-body-content::-webkit-scrollbar,
+    #detailsListContainer::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+    #detailsListContainer {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
     .bottom-sheet-content {
       width: 100%;
@@ -495,13 +578,33 @@
           </button>
         </div>
 
-        <!-- Summary Stats Line & View Chart Button -->
-        <div class="summary-info-row">
-          <div class="summary-counts-col">
-            <div class="count-label-line">Total Records: <strong id="totalRecordsVal">1</strong></div>
-            <div class="count-label-line">Total Count: <strong id="totalCountVal">3</strong></div>
+        <!-- Summary Executive KPI Stats & View Chart Row -->
+        <div class="summary-info-row" style="display: flex; align-items: stretch; justify-content: space-between; margin-bottom: 14px; gap: 8px; border-bottom: none; padding: 0 2px;">
+          
+          <!-- KPI 1: Total Records -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); flex: 1; min-width: 0;">
+            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div style="display: flex; flex-direction: column; min-width: 0;">
+              <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;">Records</span>
+              <span id="totalRecordsVal" style="font-size: 15px; font-weight: 900; color: var(--text-primary); line-height: 1.1;">4</span>
+            </div>
           </div>
-          <button type="button" class="view-chart-btn" onclick="showSectionView('chart')">
+
+          <!-- KPI 2: Total Count -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); flex: 1.1; min-width: 0;">
+            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.25); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
+              <i class="fa-solid fa-user-clock"></i>
+            </div>
+            <div style="display: flex; flex-direction: column; min-width: 0;">
+              <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;">Total Count</span>
+              <span id="totalCountVal" style="font-size: 15px; font-weight: 900; color: #10b981; line-height: 1.1;">24</span>
+            </div>
+          </div>
+
+          <!-- View Chart Action Button -->
+          <button type="button" class="view-chart-btn" onclick="showSectionView('chart')" style="padding: 8px 11px; border-radius: 14px; border: 1px solid rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; flex-shrink: 0; cursor: pointer;">
             <i class="fa-solid fa-chart-pie"></i>
             <span>View Chart</span>
           </button>
@@ -539,7 +642,7 @@
             </svg>
             <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 120px;">
               <div id="summaryCenterTotal" style="font-size: 24px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px;">24</div>
-              <div id="summaryCenterBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 4px;">Total Clockings</div>
+              <div id="summaryCenterBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 4px;">Clock Transactions</div>
             </div>
           </div>
         </div>
@@ -547,7 +650,7 @@
         <!-- Breakdown Legend Table Card -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-sm);">
           <div style="display: grid; grid-template-columns: 1fr 60px 75px; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-            <div>SECTION</div>
+            <div>BRANCH</div>
             <div style="text-align: right;">COUNT</div>
             <div style="text-align: right;">% TOTAL</div>
           </div>
@@ -681,28 +784,31 @@
       </div>
     </div>
 
-    <!-- MODAL 2: PERSONNEL CLOCKING DETAILS MODAL -->
-    <div class="modal-overlay" id="detailsModal" onclick="closeDetailsModal(event)">
-      <div class="bottom-sheet-content" onclick="event.stopPropagation()" style="max-height: 84vh;">
-        <div class="sheet-handle-pill"></div>
+    <!-- MODAL 2: PERSONNEL CLOCKING DETAILS MODAL (CENTER POPOUT DIALOG WITH COLORED HEADER) -->
+    <div class="modal-overlay popout-mode" id="detailsModal" onclick="closeDetailsModal(event)">
+      <div class="popout-dialog-card" onclick="event.stopPropagation()">
         
-        <div class="filter-header-row">
+        <!-- Colored Header Bar -->
+        <div class="popout-hdr-colored">
           <div>
-            <h3 class="filter-modal-title" id="modalSectionTitle">BENEFITS</h3>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;" id="modalSectionMeta">Cost Centre: MANAGEMENT</div>
+            <h3 class="popout-hdr-title" id="modalSectionTitle">BENEFITS</h3>
+            <div style="font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, 0.85); margin-top: 2px;" id="modalSectionMeta">Cost Centre: MANAGEMENT</div>
           </div>
-          <button type="button" class="filter-reset-btn" onclick="closeDetailsModalDirect()">
-            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Close
+          <button type="button" class="popout-close-btn" onclick="closeDetailsModalDirect()" title="Close details">
+            <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
-        <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-          <span>Personnel Clocking Details</span>
-          <span id="modalRecordCount" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">3 Records</span>
-        </div>
+        <!-- Body Content -->
+        <div class="popout-body-content">
+          <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <span>Personnel Clocking Details</span>
+            <span id="modalRecordCount" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">3 Records</span>
+          </div>
 
-        <div id="detailsListContainer" style="display: flex; flex-direction: column; overflow-y: auto; flex: 1; padding-right: 2px;">
-          <!-- Dynamically populated personnel list with name, id (below name), clock type/time, clock mode -->
+          <div id="detailsListContainer" style="display: flex; flex-direction: column; overflow-y: auto; max-height: 52vh; padding-right: 2px;">
+            <!-- Dynamically populated personnel list -->
+          </div>
         </div>
       </div>
     </div>
@@ -823,7 +929,16 @@
 
     function updateFilterSummaryDisplay() {
       const dateVal = document.getElementById('filterDateInput')?.value;
-      const displayDate = dateVal ? dateVal : formatDateDisplay(currentDateObj);
+      let displayDate = formatDateDisplay(currentDateObj);
+      if (dateVal) {
+        const p = dateVal.split('-');
+        if (p.length === 3) {
+          const parsed = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+          if (!isNaN(parsed.getTime())) {
+            displayDate = formatDateDisplay(parsed);
+          }
+        }
+      }
       const branch = document.getElementById('filterBranchSelect')?.value || 'all';
       const dept = document.getElementById('filterDeptSelect')?.value || 'all';
       const sec = document.getElementById('filterSectionSelect')?.value || 'all';
@@ -909,18 +1024,29 @@
         return matchBranch && matchDept && matchSection && matchCostCenter && matchClockType;
       });
 
+      // Group counts by Branch ("下面是 branch")
+      const branchMap = {};
       let grandTotal = 0;
-      filtered.forEach(item => { grandTotal += item.count; });
+      filtered.forEach(item => {
+        const b = item.branch || 'HQ - KL Main';
+        branchMap[b] = (branchMap[b] || 0) + item.count;
+        grandTotal += item.count;
+      });
 
+      // Center number & label ("chart 是 3 clock transaction")
       document.getElementById('summaryCenterTotal').innerText = grandTotal;
+      const centerBadge = document.getElementById('summaryCenterBadge');
+      if (centerBadge) centerBadge.innerText = 'Clock Transactions';
 
       const colors = ['#7c3aed', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
-      
-      const chartItems = filtered.map((item, idx) => {
-        const pct = grandTotal > 0 ? (item.count / grandTotal) * 100 : 0;
+      const branchKeys = Object.keys(branchMap);
+
+      const chartItems = branchKeys.map((bName, idx) => {
+        const val = branchMap[bName];
+        const pct = grandTotal > 0 ? (val / grandTotal) * 100 : 0;
         return {
-          name: item.section,
-          val: item.count,
+          name: bName,
+          val: val,
           pct: pct,
           color: colors[idx % colors.length]
         };
@@ -944,7 +1070,7 @@
         svgGroup.innerHTML = circlesHtml;
       }
 
-      // Render Legend Grid Rows
+      // Render Legend Grid Rows (by Branch)
       const grid = document.getElementById('summaryChartLegendGrid');
       if (grid) {
         let listHtml = '';
@@ -983,43 +1109,61 @@
         `;
       } else {
         container.innerHTML = details.map(d => `
-          <div class="staff-clock-card">
-            <div class="staff-avatar-bubble">
-              <i class="fa-solid fa-user"></i>
-            </div>
-            <div class="staff-info-col">
-              <!-- Personnel Name -->
-              <div class="staff-name-text">${d.name}</div>
-              
-              <!-- Personnel ID: REPOSITORY RULE (AGENTS.md) - placed directly BELOW name with leading # -->
-              <div class="staff-emp-badge">${d.empNo}</div>
-              
-              <!-- Date, Start Time & End Time -->
-              <div class="staff-meta-row">
-                <i class="fa-regular fa-calendar" style="font-size: 10.5px; color: var(--purple-primary);"></i>
-                <span>${d.date || '20 Sep 2026'}</span>
-                <span>•</span>
-                <i class="fa-regular fa-clock" style="font-size: 10.5px; color: var(--purple-primary);"></i>
-                <span>${d.startTime || '08:00 AM'} - ${d.endTime || '05:30 PM'}</span>
+          <div class="staff-clock-card" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 14px 16px; margin-bottom: 12px; display: flex; flex-direction: column; align-items: stretch; gap: 0;">
+            <!-- Top Row: Avatar, Name, Employee ID (below name per AGENTS.md), and Clock Type Badge -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="staff-avatar-bubble" style="width: 40px; height: 40px; border-radius: 12px; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                  <div class="staff-name-text" style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${d.name}</div>
+                  <!-- REPOSITORY RULE (AGENTS.md): Employee ID placed directly BELOW name with leading # -->
+                  <div class="staff-emp-badge" style="margin: 2px 0 0 0;">${d.empNo}</div>
+                </div>
               </div>
+              <div class="clock-type-tag ${d.typeClass || (d.type === 'Clock Out' ? 'type-out' : 'type-in')}" style="padding: 5px 12px; font-size: 11.5px; flex-shrink: 0;">
+                ${d.type}
+              </div>
+            </div>
 
-              <!-- Branch, Department, Section & Cost Center -->
-              <div class="staff-meta-row" style="margin-top: 3px; font-size: 11px; opacity: 0.85;">
-                <span>${d.branch || item.branch}</span>
-                <span>•</span>
-                <span>${d.dept || item.dept}</span>
+            <!-- Subtle Horizontal Divider -->
+            <div style="height: 1px; background: var(--border-subtle); margin: 10px 0 10px; opacity: 0.6;"></div>
+
+            <!-- Structured Metadata Grid: 2 Columns -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; font-size: 11.5px;">
+              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
+                <i class="fa-regular fa-calendar" style="color: var(--purple-primary); font-size: 11px; flex-shrink: 0;"></i>
+                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap;">${d.date || '20 Sep 2026'}</span>
               </div>
-              <div class="staff-meta-row" style="margin-top: 2px; font-size: 11px; opacity: 0.85;">
-                <span>Sec: ${d.section || item.section}</span>
-                <span>•</span>
-                <span>CC: ${d.costCenter || item.costCenter}</span>
-                <span>•</span>
-                <span>${d.mode}</span>
+              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
+                <i class="fa-regular fa-clock" style="color: var(--purple-primary); font-size: 11px; flex-shrink: 0;"></i>
+                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap;">${d.startTime || '08:00 AM'} - ${d.endTime || '05:30 PM'}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
+                <i class="fa-solid fa-building" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
+                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.branch || item.branch}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
+                <i class="fa-solid fa-sitemap" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
+                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.dept || item.dept}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
+                <i class="fa-solid fa-layer-group" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
+                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.section || item.section}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
+                <i class="fa-solid fa-wallet" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
+                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.costCenter || item.costCenter}</span>
               </div>
             </div>
-            <!-- Clock Type Badge -->
-            <div class="clock-type-tag ${d.typeClass || (d.type === 'Clock Out' ? 'type-out' : 'type-in')}">
-              ${d.type}
+
+            <!-- Footer Badge: Clock Mode -->
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-subtle); display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+              <span style="display: flex; align-items: center; gap: 6px; font-weight: 700;">
+                <i class="fa-solid fa-mobile-screen" style="font-size: 10px; color: var(--purple-primary);"></i>
+                <span>${d.mode}</span>
+              </span>
             </div>
           </div>
         `).join('');
