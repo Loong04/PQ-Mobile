@@ -18,6 +18,7 @@
         let empId = id || '#004177';
         let dept = 'Quality Assurance • TIMES SQUARE BRANCH';
         let type = 'Final OT Request';
+        let otType = 'OT 1.5 BEFORE WORK';
         let reason = 'Operations';
         let dates = 'Wed, 25/02/2026';
         let duration = '2.0 Hours';
@@ -33,6 +34,17 @@
           const typeEls = card.querySelectorAll('div[style*="font-size: 13.5px"]');
           if (typeEls && typeEls.length > 0) type = typeEls[0].textContent.trim();
 
+          const customOtType = card.getAttribute('data-ot-type');
+          if (customOtType) {
+            otType = customOtType;
+          } else if (name && (name.toLowerCase().includes('tan') || name.toLowerCase().includes('alex'))) {
+            otType = 'OT 1.5 BEFORE WORK';
+          } else if (name && (name.toLowerCase().includes('lim') || name.toLowerCase().includes('sarah'))) {
+            otType = 'Rest OT';
+          } else if (type && (type.includes('1.5') || type.includes('BEFORE WORK') || type.includes('Rest'))) {
+            otType = type;
+          }
+
           const remarkEl = card.querySelector('div[style*="background: var(--bg-input)"]');
           if (remarkEl) remark = remarkEl.textContent.trim();
         }
@@ -42,6 +54,7 @@
           empId: empId.startsWith('#') ? empId : '#' + empId,
           dept: dept,
           type: type,
+          otType: otType,
           reason: reason,
           dates: dates,
           duration: duration,
@@ -113,7 +126,7 @@
         setVal('attFieldActualHours', data.duration ? data.duration.replace(/[^0-9.]/g, '') || '0.50' : '0.50');
         setVal('attFieldApprovedHours', '0.00');
         setVal('attFieldApprovalMethod', '-');
-        setVal('attFieldOtType', data.type || 'OT 1.5 BEFORE WORK');
+        setVal('attFieldOtType', data.otType || (data.name && (data.name.toLowerCase().includes('tan') || data.name.toLowerCase().includes('alex')) ? 'Rest OT' : 'OT 1.5 BEFORE WORK'));
         setVal('attFieldOtReason', data.reason || 'System OT Reason');
         setVal('attFieldTask', '-');
         setVal('attFieldAllowLeaveCredit', 'No');
@@ -144,6 +157,22 @@
       function closeAttendanceDetailsModal(event) {
         if (event && event.target && event.target.id !== 'attendanceDetailsModalOverlay' && !event.target.closest('button[title="Back"]') && !event.target.classList.contains('sheet-close-btn')) {
           return;
+        }
+        const overlay = document.getElementById('attendanceDetailsModalOverlay');
+        if (overlay) {
+          overlay.style.opacity = '0';
+          overlay.style.pointerEvents = 'none';
+          overlay.classList.remove('active');
+          const card = overlay.querySelector('.details-popout-card');
+          if (card) {
+            card.style.transform = 'scale(0.95)';
+          }
+        }
+      }
+
+      function handleAttendanceDetailAction(actionName) {
+        if (typeof showToast === 'function') {
+          showToast(`Request ${actionName} action completed`);
         }
         const overlay = document.getElementById('attendanceDetailsModalOverlay');
         if (overlay) {
@@ -3133,18 +3162,18 @@
 
     <!-- ATTENDANCE VIEW DETAILS MODAL (POP OUT - MATCHING USER SCREENSHOT) -->
     <div class="indicators-overlay" id="attendanceDetailsModalOverlay" onclick="closeAttendanceDetailsModal(event)" style="position: absolute; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 44px; overflow: hidden; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); padding: 16px;">
-      <div class="details-popout-card" onclick="event.stopPropagation()" style="width: 92%; max-width: 380px; height: 70%; max-height: 70%; background: var(--bg-card); display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4); border: 1px solid var(--border-subtle); transform: scale(0.94); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+      <div class="details-popout-card" onclick="event.stopPropagation()" style="width: 92%; max-width: 380px; height: 82%; max-height: 85%; background: var(--bg-card); display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4); border: 1px solid var(--border-subtle); transform: scale(0.94); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
         
         <!-- Purple Top Header Bar matching user photo -->
         <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); color: #ffffff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 4px 14px rgba(76, 29, 149, 0.35); z-index: 10;">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <h2 id="attDetailHeaderTitle" style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.2px;">Final OT Approval</h2>
+            <h2 id="attDetailHeaderTitle" style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.2px;">Attendance Request Approval</h2>
           </div>
           <button type="button" onclick="closeAttendanceDetailsModal(event)" class="sheet-close-btn" title="Close" style="background: rgba(255, 255, 255, 0.2); border: none; color: #ffffff; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">✕</button>
         </div>
 
         <!-- Scrollable Details Content List as Table matching leave.html -->
-        <div style="flex: 1; overflow-y: auto; padding: 14px 16px 20px 16px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none;">
+        <div style="flex: 1; overflow-y: auto; padding: 14px 16px 14px 16px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none;">
           
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05); flex-shrink: 0;">
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
@@ -3262,6 +3291,32 @@
           </div>
 
         </div>
+
+        <!-- Executive 4 Action Buttons Footer: Approve, Backup, Resubmit, Reject -->
+        <div style="padding: 12px 14px 14px; border-top: 1px solid var(--border-subtle); background: var(--bg-card); flex-shrink: 0; z-index: 10;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <!-- 1. Approve Button (Emerald Green Gradient) -->
+            <button type="button" onclick="handleAttendanceDetailAction('Approve')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+              <i class="fa-solid fa-circle-check" style="font-size: 14px;"></i> Approve
+            </button>
+            
+            <!-- 2. Backup Button (Royal Blue Gradient) -->
+            <button type="button" onclick="handleAttendanceDetailAction('Backup')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+              <i class="fa-solid fa-box-archive" style="font-size: 14px;"></i> Backup
+            </button>
+
+            <!-- 3. Resubmit Button (Vibrant Amber Gold Gradient) -->
+            <button type="button" onclick="handleAttendanceDetailAction('Resubmit')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+              <i class="fa-solid fa-rotate" style="font-size: 14px;"></i> Resubmit
+            </button>
+
+            <!-- 4. Reject Button (Crimson Rose Red Gradient) -->
+            <button type="button" onclick="handleAttendanceDetailAction('Reject')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+              <i class="fa-solid fa-circle-xmark" style="font-size: 14px;"></i> Reject
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -3711,23 +3766,23 @@
         ],
         pending_approval: [
           // Final OT Requests (Final Overtime Claim submissions after working OT)
-          { name: "Alex Tan", id: "#001002", dept: "Operations Exec", category: "final_ot", type: "Final OT Request", reason: "Monthly Operations Closing", startDate: "Wed, 25/02/2026", endDate: "Wed, 25/02/2026", duration: "2.5 Hours (17:00 – 19:30)", remark: "Actual overtime hours worked for month-end system batch operations.", statusText: "Final OT Request (2.5 Hours)" },
-          { name: "Sarah Lim", id: "#001015", dept: "Production Lead", category: "final_ot", type: "Final OT Request", reason: "Emergency Line Maintenance", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "2.0 Hours (17:00 – 19:00)", remark: "Completed urgent repair on Line A main conveyor belt post-shift.", statusText: "Final OT Request (2.0 Hours)" },
-          { name: "David Miller", id: "#001052", dept: "Assembly Supervisor", category: "final_ot", type: "Final OT Request", reason: "Urgent Export Order", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "3.0 Hours (17:00 – 20:00)", remark: "Supervised extra packing shift for international container shipment.", statusText: "Final OT Request (3.0 Hours)" },
-          { name: "Chung Wei", id: "#001158", dept: "Production Specialist", category: "final_ot", type: "Final OT Request", reason: "Machine Tooling", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "1.5 Hours (17:00 – 18:30)", remark: "Assisted CNC tool replacement for early morning production run.", statusText: "Final OT Request (1.5 Hours)" },
-          { name: "Kevin Wong", id: "#001031", dept: "Quality Controller", category: "final_ot", type: "Final OT Request", reason: "Raw Material Inspection", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "2.0 Hours (17:00 – 19:00)", remark: "Inspected incoming raw material batch QA report post-delivery.", statusText: "Final OT Request (2.0 Hours)" },
+          { name: "Alex Tan", id: "#001002", dept: "Operations Exec", category: "final_ot", type: "OT 1.5 BEFORE WORK", otType: "OT 1.5 BEFORE WORK", reason: "Monthly Operations Closing", startDate: "Wed, 25/02/2026", endDate: "Wed, 25/02/2026", duration: "2.5 Hours", actualHours: "2.50 hrs", approvedHours: "2.50 hrs", clocking: "07:03 AM – 07:30 PM", shift: "08:00 AM – 05:30 PM", remark: "Actual overtime hours worked for month-end system batch operations.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Sarah Lim", id: "#001015", dept: "Production Lead", category: "final_ot", type: "Rest OT", otType: "Rest OT", reason: "Emergency Line Maintenance", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "2.0 Hours", actualHours: "2.00 hrs", approvedHours: "2.00 hrs", clocking: "07:55 AM – 07:00 PM", shift: "08:00 AM – 05:30 PM", remark: "Completed urgent repair on Line A main conveyor belt post-shift.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "David Miller", id: "#001052", dept: "Assembly Supervisor", category: "final_ot", type: "OT 1.5 BEFORE WORK", otType: "OT 1.5 BEFORE WORK", reason: "Urgent Export Order", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "3.0 Hours", actualHours: "3.00 hrs", approvedHours: "3.00 hrs", clocking: "07:45 AM – 08:00 PM", shift: "08:00 AM – 05:30 PM", remark: "Supervised extra packing shift for international container shipment.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Chung Wei", id: "#001158", dept: "Production Specialist", category: "final_ot", type: "Rest OT", otType: "Rest OT", reason: "Machine Tooling", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "1.5 Hours", actualHours: "1.50 hrs", approvedHours: "1.50 hrs", clocking: "07:50 AM – 06:30 PM", shift: "08:00 AM – 05:30 PM", remark: "Assisted CNC tool replacement for early morning production run.", docStatus: "Draft", statusText: "Draft" },
+          { name: "Kevin Wong", id: "#001031", dept: "Quality Controller", category: "final_ot", type: "OT 1.5 BEFORE WORK", otType: "OT 1.5 BEFORE WORK", reason: "Raw Material Inspection", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "2.0 Hours", actualHours: "2.00 hrs", approvedHours: "2.00 hrs", clocking: "08:00 AM – 07:00 PM", shift: "08:00 AM – 05:30 PM", remark: "Inspected incoming raw material batch QA report post-delivery.", docStatus: "Submitted", statusText: "Submitted" },
 
           // OT Plan Requests (Pre-approved OT planning prior to work)
-          { name: "Michelle Chen", id: "#001048", dept: "Senior Engineer", category: "ot_plan", type: "OT Plan Request", reason: "PLC Calibration", startDate: "Fri, 27/02/2026", endDate: "Fri, 27/02/2026", duration: "2.0 Hours (18:00 – 20:00)", remark: "Pre-scheduled maintenance for main plant PLC controller unit.", statusText: "OT Plan Request (2.0 Hours)" },
-          { name: "Rachel Adams", id: "#001102", dept: "QA Tester", category: "ot_plan", type: "OT Plan Request", reason: "Release Verification", startDate: "Mon, 02/03/2026", endDate: "Mon, 02/03/2026", duration: "1.5 Hours (17:00 – 18:30)", remark: "Planned regression test execution for v4.2 staging build.", statusText: "OT Plan Request (1.5 Hours)" },
-          { name: "John Smith", id: "#001175", dept: "QC Inspector", category: "ot_plan", type: "OT Plan Request", reason: "Cargo Inspection", startDate: "Wed, 04/03/2026", endDate: "Wed, 04/03/2026", duration: "3.0 Hours (17:00 – 20:00)", remark: "Planned inspection for incoming container shipment from port.", statusText: "OT Plan Request (3.0 Hours)" },
-          { name: "Amanda Lee", id: "#001140", dept: "Warehouse Coordinator", category: "ot_plan", type: "OT Plan Request", reason: "Quarterly Stock Audit", startDate: "Sat, 07/03/2026", endDate: "Sat, 07/03/2026", duration: "4.0 Hours (08:00 – 12:00)", remark: "Pre-approved weekend inventory counting & warehouse audit.", statusText: "OT Plan Request (4.0 Hours)" },
+          { name: "Michelle Chen", id: "#001048", dept: "Senior Engineer", category: "ot_plan", type: "OT 1.5 BEFORE WORK", otType: "OT 1.5 BEFORE WORK", reason: "PLC Calibration", startDate: "Fri, 27/02/2026", endDate: "Fri, 27/02/2026", duration: "2.0 Hours (18:00 – 20:00)", remark: "Pre-scheduled maintenance for main plant PLC controller unit.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Rachel Adams", id: "#001102", dept: "QA Tester", category: "ot_plan", type: "Rest OT", otType: "Rest OT", reason: "Release Verification", startDate: "Mon, 02/03/2026", endDate: "Mon, 02/03/2026", duration: "1.5 Hours (17:00 – 18:30)", remark: "Planned regression test execution for v4.2 staging build.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "John Smith", id: "#001175", dept: "QC Inspector", category: "ot_plan", type: "OT 1.5 BEFORE WORK", otType: "OT 1.5 BEFORE WORK", reason: "Cargo Inspection", startDate: "Wed, 04/03/2026", endDate: "Wed, 04/03/2026", duration: "3.0 Hours (17:00 – 20:00)", remark: "Planned inspection for incoming container shipment from port.", docStatus: "Draft", statusText: "Draft" },
+          { name: "Amanda Lee", id: "#001140", dept: "Warehouse Coordinator", category: "ot_plan", type: "Rest OT", otType: "Rest OT", reason: "Quarterly Stock Audit", startDate: "Sat, 07/03/2026", endDate: "Sat, 07/03/2026", duration: "4.0 Hours (08:00 – 12:00)", remark: "Pre-approved weekend inventory counting & warehouse audit.", docStatus: "Submitted", statusText: "Submitted" },
 
           // Attendance Feedback (Exceptions, clocking adjustments & reason submissions)
-          { name: "Afifah Nasir", id: "#004177", dept: "QA Manager", category: "feedback", type: "Attendance Feedback", reason: "Missing Clock Out", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "Full Shift", remark: "Turnstile reader offline at 17:05 PM during site exit. Verified by supervisor.", statusText: "Attendance Feedback (Missing Clock Out)" },
-          { name: "Victor Hugo", id: "#001115", dept: "Safety Specialist", category: "feedback", type: "Attendance Feedback", reason: "Geo-Location Override", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "Offsite Duty", remark: "Conducted external site safety audit at Port Klang facility.", statusText: "Attendance Feedback (Offsite Punch)" },
-          { name: "Daniel Park", id: "#001094", dept: "IT Support Specialist", category: "feedback", type: "Attendance Feedback", reason: "Late Clock In (+35m)", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "Shift Adjustment", remark: "Emergency server room dispatch at 06:30 AM before shift.", statusText: "Attendance Feedback (Late Arrival)" },
-          { name: "Kenji Sato", id: "#001073", dept: "Maintenance Tech", category: "feedback", type: "Attendance Feedback", reason: "Biometric Punch Fail", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "Manual Verification", remark: "Fingerprint scanner rejected punch due to grease; manual sign-in sheet provided.", statusText: "Attendance Feedback (Biometric Failure)" }
+          { name: "Afifah Nasir", id: "#004177", dept: "QA Manager", category: "feedback", type: "Attendance Feedback", reason: "Missing Clock Out", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "Full Shift", remark: "Turnstile reader offline at 17:05 PM during site exit. Verified by supervisor.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Victor Hugo", id: "#001115", dept: "Safety Specialist", category: "feedback", type: "Attendance Feedback", reason: "Geo-Location Override", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "Offsite Duty", remark: "Conducted external site safety audit at Port Klang facility.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Daniel Park", id: "#001094", dept: "IT Support Specialist", category: "feedback", type: "Attendance Feedback", reason: "Late Clock In (+35m)", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "Shift Adjustment", remark: "Emergency server room dispatch at 06:30 AM before shift.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Kenji Sato", id: "#001073", dept: "Maintenance Tech", category: "feedback", type: "Attendance Feedback", reason: "Biometric Punch Fail", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "Manual Verification", remark: "Fingerprint scanner rejected punch due to grease; manual sign-in sheet provided.", docStatus: "Draft", statusText: "Draft" }
         ],
         attendance_verification: [
           { name: "Amanda Lee", id: "#001066", dept: "Warehouse", statusText: "Missing Clock In • Geo-location Override" },
@@ -3827,20 +3882,22 @@
 
         container.innerHTML = filtered.map((item, idx) => {
           const typeStr = item.type || 'Final OT Request';
-          const reasonStr = item.reason || 'Operations';
+          const reasonStr = item.reason || 'Operations Closing';
           const startDateStr = item.startDate || 'Wed, 25/02/2026';
-          const endDateStr = item.endDate || 'Wed, 25/02/2026';
-          const durationStr = item.duration || '2.0 Hours';
-          const remarkHtml = item.remark ? `
-            <div style="margin-bottom: 14px;">
-              <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remark</div>
-              <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
-                ${item.remark}
-              </div>
-            </div>` : '';
+          const actualHoursStr = item.actualHours || item.duration || '2.50 hrs';
+          const approvedHoursStr = item.approvedHours || item.duration || '2.50 hrs';
+          const clockingStr = item.clocking || '07:03 AM – 07:30 PM';
+          const shiftStr = item.shift || '08:00 AM – 05:30 PM';
+          const remarkText = item.remark || '';
+          const docStatusStr = item.docStatus || item.statusText || 'Submitted';
+          const isDraft = docStatusStr.toLowerCase().includes('draft');
+          const statusBadgeBg = isDraft ? 'rgba(100, 116, 139, 0.12)' : 'rgba(124, 58, 237, 0.08)';
+          const statusBadgeBorder = isDraft ? '1px solid rgba(100, 116, 139, 0.25)' : '1px solid rgba(124, 58, 237, 0.22)';
+          const statusBadgeColor = isDraft ? 'var(--text-muted)' : 'var(--purple-primary)';
+          const statusIcon = isDraft ? '📝' : '⏳';
 
           return `
-            <div class="approval-request-card" id="pendingCard_${idx}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left;">
+            <div class="approval-request-card" id="pendingCard_${idx}" data-ot-type="${typeStr}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left;">
               
               <!-- 1. Executive Purple Header Banner -->
               <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
@@ -3863,44 +3920,61 @@
 
               <!-- 2. Card Content Body -->
               <div style="padding: 14px;">
-                <!-- Dedicated Status Bar (Option A) -->
-                <div style="margin-bottom: 12px; display: flex; align-items: center;">
-                  <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.22); color: var(--purple-primary); font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">
-                    <span>⏳</span>
-                    <span>${item.statusText || 'Pending Approval'}</span>
+                <!-- Document Status Badge & Date -->
+                <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: inline-flex; align-items: center; gap: 6px; background: ${statusBadgeBg}; border: ${statusBadgeBorder}; color: ${statusBadgeColor}; font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">
+                    <span>${statusIcon}</span>
+                    <span>${docStatusStr}</span>
+                  </div>
+                  <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">
+                    <i class="fa-regular fa-calendar" style="color: var(--purple-primary);"></i> ${startDateStr}
                   </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <!-- 1 & 2: Type & Reason -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                   <div>
-                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Type</div>
-                    <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${typeStr}</div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Type</div>
+                    <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${typeStr}</div>
                   </div>
                   <div>
-                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Reason</div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Reason</div>
                     <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${reasonStr}</div>
                   </div>
                 </div>
 
-                <!-- Date & Attendance Summary Box -->
-                <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 8px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px;">
-                    <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: var(--text-primary);">
-                      <i class="fa-regular fa-calendar" style="color: var(--purple-primary); font-size: 12px;"></i>
-                      <span>${startDateStr}</span>
-                    </div>
-                    <div style="font-size: 11.5px; font-weight: 800; color: var(--purple-primary); background: rgba(124, 58, 237, 0.1); padding: 2px 8px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.2);">
-                      ${durationStr}
-                    </div>
+                <!-- 3 & 4: Actual Hours & Approved Hours -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Actual Hours</div>
+                    <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${actualHoursStr}</div>
                   </div>
-                  
-                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: 6px;">
-                    <span>Clocking: <strong style="color: var(--text-primary); font-family: monospace;">0703, 1748</strong></span>
-                    <span>Shift: <strong style="color: var(--text-primary);">8.00AM-5.30PM</strong></span>
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Approved Hours</div>
+                    <div style="font-size: 13.5px; font-weight: 900; color: var(--purple-primary);">${approvedHoursStr}</div>
                   </div>
                 </div>
 
-                ${remarkHtml}
+                <!-- 5 & 6: Clocking & Shift Box -->
+                <div style="background: var(--bg-input); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 11.5px; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 700;">Clocking:</span>
+                    <strong style="color: var(--text-primary); font-family: monospace, sans-serif; font-size: 12px; font-weight: 700;">${clockingStr}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 11.5px; border-top: 1px dashed var(--border-subtle); padding-top: 6px; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 700;">Shift:</span>
+                    <strong style="color: var(--text-primary); font-family: monospace, sans-serif; font-size: 12px; font-weight: 700;">${shiftStr}</strong>
+                  </div>
+                </div>
+
+                <!-- 7: Remarks -->
+                ${remarkText ? `
+                <div style="margin-bottom: 14px;">
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remarks</div>
+                  <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+                    ${remarkText}
+                  </div>
+                </div>` : ''}
 
                 <!-- Bottom 4 Action Buttons (Approve, Backup, Resubmit, Reject) -->
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
@@ -4014,6 +4088,12 @@
             const startDateStr = item.startDate || 'Tue, 23/02/2026';
             const endDateStr = item.endDate || 'Thu, 25/02/2026';
             const durationStr = item.duration || '3 Days';
+            const docStatusStr = item.docStatus || item.statusText || 'Submitted';
+            const isDraft = docStatusStr.toLowerCase().includes('draft');
+            const statusBadgeBg = isDraft ? 'rgba(100, 116, 139, 0.12)' : 'rgba(124, 58, 237, 0.08)';
+            const statusBadgeBorder = isDraft ? '1px solid rgba(100, 116, 139, 0.25)' : '1px solid rgba(124, 58, 237, 0.22)';
+            const statusBadgeColor = isDraft ? 'var(--text-muted)' : 'var(--purple-primary)';
+            const statusIcon = isDraft ? '📝' : '⏳';
             const isUnplanned = item.isUnplanned ? '<div style="font-size: 11px; font-weight: 800; color: #ef4444; margin-top: 1px;">(Unplanned)</div>' : '';
             const requestedByHtml = item.requestedBy ? `
               <div style="margin-bottom: 12px;">
@@ -4035,7 +4115,7 @@
               </div>` : '';
 
             return `
-              <div class="approval-request-card" id="staffApprovalCard_${idx}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; margin-bottom: 14px; text-align: left;">
+              <div class="approval-request-card" id="staffApprovalCard_${idx}" data-ot-type="${typeStr}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; margin-bottom: 14px; text-align: left;">
                 
                 <!-- 1. Header Banner (Executive Purple Brand Bar) -->
                 <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
@@ -4053,17 +4133,17 @@
                     <button type="button" onclick="openAttendanceThreeDotsMenu(this, '${item.id}')" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
                       <i class="fa-solid fa-ellipsis-vertical" style="font-size: 13px;"></i>
                     </button>
-                    <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Pending</span>
+                    <span style="background: #ffffff; color: #7c3aed; font-weight: 800; font-size: 11px; padding: 3px 11px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">${docStatusStr}</span>
                   </div>
                 </div>
 
                 <!-- 2. Card Content Body -->
                 <div style="padding: 14px;">
-                  <!-- Dedicated Status Bar (Option A) -->
+                  <!-- Dedicated Document Status Bar -->
                   <div style="margin-bottom: 12px; display: flex; align-items: center;">
-                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.22); color: var(--purple-primary); font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">
-                      <span>⏳</span>
-                      <span>${item.statusText || 'Pending Approval'}</span>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: ${statusBadgeBg}; border: ${statusBadgeBorder}; color: ${statusBadgeColor}; font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">
+                      <span>${statusIcon}</span>
+                      <span>${docStatusStr}</span>
                     </div>
                   </div>
 
