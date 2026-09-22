@@ -546,26 +546,31 @@
       card.className = 'team-approval-card';
       card.id = `team-card-${item.id}`;
 
+      const empIdFormatted = `#${(item.empNo || '004177').replace(/^#/, '')}`;
+
       card.innerHTML = `
-        <div class="team-user-row">
-          <div class="team-user-avatar" style="background: ${item.avatarBg}; color: ${item.avatarColor};">${item.avatar}</div>
+        <div class="team-user-row" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <div class="team-user-avatar" style="width: 42px; height: 42px; border-radius: 12px; background: ${item.avatarBg}; color: ${item.avatarColor}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">${item.avatar}</div>
           <div>
-            <div class="team-user-name">${item.userName}</div>
-            <div class="team-user-dept">${item.dept}</div>
+            <div class="team-user-name" style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${item.userName}</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">${empIdFormatted}</div>
+            <div class="team-user-dept" style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${item.dept}</div>
           </div>
         </div>
-        <div class="team-claim-details">
+        <div class="team-claim-details" style="background: var(--bg-input); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
-              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${item.title}</div>
-              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px;"><i class="fa-solid fa-file-lines" style="margin-right: 4px;"></i>${item.optionName} • ${item.subCatName} • ${item.date}</div>
+              <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${item.title}</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 3px;"><i class="fa-solid fa-receipt" style="margin-right: 4px; color: #7c3aed;"></i>${item.optionName} • ${item.subCatName} • ${item.date}</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px;"><i class="fa-solid fa-store" style="margin-right: 4px; color: #10b981;"></i>${item.receipt}</div>
             </div>
-            <div style="font-size: 14.5px; font-weight: 900; color: var(--text-primary);">RM ${item.amount.toFixed(2)}</div>
+            <div style="font-size: 15px; font-weight: 900; color: var(--purple-primary); text-align: right;">RM ${item.amount.toFixed(2)}</div>
           </div>
         </div>
-        <div class="team-action-buttons">
-          <button class="btn-approve" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'approve', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✔ Approve</button>
-          <button class="btn-reject" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'reject', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✕ Reject</button>
+        <div class="team-action-buttons" style="display: flex; gap: 8px;">
+          <button class="btn-approve" style="flex: 1; padding: 10px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'approve', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✔ Approve</button>
+          <button class="btn-reject" style="flex: 1; padding: 10px; border-radius: 12px; background: transparent; border: 1px solid #ef4444; color: #ef4444; font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'reject', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✕ Reject</button>
+          <button class="btn-detail" style="padding: 10px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.openTeamDetailModal(${item.id})">👁️</button>
         </div>
       `;
 

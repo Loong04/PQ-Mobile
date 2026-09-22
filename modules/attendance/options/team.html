@@ -100,14 +100,57 @@
           if (el) el.textContent = (val !== undefined && val !== null && val !== '') ? val : '-';
         };
 
-        setVal('attFieldDocRef', data.docRef || 'AXTGEN000078881');
-        setVal('attFieldPlanStatus', data.planStatus || (data.type && data.type.toLowerCase().includes('plan') ? 'Planned' : 'Unplanned'));
+        let isOtPlanModal = data.category === 'ot_plan' || (data.type && data.type.toLowerCase().includes('ot plan')) || (data.duration && data.duration.includes('('));
+        let isFeedbackModal = data.category === 'feedback' || (data.type && data.type.toLowerCase().includes('feedback'));
+        let planHoursVal = '0.00';
+        let otTimesVal = data.otTimes || '0000 ,0500';
+        let actualHoursVal = '0.50';
+        let approvedHoursVal = '0.00';
+        let shiftVal = data.amendedShift || data.shift || '8.00AM-5.30PM';
+
+        const actualRow = document.getElementById('attRowActualHours');
+        const approvedRow = document.getElementById('attRowApprovedHours');
+
+        if (isOtPlanModal) {
+          if (actualRow) actualRow.style.display = 'none';
+          if (approvedRow) approvedRow.style.display = 'none';
+          setVal('attFieldDocRef', data.docRef || 'OTB000000001612');
+          setVal('attFieldPlanStatus', data.planStatus || 'Submitted');
+          planHoursVal = data.planHours || '5.00';
+          if (data.duration && data.duration.includes('(')) {
+            const parts = data.duration.split('(');
+            planHoursVal = parts[0].replace(/[^0-9.]/g, '').trim() || '2.00';
+            otTimesVal = parts[1].replace(')', '').trim();
+          } else if (data.otTime) {
+            otTimesVal = data.otTime;
+          }
+          actualHoursVal = '-';
+          approvedHoursVal = '-';
+        } else if (isFeedbackModal) {
+          if (actualRow) actualRow.style.display = 'none';
+          if (approvedRow) approvedRow.style.display = 'none';
+          setVal('attFieldDocRef', data.docRef || 'AXTGEN000078881');
+          setVal('attFieldPlanStatus', 'Unplanned');
+          actualHoursVal = '-';
+          approvedHoursVal = '-';
+          planHoursVal = '-';
+        } else {
+          if (actualRow) actualRow.style.display = 'table-row';
+          if (approvedRow) approvedRow.style.display = 'table-row';
+          setVal('attFieldDocRef', data.docRef || 'AXTGEN000078881');
+          setVal('attFieldPlanStatus', data.planStatus || (data.type && data.type.toLowerCase().includes('plan') ? 'Planned' : 'Unplanned'));
+          if (data.duration) {
+            actualHoursVal = data.actualHours || data.duration.replace(/[^0-9.]/g, '') || '0.50';
+            approvedHoursVal = data.approvedHours || '0.00';
+          }
+        }
+
         setVal('attFieldFinalStatus', 'Submitted');
         
         const empEl = document.getElementById('attFieldEmployee');
         if (empEl) {
           const empName = data.name || 'Farhan binti rahmat';
-          const rawEmpId = (data.empId || 'EBB12').replace(/^#+/, '');
+          const rawEmpId = (data.empId || data.id || 'EBB12').replace(/^#+/, '');
           empEl.innerHTML = '<div>' + empName + '</div><div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px;">#' + rawEmpId + '</div>';
         }
 
@@ -116,26 +159,27 @@
           const rawSup = (data.supervisor || 'EBB04').replace(/^#+/, '');
           supEl.innerHTML = '<span style="font-family: monospace; font-weight: 700;">#' + rawSup + '</span>';
         }
-        setVal('attFieldSubmitDate', data.dates ? data.dates.split(' - ')[0] : '3 Jul 2023');
-        setVal('attFieldOtDate', data.dates ? data.dates.split(' - ')[0] : '3 Jul 2023');
-        setVal('attFieldShift', data.shift || '8.00AM-5.30PM');
-        setVal('attFieldClockingTimes', data.clockingTimes || '0703,1748');
-        setVal('attFieldOtTimes', data.otTimes || '0000 ,0000');
+
+        setVal('attFieldSubmitDate', data.dates ? data.dates.split(' - ')[0] : (data.startDate || '15 Jul 2024'));
+        setVal('attFieldOtDate', data.dates ? data.dates.split(' - ')[0] : (data.startDate || '15 Jul 2024'));
+        setVal('attFieldShift', shiftVal);
+        setVal('attFieldClockingTimes', data.clockingTimes || data.clocking || '0733,1759');
+        setVal('attFieldOtTimes', otTimesVal);
         setVal('attFieldBreakHours', '0.00');
-        setVal('attFieldPlanHours', '0.00');
-        setVal('attFieldActualHours', data.duration ? data.duration.replace(/[^0-9.]/g, '') || '0.50' : '0.50');
-        setVal('attFieldApprovedHours', '0.00');
+        setVal('attFieldPlanHours', planHoursVal);
+        setVal('attFieldActualHours', actualHoursVal);
+        setVal('attFieldApprovedHours', approvedHoursVal);
         setVal('attFieldApprovalMethod', '-');
-        setVal('attFieldOtType', data.otType || (data.name && (data.name.toLowerCase().includes('tan') || data.name.toLowerCase().includes('alex')) ? 'Rest OT' : 'OT 1.5 BEFORE WORK'));
-        setVal('attFieldOtReason', data.reason || 'System OT Reason');
-        setVal('attFieldTask', '-');
-        setVal('attFieldAllowLeaveCredit', 'No');
-        setVal('attFieldNeedTransport', 'No');
-        setVal('attFieldRemarks', data.remark || 'UNAUTHORISED OT');
+        setVal('attFieldOtType', data.otType || data.type || 'OT 1.5 BEFORE WORK');
+        setVal('attFieldOtReason', data.reason || 'OTHERS');
+        setVal('attFieldTask', data.task || '-');
+        setVal('attFieldAllowLeaveCredit', data.allowLeaveCredit || 'No');
+        setVal('attFieldNeedTransport', data.needTransport || 'Yes');
+        setVal('attFieldRemarks', data.remark || '-');
 
         const titleEl = document.getElementById('attDetailHeaderTitle');
         if (titleEl) {
-          titleEl.textContent = (data.type && data.type.toLowerCase().includes('ot')) ? 'Final OT Approval' : 'Attendance Request Approval';
+          titleEl.textContent = isOtPlanModal ? 'OT Plan Approval' : ((data.type && data.type.toLowerCase().includes('ot')) ? 'Final OT Approval' : 'Attendance Request Approval');
         }
 
         setTimeout(() => {
@@ -496,6 +540,99 @@
         -ms-overflow-style: none !important;
         scrollbar-width: none !important;
       }
+
+      /* Pending Approval Action Card 4-Button System */
+      .pending-action-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .action-btn-approve {
+        padding: 9.5px 2px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 11.5px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
+        transition: all 0.2s ease;
+      }
+      .action-btn-approve:active { transform: scale(0.95); }
+
+      .action-btn-backup {
+        padding: 9.5px 2px;
+        border-radius: 12px;
+        background: rgba(139, 92, 246, 0.12);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        color: #7c3aed;
+        font-weight: 800;
+        font-size: 11.5px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      html[data-theme="dark"] .action-btn-backup,
+      [data-theme="dark"] .action-btn-backup {
+        background: rgba(139, 92, 246, 0.18);
+        border-color: rgba(167, 139, 250, 0.35);
+        color: #c4b5fd;
+      }
+      .action-btn-backup:active { transform: scale(0.95); }
+
+      .action-btn-resubmit {
+        padding: 9.5px 2px;
+        border-radius: 12px;
+        background: rgba(59, 130, 246, 0.12);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #2563eb;
+        font-weight: 800;
+        font-size: 11.5px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      html[data-theme="dark"] .action-btn-resubmit,
+      [data-theme="dark"] .action-btn-resubmit {
+        background: rgba(59, 130, 246, 0.18);
+        border-color: rgba(96, 165, 250, 0.35);
+        color: #93c5fd;
+      }
+      .action-btn-resubmit:active { transform: scale(0.95); }
+
+      .action-btn-reject {
+        padding: 9.5px 2px;
+        border-radius: 12px;
+        background: rgba(244, 63, 94, 0.12);
+        border: 1px solid rgba(244, 63, 94, 0.3);
+        color: #e11d48;
+        font-weight: 800;
+        font-size: 11.5px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      html[data-theme="dark"] .action-btn-reject,
+      [data-theme="dark"] .action-btn-reject {
+        background: rgba(244, 63, 94, 0.18);
+        border-color: rgba(251, 113, 133, 0.35);
+        color: #fca5a5;
+      }
+      .action-btn-reject:active { transform: scale(0.95); }
     </style>
   </head>
   <body>
@@ -545,22 +682,6 @@
             >
               Attendance Dashboard
             </h1>
-          </div>
-
-          <div style="display: flex; gap: 16px; align-items: center">
-            <button
-              style="
-                background: transparent;
-                border: none;
-                cursor: pointer;
-                color: #ffffff;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              "
-            >
-              <i class="fa-solid fa-bell" style="font-size: 18px"></i>
-            </button>
           </div>
         </div>
       </div>
@@ -1399,8 +1520,12 @@
             <div
               onclick="showPendingApprovalPage()"
               style="
-                background: var(--bg-input);
-                border: 1px solid var(--border-subtle);
+                background: linear-gradient(
+                  135deg,
+                  rgba(245, 158, 11, 0.12) 0%,
+                  rgba(245, 158, 11, 0.05) 100%
+                );
+                border: 1px solid rgba(245, 158, 11, 0.3);
                 border-radius: 16px;
                 padding: 14px 16px;
                 display: flex;
@@ -1417,20 +1542,21 @@
               <div style="display: flex; align-items: center; gap: 12px">
                 <div
                   style="
-                    width: 38px;
-                    height: 38px;
+                    width: 40px;
+                    height: 40px;
                     border-radius: 12px;
-                    background: rgba(245, 158, 11, 0.15);
-                    color: #f59e0b;
+                    background: #f59e0b;
+                    color: #ffffff;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     flex-shrink: 0;
+                    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
                   "
                 >
                   <i
                     class="fa-solid fa-clock-rotate-left"
-                    style="font-size: 17px"
+                    style="font-size: 18px"
                   ></i>
                 </div>
                 <div>
@@ -1459,12 +1585,13 @@
               <div style="display: flex; align-items: center; gap: 8px">
                 <span
                   style="
-                    font-size: 12px;
-                    font-weight: 800;
-                    color: #f59e0b;
-                    background: rgba(245, 158, 11, 0.15);
-                    padding: 3px 10px;
-                    border-radius: 10px;
+                    font-size: 13px;
+                    font-weight: 900;
+                    color: #ffffff;
+                    background: #f59e0b;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
                   "
                 >
                   18
@@ -3125,7 +3252,7 @@
             <h3 id="attendanceThreeDotsName" style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0;">Request Options</h3>
             <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Select an action for this attendance request</p>
           </div>
-          <button class="sheet-close-btn" onclick="closeAttendanceThreeDotsMenu()" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
+          <button class="sheet-close-btn" onclick="closeAttendanceThreeDotsMenu()" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -3133,28 +3260,28 @@
           <button type="button" onclick="triggerAttendanceViewDetails()" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
             <div style="display: flex; align-items: center; gap: 12px;">
               <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-                📄
+                <i class="fa-regular fa-file-lines"></i>
               </div>
               <div style="text-align: left;">
                 <div>View Details</div>
                 <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">See full request details, times & remarks</div>
               </div>
             </div>
-            <span style="font-size: 16px; color: var(--text-muted);">›</span>
+            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted);"></i>
           </button>
 
           <!-- Option 2: View Workflow -->
           <button type="button" onclick="triggerAttendanceViewWorkflow()" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
             <div style="display: flex; align-items: center; gap: 12px;">
               <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 16px;">
-                🔀
+                <i class="fa-solid fa-diagram-project"></i>
               </div>
               <div style="text-align: left;">
                 <div>View Workflow</div>
                 <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Track multi-tier approval status</div>
               </div>
             </div>
-            <span style="font-size: 16px; color: var(--text-muted);">›</span>
+            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted);"></i>
           </button>
         </div>
       </div>
@@ -3169,7 +3296,7 @@
           <div style="display: flex; align-items: center; gap: 10px;">
             <h2 id="attDetailHeaderTitle" style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.2px;">Attendance Request Approval</h2>
           </div>
-          <button type="button" onclick="closeAttendanceDetailsModal(event)" class="sheet-close-btn" title="Close" style="background: rgba(255, 255, 255, 0.2); border: none; color: #ffffff; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">✕</button>
+          <button type="button" onclick="closeAttendanceDetailsModal(event)" class="sheet-close-btn" title="Close" style="background: rgba(255, 255, 255, 0.2); border: none; color: #ffffff; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <!-- Scrollable Details Content List as Table matching leave.html -->
@@ -3229,11 +3356,11 @@
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Plan Hours:</td>
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700;" id="attFieldPlanHours">0.00</td>
                 </tr>
-                <tr>
+                <tr id="attRowActualHours">
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Actual Hours:</td>
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--purple-primary); width: 58%; font-weight: 800;" id="attFieldActualHours">0.50</td>
                 </tr>
-                <tr>
+                <tr id="attRowApprovedHours">
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Approved Hours:</td>
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700;" id="attFieldApprovedHours">0.00</td>
                 </tr>
@@ -3294,25 +3421,18 @@
 
         <!-- Executive 4 Action Buttons Footer: Approve, Backup, Resubmit, Reject -->
         <div style="padding: 12px 14px 14px; border-top: 1px solid var(--border-subtle); background: var(--bg-card); flex-shrink: 0; z-index: 10;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <!-- 1. Approve Button (Emerald Green Gradient) -->
-            <button type="button" onclick="handleAttendanceDetailAction('Approve')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-              <i class="fa-solid fa-circle-check" style="font-size: 14px;"></i> Approve
+          <div class="pending-action-grid">
+            <button type="button" class="action-btn-approve" onclick="handleAttendanceDetailAction('Approve')">
+              <i class="fa-solid fa-check" style="font-size: 11.5px;"></i> Approve
             </button>
-            
-            <!-- 2. Backup Button (Royal Blue Gradient) -->
-            <button type="button" onclick="handleAttendanceDetailAction('Backup')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-              <i class="fa-solid fa-box-archive" style="font-size: 14px;"></i> Backup
+            <button type="button" class="action-btn-backup" onclick="handleAttendanceDetailAction('Backup')">
+              <i class="fa-solid fa-shield-halved" style="font-size: 11px;"></i> Backup
             </button>
-
-            <!-- 3. Resubmit Button (Vibrant Amber Gold Gradient) -->
-            <button type="button" onclick="handleAttendanceDetailAction('Resubmit')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-              <i class="fa-solid fa-rotate" style="font-size: 14px;"></i> Resubmit
+            <button type="button" class="action-btn-resubmit" onclick="handleAttendanceDetailAction('Resubmit')">
+              <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Resubmit
             </button>
-
-            <!-- 4. Reject Button (Crimson Rose Red Gradient) -->
-            <button type="button" onclick="handleAttendanceDetailAction('Reject')" style="padding: 11px 10px; border-radius: 14px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); transition: transform 0.15s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-              <i class="fa-solid fa-circle-xmark" style="font-size: 14px;"></i> Reject
+            <button type="button" class="action-btn-reject" onclick="handleAttendanceDetailAction('Reject')">
+              <i class="fa-solid fa-xmark" style="font-size: 11.5px;"></i> Reject
             </button>
           </div>
         </div>
@@ -3328,15 +3448,15 @@
         <!-- Header -->
         <div class="sheet-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(99, 102, 241, 0.2) 100%); display: flex; align-items: center; justify-content: center; font-size: 16px; border: 1px solid rgba(124, 58, 237, 0.35);">
-              🔀
+            <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(99, 102, 241, 0.2) 100%); display: flex; align-items: center; justify-content: center; font-size: 15px; border: 1px solid rgba(124, 58, 237, 0.35); color: var(--purple-primary);">
+              <i class="fa-solid fa-diagram-project"></i>
             </div>
             <div>
               <h3 style="font-size: 17.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Attendance Workflow</h3>
               <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">3-Level Approval Audit Trail</div>
             </div>
           </div>
-          <button class="sheet-close-btn" onclick="closeAttendanceWorkflowModal()" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
+          <button class="sheet-close-btn" onclick="closeAttendanceWorkflowModal()" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 14px;">
@@ -3347,8 +3467,8 @@
               <span style="font-size: 10.5px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 10px;">Active Step</span>
             </div>
             <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">Assigned Approvers Pool: Sarah Jenkins, Farhan Rahmat, Benjamin Lee</div>
-            <button type="button" onclick="openSelectBackupApproverModal('Level 1')" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; border: none; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer;">
-              🛡️ Assign Backup Approver
+            <button type="button" onclick="openSelectBackupApproverModal('Level 1')" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; border: none; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-shield-halved"></i> Assign Backup Approver
             </button>
           </div>
 
@@ -3366,11 +3486,11 @@
             <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Audit History Trail</div>
             <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11.5px;">
               <div style="display: flex; justify-content: space-between; color: var(--text-primary);">
-                <span>📝 Request Submitted by Staff</span>
+                <span><i class="fa-solid fa-file-pen" style="color: var(--purple-primary); margin-right: 6px;"></i>Request Submitted by Staff</span>
                 <span style="color: var(--text-muted);">25/02/2026 09:15</span>
               </div>
               <div style="display: flex; justify-content: space-between; color: var(--text-primary);">
-                <span>🔍 System Validation Checks Passed</span>
+                <span><i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>System Validation Checks Passed</span>
                 <span style="color: var(--text-muted);">25/02/2026 09:16</span>
               </div>
             </div>
@@ -3779,10 +3899,10 @@
           { name: "Amanda Lee", id: "#001140", dept: "Warehouse Coordinator", category: "ot_plan", type: "Rest OT", otType: "Rest OT", reason: "Quarterly Stock Audit", startDate: "Sat, 07/03/2026", endDate: "Sat, 07/03/2026", duration: "4.0 Hours (08:00 – 12:00)", remark: "Pre-approved weekend inventory counting & warehouse audit.", docStatus: "Submitted", statusText: "Submitted" },
 
           // Attendance Feedback (Exceptions, clocking adjustments & reason submissions)
-          { name: "Afifah Nasir", id: "#004177", dept: "QA Manager", category: "feedback", type: "Attendance Feedback", reason: "Missing Clock Out", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "Full Shift", remark: "Turnstile reader offline at 17:05 PM during site exit. Verified by supervisor.", docStatus: "Submitted", statusText: "Submitted" },
-          { name: "Victor Hugo", id: "#001115", dept: "Safety Specialist", category: "feedback", type: "Attendance Feedback", reason: "Geo-Location Override", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "Offsite Duty", remark: "Conducted external site safety audit at Port Klang facility.", docStatus: "Submitted", statusText: "Submitted" },
-          { name: "Daniel Park", id: "#001094", dept: "IT Support Specialist", category: "feedback", type: "Attendance Feedback", reason: "Late Clock In (+35m)", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "Shift Adjustment", remark: "Emergency server room dispatch at 06:30 AM before shift.", docStatus: "Submitted", statusText: "Submitted" },
-          { name: "Kenji Sato", id: "#001073", dept: "Maintenance Tech", category: "feedback", type: "Attendance Feedback", reason: "Biometric Punch Fail", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "Manual Verification", remark: "Fingerprint scanner rejected punch due to grease; manual sign-in sheet provided.", docStatus: "Draft", statusText: "Draft" }
+          { name: "Afifah Nasir", id: "#004177", dept: "QA Manager", category: "feedback", type: "Attendance Feedback", reason: "Missing Clock Out", startDate: "Tue, 24/02/2026", endDate: "Tue, 24/02/2026", duration: "Full Shift", amendedShift: "08:00 AM – 05:30 PM", remark: "Turnstile reader offline at 17:05 PM during site exit. Verified by supervisor.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Victor Hugo", id: "#001115", dept: "Safety Specialist", category: "feedback", type: "Attendance Feedback", reason: "Geo-Location Override", startDate: "Mon, 23/02/2026", endDate: "Mon, 23/02/2026", duration: "Offsite Duty", amendedShift: "08:30 AM – 06:00 PM", remark: "Conducted external site safety audit at Port Klang facility.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Daniel Park", id: "#001094", dept: "IT Support Specialist", category: "feedback", type: "Attendance Feedback", reason: "Late Clock In (+35m)", startDate: "Fri, 20/02/2026", endDate: "Fri, 20/02/2026", duration: "Shift Adjustment", amendedShift: "08:35 AM – 06:05 PM", remark: "Emergency server room dispatch at 06:30 AM before shift.", docStatus: "Submitted", statusText: "Submitted" },
+          { name: "Kenji Sato", id: "#001073", dept: "Maintenance Tech", category: "feedback", type: "Attendance Feedback", reason: "Biometric Punch Fail", startDate: "Thu, 19/02/2026", endDate: "Thu, 19/02/2026", duration: "Manual Verification", amendedShift: "08:00 AM – 05:30 PM", remark: "Fingerprint scanner rejected punch due to grease; manual sign-in sheet provided.", docStatus: "Draft", statusText: "Draft" }
         ],
         attendance_verification: [
           { name: "Amanda Lee", id: "#001066", dept: "Warehouse", statusText: "Missing Clock In • Geo-location Override" },
@@ -3800,7 +3920,7 @@
       let currentStaffApprovalCategory = 'final_ot';
       let currentViewSection = 'main';
 
-      function showPendingApprovalPage() {
+      function showPendingApprovalPage(targetTab) {
         currentViewSection = 'pending_approval';
         const mainEl = document.getElementById("viewMainDashboard");
         const secEl = document.getElementById("viewPendingApprovalSection");
@@ -3812,7 +3932,7 @@
         if (titleEl) titleEl.textContent = "Pending Approval";
         if (container) container.scrollTop = 0;
 
-        switchStaffApprovalTab('final_ot');
+        switchStaffApprovalTab(targetTab || 'ot_plan');
       }
 
       function handleHeaderBack() {
@@ -3894,7 +4014,55 @@
           const statusBadgeBg = isDraft ? 'rgba(100, 116, 139, 0.12)' : 'rgba(124, 58, 237, 0.08)';
           const statusBadgeBorder = isDraft ? '1px solid rgba(100, 116, 139, 0.25)' : '1px solid rgba(124, 58, 237, 0.22)';
           const statusBadgeColor = isDraft ? 'var(--text-muted)' : 'var(--purple-primary)';
-          const statusIcon = isDraft ? '📝' : '⏳';
+          const statusIcon = isDraft ? '<i class="fa-solid fa-file-pen"></i>' : '<i class="fa-solid fa-hourglass-half"></i>';
+
+          // Differentiate OT Plan Requests, Attendance Feedback, and Final OT Requests
+          const isOtPlan = item.category === 'ot_plan' || (typeStr && typeStr.toLowerCase().includes('ot plan')) || (item.duration && item.duration.includes('('));
+          const isFeedback = item.category === 'feedback' || (typeStr && typeStr.toLowerCase().includes('feedback'));
+
+          let hoursGridHtml = '';
+          if (isOtPlan) {
+            let planHoursStr = item.planHours || '2.0 Hours';
+            let otTimeStr = item.otTime || '18:00 – 20:00';
+            if (item.duration && item.duration.includes('(')) {
+              const parts = item.duration.split('(');
+              planHoursStr = parts[0].trim();
+              otTimeStr = parts[1].replace(')', '').trim();
+            }
+            hoursGridHtml = `
+                <!-- 3 & 4: OT Time & Plan Hours -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">OT Time</div>
+                    <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${otTimeStr}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Plan Hours</div>
+                    <div style="font-size: 13.5px; font-weight: 900; color: var(--purple-primary);">${planHoursStr}</div>
+                  </div>
+                </div>`;
+          } else if (isFeedback) {
+            const amendedShiftStr = item.amendedShift || item.shift || '08:00 AM – 05:30 PM';
+            hoursGridHtml = `
+                <!-- Amended Shift Only -->
+                <div style="margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Amended Shift</div>
+                  <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${amendedShiftStr}</div>
+                </div>`;
+          } else {
+            hoursGridHtml = `
+                <!-- 3 & 4: Actual Hours & Approved Hours -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Actual Hours</div>
+                    <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${actualHoursStr}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Approved Hours</div>
+                    <div style="font-size: 13.5px; font-weight: 900; color: var(--purple-primary);">${approvedHoursStr}</div>
+                  </div>
+                </div>`;
+          }
 
           return `
             <div class="approval-request-card" id="pendingCard_${idx}" data-ot-type="${typeStr}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left;">
@@ -3907,7 +4075,7 @@
                   </div>
                   <div>
                     <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.name}</div>
-                    <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">${item.dept || 'Staff'} • ${item.id}</div>
+                    <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.85); font-family: monospace, sans-serif;">#${(item.id || '').replace(/^#/, '')} • ${item.dept || 'Staff'}</div>
                   </div>
                 </div>
 
@@ -3943,17 +4111,7 @@
                   </div>
                 </div>
 
-                <!-- 3 & 4: Actual Hours & Approved Hours -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
-                  <div>
-                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Actual Hours</div>
-                    <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${actualHoursStr}</div>
-                  </div>
-                  <div>
-                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Approved Hours</div>
-                    <div style="font-size: 13.5px; font-weight: 900; color: var(--purple-primary);">${approvedHoursStr}</div>
-                  </div>
-                </div>
+                ${hoursGridHtml}
 
                 <!-- 5 & 6: Clocking & Shift Box -->
                 <div style="background: var(--bg-input); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
@@ -3977,18 +4135,18 @@
                 </div>` : ''}
 
                 <!-- Bottom 4 Action Buttons (Approve, Backup, Resubmit, Reject) -->
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-                  <button type="button" onclick="handleStaffApprove('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 11.5px; border: none; cursor: pointer; text-align: center; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25); transition: all 0.2s ease;">
-                    Approve
+                <div class="pending-action-grid">
+                  <button type="button" class="action-btn-approve" onclick="handleStaffApprove('${item.id}', this)">
+                    <i class="fa-solid fa-check" style="font-size: 11.5px;"></i> Approve
                   </button>
-                  <button type="button" onclick="handleStaffBackup('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; font-weight: 800; font-size: 11.5px; border: none; cursor: pointer; text-align: center; box-shadow: 0 3px 10px rgba(139, 92, 246, 0.25); transition: all 0.2s ease;">
-                    🛡️ Backup
+                  <button type="button" class="action-btn-backup" onclick="handleStaffBackup('${item.id}', this)">
+                    <i class="fa-solid fa-shield-halved" style="font-size: 11px;"></i> Backup
                   </button>
-                  <button type="button" onclick="handleStaffResubmit('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); font-weight: 800; font-size: 11.5px; border: 1px solid rgba(124, 58, 237, 0.3); cursor: pointer; text-align: center; transition: all 0.2s ease;">
-                    Resubmit
+                  <button type="button" class="action-btn-resubmit" onclick="handleStaffResubmit('${item.id}', this)">
+                    <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Resubmit
                   </button>
-                  <button type="button" onclick="handleStaffReject('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); color: var(--danger); font-weight: 800; font-size: 11.5px; border: 1px solid rgba(239, 68, 68, 0.3); cursor: pointer; text-align: center; transition: all 0.2s ease;">
-                    Reject
+                  <button type="button" class="action-btn-reject" onclick="handleStaffReject('${item.id}', this)">
+                    <i class="fa-solid fa-xmark" style="font-size: 11.5px;"></i> Reject
                   </button>
                 </div>
               </div>
@@ -4093,13 +4251,13 @@
             const statusBadgeBg = isDraft ? 'rgba(100, 116, 139, 0.12)' : 'rgba(124, 58, 237, 0.08)';
             const statusBadgeBorder = isDraft ? '1px solid rgba(100, 116, 139, 0.25)' : '1px solid rgba(124, 58, 237, 0.22)';
             const statusBadgeColor = isDraft ? 'var(--text-muted)' : 'var(--purple-primary)';
-            const statusIcon = isDraft ? '📝' : '⏳';
+            const statusIcon = isDraft ? '<i class="fa-solid fa-file-pen"></i>' : '<i class="fa-solid fa-hourglass-half"></i>';
             const isUnplanned = item.isUnplanned ? '<div style="font-size: 11px; font-weight: 800; color: #ef4444; margin-top: 1px;">(Unplanned)</div>' : '';
             const requestedByHtml = item.requestedBy ? `
               <div style="margin-bottom: 12px;">
                 <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Requested On Behalf By</div>
                 <div style="display: flex; align-items: center; gap: 8px; background: rgba(124, 58, 237, 0.05); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 8px 10px;">
-                  <div style="font-size: 13px;">👤</div>
+                  <div style="font-size: 13px; color: var(--purple-primary);"><i class="fa-solid fa-user"></i></div>
                   <div>
                     <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">${item.requestedBy.name}</div>
                     <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted);">${item.requestedBy.title}</div>
@@ -4125,7 +4283,7 @@
                     </div>
                     <div>
                       <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.name}</div>
-                      <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">${item.dept || 'Staff'} • ${item.id}</div>
+                      <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.85); font-family: monospace, sans-serif;">#${(item.id || '').replace(/^#/, '')} • ${item.dept || 'Staff'}</div>
                     </div>
                   </div>
 
@@ -4168,7 +4326,7 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                       <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
                         <span>${startDateStr}</span>
-                        <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                        <i class="fa-solid fa-circle" style="color: var(--purple-primary); font-size: 7px;"></i>
                       </div>
 
                       <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
@@ -4179,7 +4337,7 @@
                       </div>
 
                       <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-primary);">
-                        <span style="color: var(--purple-primary); font-size: 13px;">🟣</span>
+                        <i class="fa-solid fa-circle" style="color: var(--purple-primary); font-size: 7px;"></i>
                         <span>${endDateStr}</span>
                       </div>
                     </div>
@@ -4189,18 +4347,18 @@
                   ${remarkHtml}
 
                 <!-- Bottom 4 Action Buttons (Approve, Backup, Resubmit, Reject) -->
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-                  <button type="button" onclick="handleStaffApprove('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; font-size: 11.5px; border: none; cursor: pointer; text-align: center; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25); transition: all 0.2s ease;">
-                    Approve
+                <div class="pending-action-grid">
+                  <button type="button" class="action-btn-approve" onclick="handleStaffApprove('${item.id}', this)">
+                    <i class="fa-solid fa-check" style="font-size: 11.5px;"></i> Approve
                   </button>
-                  <button type="button" onclick="handleStaffBackup('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; font-weight: 800; font-size: 11.5px; border: none; cursor: pointer; text-align: center; box-shadow: 0 3px 10px rgba(139, 92, 246, 0.25); transition: all 0.2s ease;">
-                    🛡️ Backup
+                  <button type="button" class="action-btn-backup" onclick="handleStaffBackup('${item.id}', this)">
+                    <i class="fa-solid fa-shield-halved" style="font-size: 11px;"></i> Backup
                   </button>
-                  <button type="button" onclick="handleStaffResubmit('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); font-weight: 800; font-size: 11.5px; border: 1px solid rgba(124, 58, 237, 0.3); cursor: pointer; text-align: center; transition: all 0.2s ease;">
-                    Resubmit
+                  <button type="button" class="action-btn-resubmit" onclick="handleStaffResubmit('${item.id}', this)">
+                    <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Resubmit
                   </button>
-                  <button type="button" onclick="handleStaffReject('${item.id}', this)" style="padding: 10px 2px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); color: var(--danger); font-weight: 800; font-size: 11.5px; border: 1px solid rgba(239, 68, 68, 0.3); cursor: pointer; text-align: center; transition: all 0.2s ease;">
-                    Reject
+                  <button type="button" class="action-btn-reject" onclick="handleStaffReject('${item.id}', this)">
+                    <i class="fa-solid fa-xmark" style="font-size: 11.5px;"></i> Reject
                   </button>
                 </div>
 
@@ -4420,6 +4578,17 @@
           overlay.style.display = "none";
         }, 300);
       }
+
+      document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const view = urlParams.get('view');
+        const tab = urlParams.get('tab') || urlParams.get('cat');
+        if (view === 'approvals' || view === 'pending') {
+          showPendingApprovalPage(tab || 'ot_plan');
+        } else if (view === 'verification') {
+          openStaffListModal('Attendance Verification', 'attendance_verification');
+        }
+      });
     </script>
   </body>
 </html>

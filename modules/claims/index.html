@@ -1,10 +1,9 @@
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PeopleHCM - Claim Dashboard</title>
+  <title>PeopleHCM - Claims & Expenses</title>
   <script src="../../js/components.js"></script>
   <script src="../../js/app.js" defer></script>
   <script src="../../js/claims/claims-config.js"></script>
@@ -12,10 +11,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/app.css">
   <style>
-    /* basic reset */
     * {
       margin: 0;
       padding: 0;
@@ -51,48 +50,45 @@
     .main-content {
       flex: 1;
       overflow-y: auto;
-      padding: 0 16px 90px;
+      padding: 16px 16px 90px;
       position: relative;
       z-index: 10;
       scrollbar-width: none;
     }
     .main-content::-webkit-scrollbar { display: none; }
 
-    .header-btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #ffffff;
-      transition: background 0.2s;
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
     }
-    .header-btn:active { background: rgba(255, 255, 255, 0.25); }
 
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 18px;
       box-shadow: var(--shadow-card);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      transition: all 0.2s ease;
     }
 
-    /* EXACT LEAVE.HTML SWITCHER STYLES */
+    /* Segmented Tab Switcher */
     .view-mode-switcher {
       display: flex;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       padding: 4px;
       border-radius: 20px;
-      margin-top: 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow-card);
+      margin-top: 4px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
     }
+
     .view-mode-tab {
       flex: 1;
       padding: 10px 14px;
@@ -107,86 +103,193 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 7px;
     }
-    .view-mode-tab svg {
-      color: #7c3aed;
-      opacity: 0.8;
-      transition: all 0.2s;
-    }
+
     .view-mode-tab.active {
       background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
       color: #ffffff;
       box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
     }
-    .view-mode-tab.active svg {
-      color: rgba(0, 0, 0, 0.35);
-      opacity: 1;
-    }
-    [data-theme="dark"] .view-mode-tab.active svg {
-      color: rgba(0, 0, 0, 0.35);
+
+    /* Option Square Cards Grid */
+    .claim-square-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
 
-    .stat-badge {
-       background: var(--bg-input);
-       color: var(--text-muted);
-    }
-
-    /* Custom Claim List */
-    .claim-item {
+    .claim-square-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 6px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border-subtle);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
-    .claim-item:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
+    .claim-square-card:active {
+      transform: scale(0.95);
     }
-    .claim-icon {
-      width: 42px;
-      height: 42px;
+
+    .claim-square-icon-wrap {
+      width: 40px;
+      height: 40px;
       border-radius: 12px;
+      background: rgba(124, 58, 237, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
-      flex-shrink: 0;
+      margin-bottom: 6px;
     }
-    .claim-info {
-      flex: 1;
-      padding: 0 12px;
-    }
-    .claim-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .claim-date {
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-    .claim-amount {
-      font-size: 15px;
+
+    .claim-square-title {
+      font-size: 11px;
       font-weight: 800;
       color: var(--text-primary);
-      text-align: right;
+      line-height: 1.2;
     }
-    .claim-status {
+
+    /* Filter Pills */
+    .audit-filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .audit-filter-bar::-webkit-scrollbar { display: none; }
+
+    .audit-filter-pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .audit-filter-pill.active {
+      background: #7c3aed;
+      color: #ffffff;
+      border-color: #7c3aed;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+    }
+
+    /* Modern Submission Cards */
+    .submission-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 10px;
+      transition: transform 0.15s ease;
+      cursor: pointer;
+    }
+    .submission-card:active {
+      transform: scale(0.985);
+    }
+
+    .status-badge {
       font-size: 10.5px;
       font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 6px;
-      margin-top: 4px;
-      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
-    .status-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-    .status-approved { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-    .status-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .status-badge.approved {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-badge.rejected {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
 
+    /* Team Approval Cards */
+    .team-approval-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Modal / Drawer Overlay */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-height: 85%;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 22px 18px 30px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-sheet);
+    }
+    .modal-overlay.active .modal-sheet {
+      transform: translateY(0);
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .toast-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -195,234 +298,312 @@
 
   <div class="phone-container">
     
-    <!-- Executive Purple Header -->
-    <div class="cal-top-header" id="dynamic-header"
-      style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);">
+    <!-- Executive Top Header -->
+    <div class="cal-top-header" id="dynamic-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
-        <div style="display: flex; align-items: center; gap: 12px;" id="headerLeftWrapper">
-          <button class="me-back-btn" id="headerBackButton" onclick="javascript:history.back()" aria-label="Back"
-            title="Back"
-            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
-            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-          </button>
-          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;" id="headerTitleText">Claim Dashboard</h1>
+        <button class="me-back-btn" id="headerBackButton" onclick="window.ClaimsEngine.handleGlobalBack()" aria-label="Back" title="Back"
+          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        
+        <div style="text-align: center;">
+          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;" id="globalTopTitle">Claims &amp; Expenses</h1>
+          <div style="font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.85); margin-top: 2px;" id="headerSubtitleText">Individual</div>
         </div>
+        
+        <button onclick="window.ClaimsEngine.openSummaryModal()" title="Claim Summary" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <i class="fa-solid fa-chart-pie" style="font-size: 15px;"></i>
+        </button>
       </div>
     </div>
 
-    <div class="main-content" style="padding-top: 0;">
+    <div class="main-content">
 
-      <!-- SWITCHER -->
-      <div class="view-mode-switcher">
-         <button id="tabInd" class="view-mode-tab active" onclick="switchView('individual')">
-            <i class="fa-solid fa-user"></i>
+      <!-- TOP SEGMENTED TAB SWITCHER (INDIVIDUAL vs TEAM) -->
+      <div class="view-mode-switcher" id="mainScopeSwitcher">
+         <button id="tabClaimIndividual" class="view-mode-tab active" onclick="window.ClaimsEngine.switchClaimScope('individual')">
+            <i class="fa-solid fa-user" style="font-size: 14px;"></i>
             Individual
          </button>
-         <button id="tabTeam" class="view-mode-tab" onclick="switchView('team')">
-            <i class="fa-solid fa-users"></i>
+         <button id="tabClaimTeam" class="view-mode-tab" onclick="window.ClaimsEngine.switchClaimScope('team')">
+            <i class="fa-solid fa-users" style="font-size: 14px;"></i>
             Team
          </button>
       </div>
       
-      <!-- ================= INDIVIDUAL VIEW ================= -->
-      <div id="view-individual" style="display: block;">
-         
-         <!-- Claim Requests Card -->
-         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-               <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">My Claim Status</h3>
-               <span class="stat-badge" style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px;">YTD 2026</span>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-               <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
-                  <div style="font-size: 26px; font-weight: 800; color: var(--tag-amber-text); line-height: 1;">3</div>
-                  <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Pending<br>Review</div>
-               </div>
-               <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
-                  <div style="font-size: 26px; font-weight: 800; color: var(--tag-green-text); line-height: 1;">8</div>
-                  <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Approved<br>&nbsp;</div>
-               </div>
-               <div style="text-align: center; flex: 1;">
-                  <div style="font-size: 26px; font-weight: 800; color: var(--tag-rose-text); line-height: 1;">1</div>
-                  <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; line-height: 1.2;">Rejected<br>&nbsp;</div>
-               </div>
-            </div>
-            <div style="text-align: right; margin-top: 14px;">
-               <a href="options/history.html" style="font-size: 12.5px; font-weight: 700; color: #7c3aed; text-decoration: none;">View claim history &rarr;</a>
-            </div>
-         </div>
+      <!-- ================= MAIN SUB-VIEW 1: OPTIONS GRID HUB ================= -->
+      <div id="optionsGridSubView" style="display: block;">
 
-         <!-- Quick Options Grid -->
-         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-               <div style="display: flex; align-items: center; gap: 8px;">
-                  <i class="fa-solid fa-grip" style="color: #7c3aed; font-size: 16px;"></i>
-                  <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary);">Quick Options</h3>
-               </div>
-               <span style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Common tasks</span>
-            </div>
+         <!-- ================= 1. INDIVIDUAL VIEW ================= -->
+         <div id="scopeIndividualSection" style="display: block;">
             
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
-               <a href="options/submit-claim.html" style="text-decoration: none;">
-                   <div style="background: var(--tag-blue-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
-                      <div style="color: var(--tag-blue-text); font-size: 24px;">🧾</div>
-                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-blue-text);">Submit<br>Claim</div>
-                   </div>
-               </a>
-               <a href="options/benefit-claim.html" style="text-decoration: none;">
-                   <div style="background: var(--tag-green-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
-                      <div style="color: var(--tag-green-text); font-size: 24px;">🎁</div>
-                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-green-text);">Benefit<br>Claim</div>
-                   </div>
-               </a>
-               <a href="options/history.html" style="text-decoration: none;">
-                   <div style="background: var(--tag-violet-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
-                      <div style="color: var(--tag-violet-text); font-size: 24px;">📜</div>
-                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-violet-text);">History<br>&nbsp;</div>
-                   </div>
-               </a>
-               <a href="#" style="text-decoration: none;">
-                   <div style="background: var(--tag-amber-bg); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
-                      <div style="color: var(--tag-amber-text); font-size: 24px;">📈</div>
-                      <div style="font-size: 11.5px; font-weight: 800; color: var(--tag-amber-text);">Reports<br>&nbsp;</div>
-                   </div>
-               </a>
+            <!-- Claim Status Summary Card -->
+            <div class="card" style="background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, 0.05) 100%);">
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                  <div>
+                     <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary);">My Claim Overview</h3>
+                     <p style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Year 2026 Entitlement Summary</p>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; background: rgba(124, 58, 237, 0.15); color: #7c3aed;">YTD 2026</span>
+               </div>
+
+               <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); border-radius: 16px; padding: 14px; margin-bottom: 14px;">
+                  <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
+                     <div style="font-size: 24px; font-weight: 900; color: #f59e0b; line-height: 1;">3</div>
+                     <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 6px;">Pending</div>
+                  </div>
+                  <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-subtle);">
+                     <div style="font-size: 24px; font-weight: 900; color: #10b981; line-height: 1;">8</div>
+                     <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 6px;">Approved</div>
+                  </div>
+                  <div style="text-align: center; flex: 1;">
+                     <div style="font-size: 24px; font-weight: 900; color: #ef4444; line-height: 1;">1</div>
+                     <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 6px;">Rejected</div>
+                  </div>
+               </div>
+
+               <!-- Balance Progress -->
+               <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; margin-bottom: 6px;">
+                     <span style="color: var(--text-muted);">Annual Entitlement Utilization</span>
+                     <span style="color: var(--purple-primary);">RM 2,450.00 / RM 4,700.00</span>
+                  </div>
+                  <div style="width: 100%; height: 8px; background: var(--bg-input); border-radius: 10px; overflow: hidden;">
+                     <div style="width: 52%; height: 100%; background: linear-gradient(90deg, #7c3aed, #10b981); border-radius: 10px;"></div>
+                  </div>
+               </div>
             </div>
+
+            <!-- Quick Options & Categories Grid -->
+            <div class="card">
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                     <i class="fa-solid fa-shapes" style="color: #7c3aed; font-size: 15px;"></i>
+                     <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Claim Options &amp; Categories</h3>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Tap to apply</span>
+               </div>
+               
+               <!-- 8 Square Grid Items populated via JS -->
+               <div id="claimOptionsHubGrid" class="claim-square-grid"></div>
+            </div>
+
+            <!-- Recent Submissions List -->
+            <div class="card">
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Recent Submissions</h3>
+                  <span id="mySubmissionsCountBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">5 Records</span>
+               </div>
+
+               <!-- Filter Bar -->
+               <div class="audit-filter-bar">
+                  <button class="audit-filter-pill active" onclick="window.ClaimsEngine.filterMySubmissions('all', this)">All</button>
+                  <button class="audit-filter-pill" onclick="window.ClaimsEngine.filterMySubmissions('pending', this)">Pending</button>
+                  <button class="audit-filter-pill" onclick="window.ClaimsEngine.filterMySubmissions('approved', this)">Approved</button>
+                  <button class="audit-filter-pill" onclick="window.ClaimsEngine.filterMySubmissions('rejected', this)">Rejected</button>
+               </div>
+               
+               <!-- List Container -->
+               <div id="mySubmissionsListContainer"></div>
+            </div>
+
+         </div> <!-- END INDIVIDUAL SECTION -->
+
+
+         <!-- ================= 2. TEAM VIEW ================= -->
+         <div id="scopeTeamSection" style="display: none;">
+
+            <!-- Action Required & Pending Approvals Banner -->
+            <div class="card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%); border: 1px solid rgba(245, 158, 11, 0.3);">
+               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                     <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                     </div>
+                     <div>
+                        <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Pending Team Approvals</h3>
+                        <p style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);" id="teamPendingTotalVal">Total: RM 1,371.00</p>
+                     </div>
+                  </div>
+                  <span id="teamPendingCountVal" style="font-size: 12px; font-weight: 800; color: #ffffff; background: #f59e0b; padding: 4px 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);">4 Requests</span>
+               </div>
+               <button onclick="window.ClaimsEngine.approveAllTeamClaims()" style="width: 100%; padding: 10px; border-radius: 14px; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #d97706; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+                  ✔ Quick Approve All Pending Claims
+               </button>
+            </div>
+
+            <!-- Manager Quick Options Grid -->
+            <div class="card">
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Manager Analytics &amp; Reports</h3>
+                  <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Team Overview</span>
+               </div>
+               
+               <div id="managerOptionsGrid" class="claim-square-grid"></div>
+            </div>
+
+            <!-- Team Approvals Queue -->
+            <div class="card">
+               <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px;">Team Approval Queue</h3>
+               <div id="teamApprovalsQueue"></div>
+            </div>
+
+            <!-- Team Entitlement Roster Card -->
+            <div class="card">
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Staff Entitlement Utilization</h3>
+                  <button onclick="window.ClaimsEngine.openStaffEntitlementModal()" style="background: none; border: none; font-size: 12px; font-weight: 700; color: #7c3aed; cursor: pointer;">View Roster &rarr;</button>
+               </div>
+
+               <div style="display: flex; flex-direction: column; gap: 12px;">
+                  <!-- Staff Member 1 -->
+                  <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; border: 1px solid var(--border-subtle);">
+                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                        <div>
+                           <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Sarah Chen</div>
+                           <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EBB01</div>
+                           <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Marketing Lead</div>
+                        </div>
+                        <span style="font-size: 12px; font-weight: 800; color: #10b981;">RM 2,550.00 Bal</span>
+                     </div>
+                     <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+                        <div style="width: 33%; height: 100%; background: #7c3aed; border-radius: 10px;"></div>
+                     </div>
+                  </div>
+
+                  <!-- Staff Member 2 -->
+                  <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; border: 1px solid var(--border-subtle);">
+                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                        <div>
+                           <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Marcus Tan</div>
+                           <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004177</div>
+                           <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Senior Engineer</div>
+                        </div>
+                        <span style="font-size: 12px; font-weight: 800; color: #10b981;">RM 2,850.00 Bal</span>
+                     </div>
+                     <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+                        <div style="width: 25%; height: 100%; background: #3b82f6; border-radius: 10px;"></div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+         </div> <!-- END TEAM SECTION -->
+
+      </div> <!-- END SUB-VIEW 1 (OPTIONS GRID HUB) -->
+
+
+      <!-- ================= SUB-VIEW 2: CATEGORY CARDS SUB-PAGE ================= -->
+      <div id="optionDetailSubPage" style="display: none;">
+         <div style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+            <button onclick="window.ClaimsEngine.backToOptionsGrid()" style="background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 8px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+               <i class="fa-solid fa-arrow-left"></i> Back to Hub
+            </button>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Select Sub-Category</span>
          </div>
 
-         <!-- Recent Claims -->
-         <div class="card">
-            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Recent Claims</h3>
-            
-            <div class="claim-item">
-              <div class="claim-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🚕</div>
-              <div class="claim-info">
-                <div class="claim-title">Transport to Client A</div>
-                <div class="claim-date">10 Sep 2026</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="claim-amount">RM 45.00</div>
-                <div class="claim-status status-pending">Pending</div>
-              </div>
-            </div>
-
-            <div class="claim-item">
-              <div class="claim-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🏥</div>
-              <div class="claim-info">
-                <div class="claim-title">Medical Checkup</div>
-                <div class="claim-date">02 Sep 2026</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="claim-amount">RM 120.00</div>
-                <div class="claim-status status-approved">Approved</div>
-              </div>
-            </div>
-
-            <div class="claim-item">
-              <div class="claim-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">🍽️</div>
-              <div class="claim-info">
-                <div class="claim-title">Client Entertainment</div>
-                <div class="claim-date">28 Aug 2026</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="claim-amount">RM 350.00</div>
-                <div class="claim-status status-rejected">Rejected</div>
-              </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 16px;">
-               <a href="options/history.html" style="font-size: 12.5px; font-weight: 700; color: #7c3aed; text-decoration: none;">View all claims</a>
-            </div>
-         </div>
-
+         <div id="benefitAllowanceCardsContainer"></div>
       </div>
 
-      <!-- ================= TEAM VIEW ================= -->
-      <div id="view-team" style="display: none;">
 
-         <!-- Team Claim Requests -->
-         <div class="card">
-            <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 20px;">
-               <div style="width: 44px; height: 44px; border-radius: 22px; background: var(--tag-violet-bg); display: flex; align-items: center; justify-content: center; color: var(--tag-violet-text);">
-                  <i class="fa-solid fa-calendar-check" style="font-size: 18px;"></i>
+      <!-- ================= SUB-VIEW 3: CLAIM FORM SUB-PAGE ================= -->
+      <div id="benefitClaimFormSubPage" style="display: none;">
+         <div style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+            <button onclick="window.ClaimsEngine.backToCategoryCards()" style="background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 8px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+               <i class="fa-solid fa-arrow-left"></i> Back to Category
+            </button>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Application Form</span>
+         </div>
+
+         <!-- Summary Pill Card -->
+         <div class="card" style="background: linear-gradient(135deg, #1e1b4b 0%, #311b92 100%); color: #ffffff;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+               <div>
+                  <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a78bfa;">Category</div>
+                  <div id="formBenefitTypeVal" style="font-size: 14px; font-weight: 800; margin-top: 2px;">CAR MAINTENANCE</div>
                </div>
                <div>
-                  <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary);">Team Claims Pending</h3>
-                  <p style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Require your review & approval</p>
+                  <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a78bfa;">Year</div>
+                  <div id="formYearVal" style="font-size: 14px; font-weight: 800; margin-top: 2px;">2026</div>
                </div>
-            </div>
-            
-            <div style="display: flex; gap: 12px;">
-               <div style="flex: 1; background: var(--bg-input); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 14px;">
-                  <div style="width: 44px; height: 44px; border-radius: 22px; background: var(--tag-amber-bg); display: flex; align-items: center; justify-content: center; color: var(--tag-amber-text);">
-                     <i class="fa-solid fa-clock" style="font-size: 18px;"></i>
-                  </div>
-                  <div>
-                     <div style="font-size: 11px; font-weight: 700; color: var(--tag-amber-text);">To Review</div>
-                     <div style="font-size: 26px; font-weight: 800; color: var(--text-primary); line-height: 1.1; margin-top: 4px;">14</div>
-                  </div>
+               <div>
+                  <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a78bfa;">Entitled</div>
+                  <div style="font-size: 14px; font-weight: 800; margin-top: 2px;">RM <span id="formEntitledVal">1000.00</span></div>
                </div>
-               <div style="flex: 1; background: var(--bg-input); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 14px;">
-                  <div style="width: 44px; height: 44px; border-radius: 22px; background: var(--tag-blue-bg); display: flex; align-items: center; justify-content: center; color: var(--tag-blue-text);">
-                     <i class="fa-solid fa-dollar-sign" style="font-size: 18px;"></i>
-                  </div>
-                  <div>
-                     <div style="font-size: 11px; font-weight: 700; color: var(--tag-blue-text);">Total Value</div>
-                     <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); line-height: 1.1; margin-top: 4px;">RM 4.2k</div>
-                  </div>
+               <div>
+                  <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a78bfa;">Available Balance</div>
+                  <div style="font-size: 14px; font-weight: 800; color: #34d399; margin-top: 2px;">RM <span id="formUsableVal">803.00</span></div>
                </div>
             </div>
          </div>
 
-         <!-- Pending Claims List -->
-         <div class="card">
-            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Require Approval</h3>
-            
-            <div class="claim-item">
-              <div class="claim-icon" style="background: rgba(124, 58, 237, 0.15); color: #7c3aed;">👨‍💻</div>
-              <div class="claim-info">
-                <div class="claim-title">Daniel Lee</div>
-                <div class="claim-date">Mileage Claim &bull; 14 Sep</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="claim-amount">RM 85.50</div>
-                <a href="#" style="font-size: 11px; font-weight: 700; color: #7c3aed; background: var(--purple-subtle); padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; text-decoration: none;">Review</a>
-              </div>
+         <!-- Exact Form -->
+         <form onsubmit="window.ClaimsEngine.handleExactFormSubmit(event)" class="card">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px;">Claim Details</div>
+
+            <div style="margin-bottom: 14px;">
+               <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Claim Period Month</label>
+               <select id="formPeriodMonth" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;"></select>
             </div>
 
-            <div class="claim-item">
-              <div class="claim-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">👩‍💻</div>
-              <div class="claim-info">
-                <div class="claim-title">Sarah Tan</div>
-                <div class="claim-date">Client Dinner &bull; 12 Sep</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="claim-amount">RM 240.00</div>
-                <a href="#" style="font-size: 11px; font-weight: 700; color: #7c3aed; background: var(--purple-subtle); padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; text-decoration: none;">Review</a>
-              </div>
+            <div style="margin-bottom: 14px;">
+               <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Currency</label>
+               <select id="formCurrency" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;"></select>
             </div>
 
-            <div class="claim-item">
-              <div class="claim-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">👨‍💼</div>
-              <div class="claim-info">
-                <div class="claim-title">Ahmad Razali</div>
-                <div class="claim-date">Flight Ticket &bull; 10 Sep</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="claim-amount">RM 890.00</div>
-                <a href="#" style="font-size: 11px; font-weight: 700; color: #7c3aed; background: var(--purple-subtle); padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; text-decoration: none;">Review</a>
-              </div>
+            <div style="margin-bottom: 14px;">
+               <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Claim Amount (MYR)</label>
+               <input type="number" step="0.01" id="formClaimAmount" value="150.00" required style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-weight: 800; outline: none;">
             </div>
-            
-            <div style="text-align: center; margin-top: 16px;">
-               <a href="#" style="font-size: 12.5px; font-weight: 700; color: #7c3aed; text-decoration: none;">View all pending</a>
+
+            <div style="margin-bottom: 14px;">
+               <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Quantity / Items</label>
+               <input type="number" id="formClaimQuantity" value="1" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-weight: 700; outline: none;">
             </div>
-         </div>
+
+            <div style="margin-bottom: 14px;">
+               <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Merchant / Receipt Description</label>
+               <input type="text" id="formPurpose" placeholder="e.g. Car service at Workshop" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13.5px; font-weight: 600; outline: none;">
+            </div>
+
+            <div style="margin-bottom: 18px;">
+               <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Receipt / Invoice Attachment</label>
+               <div style="display: flex; gap: 10px;">
+                  <button type="button" onclick="window.ClaimsEngine.triggerFileUpload()" style="flex: 1; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px dashed var(--purple-primary); color: var(--purple-primary); font-size: 12.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                     <i class="fa-solid fa-paperclip"></i> Attach File
+                  </button>
+                  <button type="button" onclick="window.ClaimsEngine.triggerCameraUpload()" style="flex: 1; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px dashed var(--secondary); color: var(--secondary); font-size: 12.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                     <i class="fa-solid fa-camera"></i> Take Photo
+                  </button>
+               </div>
+               <div id="formAttachmentBadge" style="display: none; margin-top: 8px; font-size: 11.5px; font-weight: 800; color: #10b981;">✔ Receipt Uploaded</div>
+            </div>
+
+            <button type="submit" style="width: 100%; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 14.5px; font-weight: 900; border: none; cursor: pointer; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);">
+               Submit Claim Request
+            </button>
+         </form>
       </div>
 
     </div> <!-- END MAIN CONTENT -->
+
+    <!-- MANAGER DETAIL MODAL -->
+    <div class="modal-overlay" id="managerDetailModal" onclick="if(event.target===this) window.ClaimsEngine.closeManagerModal()">
+      <div class="modal-sheet">
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+            <h3 id="managerModalTitle" style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Report Details</h3>
+            <button onclick="window.ClaimsEngine.closeManagerModal()" style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer;">✕</button>
+         </div>
+         <div id="managerModalBody"></div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastNotification" class="toast-box">
+       <span id="toastText">Action completed successfully</span>
+    </div>
 
     <phone-bottom-nav active="apps"></phone-bottom-nav>
     <left-profile-drawer></left-profile-drawer>
@@ -430,28 +611,5 @@
     <indicators-sheet></indicators-sheet>
   </div>
 
-  <script>
-    function switchView(view) {
-       const tabInd = document.getElementById('tabInd');
-       const tabTeam = document.getElementById('tabTeam');
-       const viewInd = document.getElementById('view-individual');
-       const viewTeam = document.getElementById('view-team');
-       const headerTitle = document.getElementById('headerTitleText');
-
-       if (view === 'individual') {
-          if (tabInd) tabInd.classList.add('active');
-          if (tabTeam) tabTeam.classList.remove('active');
-          if (viewInd) viewInd.style.display = 'block';
-          if (viewTeam) viewTeam.style.display = 'none';
-          if (headerTitle) headerTitle.innerText = 'Claim Dashboard';
-       } else {
-          if (tabTeam) tabTeam.classList.add('active');
-          if (tabInd) tabInd.classList.remove('active');
-          if (viewInd) viewInd.style.display = 'none';
-          if (viewTeam) viewTeam.style.display = 'block';
-          if (headerTitle) headerTitle.innerText = 'Team Claims';
-       }
-    }
-  </script>
 </body>
 </html>
