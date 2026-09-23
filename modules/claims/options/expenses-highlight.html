@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PeopleHCM - Expenses Highlight</title>
+  <title>PeopleHCM - Expenses Highlights</title>
   <script src="../../../js/components.js"></script>
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
@@ -16,83 +16,853 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 16px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .action-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .action-icon-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      border-radius: 44px;
+      overflow: hidden;
+    }
+
+    .filter-bottom-sheet {
+      width: 100%;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 20px 20px 36px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.35);
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85%;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    /* Custom scrollbar for table */
+    .table-scroll-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(124, 58, 237, 0.2);
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
-
   <preview-top-bar active-page="claims"></preview-top-bar>
 
   <div class="phone-container">
+    <!-- Top Header -->
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="../index.html" class="me-back-btn" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
+          <button class="me-back-btn" onclick="handleBackNavigation()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-          </a>
-          <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Expenses Highlight</h1>
+          </button>
+          <h1 id="pageHeaderTitle" style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Expenses Highlights</h1>
         </div>
       </div>
     </div>
 
+    <!-- Main Scrollable Content -->
     <div class="main-content">
-      
-      <!-- Top Card -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%); border: 1px solid rgba(16, 185, 129, 0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+
+      <!-- ========================================================
+           VIEW 1: EXPENSES HIGHLIGHT TABLE VIEW (DEFAULT)
+           ======================================================== -->
+      <div id="viewExpensesHighlightTable" style="display: block;">
+        
+        <!-- 1. Current Filter Bar -->
+        <div class="filter-summary-bar" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
           <div>
-            <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase;">DEPARTMENT SPEND BREAKDOWN</div>
-            <div style="font-size: 22px; font-weight: 900; color: var(--text-primary); margin: 4px 0;">RM 4,250.00 / RM 15,000</div>
-            <div style="font-size: 12px; color: #10b981; font-weight: 700; margin-top: 2px;">✔ 28.3% Budget Utilized</div>
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
+              CURRENT FILTER
+            </div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 14px; opacity: 0.85; color: var(--purple-primary);">ஃ</span>
+              <span id="highlightFilterSummaryText">All Employees &gt;&gt; Department Expense Spend</span>
+            </div>
           </div>
-          <button style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 13px; border-radius: 12px; background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; font-weight: 800; font-size: 12px; white-space: nowrap; cursor: pointer;" onclick="alert('Viewing department expense breakdown chart')">
-            <i class="fa-solid fa-chart-pie"></i><span>View Chart</span>
+          <button type="button" onclick="openHighlightFilterModal()" title="Open Filter Options"
+            style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+            <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
           </button>
+        </div>
+
+        <!-- 2. Action Summary Bar (KPIs + Actions) -->
+        <div class="action-summary-bar" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(99, 102, 241, 0.05)); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 16px; box-shadow: var(--shadow-sm);">
+          
+          <!-- Row 1: Total Records + View Chart Button -->
+          <div class="action-summary-row" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="summary-label" style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Total Records</div>
+              <div id="highlightTotalRecords" class="summary-value" style="color: var(--purple-primary); font-size: 19px; font-weight: 800; margin-top: 1px;">142</div>
+            </div>
+            <div class="action-icons" style="display: flex; gap: 12px;">
+              <button type="button" class="view-chart-btn" title="View Chart" onclick="showExpensesSection('chart')" style="padding: 7px 13px; border-radius: 12px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
+                <i class="fa-solid fa-chart-pie" style="font-size: 13px;"></i>
+                <span>View Chart</span>
+              </button>
+            </div>
+          </div>
+
+          <div style="height: 1px; background: var(--border-subtle); width: 100%;"></div>
+
+          <!-- Row 2: Metric + Export Buttons -->
+          <div class="action-summary-row" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div id="highlightMetricLabel" class="summary-label" style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Total Expense Spend</div>
+              <div id="highlightMetricValue" class="summary-value" style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-top: 1px;">RM 12,450.00</div>
+            </div>
+            <div class="action-icons" style="display: flex; gap: 10px;">
+              <div class="action-icon-btn pdf" title="Export PDF" onclick="handleExportAction('PDF')" style="color: #ef4444;">
+                <i class="fa-solid fa-file-pdf" style="font-size: 16px;"></i>
+              </div>
+              <div class="action-icon-btn excel" title="Export Excel" onclick="handleExportAction('Excel')" style="color: #10b981;">
+                <i class="fa-solid fa-file-excel" style="font-size: 16px;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Data List Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Employee Expenses Highlights Table</div>
+          <div id="tableRecordCountBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-input); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+            Total: 6 records
+          </div>
+        </div>
+
+        <!-- 4. Full Height Data Table Container (Enterprise Zebra + Purple Accents) -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+          <div class="table-scroll-container" style="overflow-x: auto; flex: 1; -webkit-overflow-scrolling: touch;">
+            <table style="width: 100%; min-width: 720px; border-collapse: collapse; text-align: left; font-size: 12px;">
+              <thead>
+                <tr style="background: var(--purple-subtle); border-bottom: 2px solid var(--purple-border);">
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">EMP#</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">NAME</th>
+                  <th id="tableMetricHeaderCol" style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">EXPENSE</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">BRANCH</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">DEPARTMENT</th>
+                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">POSITION</th>
+                </tr>
+              </thead>
+              <tbody id="expensesHighlightTableBody">
+                <!-- Row 1 -->
+                <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">004177</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">AHMAD RAFY BIN ZULKIPLE</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(124, 58, 237, 0.14); color: #7c3aed; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(124, 58, 237, 0.25);">RM 4,250.00</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">ADMINISTRATION DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">ADMIN MANAGER</td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">TEST69</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">TEST69 Test</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(59, 130, 246, 0.14); color: #3b82f6; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(59, 130, 246, 0.25);">RM 3,180.00</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">FINANCE & ACCOUNTING DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">ACCOUNT EXECUTIVE</td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">007216</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">HAILIZAM BIN MOHAMED IKHSAN</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(16, 185, 129, 0.14); color: #10b981; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(16, 185, 129, 0.25);">RM 2,420.00</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">SOUTHERN REGION BRANCH</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">SALES & MARKETING DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">SALES REPRESENTATIVE</td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">006611</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">POR SUAT BEE</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">RM 1,150.00</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">NORTHERN REGION BRANCH</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">OPERATIONS DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">OPERATIONS OFFICER</td>
+                </tr>
+
+                <!-- Row 5 -->
+                <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">008004</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">NURFARHANA BINTI MOHAMAD</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(124, 58, 237, 0.14); color: #7c3aed; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(124, 58, 237, 0.25);">RM 980.00</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">HUMAN RESOURCES DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">HR EXECUTIVE</td>
+                </tr>
+
+                <!-- Row 6 -->
+                <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">009102</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">ALEX TAN CHIN HOCK</td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: rgba(59, 130, 246, 0.14); color: #3b82f6; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(59, 130, 246, 0.25);">RM 470.00</span>
+                  </td>
+                  <td style="padding: 13px 16px; white-space: nowrap;">
+                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">EAST COAST BRANCH</span>
+                  </td>
+                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">IT DEPARTMENT</td>
+                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">SYSTEM ANALYST</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Detail Spikes -->
-      <div class="card">
-        <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Expense Categories</h3>
+      <!-- ========================================================
+           VIEW 2: EXPENSES HIGHLIGHT BREAKDOWN CHART VIEW
+           ======================================================== -->
+      <div id="viewExpensesHighlightChart" style="display: none;">
         
-        <div style="margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700;">
-            <span>Client Dining &amp; Entertainment</span>
-            <span style="color: #7c3aed;">RM 1,850.00</span>
+
+        <!-- Card 1: Breakdown Selector -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow-card);">
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">BREAKDOWN BY</label>
+            <div style="position: relative;">
+              <select id="highlightChartMetricSelect" onchange="changeExpensesChartMetric(this.value)" style="width: 100%; padding: 13px 40px 13px 16px; background: var(--bg-input); color: var(--text-primary); border: 1.5px solid var(--purple-border); border-radius: 16px; font-size: 14.5px; font-weight: 800; outline: none; cursor: pointer; appearance: none; transition: all 0.2s ease;">
+                <option value="category" selected>Expense Category</option>
+                <option value="branch">Branch</option>
+                <option value="department">Department</option>
+                <option value="section">Section</option>
+                <option value="grade">Grade</option>
+                <option value="supervisor">Supervisor</option>
+              </select>
+              <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 12px; font-weight: 900;">▼</div>
+            </div>
           </div>
-          <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 6px;">
-            <div style="width: 43%; height: 100%; background: #7c3aed;"></div>
+
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span id="highlightChartSubTitle">Entitlement Year 2026</span>
           </div>
         </div>
 
-        <div style="margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700;">
-            <span>Travel Mileage &amp; Tolls</span>
-            <span style="color: #3b82f6;">RM 1,420.00</span>
+        <!-- Card 2: Donut Chart Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 20px 24px; margin-bottom: 14px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+          <div style="width: 100%; display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div>
+              <h3 id="highlightChartMainTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; line-height: 1.3;">Expense spend by category</h3>
+              <p style="font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0;">Share of total department expenses</p>
+            </div>
+            <button type="button" onclick="showExpensesSection('trend')" style="background: var(--purple-subtle); color: var(--purple-primary); border: 1.5px solid var(--purple-border); padding: 7px 14px; border-radius: 14px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm); flex-shrink: 0;">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>View Trend</span>
+            </button>
           </div>
-          <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 6px;">
-            <div style="width: 33%; height: 100%; background: #3b82f6;"></div>
+
+          <!-- SVG Donut Chart -->
+          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 195px; height: 195px; margin: 10px 0 14px;">
+            <svg id="highlightDonutSvg" width="195" height="195" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 20px rgba(124, 58, 237, 0.15));">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22"></circle>
+              <g id="expensesDonutCircles"></g>
+            </svg>
+            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 120px;">
+              <div id="expensesCenterTotal" style="font-size: 18px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap;">RM 12,450</div>
+              <div id="expensesCenterBadge" style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.2px;">Total expenses</div>
+            </div>
+          </div>
+
+          <!-- Note under chart -->
+          <div id="highlightChartNote" style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple-primary);"></span>
+            <span id="highlightChartNoteText">Top 5 categories + other expense categories</span>
           </div>
         </div>
 
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700;">
-            <span>Office Supplies &amp; Printing</span>
-            <span style="color: #10b981;">RM 980.00</span>
+        <!-- Card 3: Data Table Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 18px 18px; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 100px 65px; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+            <div id="tableColHeaderKey">CATEGORY</div>
+            <div style="text-align: right;">AMOUNT</div>
+            <div style="text-align: right;">% TOTAL</div>
           </div>
-          <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 6px;">
-            <div style="width: 23%; height: 100%; background: #10b981;"></div>
+
+          <div id="expensesChartLegendGrid" style="display: flex; flex-direction: column; gap: 16px; padding-top: 16px;">
+            <!-- Generated dynamically -->
           </div>
+
+          <div id="highlightViewAllFooter" style="text-align: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+            <button type="button" onclick="toggleHighlightViewAll()" style="background: none; border: none; color: var(--purple-primary); font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px;">
+              <span id="highlightViewAllBtnText">View all categories</span> <span id="highlightViewAllChevron" style="font-size: 14px;">›</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           VIEW 3: EXPENSES HIGHLIGHT TREND VIEW (12 MONTHS TREND)
+           ======================================================== -->
+      <div id="viewExpensesHighlightTrend" style="display: none;">
+        
+        <!-- Card 1: Time Range Display -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 20px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+            LAST 12 MONTHS
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: var(--text-primary);">
+            <i class="fa-solid fa-calendar-days" style="color: var(--purple-primary); font-size: 16px;"></i>
+            <span>1 Oct 2025 – 12 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Total Expense Metric Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 20px 22px; margin-bottom: 16px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: linear-gradient(180deg, var(--purple-primary) 0%, #6d28d9 100%);"></div>
+          <div style="padding-left: 6px;">
+            <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+              Total department expenses
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+              Selected 12 months
+            </div>
+          </div>
+          <div style="font-size: 24px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">
+            RM 148,500
+          </div>
+        </div>
+
+        <!-- Card 3: Monthly Breakdown Stadium Pill Bars -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 22px 20px 20px; margin-bottom: 24px; box-shadow: var(--shadow-card); position: relative;">
+          <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">
+            Monthly expense spend
+          </div>
+          <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 20px;">
+            October 2025 – September 2026
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px 12px; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 12px;">
+            <div>MONTH</div>
+            <div>AMOUNT</div>
+          </div>
+
+          <!-- Monthly Rows Wrapper with Grid Background Lines -->
+          <div style="position: relative;">
+            <div style="position: absolute; top: 0; bottom: 0; left: 75px; right: 90px; display: flex; justify-content: space-between; pointer-events: none; opacity: 0.12; z-index: 0;">
+              <div style="border-right: 1px dashed var(--text-primary); height: 100%;"></div>
+              <div style="border-right: 1px dashed var(--text-primary); height: 100%;"></div>
+              <div style="border-right: 1px dashed var(--text-primary); height: 100%;"></div>
+              <div style="border-right: 1px dashed var(--text-primary); height: 100%;"></div>
+            </div>
+
+            <!-- Monthly Rows -->
+            <div id="trendMonthlyBarsContainer" style="display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1;">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           VIEW 4: EXPENSES SPEND ANALYSIS DETAILS
+           ======================================================== -->
+      <div id="viewExpensesAnalysis" style="display: none;">
+        
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 24px 20px 28px; margin-bottom: 20px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+          
+          <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; text-align: center;">
+            Expense Spend by Branch
+          </div>
+          <div id="expensesAnalysisSubtitle" style="font-size: 13.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 18px; text-align: center;">
+            As At Sep 2026
+          </div>
+
+          <!-- SVG Donut Chart -->
+          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 210px; height: 210px; margin: 8px 0 20px;">
+            <svg id="expensesAnalysisDonutSvg" width="210" height="210" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 18px rgba(0,0,0,0.12));">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="24"></circle>
+              <g id="expensesAnalysisDonutCircles"></g>
+            </svg>
+            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div id="expensesAnalysisCenterTotal" style="font-size: 22px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.5px;">RM 12,450</div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Total Spend</div>
+            </div>
+          </div>
+
+          <!-- Legend Breakdown List -->
+          <div id="expensesAnalysisLegendList" style="width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+            <!-- Populated dynamically -->
+          </div>
+
         </div>
       </div>
 
     </div>
 
     <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- ========================================================
+         FILTER MODAL BOTTOM SHEET
+         ======================================================== -->
+    <div id="highlightFilterModal" class="modal-overlay" onclick="closeHighlightFilterModal(event)">
+      <div class="filter-bottom-sheet">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Expenses Highlight Filters</h3>
+            <p style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">Refine records and analytics metrics</p>
+          </div>
+          <button type="button" onclick="closeHighlightFilterModal()" style="width: 32px; height: 32px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Keyword -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">SEARCH EMPLOYEE</label>
+            <input type="text" id="filterKeyword" placeholder="Name or Employee ID..." style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+          </div>
+
+          <!-- Department -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">DEPARTMENT</label>
+            <select id="filterDepartment" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+              <option value="all">All Departments</option>
+              <option value="ADMINISTRATION DEPARTMENT">Administration</option>
+              <option value="FINANCE & ACCOUNTING">Finance &amp; Accounting</option>
+              <option value="SALES & MARKETING">Sales &amp; Marketing</option>
+              <option value="OPERATIONS DEPARTMENT">Operations</option>
+            </select>
+          </div>
+
+          <!-- Expense Category -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">EXPENSE CATEGORY</label>
+            <select id="filterHighlightType" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+              <option value="Department Expense Spend">All Expense Categories</option>
+              <option value="Client Dining & Entertainment">Client Dining &amp; Entertainment</option>
+              <option value="Travel Mileage & Tolls">Travel Mileage &amp; Tolls</option>
+              <option value="Night Transport & Taxi">Night Transport &amp; Taxi</option>
+              <option value="Office Supplies & Printing">Office Supplies &amp; Printing</option>
+            </select>
+          </div>
+
+          <!-- Buttons -->
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="button" onclick="resetHighlightFilterModal()" style="flex: 1; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 800; cursor: pointer;">
+              Reset
+            </button>
+            <button type="button" onclick="submitHighlightFilterModal()" style="flex: 2; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+              Apply Filter
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
+
+  <script>
+    let currentSection = 'table';
+    let isHighlightViewAllExpanded = false;
+
+    const expensesChartDataset = {
+      category: {
+        title: 'Category',
+        subtitle: 'Share of total department expense claims',
+        total: 'RM 12,450',
+        badge: 'Total expenses',
+        items: [
+          { name: 'Client Dining & Entertainment', val: 'RM 4,250.00', pct: 34.14, color: '#7c3aed' },
+          { name: 'Overseas Travel Advance', val: 'RM 3,180.00', pct: 25.54, color: '#3b82f6' },
+          { name: 'Travel Mileage & Tolls', val: 'RM 2,420.00', pct: 19.44, color: '#10b981' },
+          { name: 'Night Transport & Taxi', val: 'RM 1,150.00', pct: 9.24, color: '#f59e0b' },
+          { name: 'Office Supplies & Printing', val: 'RM 980.00', pct: 7.87, color: '#ec4899' },
+          { name: 'Overtime Meal Allowance', val: 'RM 470.00', pct: 3.77, color: '#6366f1' }
+        ]
+      },
+      branch: {
+        title: 'Branch',
+        subtitle: 'Share of expenses by branch',
+        total: 'RM 12,450',
+        badge: 'Total expenses',
+        items: [
+          { name: 'Headquarters (HQ)', val: 'RM 8,410.00', pct: 67.55, color: '#7c3aed' },
+          { name: 'Southern Region Branch', val: 'RM 2,420.00', pct: 19.44, color: '#10b981' },
+          { name: 'Northern Region Branch', val: 'RM 1,150.00', pct: 9.24, color: '#f59e0b' },
+          { name: 'East Coast Branch', val: 'RM 470.00', pct: 3.77, color: '#3b82f6' }
+        ]
+      },
+      department: {
+        title: 'Department',
+        subtitle: 'Share of expenses by department',
+        total: 'RM 12,450',
+        badge: 'Total expenses',
+        items: [
+          { name: 'Administration', val: 'RM 4,250.00', pct: 34.14, color: '#7c3aed' },
+          { name: 'Finance & Accounting', val: 'RM 3,180.00', pct: 25.54, color: '#3b82f6' },
+          { name: 'Sales & Marketing', val: 'RM 2,420.00', pct: 19.44, color: '#10b981' },
+          { name: 'Operations', val: 'RM 1,150.00', pct: 9.24, color: '#f59e0b' },
+          { name: 'Human Resources', val: 'RM 980.00', pct: 7.87, color: '#ec4899' },
+          { name: 'IT Department', val: 'RM 470.00', pct: 3.77, color: '#6366f1' }
+        ]
+      },
+      section: {
+        title: 'Section',
+        subtitle: 'Share of expenses by section',
+        total: 'RM 12,450',
+        badge: 'Total expenses',
+        items: [
+          { name: 'Client Relations', val: 'RM 4,250.00', pct: 34.14, color: '#7c3aed' },
+          { name: 'Corporate Travel', val: 'RM 3,180.00', pct: 25.54, color: '#3b82f6' },
+          { name: 'Logistics & Transit', val: 'RM 2,420.00', pct: 19.44, color: '#10b981' },
+          { name: 'General Supplies', val: 'RM 2,600.00', pct: 20.88, color: '#f59e0b' }
+        ]
+      },
+      grade: {
+        title: 'Grade',
+        subtitle: 'Share of expenses by grade',
+        total: 'RM 12,450',
+        badge: 'Total expenses',
+        items: [
+          { name: 'Grade M1 - Manager', val: 'RM 7,430.00', pct: 59.68, color: '#7c3aed' },
+          { name: 'Grade E3 - Senior Exec', val: 'RM 3,180.00', pct: 25.54, color: '#3b82f6' },
+          { name: 'Grade E2 - Executive', val: 'RM 1,840.00', pct: 14.78, color: '#10b981' }
+        ]
+      },
+      supervisor: {
+        title: 'Supervisor',
+        subtitle: 'Share of expenses by supervisor',
+        total: 'RM 12,450',
+        badge: 'Total expenses',
+        items: [
+          { name: 'Ahmad Rafy Bin Zulkiple', val: 'RM 4,250.00', pct: 34.14, color: '#7c3aed' },
+          { name: 'Por Suat Bee', val: 'RM 3,180.00', pct: 25.54, color: '#3b82f6' },
+          { name: 'Hailizam Bin Mohamed', val: 'RM 5,020.00', pct: 40.32, color: '#10b981' }
+        ]
+      }
+    };
+
+    const monthlyTrendData = [
+      { month: 'Oct 2025', val: 12800.00, pct: 76 },
+      { month: 'Nov 2025', val: 11500.00, pct: 68 },
+      { month: 'Dec 2025', val: 14200.00, pct: 84 },
+      { month: 'Jan 2026', val: 10400.00, pct: 62 },
+      { month: 'Feb 2026', val: 11900.00, pct: 70 },
+      { month: 'Mar 2026', val: 9800.00, pct: 58 },
+      { month: 'Apr 2026', val: 13600.00, pct: 80 },
+      { month: 'May 2026', val: 12100.00, pct: 72 },
+      { month: 'Jun 2026', val: 15400.00, pct: 91 },
+      { month: 'Jul 2026', val: 12300.00, pct: 73 },
+      { month: 'Aug 2026', val: 12150.00, pct: 72 },
+      { month: 'Sep 2026', val: 12450.00, pct: 74 }
+    ];
+
+    function showExpensesSection(sec) {
+      currentSection = sec;
+      const vTable = document.getElementById('viewExpensesHighlightTable');
+      const vChart = document.getElementById('viewExpensesHighlightChart');
+      const vTrend = document.getElementById('viewExpensesHighlightTrend');
+      const vAnalysis = document.getElementById('viewExpensesAnalysis');
+      const headerTitle = document.getElementById('pageHeaderTitle');
+
+      if (vTable) vTable.style.display = (sec === 'table') ? 'block' : 'none';
+      if (vChart) vChart.style.display = (sec === 'chart') ? 'block' : 'none';
+      if (vTrend) vTrend.style.display = (sec === 'trend') ? 'block' : 'none';
+      if (vAnalysis) vAnalysis.style.display = (sec === 'analysis') ? 'block' : 'none';
+
+      if (sec === 'table') {
+        headerTitle.innerText = 'Expenses Highlights';
+      } else if (sec === 'chart') {
+        headerTitle.innerText = 'Highlight Breakdown';
+        renderExpensesChart(document.getElementById('highlightChartMetricSelect')?.value || 'category');
+      } else if (sec === 'trend') {
+        headerTitle.innerText = 'Expenses Spend Trend Analysis';
+        renderTrendMonthlyBars();
+      } else if (sec === 'analysis') {
+        headerTitle.innerText = 'Expenses Spend Analysis';
+      }
+    }
+
+    function handleBackNavigation() {
+      if (currentSection === 'analysis') {
+        showExpensesSection('trend');
+      } else if (currentSection === 'trend') {
+        showExpensesSection('chart');
+      } else if (currentSection === 'chart') {
+        showExpensesSection('table');
+      } else {
+        window.history.back();
+      }
+    }
+
+    function renderExpensesChart(key) {
+      const data = expensesChartDataset[key] || expensesChartDataset['category'];
+      document.getElementById('highlightChartMainTitle').innerText = `Expense spend by ${data.title.toLowerCase()}`;
+      document.getElementById('tableColHeaderKey').innerText = data.title.toUpperCase();
+      document.getElementById('highlightChartSubTitle').innerText = data.subtitle;
+      document.getElementById('expensesCenterTotal').innerText = data.total;
+      document.getElementById('expensesCenterBadge').innerText = data.badge;
+
+      const svgGroup = document.getElementById('expensesDonutCircles');
+      if (svgGroup) {
+        const C = 439.82;
+        let currentOffset = 0;
+        let circlesHtml = '';
+
+        data.items.forEach(item => {
+          const pct = item.pct / 100;
+          const dashLen = pct * C;
+          const dashOffset = -currentOffset;
+          currentOffset += dashLen;
+          circlesHtml += `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${item.color}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+        });
+        svgGroup.innerHTML = circlesHtml;
+      }
+
+      const grid = document.getElementById('expensesChartLegendGrid');
+      if (grid) {
+        let listHtml = '';
+        data.items.forEach(item => {
+          listHtml += `
+            <div style="display: grid; grid-template-columns: 1fr 100px 65px; gap: 10px; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${item.color}; flex-shrink: 0;"></span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right;">${item.val}</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: right;">${item.pct.toFixed(2)}%</div>
+            </div>
+          `;
+        });
+        grid.innerHTML = listHtml;
+      }
+    }
+
+    function changeExpensesChartMetric(val) {
+      isHighlightViewAllExpanded = false;
+      renderExpensesChart(val);
+      if (typeof showToast === 'function') {
+        showToast(`Grouping by: ${val}`);
+      }
+    }
+
+    function toggleHighlightViewAll() {
+      isHighlightViewAllExpanded = !isHighlightViewAllExpanded;
+      renderExpensesChart(document.getElementById('highlightChartMetricSelect').value);
+    }
+
+    function renderTrendMonthlyBars() {
+      const container = document.getElementById('trendMonthlyBarsContainer');
+      if (!container) return;
+
+      let html = '';
+      monthlyTrendData.forEach(item => {
+        html += `
+          <div onclick="openAnalysis('${item.month}', 'RM ${item.val.toLocaleString()}')" 
+               style="display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; border-radius: 10px; cursor: pointer; transition: background 0.15s ease;" 
+               onmouseover="this.style.background='var(--purple-subtle)'" 
+               onmouseout="this.style.background='transparent'">
+            
+            <div style="width: 72px; font-size: 13px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0;">
+              ${item.month}
+            </div>
+
+            <div style="flex: 1; margin: 0 12px; height: 18px; display: flex; align-items: center;">
+              <div style="width: ${item.pct}%; height: 16px; background: linear-gradient(90deg, #7c3aed 0%, #6d28d9 50%, #a855f7 100%); border-radius: 999px; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25); transition: width 0.5s ease;"></div>
+            </div>
+
+            <div style="width: 90px; text-align: right; font-size: 13px; font-weight: 800; color: var(--text-primary); flex-shrink: 0;">
+              RM ${item.val.toLocaleString()}
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function openAnalysis(monthLabel, totalVal) {
+      const subtitle = document.getElementById('expensesAnalysisSubtitle');
+      if (subtitle) subtitle.innerText = `As At ${monthLabel}`;
+
+      const totalEl = document.getElementById('expensesAnalysisCenterTotal');
+      if (totalEl) totalEl.innerText = totalVal;
+
+      renderAnalysisDonutAndLegend();
+      showExpensesSection('analysis');
+    }
+
+    function renderAnalysisDonutAndLegend() {
+      const items = [
+        { name: 'Client Dining & Entertainment', pct: '34.14%', count: 'RM 4,250', color: '#7c3aed' },
+        { name: 'Overseas Travel Advance', pct: '25.54%', count: 'RM 3,180', color: '#3b82f6' },
+        { name: 'Travel Mileage & Tolls', pct: '19.44%', count: 'RM 2,420', color: '#10b981' },
+        { name: 'Night Transport & Taxi', pct: '9.24%', count: 'RM 1,150', color: '#f59e0b' },
+        { name: 'Office Supplies & Printing', pct: '7.87%', count: 'RM 980', color: '#ec4899' },
+        { name: 'Overtime Meal Allowance', pct: '3.77%', count: 'RM 470', color: '#6366f1' }
+      ];
+
+      const svgGroup = document.getElementById('expensesAnalysisDonutCircles');
+      if (svgGroup) {
+        const C = 439.82;
+        let currentOffset = 0;
+        let circlesHtml = '';
+
+        items.forEach(it => {
+          const numPct = parseFloat(it.pct) / 100;
+          const dashLen = numPct * C;
+          const dashOffset = -currentOffset;
+          currentOffset += dashLen;
+          circlesHtml += `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${it.color}" stroke-width="24" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+        });
+        svgGroup.innerHTML = circlesHtml;
+      }
+
+      const grid = document.getElementById('expensesAnalysisLegendList');
+      if (grid) {
+        let listHtml = '';
+        items.forEach(it => {
+          listHtml += `
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; padding-right: 8px;">
+                <span style="width: 12px; height: 12px; border-radius: 3.5px; background: ${it.color}; flex-shrink: 0;"></span>
+                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${it.name}</span>
+              </div>
+              <div style="font-weight: 800; color: var(--text-muted); white-space: nowrap; flex-shrink: 0;">${it.count} (${it.pct})</div>
+            </div>
+          `;
+        });
+        grid.innerHTML = listHtml;
+      }
+    }
+
+    function handleExportAction(type) {
+      if (typeof showToast === 'function') {
+        showToast(`📄 Generating ${type} report export...`);
+      } else {
+        alert(`Generating ${type} report export...`);
+      }
+    }
+
+    function openHighlightFilterModal() {
+      const modal = document.getElementById('highlightFilterModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(0)';
+      }, 10);
+    }
+
+    function closeHighlightFilterModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const modal = document.getElementById('highlightFilterModal');
+      if (!modal) return;
+      modal.style.opacity = '0';
+      modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(100%)';
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
+    }
+
+    function resetHighlightFilterModal() {
+      if (document.getElementById('filterKeyword')) document.getElementById('filterKeyword').value = '';
+      if (document.getElementById('filterDepartment')) document.getElementById('filterDepartment').value = 'all';
+      if (document.getElementById('filterHighlightType')) document.getElementById('filterHighlightType').value = 'Department Expense Spend';
+      closeHighlightFilterModal();
+      submitHighlightFilterModal();
+    }
+
+    function submitHighlightFilterModal() {
+      const kw = document.getElementById('filterKeyword')?.value.trim() || '';
+      const dept = document.getElementById('filterDepartment')?.value || 'all';
+      const type = document.getElementById('filterHighlightType')?.value || 'Department Expense Spend';
+
+      let summaryParts = ['Entitlement Year 2026'];
+      if (kw) summaryParts.push(`"${kw}"`);
+      else if (dept !== 'all') summaryParts.push(dept);
+
+      const sumEl = document.getElementById('highlightFilterSummaryText');
+      if (sumEl) {
+        sumEl.innerHTML = `<span>${summaryParts.join(' • ')}</span><span style="color: var(--purple-primary);">• ${type}</span>`;
+      }
+
+      closeHighlightFilterModal();
+      if (typeof showToast === 'function') {
+        showToast(`Filter applied: ${type}`);
+      }
+    }
+  </script>
 </body>
 </html>

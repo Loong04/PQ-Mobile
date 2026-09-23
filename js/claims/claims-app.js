@@ -57,20 +57,27 @@
     items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'submission-card';
+      card.style.cssText = 'background: var(--bg-card); border-radius: 18px; padding: 14px; border: 1px solid var(--border-subtle); margin-bottom: 10px; transition: transform 0.15s ease; cursor: pointer; display: flex; align-items: center; gap: 12px;';
 
       const statusClass = item.status === 'pending' ? 'pending' : (item.status === 'approved' ? 'approved' : 'rejected');
 
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-          <div>
-            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${item.category}</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.optionName} • ${item.date}</div>
-          </div>
-          <span class="status-badge ${statusClass}">${item.statusText}</span>
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+          ${item.icon || '🧾'}
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid var(--border-subtle); font-size: 12px;">
-          <span style="color: var(--text-muted); font-weight: 600;">${item.merchant || 'Claim Receipt'}</span>
-          <span style="font-size: 14px; font-weight: 900; color: var(--text-primary);">RM ${item.amount.toFixed(2)}</span>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.category}</div>
+            <span class="status-badge ${statusClass}">${item.statusText}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+              ${item.merchant || item.optionName} • ${item.date}
+            </div>
+            <div style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); white-space: nowrap; margin-left: 8px;">
+              RM ${item.amount.toFixed(2)}
+            </div>
+          </div>
         </div>
       `;
 

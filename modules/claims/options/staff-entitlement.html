@@ -8,7 +8,7 @@
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
@@ -16,10 +16,50 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 16px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      border-radius: 44px;
+      overflow: hidden;
+    }
+
+    .filter-bottom-sheet {
+      width: 100%;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 20px 20px 36px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.35);
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85%;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
@@ -27,6 +67,8 @@
   <preview-top-bar active-page="claims"></preview-top-bar>
 
   <div class="phone-container">
+    
+    <!-- Top Header -->
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
@@ -34,87 +76,300 @@
           <a href="../index.html" class="me-back-btn" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </a>
-          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0;">Staff Benefit Entitlements</h1>
+          <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Staff Benefit Entitlements</h1>
         </div>
       </div>
     </div>
 
     <div class="main-content">
       
-      <div style="margin-bottom: 14px; font-size: 12px; font-weight: 700; color: var(--text-muted);">Team Member Entitlements &amp; Balances (2026)</div>
+      <!-- 1. Current Filter Bar -->
+      <div class="filter-summary-bar" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
+            CURRENT FILTER
+          </div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 14px; opacity: 0.85; color: var(--purple-primary);">ஃ</span>
+            <span id="currentFilterTextDisplay">Year 2026</span>
+          </div>
+        </div>
+        <button type="button" onclick="openEntitlementFilterModal()" title="Open Filter Options"
+          style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
+        </button>
+      </div>
 
-      <!-- Staff Member 1 -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Sarah Chen</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EBB01</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Marketing Lead • Digital Team</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 14px; font-weight: 800; color: #10b981;">RM 2,550.00 Bal</div>
-            <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">Claimed: 32.9%</div>
+      <!-- 2. KPI Summary Cards Grid (3 Cards) -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+        <!-- Card 1: Total Records -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 10px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 9.5px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px;">TOTAL RECORDS</div>
+          <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 6px;">
+            <span style="font-size: 20px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">22</span>
           </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: var(--bg-input); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border-subtle); margin-bottom: 8px;">
-          <div><div style="font-size: 9px; font-weight: 700; color: var(--text-muted);">ENTITLED</div><div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary);">RM 3,800.00</div></div>
-          <div><div style="font-size: 9px; font-weight: 700; color: var(--text-muted);">USED</div><div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary);">RM 1,250.00</div></div>
-          <div><div style="font-size: 9px; font-weight: 700; color: #10b981;">BALANCE</div><div style="font-size: 11.5px; font-weight: 800; color: #10b981;">RM 2,550.00</div></div>
+
+        <!-- Card 2: Total Taken -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 10px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 9.5px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px;">TOTAL TAKEN</div>
+          <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 6px;">
+            <span style="font-size: 14px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">RM 4,770</span>
+          </div>
         </div>
-        <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
-          <div style="width: 32.9%; height: 100%; background: #7c3aed; border-radius: 10px;"></div>
+
+        <!-- Card 3: Total Usable -->
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.28); border-radius: 18px; padding: 12px 10px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 9.5px; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.4px;">TOTAL USABLE</div>
+          <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 6px;">
+            <span style="font-size: 14px; font-weight: 900; color: #10b981; letter-spacing: -0.5px;">RM 15,230</span>
+          </div>
         </div>
       </div>
 
-      <!-- Staff Member 2 -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Marcus Tan</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004177</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Senior Engineer • Product</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 14px; font-weight: 800; color: #10b981;">RM 2,850.00 Bal</div>
-            <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">Claimed: 25.0%</div>
-          </div>
+      <!-- 3. Cards List Container (Per Employee + Benefit Type) -->
+      <div id="staffEntitlementRecordCardsContainer" style="background: var(--bg-card); border-radius: 20px; box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 24px; border: 1px solid var(--border-subtle);">
+        
+        <!-- Table Header -->
+        <div style="display: flex; padding: 12px 18px; background: rgba(124, 58, 237, 0.08); border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--purple-text); text-transform: uppercase; letter-spacing: 0.6px;">
+          <div style="flex: 2;">EMPLOYEE & BENEFIT TYPE</div>
+          <div style="flex: 1; text-align: right;">BALANCES</div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: var(--bg-input); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border-subtle); margin-bottom: 8px;">
-          <div><div style="font-size: 9px; font-weight: 700; color: var(--text-muted);">ENTITLED</div><div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary);">RM 3,800.00</div></div>
-          <div><div style="font-size: 9px; font-weight: 700; color: var(--text-muted);">USED</div><div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary);">RM 950.00</div></div>
-          <div><div style="font-size: 9px; font-weight: 700; color: #10b981;">BALANCE</div><div style="font-size: 11.5px; font-weight: 800; color: #10b981;">RM 2,850.00</div></div>
-        </div>
-        <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
-          <div style="width: 25.0%; height: 100%; background: #3b82f6; border-radius: 10px;"></div>
-        </div>
-      </div>
 
-      <!-- Staff Member 3 -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Aisha Omar</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#0000101</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Product Designer • UX UI</div>
+        <!-- Item 1: Sarah Chen - Car Maintenance -->
+        <div style="padding: 16px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-weight: 800; font-size: 14px; color: var(--text-primary); line-height: 1.2;">Sarah Chen</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px;">#EBB01</div>
+            </div>
+            <div style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px;">
+              CAR MAINTENANCE
+            </div>
           </div>
-          <div style="text-align: right;">
-            <div style="font-size: 14px; font-weight: 800; color: #10b981;">RM 3,120.00 Bal</div>
-            <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">Claimed: 17.8%</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Taken</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 197.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Entitled</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 1,000.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: #10b981; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px;">Usable</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: #10b981;">RM 803.00</div>
+            </div>
           </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: var(--bg-input); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border-subtle); margin-bottom: 8px;">
-          <div><div style="font-size: 9px; font-weight: 700; color: var(--text-muted);">ENTITLED</div><div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary);">RM 3,800.00</div></div>
-          <div><div style="font-size: 9px; font-weight: 700; color: var(--text-muted);">USED</div><div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary);">RM 680.00</div></div>
-          <div><div style="font-size: 9px; font-weight: 700; color: #10b981;">BALANCE</div><div style="font-size: 11.5px; font-weight: 800; color: #10b981;">RM 3,120.00</div></div>
+
+        <!-- Item 2: Sarah Chen - Mobile Phone -->
+        <div style="padding: 16px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-weight: 800; font-size: 14px; color: var(--text-primary); line-height: 1.2;">Sarah Chen</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px;">#EBB01</div>
+            </div>
+            <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.35); color: #60a5fa; padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px;">
+              MOBILE PHONE
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Taken</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 120.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Entitled</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 900.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: #10b981; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px;">Usable</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: #10b981;">RM 780.00</div>
+            </div>
+          </div>
         </div>
-        <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
-          <div style="width: 17.8%; height: 100%; background: #10b981; border-radius: 10px;"></div>
+
+        <!-- Item 3: Marcus Tan - Optical & Dental -->
+        <div style="padding: 16px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-weight: 800; font-size: 14px; color: var(--text-primary); line-height: 1.2;">Marcus Tan</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px;">#004177</div>
+            </div>
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px;">
+              OPTICAL & DENTAL
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Taken</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 250.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Entitled</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 1,000.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: #10b981; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px;">Usable</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: #10b981;">RM 750.00</div>
+            </div>
+          </div>
         </div>
+
+        <!-- Item 4: Aisha Omar - Outpatient GP Clinic -->
+        <div style="padding: 16px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-weight: 800; font-size: 14px; color: var(--text-primary); line-height: 1.2;">Aisha Omar</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px;">#0000101</div>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px;">
+              OUTPATIENT GP CLINIC
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Taken</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 300.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Entitled</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 800.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: #10b981; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px;">Usable</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: #10b981;">RM 500.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 5: Daniel Lee - Specialist Consultation -->
+        <div style="padding: 16px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-weight: 800; font-size: 14px; color: var(--text-primary); line-height: 1.2;">Daniel Lee</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px;">#000582</div>
+            </div>
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px;">
+              SPECIALIST CONSULTATION
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Taken</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 150.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Entitled</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: var(--text-primary);">RM 500.00</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border-subtle); opacity: 0.6;"></div>
+            <div style="text-align: center; flex: 1;">
+              <div style="color: #10b981; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px;">Usable</div>
+              <div style="font-weight: 900; font-size: 13.5px; color: #10b981;">RM 350.00</div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
 
     <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Filter Modal Overlay -->
+    <div id="entitlementFilterModal" class="modal-overlay" onclick="closeEntitlementFilterModal(event)">
+      <div class="filter-bottom-sheet">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Entitlement Filter</h3>
+            <p style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">Filter team entitlements by year and category</p>
+          </div>
+          <button type="button" onclick="closeEntitlementFilterModal()" style="width: 32px; height: 32px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Entitlement Year -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">ENTITLEMENT YEAR</label>
+            <select id="filterYearSelect" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+              <option value="2026" selected>Year 2026</option>
+              <option value="2025">Year 2025</option>
+              <option value="2024">Year 2024</option>
+            </select>
+          </div>
+
+          <!-- Keyword -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">SEARCH EMPLOYEE</label>
+            <input type="text" id="filterKeywordInput" placeholder="Employee Name or ID..." style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+          </div>
+
+          <!-- Buttons -->
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="button" onclick="resetEntitlementFilter()" style="flex: 1; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 800; cursor: pointer;">
+              Reset
+            </button>
+            <button type="button" onclick="applyEntitlementFilter()" style="flex: 2; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+              Apply Filter
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
+
+  <script>
+    function openEntitlementFilterModal() {
+      const modal = document.getElementById('entitlementFilterModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(0)';
+      }, 10);
+    }
+
+    function closeEntitlementFilterModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const modal = document.getElementById('entitlementFilterModal');
+      if (!modal) return;
+      modal.style.opacity = '0';
+      modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(100%)';
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
+    }
+
+    function resetEntitlementFilter() {
+      document.getElementById('filterYearSelect').value = '2026';
+      document.getElementById('filterKeywordInput').value = '';
+      closeEntitlementFilterModal();
+      applyEntitlementFilter();
+    }
+
+    function applyEntitlementFilter() {
+      const yr = document.getElementById('filterYearSelect').value;
+      const kw = document.getElementById('filterKeywordInput').value.trim();
+      const txt = kw ? `Year ${yr} • "${kw}"` : `Year ${yr}`;
+      document.getElementById('currentFilterTextDisplay').textContent = txt;
+      closeEntitlementFilterModal();
+      if (typeof showToast === 'function') {
+        showToast(`Filter applied: ${txt}`);
+      }
+    }
+  </script>
 </body>
 </html>
