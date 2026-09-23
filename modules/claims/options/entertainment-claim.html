@@ -165,19 +165,35 @@
       position: relative;
     }
 
-    /* Green Section Banner matching Medical & Travel Claims */
-    .green-section-banner {
-      background: #86efac;
-      color: #15803d;
-      padding: 10px 16px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 800;
-      margin-bottom: 18px;
+    /* Elegant Section Header Bar (Replaces Green Banners) */
+    .section-header-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 14px rgba(134, 239, 172, 0.25);
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .section-title-accent {
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .section-title-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .field-group {
@@ -597,17 +613,60 @@
             </div>
           </div>
 
+          <!-- Purpose -->
+          <div class="field-group">
+            <label class="field-label">Purpose : <span class="req">*</span></label>
+            <input type="text" id="purposeInput" class="form-ctrl" placeholder="Enter purpose..." />
+          </div>
+
+          <!-- Declaration For -->
+          <div class="field-group">
+            <label class="field-label">Declaration For : <span class="req">*</span></label>
+            <div style="display: flex; gap: 20px; align-items: center; margin-top: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-primary); cursor: pointer;">
+                <input type="checkbox" id="declGiftEnt" value="Gift / Ent" style="width: 18px; height: 18px; accent-color: var(--purple-primary); cursor: pointer;" />
+                Gift / Ent
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-primary); cursor: pointer;">
+                <input type="checkbox" id="declTrvHosp" value="Trv / Hosp" style="width: 18px; height: 18px; accent-color: var(--purple-primary); cursor: pointer;" />
+                Trv / Hosp
+              </label>
+            </div>
+          </div>
+
+          <!-- Remarks -->
+          <div class="field-group">
+            <label class="field-label">Remarks :</label>
+            <input type="text" id="remarksInput" class="form-ctrl" placeholder="Enter remarks..." />
+          </div>
+
+          <!-- Upload Attachments -->
+          <div style="margin-top: 14px; margin-bottom: 16px;">
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('general')">
+                <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px;">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                </div>
+                <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('general')">
+                <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+              </div>
+            </div>
+
+            <div id="generalFileChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+          </div>
+
           <!-- Toggles -->
           <div class="toggle-row">
             <span class="toggle-label">Board Approve</span>
             <div id="toggleBoardApprove" class="toggle-switch" onclick="toggleSwitch(this)">
-              <div class="toggle-switch-circle"></div>
-            </div>
-          </div>
-
-          <div class="toggle-row">
-            <span class="toggle-label">Declaration For / Gift / Ent</span>
-            <div id="toggleDeclaration" class="toggle-switch" onclick="toggleSwitch(this)">
               <div class="toggle-switch-circle"></div>
             </div>
           </div>
@@ -631,8 +690,10 @@
       <div id="tabContent-detail" style="display: none;">
         <div class="form-card">
           
-          <div class="green-section-banner">
-            <span>Claim Details Line Item</span>
+          <!-- Section Header Bar -->
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">CLAIM DETAILS LINE ITEM</span>
           </div>
 
           <div class="field-group">
@@ -774,8 +835,10 @@
       <div id="tabContent-employees" style="display: none;">
         <div class="form-card">
           
-          <div class="green-section-banner">
-            <span>Internal Attendee</span>
+          <!-- Section Header Bar -->
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">INTERNAL ATTENDEE</span>
           </div>
 
           <div class="field-group">
@@ -837,8 +900,10 @@
       <div id="tabContent-guest" style="display: none;">
         <div class="form-card">
           
-          <div class="green-section-banner">
-            <span>External Attendee</span>
+          <!-- Section Header Bar -->
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">EXTERNAL ATTENDEE</span>
           </div>
 
           <div class="field-group">
@@ -920,6 +985,7 @@
     let addedDetails = [];
     let addedEmployees = [];
     let addedGuests = [];
+    let currentUploadTarget = 'detail';
 
     const mockEmployees = {
       'EBB01': { name: 'Sarah Chen', pos: 'Marketing Lead', comp: 'PeopleHCM Sdn Bhd', dept: 'Marketing' },
@@ -984,6 +1050,7 @@
     }
 
     function triggerFileUpload(target) {
+      currentUploadTarget = target || 'detail';
       const input = document.getElementById('hiddenFileInput');
       if (input) input.click();
     }
@@ -991,13 +1058,15 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      const container = document.getElementById('detailFileChipsList');
+      const containerId = currentUploadTarget === 'general' ? 'generalFileChipsList' : 'detailFileChipsList';
+      const container = document.getElementById(containerId);
       if (container) {
         const chip = document.createElement('div');
         chip.className = 'file-chip';
         chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="this.parentElement.remove()"></i>`;
         container.appendChild(chip);
       }
+      input.value = ''; // Reset input to allow selecting the same file again
     }
 
     function addExpenseDetailItem() {
