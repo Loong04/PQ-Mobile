@@ -86,19 +86,41 @@
 
 
   /**
-   * Render Ultra-Minimalist 8 Option Cards Grid on Main Page
+   * Render 3 Columns x 2 Rows Max Option Cards Grid on Main Page (5 Items + View All)
    */
   function renderOptionSquareGrid() {
     const container = document.getElementById('claimOptionsHubGrid');
+    const badge = document.getElementById('claimModulesCountBadge');
     if (!container) return;
 
     container.innerHTML = '';
     const options = window.CLAIM_OPTIONS || [];
 
-    options.forEach(opt => {
-      const card = document.createElement('div');
+    if (badge) {
+      badge.textContent = `${options.length} Modules`;
+    }
+
+    const fileMap = {
+      benefit: 'options/benefit-claim.html',
+      medical: 'options/medical-claim.html',
+      ot: 'options/ot-claim.html',
+      travel: 'options/travel-claim.html',
+      entertainment: 'options/entertainment-claim.html',
+      advance: 'options/advance-claim.html',
+      expenses: 'options/expenses-claim.html',
+      history: 'options/history.html',
+      summary: 'options/summary.html'
+    };
+
+    const MAX_VISIBLE = 5;
+    const shouldShowViewAll = options.length > 6;
+    const displayOptions = shouldShowViewAll ? options.slice(0, MAX_VISIBLE) : options;
+
+    displayOptions.forEach(opt => {
+      const card = document.createElement('a');
       card.className = 'claim-square-card';
-      card.setAttribute('data-option', opt.id);
+      card.style.textDecoration = 'none';
+      card.href = fileMap[opt.id] || `options/${opt.id}.html`;
 
       card.innerHTML = `
         <div class="claim-square-icon-wrap">
@@ -107,20 +129,73 @@
         <div class="claim-square-title">${opt.name}</div>
       `;
 
-      card.onclick = () => {
-        if (opt.id === 'summary') {
-          openSummaryModal();
-        } else {
-          openOptionDetailById(opt.id);
-        }
-      };
+      container.appendChild(card);
+    });
+
+    if (shouldShowViewAll) {
+      const viewAllCard = document.createElement('div');
+      viewAllCard.className = 'claim-square-card';
+      viewAllCard.onclick = () => openAllClaimOptionsModal();
+
+      viewAllCard.innerHTML = `
+        <div class="claim-square-icon-wrap" style="background: rgba(168, 85, 247, 0.16); color: #c084fc;">
+          <i class="fa-solid fa-ellipsis" style="font-size: 18px;"></i>
+        </div>
+        <div class="claim-square-title" style="color: var(--text-primary);">View All</div>
+      `;
+
+      container.appendChild(viewAllCard);
+    }
+  }
+
+  function openAllClaimOptionsModal() {
+    const modal = document.getElementById('allOptionsModalOverlay');
+    const container = document.getElementById('allClaimOptionsModalGrid');
+    const title = document.getElementById('allOptionsModalTitle');
+    if (!modal || !container) return;
+
+    const options = window.CLAIM_OPTIONS || [];
+    if (title) title.textContent = `Quick Options (${options.length})`;
+
+    const fileMap = {
+      benefit: 'options/benefit-claim.html',
+      medical: 'options/medical-claim.html',
+      ot: 'options/ot-claim.html',
+      travel: 'options/travel-claim.html',
+      entertainment: 'options/entertainment-claim.html',
+      advance: 'options/advance-claim.html',
+      expenses: 'options/expenses-claim.html',
+      history: 'options/history.html',
+      summary: 'options/summary.html'
+    };
+
+    container.innerHTML = '';
+    options.forEach(opt => {
+      const card = document.createElement('a');
+      card.className = 'claim-square-card';
+      card.style.textDecoration = 'none';
+      card.href = fileMap[opt.id] || `options/${opt.id}.html`;
+
+      card.innerHTML = `
+        <div class="claim-square-icon-wrap">
+          ${opt.icon}
+        </div>
+        <div class="claim-square-title">${opt.name}</div>
+      `;
 
       container.appendChild(card);
     });
+
+    modal.classList.add('active');
+  }
+
+  function closeAllClaimOptionsModal() {
+    const modal = document.getElementById('allOptionsModalOverlay');
+    if (modal) modal.classList.remove('active');
   }
 
   /**
-   * Render Manager Options Grid
+   * Render Manager Options Grid (Navigating to individual manager option files)
    */
   function renderManagerSquareGrid() {
     const container = document.getElementById('managerOptionsGrid');
@@ -129,12 +204,18 @@
     container.innerHTML = '';
     const options = window.MANAGER_OPTIONS || [];
 
-    options.forEach(opt => {
-      const card = document.createElement('div');
-      card.className = 'claim-square-card';
-      card.setAttribute('data-option', opt.id);
+    const managerFileMap = {
+      benefit_highlight: 'options/benefit-highlight.html',
+      staff_entitlement: 'options/staff-entitlement.html',
+      expenses_highlight: 'options/expenses-highlight.html',
+      staff_summary: 'options/staff-summary.html'
+    };
 
-      card.onclick = () => handleManagerOptionClick(opt.id, opt.name);
+    options.forEach(opt => {
+      const card = document.createElement('a');
+      card.className = 'claim-square-card';
+      card.style.textDecoration = 'none';
+      card.href = managerFileMap[opt.id] || `options/${opt.id}.html`;
 
       card.innerHTML = `
         <div class="claim-square-icon-wrap">
@@ -194,46 +275,57 @@
       } else {
         subCats.forEach(sub => {
           const icon = getSubCategoryIcon(sub.id);
-          const usagePct = sub.entitled > 0 ? Math.min(100, Math.max(0, (sub.usable / sub.entitled) * 100)) : 0;
+          const entitled = sub.entitled > 0 ? sub.entitled : 1;
+          const claimedPct = Math.min(100, Math.max(0, (sub.claimed / entitled) * 100));
+          const pendingPct = Math.min(100, Math.max(0, (sub.pending / entitled) * 100));
+          const availPct = Math.min(100, Math.max(0, (sub.usable / entitled) * 100));
 
           const card = document.createElement('div');
-          card.style.cssText = 'background: #1a1a24; border: 1px solid rgba(255,255,255,0.04); border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: all 0.25s ease;';
+          card.className = 'leave-list-item';
+          card.style.cssText = 'background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 16px; box-shadow: var(--shadow-card); margin-bottom: 14px; transition: transform 0.2s ease;';
 
           card.innerHTML = `
-            <!-- Top Section: Icon, Title, Apply Button -->
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: #252438; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+            <!-- Item Header matching leave.html -->
+            <div class="item-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="item-title-wrap" style="display: flex; align-items: center; gap: 12px;">
+                <div class="item-icon" style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; font-size: 20px;">
                   ${icon}
                 </div>
                 <div>
-                  <div style="font-size: 15px; font-weight: 800; color: #ffffff; letter-spacing: 0.2px;">${sub.name}</div>
-                  <div style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-top: 2px;">RM ${sub.usable.toFixed(2)} available</div>
+                  <h3 class="item-name" style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">${sub.name}</h3>
+                  <span class="item-avail" style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 3px;">RM ${sub.usable.toFixed(2)} available</span>
                 </div>
               </div>
-              <button style="background: #be79ff; color: #ffffff; border: none; padding: 7px 20px; border-radius: 20px; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: transform 0.15s ease; box-shadow: 0 4px 12px rgba(190, 121, 255, 0.2);" onclick="window.ClaimsEngine.openClaimFormForSubCategory('${sub.id}')">
+              <button class="btn-apply-sm" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; padding: 7px 18px; border-radius: 20px; font-size: 12.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35); transition: transform 0.15s ease;" onclick="window.ClaimsEngine.openClaimFormForSubCategory('${sub.id}')">
                 Claim
               </button>
             </div>
 
-            <!-- Bottom Section: 4 Metrics Pill -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); background: #12121a; border-radius: 14px; padding: 14px 0; margin-top: 18px;">
-              <div style="text-align: center; border-right: 1px solid rgba(255,255,255,0.05);">
-                <div style="font-size: 9.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Entitled</div>
-                <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-top: 4px;">${sub.entitled.toFixed(2)}</div>
+            <!-- 4-Stat Metric Box matching leave.html -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 10px 8px; border-radius: 14px; margin-top: 12px; text-align: center; border: 1px solid var(--border-subtle);">
+              <div>
+                <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
+                <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 3px;">RM ${sub.entitled.toFixed(2)}</div>
               </div>
-              <div style="text-align: center; border-right: 1px solid rgba(255,255,255,0.05);">
-                <div style="font-size: 9.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Claimed</div>
-                <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-top: 4px;">${sub.claimed.toFixed(2)}</div>
+              <div>
+                <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
+                <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 3px;">RM ${sub.claimed.toFixed(2)}</div>
               </div>
-              <div style="text-align: center; border-right: 1px solid rgba(255,255,255,0.05);">
-                <div style="font-size: 9.5px; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.5px;">Pending</div>
-                <div style="font-size: 13.5px; font-weight: 800; color: #f59e0b; margin-top: 4px;">${sub.pending.toFixed(2)}</div>
+              <div>
+                <div style="font-size: 9px; font-weight: 800; color: #f59e0b; text-transform: uppercase;">PENDING</div>
+                <div style="font-size: 12px; font-weight: 800; color: #f59e0b; margin-top: 3px;">RM ${sub.pending.toFixed(2)}</div>
               </div>
-              <div style="text-align: center;">
-                <div style="font-size: 9.5px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">Available</div>
-                <div style="font-size: 13.5px; font-weight: 800; color: #10b981; margin-top: 4px;">${sub.usable.toFixed(2)}</div>
+              <div>
+                <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase;">AVAILABLE</div>
+                <div style="font-size: 12px; font-weight: 800; color: #10b981; margin-top: 3px;">RM ${sub.usable.toFixed(2)}</div>
               </div>
+            </div>
+
+            <!-- Multi-segment Progress Bar matching leave.html -->
+            <div class="progress-bar-bg" style="height: 6px; background: var(--border-subtle); border-radius: 4px; overflow: hidden; display: flex; margin-top: 10px;">
+              <div class="progress-segment segment-taken" style="width: ${claimedPct}%; background: #7c3aed;"></div>
+              <div class="progress-segment segment-pending" style="width: ${pendingPct}%; background: #f59e0b;"></div>
+              <div class="progress-segment segment-available" style="width: ${availPct}%; background: #10b981;"></div>
             </div>
           `;
 
@@ -658,6 +750,8 @@
     actionTeamClaim,
     approveAllTeamClaims,
     closeManagerModal,
+    openAllClaimOptionsModal,
+    closeAllClaimOptionsModal,
     handleGlobalBack
   };
 

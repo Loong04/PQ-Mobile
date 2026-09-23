@@ -24,6 +24,8 @@
         let duration = '2.0 Hours';
         let remark = 'Urgent operational OT required for emergency release testing and production sync.';
 
+        let category = card ? (card.getAttribute('data-category') || currentStaffApprovalCategory) : currentStaffApprovalCategory;
+
         if (card) {
           const nameEl = card.querySelector('div[style*="font-size: 14.5px"]');
           if (nameEl) name = nameEl.textContent.trim();
@@ -54,6 +56,7 @@
           empId: empId.startsWith('#') ? empId : '#' + empId,
           dept: dept,
           type: type,
+          category: category,
           otType: otType,
           reason: reason,
           dates: dates,
@@ -102,6 +105,7 @@
 
         let isOtPlanModal = data.category === 'ot_plan' || (data.type && data.type.toLowerCase().includes('ot plan')) || (data.duration && data.duration.includes('('));
         let isFeedbackModal = data.category === 'feedback' || (data.type && data.type.toLowerCase().includes('feedback'));
+        let isFinalOtModal = data.category === 'final_ot' || (!isOtPlanModal && !isFeedbackModal && ((data.type && data.type.toLowerCase().includes('ot')) || (data.otType && data.otType.toLowerCase().includes('ot'))));
         let planHoursVal = '0.00';
         let otTimesVal = data.otTimes || '0000 ,0500';
         let actualHoursVal = '0.50';
@@ -179,7 +183,15 @@
 
         const titleEl = document.getElementById('attDetailHeaderTitle');
         if (titleEl) {
-          titleEl.textContent = isOtPlanModal ? 'OT Plan Approval' : ((data.type && data.type.toLowerCase().includes('ot')) ? 'Final OT Approval' : 'Attendance Request Approval');
+          if (isOtPlanModal) {
+            titleEl.textContent = 'OT Plan Approval';
+          } else if (isFeedbackModal) {
+            titleEl.textContent = 'Attendance Advice Approval';
+          } else if (isFinalOtModal) {
+            titleEl.textContent = 'Final OT Approval';
+          } else {
+            titleEl.textContent = 'Attendance Request Approval';
+          }
         }
 
         setTimeout(() => {
@@ -4065,7 +4077,7 @@
           }
 
           return `
-            <div class="approval-request-card" id="pendingCard_${idx}" data-ot-type="${typeStr}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left;">
+            <div class="approval-request-card" id="pendingCard_${idx}" data-category="${item.category || ''}" data-type="${typeStr}" data-ot-type="${typeStr}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left;">
               
               <!-- 1. Executive Purple Header Banner -->
               <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">

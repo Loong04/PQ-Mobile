@@ -185,6 +185,13 @@ window.CLAIM_OPTIONS = [
     ]
   },
   {
+    id: 'history',
+    name: 'Claim History',
+    icon: '⏳',
+    entitlementYear: '2026',
+    subCategories: []
+  },
+  {
     id: 'summary',
     name: 'Claim Summary',
     icon: '📊',

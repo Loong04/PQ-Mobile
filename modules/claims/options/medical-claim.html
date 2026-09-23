@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Claims - Medical Claim</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .leave-list-item {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      transition: transform 0.2s ease;
+      margin-bottom: 12px;
+    }
+
+    .btn-apply-sm {
+      background: var(--purple-primary);
+      color: #ffffff;
+      padding: 7px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      transition: transform 0.15s ease;
+    }
+    .btn-apply-sm:active {
+      transform: scale(0.96);
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 16px;
+    }
+
+    /* Top Form Tab Segmented Navigation Bar */
+    .form-segmented-nav {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 4px;
+      margin-bottom: 18px;
+      gap: 4px;
+    }
+
+    .form-nav-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 8px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .form-nav-btn.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+    }
+
+    .field-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field-label span.req {
+      color: #ef4444;
+    }
+
+    .form-input-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input-ctrl:focus {
+      border-color: var(--purple-primary);
+    }
+
+    .balance-pill {
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      display: inline-block;
+    }
+
+    .attach-btn-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.15s;
+    }
+    .attach-btn-pill:active {
+      transform: scale(0.97);
+    }
+
+    .validation-err-text {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .green-section-banner {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .item-chip-row {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="23:50" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" onclick="handleMedicalBack()" class="me-back-btn" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; text-decoration: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Medical Claim</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      
+      <!-- VIEW 1: MEDICAL ENTITLEMENTS LIST -->
+      <div id="viewMedicalList" style="display: block;">
+
+        <!-- CURRENT FILTER SUMMARY CARD -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
+              CURRENT FILTER
+            </div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-calendar-days" style="font-size: 13px; color: var(--purple-primary);"></i>
+              <span>Entitlement Year &gt;&gt; 2026</span>
+            </div>
+          </div>
+          <button type="button" title="Open Filter Options"
+            style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s;"
+            onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <i class="fa-solid fa-sliders"></i>
+          </button>
+        </div>
+
+        <!-- SECTION TITLE -->
+        <div style="margin-bottom: 12px;">
+          <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Medical Entitlement (1)</h2>
+        </div>
+
+        <!-- SINGLE MEDICAL CLAIM ENTITLEMENT CARD -->
+        <div class="leave-list">
+
+          <!-- 1. MEDICAL CLAIM -->
+          <div class="leave-list-item">
+            <div class="item-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">MEDICAL CLAIM</h3>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-top: 3px;">RM 1,100.00 available</span>
+              </div>
+              <button class="btn-apply-sm" onclick="openMedicalClaimForm('MEDICAL CLAIM')">Claim</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 8px 6px; border-radius: 12px; margin-top: 10px; text-align: center;">
+              <div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
+                <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 1,600.00</div>
+              </div>
+              <div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
+                <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 450.00</div>
+              </div>
+              <div>
+                <div style="font-size: 9px; font-weight: 700; color: #f59e0b; text-transform: uppercase;">PENDING</div>
+                <div style="font-size: 11.5px; font-weight: 800; color: #f59e0b; margin-top: 2px;">RM 50.00</div>
+              </div>
+              <div>
+                <div style="font-size: 9px; font-weight: 700; color: #10b981; text-transform: uppercase;">USABLE</div>
+                <div style="font-size: 11.5px; font-weight: 800; color: #10b981; margin-top: 2px;">RM 1,100.00</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- VIEW 2: MEDICAL CLAIM FORM CONTAINER -->
+      <div id="viewMedicalForm" style="display: none;">
+        
+        <div class="form-card">
+          
+          <!-- STEP / TAB NAVIGATION SWITCHER -->
+          <div class="form-segmented-nav">
+            <button type="button" class="form-nav-btn active" id="tabBtn-general" onclick="switchMedicalTab('general')">
+              <i class="fa-solid fa-receipt"></i>
+              <span>General</span>
+            </button>
+            <button type="button" class="form-nav-btn" id="tabBtn-medical" onclick="switchMedicalTab('medical')">
+              <i class="fa-solid fa-user-doctor"></i>
+              <span>Medical</span>
+            </button>
+            <button type="button" class="form-nav-btn" id="tabBtn-details" onclick="switchMedicalTab('details')">
+              <i class="fa-solid fa-file-medical"></i>
+              <span>Details</span>
+            </button>
+          </div>
+
+          <!-- READONLY ENTITLEMENT SUMMARY HEADER -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 12px 14px; margin-bottom: 18px;">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Entitled Balance:</div>
+              <div id="entitledBalanceDisplay" style="font-size: 15px; font-weight: 900; color: var(--text-primary);">RM 800.00</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Usable Balance:</div>
+              <div id="usableBalanceDisplay" style="font-size: 15px; font-weight: 900; color: var(--secondary);">RM 640.10</div>
+            </div>
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- TAB 1: GENERAL -->
+          <!-- ========================================================= -->
+          <div id="tabContent-general" style="display: block;">
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              
+              <!-- Benefit Year -->
+              <div>
+                <label class="field-label">Benefit Year :</label>
+                <input type="text" class="form-input-ctrl" value="2026" readonly style="opacity: 0.9;" />
+              </div>
+
+              <!-- Benefit Type -->
+              <div>
+                <label class="field-label">Benefit Type :</label>
+                <input type="text" id="genBenefitTypeInput" class="form-input-ctrl" value="MEDICAL CLAIMS" readonly style="opacity: 0.9;" />
+              </div>
+
+              <!-- Entitled & Usable Balance Pill Row -->
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="field-label" style="margin-bottom: 0; min-width: 120px;">Entitled Balance:</span>
+                  <span id="entitledPillDisplay" class="balance-pill">800.00</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="field-label" style="margin-bottom: 0; min-width: 120px;">Usable Balance:</span>
+                  <span id="usablePillDisplay" class="balance-pill" style="background: rgba(16, 185, 129, 0.14); color: var(--secondary); border-color: rgba(16, 185, 129, 0.25);">640.10</span>
+                </div>
+              </div>
+
+              <!-- Claim Period -->
+              <div>
+                <label class="field-label">Claim Period :</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <select class="form-input-ctrl">
+                    <option value="2026" selected>2026</option>
+                    <option value="2025">2025</option>
+                  </select>
+                  <select class="form-input-ctrl">
+                    <option value="September" selected>September</option>
+                    <option value="August">August</option>
+                    <option value="July">July</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Receipt Date & Receipt No. -->
+              <div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div>
+                    <label class="field-label">Receipt Date :</label>
+                    <input type="text" class="form-input-ctrl" value="22/09/2026" />
+                  </div>
+                  <div>
+                    <label class="field-label">Receipt No. :</label>
+                    <input type="text" id="genReceiptNoInput" class="form-input-ctrl" placeholder="e.g. REC-88310" oninput="syncReceiptNo(this.value)" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Claim Total (RM) -->
+              <div style="background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
+                <span class="field-label" style="margin-bottom: 0; font-size: 13px; color: var(--text-primary);">Claim Total (RM):</span>
+                <span id="genClaimTotalDisplay" style="font-size: 17px; font-weight: 900; color: var(--purple-primary);">RM 0.00</span>
+              </div>
+
+              <!-- Remark -->
+              <div>
+                <label class="field-label">Remark :</label>
+                <textarea id="genRemarkInput" rows="3" class="form-input-ctrl" placeholder="Enter remarks or details..." style="resize: vertical;"></textarea>
+              </div>
+
+              <!-- Upload Attachments (Matching User Screenshot Layout & Icons Exactly) -->
+              <div style="margin-top: 6px;">
+                <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+                
+                <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
+                  <!-- Select File(s) Circle Button -->
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('general')">
+                    <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                      <i class="fa-solid fa-file-arrow-up"></i>
+                    </div>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                  </div>
+
+                  <!-- Take a Picture Circle Button -->
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('general')">
+                    <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                      <i class="fa-solid fa-camera"></i>
+                    </div>
+                    <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                  </div>
+                </div>
+
+                <!-- Attached Files Chips Container -->
+                <div id="genChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+              </div>
+
+            </div>
+
+            <!-- Bottom Navigation Step Helpers -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+              <button type="button" onclick="saveDraft()" style="padding: 10px 18px; border-radius: 14px; background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.25); font-size: 13px; font-weight: 700; cursor: pointer;">
+                Save Draft
+              </button>
+              <button type="button" onclick="switchMedicalTab('medical')" style="padding: 10px 22px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: flex; align-items: center; gap: 6px;">
+                <span>Next: Medical</span>
+                <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- TAB 2: MEDICAL -->
+          <!-- ========================================================= -->
+          <div id="tabContent-medical" style="display: none;">
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              
+              <!-- Patient's Type -->
+              <div>
+                <label class="field-label">Patient's Type : <span class="req">*</span></label>
+                <select id="patientTypeSelect" class="form-input-ctrl" onchange="hideValError('errPatientType')">
+                  <option value="" selected>- Select Patient Type -</option>
+                  <option value="Self">Self</option>
+                  <option value="Spouse">Spouse</option>
+                  <option value="Child">Child</option>
+                  <option value="Parent">Parent</option>
+                </select>
+                <span id="errPatientType" class="validation-err-text">Please Select Patient Type</span>
+              </div>
+
+              <!-- Patient's Name -->
+              <div>
+                <label class="field-label">Patient's Name : <span class="req">*</span></label>
+                <select id="patientNameSelect" class="form-input-ctrl" onchange="hideValError('errPatientName')">
+                  <option value="" selected>- Select Patient Name -</option>
+                  <option value="John Tan (Self)">John Tan (Self)</option>
+                  <option value="Sarah Tan (Spouse)">Sarah Tan (Spouse)</option>
+                  <option value="Lucas Tan (Child)">Lucas Tan (Child)</option>
+                </select>
+                <span id="errPatientName" class="validation-err-text">Please Select Patient Name</span>
+              </div>
+
+              <!-- Treatment Type -->
+              <div>
+                <label class="field-label">Treatment Type :</label>
+                <select id="treatmentTypeSelect" class="form-input-ctrl">
+                  <option value="Others" selected>Others</option>
+                  <option value="Outpatient GP">Outpatient GP</option>
+                  <option value="Specialist Consultation">Specialist Consultation</option>
+                  <option value="Dental">Dental</option>
+                  <option value="Hospitalization">Hospitalization</option>
+                </select>
+              </div>
+
+              <!-- Clinic / Hospital (Location & Panel dropdowns) -->
+              <div>
+                <label class="field-label">Clinic / Hospital :</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <select class="form-input-ctrl">
+                    <option value="" selected>- Select Location -</option>
+                    <option value="Kuala Lumpur">Kuala Lumpur</option>
+                    <option value="Selangor">Selangor</option>
+                    <option value="Penang">Penang</option>
+                  </select>
+                  <select id="panelTypeSelect" class="form-input-ctrl" onchange="toggleNonPanelField(this.value)">
+                    <option value="Non-Panel" selected>- Non-Panel Clinic/Hospital -</option>
+                    <option value="Panel">Panel Clinic/Hospital</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Non-Panel Clinic / Hospital -->
+              <div id="nonPanelContainer">
+                <label class="field-label">Non-Panel Clinic / Hospital : <span class="req">*</span></label>
+                <input type="text" id="nonPanelInput" class="form-input-ctrl" placeholder="Enter non-panel clinic name..." oninput="hideValError('errNonPanel')" />
+                <span id="errNonPanel" class="validation-err-text">Please enter Non Panel Clinic</span>
+              </div>
+
+              <!-- Sickness Type -->
+              <div>
+                <label class="field-label">Sickness Type :</label>
+                <select class="form-input-ctrl">
+                  <option value="" selected>- Select Sickness -</option>
+                  <option value="Fever & Flu">Fever &amp; Flu</option>
+                  <option value="Stomachache / Gastric">Stomachache / Gastric</option>
+                  <option value="Routine Checkup">Routine Checkup</option>
+                  <option value="Skin Allergy">Skin Allergy</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Bottom Navigation Step Helpers -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+              <button type="button" onclick="switchMedicalTab('general')" style="padding: 10px 18px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-arrow-left" style="font-size: 12px;"></i>
+                <span>Back</span>
+              </button>
+              <button type="button" onclick="switchMedicalTab('details')" style="padding: 10px 22px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: flex; align-items: center; gap: 6px;">
+                <span>Next: Details</span>
+                <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- TAB 3: DETAILS -->
+          <!-- ========================================================= -->
+          <div id="tabContent-details" style="display: none;">
+            
+            <!-- Green Details Banner -->
+            <div class="green-section-banner">
+              <span>Details Line Item</span>
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              
+              <!-- Receipt No. -->
+              <div>
+                <label class="field-label">Receipt No. :</label>
+                <input type="text" id="detReceiptNoInput" class="form-input-ctrl" placeholder="e.g. REC-88310" />
+              </div>
+
+              <!-- Expenses Type -->
+              <div>
+                <label class="field-label">Expenses : <span class="req">*</span></label>
+                <select id="expensesTypeSelect" class="form-input-ctrl" onchange="hideValError('errExpensesType')">
+                  <option value="" selected>Select Expense</option>
+                  <option value="Consultation Fee">Consultation Fee</option>
+                  <option value="Medication & Pharmacy">Medication &amp; Pharmacy</option>
+                  <option value="Laboratory Test">Laboratory Test</option>
+                  <option value="Diagnostic X-Ray">Diagnostic X-Ray</option>
+                  <option value="Treatment Fee">Treatment Fee</option>
+                </select>
+                <span id="errExpensesType" class="validation-err-text">Please Select Expenses Type</span>
+              </div>
+
+              <!-- Amount & Currency -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                  <label class="field-label">Amount :</label>
+                  <input type="number" id="detAmountInput" class="form-input-ctrl" value="0" step="0.01" oninput="calcLocalAmount()" />
+                </div>
+                <div>
+                  <label class="field-label">Currency :</label>
+                  <select id="detCurrencySelect" class="form-input-ctrl" onchange="calcLocalAmount()">
+                    <option value="RINGGIT MALAYSIA" selected>RINGGIT MALAYSIA</option>
+                    <option value="US DOLLAR">US DOLLAR</option>
+                    <option value="SINGAPORE DOLLAR">SINGAPORE DOLLAR</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Forex Rate & Local Amount -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                  <label class="field-label">Forex Rate :</label>
+                  <input type="number" id="detForexRateInput" class="form-input-ctrl" value="1.000" step="0.001" oninput="calcLocalAmount()" />
+                </div>
+                <div>
+                  <label class="field-label">Local Amount :</label>
+                  <input type="text" id="detLocalAmountInput" class="form-input-ctrl" value="0.00" readonly style="opacity: 0.9;" />
+                </div>
+              </div>
+
+              <!-- Upload Attachments (Matching User Screenshot Layout & Icons Exactly) -->
+              <div style="margin-top: 6px;">
+                <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+                
+                <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
+                  <!-- Select File(s) Circle Button -->
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('details')">
+                    <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                      <i class="fa-solid fa-file-arrow-up"></i>
+                    </div>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                  </div>
+
+                  <!-- Take a Picture Circle Button -->
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('details')">
+                    <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                      <i class="fa-solid fa-camera"></i>
+                    </div>
+                    <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                  </div>
+                </div>
+
+                <!-- Attached Files Chips Container -->
+                <div id="detChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+              </div>
+
+              <!-- Add Item Button -->
+              <div style="margin-top: 4px;">
+                <button type="button" onclick="addExpenseItem()" style="width: 100%; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 14px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>Add Line Item</span>
+                </button>
+              </div>
+
+              <!-- Line Items Summary List Container -->
+              <div style="margin-top: 12px;">
+                <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Added Line Items:</div>
+                <div id="addedItemsListContainer">
+                  <div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 6px 0;">No expense line items added yet. Click "Add Line Item" above.</div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bottom Navigation Action Buttons (MATCHING USER SCREENSHOT: DRAFT & SUBMIT PAPER PLANE BUTTONS) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+              <button type="button" onclick="switchMedicalTab('medical')" style="padding: 10px 18px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-arrow-left" style="font-size: 12px;"></i>
+                <span>Back</span>
+              </button>
+              <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="saveDraft()" style="padding: 10px 20px; border-radius: 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+                  <i class="fa-solid fa-floppy-disk" style="font-size: 13px;"></i>
+                  <span>Draft</span>
+                </button>
+                <button type="button" onclick="submitMedicalClaim()" style="padding: 10px 24px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45); display: flex; align-items: center; gap: 8px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+                  <span>Submit</span>
+                  <i class="fa-solid fa-paper-plane" style="font-size: 13px;"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Hidden native file input for upload simulation -->
+    <input type="file" id="hiddenMedicalFileInput" style="display: none;" onchange="handleFileSelected(this)" />
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+  
+  <script>
+    let currentMainView = 'list';
+    let activeTab = 'general';
+    let currentUploadTarget = 'general';
+    const addedItems = [];
+
+    const medicalBalances = {
+      'MEDICAL CLAIM': { entitled: '1,600.00', claimed: '450.00', pending: '50.00', usable: '1,100.00' },
+      'OUTPATIENT GP CLINIC': { entitled: '800.00', claimed: '300.00', pending: '0.00', usable: '500.00' },
+      'SPECIALIST CONSULTATION': { entitled: '500.00', claimed: '150.00', pending: '0.00', usable: '350.00' },
+      'PHARMACY & MEDICATION': { entitled: '300.00', claimed: '0.00', pending: '50.00', usable: '250.00' }
+    };
+
+    function openMedicalClaimForm(type) {
+      currentMainView = 'form';
+      document.getElementById('viewMedicalList').style.display = 'none';
+      document.getElementById('viewMedicalForm').style.display = 'block';
+      document.getElementById('headerTitleText').innerText = 'Medical Claim';
+
+      const data = medicalBalances[type] || { entitled: '800.00', usable: '640.10' };
+      document.getElementById('genBenefitTypeInput').value = type;
+      document.getElementById('entitledBalanceDisplay').innerText = `RM ${data.entitled}`;
+      document.getElementById('usableBalanceDisplay').innerText = `RM ${data.usable}`;
+      document.getElementById('entitledPillDisplay').innerText = data.entitled;
+      document.getElementById('usablePillDisplay').innerText = data.usable;
+
+      if (type === 'OUTPATIENT GP CLINIC') {
+        document.getElementById('treatmentTypeSelect').value = 'Outpatient GP';
+      } else if (type === 'SPECIALIST CONSULTATION') {
+        document.getElementById('treatmentTypeSelect').value = 'Specialist Consultation';
+      } else if (type === 'PHARMACY & MEDICATION') {
+        document.getElementById('treatmentTypeSelect').value = 'Others';
+      }
+
+      switchMedicalTab('general');
+      window.scrollTo(0, 0);
+    }
+
+    function handleMedicalBack() {
+      if (currentMainView === 'form') {
+        currentMainView = 'list';
+        document.getElementById('viewMedicalForm').style.display = 'none';
+        document.getElementById('viewMedicalList').style.display = 'block';
+        document.getElementById('headerTitleText').innerText = 'Medical Claim';
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
+
+    function switchMedicalTab(tab) {
+      activeTab = tab;
+      const tabs = ['general', 'medical', 'details'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtn-${t}`);
+        const content = document.getElementById(`tabContent-${t}`);
+        if (t === tab) {
+          btn.classList.add('active');
+          content.style.display = 'block';
+        } else {
+          btn.classList.remove('active');
+          content.style.display = 'none';
+        }
+      });
+      window.scrollTo(0, 0);
+    }
+
+    function syncReceiptNo(val) {
+      document.getElementById('detReceiptNoInput').value = val;
+    }
+
+    function hideValError(id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    }
+
+    function toggleNonPanelField(val) {
+      const container = document.getElementById('nonPanelContainer');
+      if (val === 'Non-Panel') {
+        container.style.display = 'block';
+      } else {
+        container.style.display = 'none';
+      }
+    }
+
+    function calcLocalAmount() {
+      const amt = parseFloat(document.getElementById('detAmountInput').value) || 0;
+      const rate = parseFloat(document.getElementById('detForexRateInput').value) || 1;
+      const local = (amt * rate).toFixed(2);
+      document.getElementById('detLocalAmountInput').value = local;
+    }
+
+    function triggerFileUpload(target) {
+      currentUploadTarget = target;
+      const input = document.getElementById('hiddenMedicalFileInput');
+      if (input) input.click();
+    }
+
+    function handleFileSelected(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const containerId = currentUploadTarget === 'general' ? 'genChipsList' : 'detChipsList';
+      const container = document.getElementById(containerId);
+      if (container) {
+        const chip = document.createElement('div');
+        chip.style.cssText = 'background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;';
+        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        container.appendChild(chip);
+      }
+    }
+
+    function addExpenseItem() {
+      const expenseType = document.getElementById('expensesTypeSelect').value;
+      if (!expenseType) {
+        document.getElementById('errExpensesType').style.display = 'block';
+        return;
+      }
+      const localAmt = parseFloat(document.getElementById('detLocalAmountInput').value) || 0;
+      const receiptNo = document.getElementById('detReceiptNoInput').value || 'REC-88310';
+
+      addedItems.push({ type: expenseType, amount: localAmt, receiptNo: receiptNo });
+      renderAddedItems();
+
+      // Reset item input
+      document.getElementById('detAmountInput').value = '0';
+      calcLocalAmount();
+
+      if (typeof showToast === 'function') {
+        showToast(`✅ Line item [${expenseType}] added successfully!`);
+      }
+    }
+
+    function renderAddedItems() {
+      const container = document.getElementById('addedItemsListContainer');
+      if (addedItems.length === 0) {
+        container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 6px 0;">No expense line items added yet. Click "Add Item" above.</div>`;
+        updateTotalDisplay(0);
+        return;
+      }
+
+      let total = 0;
+      let html = '';
+      addedItems.forEach((item, idx) => {
+        total += item.amount;
+        html += `
+          <div class="item-chip-row">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${item.type}</div>
+              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Ref: ${item.receiptNo}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">RM ${item.amount.toFixed(2)}</div>
+              <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 14px;" onclick="removeItem(${idx})"></i>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      updateTotalDisplay(total);
+    }
+
+    function removeItem(idx) {
+      addedItems.splice(idx, 1);
+      renderAddedItems();
+    }
+
+    function updateTotalDisplay(total) {
+      document.getElementById('genClaimTotalDisplay').innerText = `RM ${total.toFixed(2)}`;
+    }
+
+    function saveDraft() {
+      if (typeof showToast === 'function') {
+        showToast('💾 Medical Claim draft saved successfully!');
+      } else {
+        alert('Medical Claim draft saved successfully!');
+      }
+    }
+
+    function submitMedicalClaim() {
+      if (typeof showToast === 'function') {
+        showToast('✅ Medical Claim submitted successfully!');
+      } else {
+        alert('Medical Claim submitted successfully!');
+      }
+      handleMedicalBack();
+    }
+  </script>
+</body>
+</html>
