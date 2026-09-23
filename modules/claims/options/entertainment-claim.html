@@ -8,7 +8,7 @@
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
@@ -48,7 +48,7 @@
     .main-content {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 16px 90px;
+      padding: 16px 16px 100px;
       position: relative;
       z-index: 10;
       scrollbar-width: none;
@@ -65,30 +65,354 @@
       z-index: 20;
     }
 
-    .leave-list-item {
+    /* STEPPER HEADER (① General —— ② Detail —— ③ Employees —— ④ Guest) */
+    .stepper-container {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
       background: var(--bg-card);
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: var(--shadow-card);
       border: 1px solid var(--border-subtle);
-      transition: transform 0.2s ease;
-      margin-bottom: 12px;
+      border-radius: 20px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
     }
 
-    .btn-apply-sm {
-      background: #7c3aed;
-      color: #ffffff;
-      padding: 7px 18px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 800;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
-      transition: transform 0.15s ease;
+    .stepper-line-bg {
+      position: absolute;
+      top: 27px;
+      left: 56px;
+      right: 56px;
+      height: 2px;
+      background: var(--border-subtle);
+      z-index: 1;
     }
-    .btn-apply-sm:active {
-      transform: scale(0.96);
+
+    .stepper-line-active {
+      position: absolute;
+      top: 27px;
+      left: 56px;
+      width: 0%;
+      max-width: calc(100% - 112px);
+      height: 2px;
+      background: var(--purple-primary);
+      z-index: 2;
+      transition: width 0.3s ease;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      z-index: 5;
+      cursor: pointer;
+      min-width: 44px;
+    }
+
+    .step-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #1e1b4b;
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 6;
+      transition: all 0.25s ease;
+    }
+
+    .step-item.active .step-circle {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border-color: #7c3aed;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(124, 58, 237, 0.45);
+    }
+
+    .step-item.completed .step-circle {
+      background: #064e3b;
+      border-color: #10b981;
+      color: #10b981;
+    }
+
+    .step-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: color 0.25s ease;
+      text-align: center;
+    }
+
+    .step-item.active .step-title {
+      color: var(--text-primary);
+      font-weight: 800;
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    /* Green Section Banner matching Medical & Travel Claims */
+    .green-section-banner {
+      background: #86efac;
+      color: #15803d;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 14px rgba(134, 239, 172, 0.25);
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field-label .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .form-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
+    }
+    .form-ctrl:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 0.9;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      margin-bottom: 12px;
+    }
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .toggle-switch {
+      width: 44px;
+      height: 24px;
+      background: var(--border-subtle);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .toggle-switch.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    }
+    .toggle-switch-circle {
+      width: 18px;
+      height: 18px;
+      background: #ffffff;
+      border-radius: 50%;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s ease;
+    }
+    .toggle-switch.active .toggle-switch-circle {
+      transform: translateX(20px);
+    }
+
+    .stat-summary-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 8px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .btn-step-back {
+      padding: 10px 20px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-step-next {
+      padding: 10px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-draft-bright {
+      padding: 10px 22px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-submit-primary {
+      padding: 10px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-add-purple {
+      padding: 10px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    /* Added Item Card */
+    .added-item-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    /* Toast */
+    .toast-box {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .toast-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
@@ -98,7 +422,7 @@
 
   <div class="phone-container">
     
-    <!-- Top Header matching Apply Leave -->
+    <!-- Top Header -->
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
 
@@ -113,128 +437,753 @@
       </div>
     </div>
 
+    <!-- Main Content Container -->
     <div class="main-content">
       
-      <!-- CURRENT FILTER SUMMARY CARD (MATCHING APPLY LEAVE EXACTLY) -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
-        <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
-            CURRENT FILTER
-          </div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-sliders" style="font-size: 13px; color: #7c3aed;"></i>
-            <span>All Entertainment Types &gt;&gt; 2026</span>
-          </div>
+      <!-- STEPPER HEADER (① General —— ② Detail —— ③ Employees —— ④ Guest) -->
+      <div class="stepper-container">
+        <div class="stepper-line-bg"></div>
+        <div id="stepperLineActive" class="stepper-line-active" style="width: 0%;"></div>
+
+        <!-- Step 1 -->
+        <div id="stepHeader-1" class="step-item active" onclick="switchTab('general')">
+          <div class="step-circle">1</div>
+          <span class="step-title">General</span>
         </div>
-        <button type="button" title="Open Filter Options"
-          style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: #7c3aed; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
-        </button>
+
+        <!-- Step 2 -->
+        <div id="stepHeader-2" class="step-item" onclick="switchTab('detail')">
+          <div class="step-circle">2</div>
+          <span class="step-title">Detail</span>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="stepHeader-3" class="step-item" onclick="switchTab('employees')">
+          <div class="step-circle">3</div>
+          <span class="step-title">Employees</span>
+        </div>
+
+        <!-- Step 4 -->
+        <div id="stepHeader-4" class="step-item" onclick="switchTab('guest')">
+          <div class="step-circle">4</div>
+          <span class="step-title">Guest</span>
+        </div>
       </div>
 
-      <!-- SECTION TITLE MATCHING APPLY LEAVE -->
-      <div style="margin-bottom: 12px;">
-        <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Entertainment Entitlements &amp; Types (2)</h2>
+      <!-- ================= STEP 1: GENERAL ================= -->
+      <div id="tabContent-general" style="display: block;">
+        <div class="form-card">
+
+          <!-- Claim Period : -->
+          <div class="field-group">
+            <label class="field-label">Claim Period : <span class="req">*</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+              <div class="select-wrapper">
+                <select id="claimPeriodYear" class="form-ctrl">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <select id="claimPeriodMonth" class="form-ctrl">
+                  <option value="September" selected>September</option>
+                  <option value="August">August</option>
+                  <option value="July">July</option>
+                  <option value="June">June</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Travelling & Mileage Claim # : -->
+          <div class="field-group">
+            <label class="field-label">Travelling &amp; Mileage Claim # :</label>
+            <div class="select-wrapper">
+              <select id="travelClaimNoSelect" class="form-ctrl">
+                <option value="">- Select -</option>
+                <option value="TRV-2026-001">TRV-2026-001 (Penang Client Visit)</option>
+                <option value="TRV-2026-002">TRV-2026-002 (JB Business Trip)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Benefit Type : -->
+          <div class="field-group">
+            <label class="field-label">Benefit Type : <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="benefitTypeSelect" class="form-ctrl">
+                <option value="">Select Benefit</option>
+                <option value="CLIENT ENTERTAINMENT" selected>CLIENT ENTERTAINMENT</option>
+                <option value="BUSINESS DINING & MEAL">BUSINESS DINING &amp; MEAL</option>
+                <option value="CORPORATE GIFT">CORPORATE GIFT</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Claim Date : -->
+          <div class="field-group">
+            <label class="field-label">Claim Date : <span class="req">*</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="text" id="claimStartDate" class="form-ctrl" value="23/09/2026" />
+              <input type="text" id="claimEndDate" class="form-ctrl" value="23/09/2026" />
+            </div>
+          </div>
+
+          <!-- Cost Centre & Project : -->
+          <div class="field-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label class="field-label">Cost Centre :</label>
+                <input type="text" id="costCentreInput" class="form-ctrl" value="MANAGEMENT" />
+              </div>
+              <div>
+                <label class="field-label">Project :</label>
+                <div class="select-wrapper">
+                  <select id="projectSelect" class="form-ctrl">
+                    <option value="">- Select Project -</option>
+                    <option value="PROJ-01">Project Alpha</option>
+                    <option value="PROJ-02">Enterprise Migration</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entertained Person / Org : -->
+          <div class="field-group">
+            <label class="field-label">Entertained Person / Org : <span class="req">*</span></label>
+            <input type="text" id="entertainedPersonInput" class="form-ctrl" placeholder="e.g. Acme Corp / Mr. Alex Tan" />
+          </div>
+
+          <!-- Place Entertained : -->
+          <div class="field-group">
+            <label class="field-label">Place Entertained : <span class="req">*</span></label>
+            <input type="text" id="placeEntertainedInput" class="form-ctrl" placeholder="e.g. Nobu Kuala Lumpur" />
+          </div>
+
+          <!-- Claim Currency : & Total Amount : -->
+          <div class="field-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label class="field-label">Claim Currency :</label>
+                <div class="select-wrapper">
+                  <select class="form-ctrl">
+                    <option value="MYR" selected>RINGGIT MALAYSIA</option>
+                    <option value="USD">US DOLLAR</option>
+                    <option value="SGD">SINGAPORE DOLLAR</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Total Amount :</label>
+                <input type="number" id="totalAmountInput" class="form-ctrl" value="0.00" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Stat Box -->
+          <div class="stat-summary-box">
+            <div>
+              <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">INTERNAL PAX</div>
+              <div id="summaryInternalPax" style="font-size: 14px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">0</div>
+            </div>
+            <div style="border-left: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle);">
+              <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">EXTERNAL PAX</div>
+              <div id="summaryExternalPax" style="font-size: 14px; font-weight: 900; color: var(--purple-primary); margin-top: 2px;">0</div>
+            </div>
+            <div>
+              <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">AVG PER PAX</div>
+              <div id="summaryAvgPax" style="font-size: 13px; font-weight: 900; color: #10b981; margin-top: 2px;">0.00</div>
+            </div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="toggle-row">
+            <span class="toggle-label">Board Approve</span>
+            <div id="toggleBoardApprove" class="toggle-switch" onclick="toggleSwitch(this)">
+              <div class="toggle-switch-circle"></div>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <span class="toggle-label">Declaration For / Gift / Ent</span>
+            <div id="toggleDeclaration" class="toggle-switch" onclick="toggleSwitch(this)">
+              <div class="toggle-switch-circle"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action Footer (Draft + Next grouped on right) -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 18px;">
+          <button type="button" class="btn-draft-bright" onclick="saveEntertainmentDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Draft</span>
+          </button>
+          <button type="button" class="btn-step-next" onclick="switchTab('detail')">
+            <span>Next: Detail</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- COMPREHENSIVE LEAVE/CLAIM LIST -->
-      <div class="leave-list">
-
-        <!-- 1. CLIENT DINING & LUNCH -->
-        <div class="leave-list-item">
-          <div class="item-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">CLIENT DINING &amp; LUNCH</h3>
-              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 3px;">RM 390.00 available</span>
-            </div>
-            <button class="btn-apply-sm" onclick="toggleForm('form-dining')">Claim</button>
-          </div>
+      <!-- ================= STEP 2: DETAIL ================= -->
+      <div id="tabContent-detail" style="display: none;">
+        <div class="form-card">
           
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 10px 6px; border-radius: 12px; margin-top: 12px; text-align: center;">
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
-              <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 500.00</div>
-            </div>
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
-              <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 110.00</div>
-            </div>
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: #f59e0b; text-transform: uppercase;">PENDING</div>
-              <div style="font-size: 12px; font-weight: 800; color: #f59e0b; margin-top: 2px;">RM 0.00</div>
-            </div>
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase;">AVAILABLE</div>
-              <div style="font-size: 12px; font-weight: 800; color: #10b981; margin-top: 2px;">RM 390.00</div>
+          <div class="green-section-banner">
+            <span>Claim Details Line Item</span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Expense Type : <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="expenseTypeSelect" class="form-ctrl">
+                <option value="">Select Expense</option>
+                <option value="DINING & FOOD" selected>DINING &amp; FOOD</option>
+                <option value="BEVERAGES">BEVERAGES</option>
+                <option value="ENTERTAINMENT TICKET">ENTERTAINMENT TICKET</option>
+                <option value="GIFT">CORPORATE GIFT</option>
+              </select>
             </div>
           </div>
 
-          <div id="form-dining" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
-            <div style="margin-bottom: 12px;">
-              <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Client / Restaurant Name</label>
-              <input type="text" placeholder="e.g. Client Dinner @ Nobu KL" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13.5px; font-weight: 600; outline: none;">
+          <div class="field-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label class="field-label">Expense Date : <span class="req">*</span></label>
+                <input type="text" id="detailExpenseDate" class="form-ctrl" value="23/09/2026" />
+              </div>
+              <div>
+                <label class="field-label">Project :</label>
+                <div class="select-wrapper">
+                  <select id="detailProjectSelect" class="form-ctrl">
+                    <option value="">- Select Project -</option>
+                    <option value="PROJ-01">Project Alpha</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div style="margin-bottom: 12px;">
-              <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Receipt Amount (RM)</label>
-              <input type="number" placeholder="0.00" step="0.01" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Receipt # : <span class="req">*</span></label>
+            <input type="text" id="detailReceiptNo" class="form-ctrl" placeholder="Receipt #" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Description :</label>
+            <input type="text" id="detailDescription" class="form-ctrl" placeholder="Enter expense description..." />
+          </div>
+
+          <div class="field-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label class="field-label">Entertained Person/Org :</label>
+                <input type="text" id="detailPersonInput" class="form-ctrl" placeholder="Person/Org" />
+              </div>
+              <div>
+                <label class="field-label">Place Entertained :</label>
+                <input type="text" id="detailPlaceInput" class="form-ctrl" placeholder="Place" />
+              </div>
             </div>
-            <button style="width: 100%; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer;" onclick="alert('Entertainment Claim submitted successfully!')">Submit Request</button>
+          </div>
+
+          <div class="field-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label class="field-label">Amount : <span class="req">*</span></label>
+                <input type="number" id="detailAmountInput" class="form-ctrl" placeholder="0.00" step="0.01" oninput="calcLocalAmount()" />
+              </div>
+              <div>
+                <label class="field-label">Foreign Currency :</label>
+                <div class="select-wrapper">
+                  <select id="detailCurrencySelect" class="form-ctrl">
+                    <option value="MYR" selected>RINGGIT MALAYSIA</option>
+                    <option value="USD">US DOLLAR</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label class="field-label">Forex Rate :</label>
+                <input type="number" id="detailForexRate" class="form-ctrl" value="1.00" step="0.01" oninput="calcLocalAmount()" />
+              </div>
+              <div>
+                <label class="field-label">Local Amount :</label>
+                <input type="number" id="detailLocalAmount" class="form-ctrl" value="0.00" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Upload Attachments (Circular Buttons) -->
+          <div style="margin-top: 14px;">
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('detail')">
+                <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px;">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                </div>
+                <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('detail')">
+                <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+              </div>
+            </div>
+
+            <div id="detailFileChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+          </div>
+
+          <div style="margin-top: 14px; margin-bottom: 16px;">
+            <button type="button" class="btn-add-purple" onclick="addExpenseDetailItem()">
+              <span>Add Line Item</span>
+            </button>
           </div>
         </div>
 
-        <!-- 2. CORPORATE GIFTS & EVENT TICKETS -->
-        <div class="leave-list-item">
-          <div class="item-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">CORPORATE GIFTS &amp; TICKETS</h3>
-              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 3px;">RM 650.00 available</span>
-            </div>
-            <button class="btn-apply-sm" onclick="toggleForm('form-gift')">Claim</button>
+        <!-- Added Details Container -->
+        <div id="addedDetailsListContainer"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+          <button type="button" class="btn-step-back" onclick="switchTab('general')">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back</span>
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-draft-bright" onclick="saveEntertainmentDraft()">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Draft</span>
+            </button>
+            <button type="button" class="btn-step-next" onclick="switchTab('employees')">
+              <span>Next: Employees</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
           </div>
+        </div>
+      </div>
+
+      <!-- ================= STEP 3: EMPLOYEES ================= -->
+      <div id="tabContent-employees" style="display: none;">
+        <div class="form-card">
           
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 10px 6px; border-radius: 12px; margin-top: 12px; text-align: center;">
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
-              <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 800.00</div>
-            </div>
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
-              <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 150.00</div>
-            </div>
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: #f59e0b; text-transform: uppercase;">PENDING</div>
-              <div style="font-size: 12px; font-weight: 800; color: #f59e0b; margin-top: 2px;">RM 0.00</div>
-            </div>
-            <div>
-              <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase;">AVAILABLE</div>
-              <div style="font-size: 12px; font-weight: 800; color: #10b981; margin-top: 2px;">RM 650.00</div>
+          <div class="green-section-banner">
+            <span>Internal Attendee</span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Employee : <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="employeeSelect" class="form-ctrl" onchange="handleEmployeeSelect(this.value)">
+                <option value="">- Select employee -</option>
+                <option value="EBB01">Sarah Chen (EBB01)</option>
+                <option value="004177">Marcus Tan (004177)</option>
+                <option value="0000101">Aisha Omar (0000101)</option>
+                <option value="000582">Daniel Lee (000582)</option>
+              </select>
             </div>
           </div>
 
-          <div id="form-gift" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
-            <div style="margin-bottom: 12px;">
-              <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Gift Description</label>
-              <input type="text" placeholder="e.g. Festive Hamper for VIP Client" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13.5px; font-weight: 600; outline: none;">
-            </div>
-            <div style="margin-bottom: 12px;">
-              <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Amount (RM)</label>
-              <input type="number" placeholder="0.00" step="0.01" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none;">
-            </div>
-            <button style="width: 100%; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer;" onclick="alert('Gift Claim submitted successfully!')">Submit Request</button>
+          <div class="field-group">
+            <label class="field-label">Position :</label>
+            <input type="text" id="employeePosition" class="form-ctrl" placeholder="Position" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Company :</label>
+            <input type="text" id="employeeCompany" class="form-ctrl" value="PeopleHCM Sdn Bhd" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Department :</label>
+            <input type="text" id="employeeDepartment" class="form-ctrl" placeholder="Department" />
+          </div>
+
+          <div style="margin-top: 14px; margin-bottom: 16px;">
+            <button type="button" class="btn-add-purple" onclick="addInternalAttendee()">
+              <span>Add Employee</span>
+            </button>
           </div>
         </div>
 
+        <!-- Added Employees List Container -->
+        <div id="addedEmployeesListContainer"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+          <button type="button" class="btn-step-back" onclick="switchTab('detail')">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back</span>
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-draft-bright" onclick="saveEntertainmentDraft()">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Draft</span>
+            </button>
+            <button type="button" class="btn-step-next" onclick="switchTab('guest')">
+              <span>Next: Guest</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= STEP 4: GUEST ================= -->
+      <div id="tabContent-guest" style="display: none;">
+        <div class="form-card">
+          
+          <div class="green-section-banner">
+            <span>External Attendee</span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Attendee Name : <span class="req">*</span></label>
+            <input type="text" id="guestNameInput" class="form-ctrl" placeholder="Attendee name" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Company : <span class="req">*</span></label>
+            <input type="text" id="guestCompanyInput" class="form-ctrl" placeholder="Company name" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Designation :</label>
+            <input type="text" id="guestDesignationInput" class="form-ctrl" placeholder="Designation / Title" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Relationship : <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="guestRelationshipSelect" class="form-ctrl">
+                <option value="">- Select Relationship -</option>
+                <option value="Client">Client / Customer</option>
+                <option value="Prospect">Prospect Lead</option>
+                <option value="Vendor">Vendor / Supplier</option>
+                <option value="Partner">Business Partner</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Detail / Note :</label>
+            <input type="text" id="guestDetailInput" class="form-ctrl" placeholder="Additional details..." />
+          </div>
+
+          <div style="margin-top: 14px; margin-bottom: 16px;">
+            <button type="button" class="btn-add-purple" onclick="addExternalGuest()">
+              <span>Add Guest</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Added Guest List Container -->
+        <div id="addedGuestsListContainer"></div>
+
+        <!-- FINAL SUBMIT FOOTER -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+          <button type="button" class="btn-step-back" onclick="switchTab('employees')">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back</span>
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-draft-bright" onclick="saveEntertainmentDraft()">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Draft</span>
+            </button>
+            <button type="button" class="btn-submit-primary" onclick="submitEntertainmentClaim()">
+              <span>Submit Claim</span>
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
       </div>
 
     </div>
 
+    <!-- Hidden Native File Input -->
+    <input type="file" id="hiddenFileInput" style="display: none;" onchange="handleFileSelected(this)" />
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast-box">
+      <span id="toastText">Action completed successfully</span>
+    </div>
+
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
-  
+
   <script>
-    function toggleForm(formId) {
-      const form = document.getElementById(formId);
-      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    let activeTab = 'general';
+    let addedDetails = [];
+    let addedEmployees = [];
+    let addedGuests = [];
+
+    const mockEmployees = {
+      'EBB01': { name: 'Sarah Chen', pos: 'Marketing Lead', comp: 'PeopleHCM Sdn Bhd', dept: 'Marketing' },
+      '004177': { name: 'Marcus Tan', pos: 'Senior Engineer', comp: 'PeopleHCM Sdn Bhd', dept: 'Engineering' },
+      '0000101': { name: 'Aisha Omar', pos: 'Product Designer', comp: 'PeopleHCM Sdn Bhd', dept: 'Design' },
+      '000582': { name: 'Daniel Lee', pos: 'Operations Specialist', comp: 'PeopleHCM Sdn Bhd', dept: 'Operations' }
+    };
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastText');
+      if (toast && text) {
+        text.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2800);
+      }
+    }
+
+    function switchTab(tabName) {
+      activeTab = tabName;
+      const tabs = ['general', 'detail', 'employees', 'guest'];
+      
+      const lineActive = document.getElementById('stepperLineActive');
+      if (lineActive) {
+        if (tabName === 'general') lineActive.style.width = '0%';
+        else if (tabName === 'detail') lineActive.style.width = '33.33%';
+        else if (tabName === 'employees') lineActive.style.width = '66.66%';
+        else if (tabName === 'guest') lineActive.style.width = '100%';
+      }
+
+      tabs.forEach((t, idx) => {
+        const stepNum = idx + 1;
+        const item = document.getElementById(`stepHeader-${stepNum}`);
+        const content = document.getElementById(`tabContent-${t}`);
+        
+        if (!item || !content) return;
+
+        if (t === tabName) {
+          item.className = 'step-item active';
+          content.style.display = 'block';
+        } else if (tabs.indexOf(t) < tabs.indexOf(tabName)) {
+          item.className = 'step-item completed';
+          content.style.display = 'none';
+        } else {
+          item.className = 'step-item';
+          content.style.display = 'none';
+        }
+      });
+      window.scrollTo(0, 0);
+    }
+
+    function toggleSwitch(el) {
+      el.classList.toggle('active');
+    }
+
+    function calcLocalAmount() {
+      const amt = parseFloat(document.getElementById('detailAmountInput')?.value || 0);
+      const rate = parseFloat(document.getElementById('detailForexRate')?.value || 1);
+      const local = (amt * rate).toFixed(2);
+      const locEl = document.getElementById('detailLocalAmount');
+      if (locEl) locEl.value = local;
+    }
+
+    function triggerFileUpload(target) {
+      const input = document.getElementById('hiddenFileInput');
+      if (input) input.click();
+    }
+
+    function handleFileSelected(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const container = document.getElementById('detailFileChipsList');
+      if (container) {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="this.parentElement.remove()"></i>`;
+        container.appendChild(chip);
+      }
+    }
+
+    function addExpenseDetailItem() {
+      const type = document.getElementById('expenseTypeSelect')?.value;
+      const amt = parseFloat(document.getElementById('detailLocalAmount')?.value || 0);
+      const desc = document.getElementById('detailDescription')?.value || type || 'Entertainment Expense';
+
+      if (!type || amt <= 0) {
+        showToast('⚠️ Please select expense type and enter amount.');
+        return;
+      }
+
+      addedDetails.push({ type, amt, desc });
+      renderAddedDetails();
+      recalcGrandTotal();
+      showToast(`✅ Added line item: RM ${amt.toFixed(2)}`);
+
+      // Reset
+      document.getElementById('detailReceiptNo').value = '';
+      document.getElementById('detailDescription').value = '';
+      document.getElementById('detailAmountInput').value = '';
+      document.getElementById('detailLocalAmount').value = '0.00';
+    }
+
+    function renderAddedDetails() {
+      const container = document.getElementById('addedDetailsListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      addedDetails.forEach((d, idx) => {
+        const card = document.createElement('div');
+        card.className = 'added-item-card';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${d.type}</div>
+              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${d.desc}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">RM ${d.amt.toFixed(2)}</div>
+              <button onclick="removeExpenseDetailItem(${idx})" style="background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer;"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function removeExpenseDetailItem(idx) {
+      addedDetails.splice(idx, 1);
+      renderAddedDetails();
+      recalcGrandTotal();
+    }
+
+    function recalcGrandTotal() {
+      const total = addedDetails.reduce((sum, item) => sum + item.amt, 0);
+      const totEl = document.getElementById('totalAmountInput');
+      if (totEl) totEl.value = total.toFixed(2);
+      updatePaxSummary();
+    }
+
+    function handleEmployeeSelect(val) {
+      const emp = mockEmployees[val];
+      if (emp) {
+        document.getElementById('employeePosition').value = emp.pos;
+        document.getElementById('employeeCompany').value = emp.comp;
+        document.getElementById('employeeDepartment').value = emp.dept;
+      }
+    }
+
+    function addInternalAttendee() {
+      const val = document.getElementById('employeeSelect')?.value;
+      const emp = mockEmployees[val];
+      if (!emp) {
+        showToast('⚠️ Please select an employee to add.');
+        return;
+      }
+
+      addedEmployees.push(emp);
+      renderAddedEmployees();
+      updatePaxSummary();
+      showToast(`✅ Added ${emp.name} to internal attendees!`);
+    }
+
+    function renderAddedEmployees() {
+      const container = document.getElementById('addedEmployeesListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      addedEmployees.forEach((e, idx) => {
+        const card = document.createElement('div');
+        card.className = 'added-item-card';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${e.name}</div>
+              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${e.pos} • ${e.dept}</div>
+            </div>
+            <button onclick="removeInternalAttendee(${idx})" style="background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer;"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function removeInternalAttendee(idx) {
+      addedEmployees.splice(idx, 1);
+      renderAddedEmployees();
+      updatePaxSummary();
+    }
+
+    function addExternalGuest() {
+      const name = document.getElementById('guestNameInput')?.value;
+      const comp = document.getElementById('guestCompanyInput')?.value;
+      const desig = document.getElementById('guestDesignationInput')?.value;
+      const rel = document.getElementById('guestRelationshipSelect')?.value || 'Guest';
+
+      if (!name || !comp) {
+        showToast('⚠️ Please enter attendee name and company.');
+        return;
+      }
+
+      addedGuests.push({ name, comp, desig, rel });
+      renderAddedGuests();
+      updatePaxSummary();
+
+      // Reset
+      document.getElementById('guestNameInput').value = '';
+      document.getElementById('guestCompanyInput').value = '';
+      document.getElementById('guestDesignationInput').value = '';
+      document.getElementById('guestDetailInput').value = '';
+      showToast(`✅ Added ${name} (${comp}) as guest!`);
+    }
+
+    function renderAddedGuests() {
+      const container = document.getElementById('addedGuestsListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      addedGuests.forEach((g, idx) => {
+        const card = document.createElement('div');
+        card.className = 'added-item-card';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${g.name} <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary);">${g.rel}</span></div>
+              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${g.desig ? g.desig + ' • ' : ''}${g.comp}</div>
+            </div>
+            <button onclick="removeExternalGuest(${idx})" style="background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer;"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function removeExternalGuest(idx) {
+      addedGuests.splice(idx, 1);
+      renderAddedGuests();
+      updatePaxSummary();
+    }
+
+    function updatePaxSummary() {
+      const intCount = addedEmployees.length;
+      const extCount = addedGuests.length;
+      const totalPax = intCount + extCount;
+      const totalAmt = parseFloat(document.getElementById('totalAmountInput')?.value || 0);
+      const avgPax = totalPax > 0 ? (totalAmt / totalPax) : 0;
+
+      const intEl = document.getElementById('summaryInternalPax');
+      const extEl = document.getElementById('summaryExternalPax');
+      const avgEl = document.getElementById('summaryAvgPax');
+
+      if (intEl) intEl.textContent = intCount;
+      if (extEl) extEl.textContent = extCount;
+      if (avgEl) avgEl.textContent = avgPax.toFixed(2);
+    }
+
+    function saveEntertainmentDraft() {
+      showToast('💾 Entertainment Claim draft saved successfully!');
+    }
+
+    function submitEntertainmentClaim() {
+      showToast(`✅ Entertainment Claim request submitted successfully!`);
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 1200);
     }
   </script>
 </body>

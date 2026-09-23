@@ -154,7 +154,7 @@ window.CLAIM_OPTIONS = [
   },
   {
     id: 'advance',
-    name: 'Cash Advance',
+    name: 'Advance',
     icon: '💵',
     entitlementYear: '2026',
     subCategories: [

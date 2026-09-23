@@ -8,7 +8,7 @@
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
@@ -48,7 +48,7 @@
     .main-content {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 16px 90px;
+      padding: 16px 16px 100px;
       position: relative;
       z-index: 10;
       scrollbar-width: none;
@@ -65,14 +65,219 @@
       z-index: 20;
     }
 
-    .leave-list-item {
+    /* STEPPER HEADER (① General ———— ② Medical ———— ③ Details) */
+    .stepper-container {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
       background: var(--bg-card);
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: var(--shadow-card);
       border: 1px solid var(--border-subtle);
-      transition: transform 0.2s ease;
-      margin-bottom: 12px;
+      border-radius: 20px;
+      padding: 14px 28px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stepper-line-bg {
+      position: absolute;
+      top: 27px;
+      left: 56px;
+      right: 56px;
+      height: 2px;
+      background: var(--border-subtle);
+      z-index: 1;
+    }
+
+    .stepper-line-active {
+      position: absolute;
+      top: 27px;
+      left: 56px;
+      width: 0%;
+      max-width: calc(100% - 112px);
+      height: 2px;
+      background: var(--purple-primary);
+      z-index: 2;
+      transition: width 0.3s ease;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      z-index: 5;
+      cursor: pointer;
+      min-width: 56px;
+    }
+
+    .step-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 6;
+      transition: all 0.25s ease;
+    }
+
+    .step-item.active .step-circle {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border-color: #7c3aed;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(124, 58, 237, 0.45);
+    }
+
+    .step-item.completed .step-circle {
+      background: #064e3b;
+      border-color: #10b981;
+      color: #10b981;
+    }
+
+    .step-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: color 0.25s ease;
+      text-align: center;
+    }
+
+    .step-item.active .step-title {
+      color: var(--text-primary);
+      font-weight: 800;
+    }
+
+    /* CARD DESIGN MATCHING MODERN PROTOS */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    /* Green Details Banner matching Photo 2 */
+    .green-section-banner {
+      background: #86efac;
+      color: #15803d;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 14px rgba(134, 239, 172, 0.25);
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+    }
+    .form-ctrl:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 0.9;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    /* Dark Pill Badges matching Photo 1 */
+    .dark-balance-pill {
+      background: #4b5563;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 4px 16px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    /* Red Validation Error Text matching Photos 2 & 3 */
+    .validation-err-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-top: 5px;
+      display: block;
+    }
+
+    /* Attachment Buttons matching Photo 1 & 2 */
+    .attach-btn-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .attach-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .attach-btn:hover {
+      border-color: var(--purple-primary);
+      color: var(--purple-primary);
     }
 
     .btn-apply-sm {
@@ -86,142 +291,91 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
       transition: transform 0.15s ease;
+      white-space: nowrap;
     }
     .btn-apply-sm:active {
       transform: scale(0.96);
     }
 
-    .form-card {
+    .btn-step-back {
+      padding: 10px 20px;
+      border-radius: 20px;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 24px;
-      padding: 20px;
-      box-shadow: var(--shadow-card);
-      margin-bottom: 16px;
-    }
-
-    /* Top Form Tab Segmented Navigation Bar */
-    .form-segmented-nav {
-      display: flex;
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      padding: 4px;
-      margin-bottom: 18px;
-      gap: 4px;
-    }
-
-    .form-nav-btn {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px 8px;
-      border-radius: 12px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .form-nav-btn.active {
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
-    }
-
-    .field-label {
-      display: block;
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-    .field-label span.req {
-      color: #ef4444;
-    }
-
-    .form-input-ctrl {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 12px 14px;
+      color: var(--text-primary);
       font-size: 13.5px;
       font-weight: 700;
-      color: var(--text-primary);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .form-input-ctrl:focus {
-      border-color: var(--purple-primary);
-    }
-
-    .balance-pill {
-      background: rgba(124, 58, 237, 0.14);
-      color: var(--purple-primary);
-      font-size: 13px;
-      font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(124, 58, 237, 0.25);
-      display: inline-block;
-    }
-
-    .attach-btn-pill {
-      flex: 1;
-      display: flex;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
-      padding: 12px 14px;
-      background: var(--bg-input);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-step-next {
+      padding: 10px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-draft-bright {
+      padding: 10px 22px;
+      border-radius: 20px;
+      background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
       color: var(--text-primary);
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 700;
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.15s;
-    }
-    .attach-btn-pill:active {
-      transform: scale(0.97);
-    }
-
-    .validation-err-text {
-      font-size: 11.5px;
-      font-weight: 700;
-      color: #ef4444;
-      margin-top: 4px;
-      display: block;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
     }
 
-    .green-section-banner {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    .btn-submit-primary {
+      padding: 10px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
       color: #ffffff;
-      padding: 8px 16px;
-      border-radius: 12px;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 800;
-      margin-bottom: 16px;
-      display: flex;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+      gap: 8px;
     }
 
-    .item-chip-row {
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      display: flex;
+    /* Add Purple Button */
+    .btn-add-purple {
+      padding: 10px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
     }
 
     .modal-overlay {
@@ -237,10 +391,7 @@
       opacity: 0;
       transition: opacity 0.25s ease;
     }
-    .modal-overlay.active {
-      display: flex;
-      opacity: 1;
-    }
+    .modal-overlay.active { display: flex; opacity: 1; }
 
     .modal-sheet {
       width: 100%;
@@ -250,12 +401,21 @@
       border-top-right-radius: 28px;
       padding: 22px 18px 30px;
       overflow-y: auto;
-      transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: var(--shadow-sheet);
     }
-    .modal-overlay.active .modal-sheet {
-      transform: translateY(0);
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-top: 6px;
     }
   </style>
 </head>
@@ -267,7 +427,7 @@
     
     <!-- Top Header -->
     <div class="cal-top-header">
-      <phone-status-bar time="23:50" style="color: #ffffff;"></phone-status-bar>
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -280,6 +440,7 @@
       </div>
     </div>
 
+    <!-- Main Content Container -->
     <div class="main-content">
       
       <!-- VIEW 1: MEDICAL ENTITLEMENTS LIST -->
@@ -297,238 +458,229 @@
             </div>
           </div>
           <button type="button" title="Open Filter Options" onclick="event.stopPropagation(); openEntitlementYearFilterModal();"
-            style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s;"
-            onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
             <i class="fa-solid fa-sliders"></i>
           </button>
         </div>
 
-        <!-- SECTION TITLE -->
         <div style="margin-bottom: 12px;">
           <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Medical Entitlement (1)</h2>
         </div>
 
-        <!-- SINGLE MEDICAL CLAIM ENTITLEMENT CARD -->
-        <div class="leave-list">
-
-          <!-- 1. MEDICAL CLAIM -->
-          <div class="leave-list-item">
-            <div class="item-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">MEDICAL CLAIM</h3>
-                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-top: 3px;">RM 1,100.00 available</span>
-              </div>
-              <button class="btn-apply-sm" onclick="openMedicalClaimForm('MEDICAL CLAIM')">Claim</button>
+        <!-- MEDICAL CLAIM ENTITLEMENT CARD -->
+        <div style="background: var(--bg-card); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-card); border: 1px solid var(--border-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">MEDICAL CLAIM</h3>
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-top: 3px;">RM 640.10 available</span>
             </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 8px 6px; border-radius: 12px; margin-top: 10px; text-align: center;">
-              <div>
-                <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
-                <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 1,600.00</div>
-              </div>
-              <div>
-                <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
-                <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 450.00</div>
-              </div>
-              <div>
-                <div style="font-size: 9px; font-weight: 700; color: #f59e0b; text-transform: uppercase;">PENDING</div>
-                <div style="font-size: 11.5px; font-weight: 800; color: #f59e0b; margin-top: 2px;">RM 50.00</div>
-              </div>
-              <div>
-                <div style="font-size: 9px; font-weight: 700; color: #10b981; text-transform: uppercase;">USABLE</div>
-                <div style="font-size: 11.5px; font-weight: 800; color: #10b981; margin-top: 2px;">RM 1,100.00</div>
-              </div>
+            <button class="btn-apply-sm" onclick="openMedicalClaimForm('MEDICAL CLAIM')">Claim</button>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 8px 6px; border-radius: 12px; margin-top: 10px; text-align: center;">
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 800.00</div>
+            </div>
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 159.90</div>
+            </div>
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: #f59e0b; text-transform: uppercase;">PENDING</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: #f59e0b; margin-top: 2px;">RM 0.00</div>
+            </div>
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: #10b981; text-transform: uppercase;">USABLE</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: #10b981; margin-top: 2px;">RM 640.10</div>
             </div>
           </div>
-
         </div>
 
       </div>
 
-      <!-- VIEW 2: MEDICAL CLAIM FORM CONTAINER -->
+      <!-- VIEW 2: MEDICAL CLAIM FORM WITH STEPPER HEADER (① General ———— ② Medical ———— ③ Details) -->
       <div id="viewMedicalForm" style="display: none;">
         
-        <div class="form-card">
+        <!-- STEPPER HEADER -->
+        <div class="stepper-container">
+          <div class="stepper-line-bg"></div>
+          <div id="stepperLineActive" class="stepper-line-active" style="width: 0%;"></div>
+
+          <!-- Step 1 -->
+          <div id="stepHeader-1" class="step-item active" onclick="switchMedicalStep(1)">
+            <div class="step-circle">1</div>
+            <span class="step-title">General</span>
+          </div>
+
+          <!-- Step 2 -->
+          <div id="stepHeader-2" class="step-item" onclick="switchMedicalStep(2)">
+            <div class="step-circle">2</div>
+            <span class="step-title">Medical</span>
+          </div>
+
+          <!-- Step 3 -->
+          <div id="stepHeader-3" class="step-item" onclick="switchMedicalStep(3)">
+            <div class="step-circle">3</div>
+            <span class="step-title">Details</span>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- STEP 1: GENERAL (EXACT FIELDS & FORMAT FROM PHOTO 1) -->
+        <!-- ========================================================= -->
+        <div id="stepContent-1" style="display: block;">
           
-          <!-- STEP / TAB NAVIGATION SWITCHER -->
-          <div class="form-segmented-nav">
-            <button type="button" class="form-nav-btn active" id="tabBtn-general" onclick="switchMedicalTab('general')">
-              <i class="fa-solid fa-receipt"></i>
-              <span>General</span>
-            </button>
-            <button type="button" class="form-nav-btn" id="tabBtn-medical" onclick="switchMedicalTab('medical')">
-              <i class="fa-solid fa-user-doctor"></i>
-              <span>Medical</span>
-            </button>
-            <button type="button" class="form-nav-btn" id="tabBtn-details" onclick="switchMedicalTab('details')">
-              <i class="fa-solid fa-file-medical"></i>
-              <span>Details</span>
-            </button>
-          </div>
-
-          <!-- READONLY ENTITLEMENT SUMMARY HEADER -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 12px 14px; margin-bottom: 18px;">
-            <div>
-              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Entitled Balance:</div>
-              <div id="entitledBalanceDisplay" style="font-size: 15px; font-weight: 900; color: var(--text-primary);">RM 800.00</div>
-            </div>
-            <div>
-              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Usable Balance:</div>
-              <div id="usableBalanceDisplay" style="font-size: 15px; font-weight: 900; color: var(--secondary);">RM 640.10</div>
-            </div>
-          </div>
-
-          <!-- ========================================================= -->
-          <!-- TAB 1: GENERAL -->
-          <!-- ========================================================= -->
-          <div id="tabContent-general" style="display: block;">
+          <div class="form-card">
             
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-              
-              <!-- Benefit Year -->
-              <div>
-                <label class="field-label">Benefit Year :</label>
-                <input type="text" class="form-input-ctrl" value="2026" readonly style="opacity: 0.9;" />
-              </div>
+            <!-- Benefit Year : -->
+            <div class="field-group">
+              <label class="field-label">Benefit Year :</label>
+              <input type="text" class="form-ctrl" value="2026" readonly />
+            </div>
 
-              <!-- Benefit Type -->
-              <div>
-                <label class="field-label">Benefit Type :</label>
-                <input type="text" id="genBenefitTypeInput" class="form-input-ctrl" value="MEDICAL CLAIMS" readonly style="opacity: 0.9;" />
-              </div>
+            <!-- Benefit Type : -->
+            <div class="field-group">
+              <label class="field-label">Benefit Type :</label>
+              <input type="text" id="genBenefitTypeInput" class="form-ctrl" value="MEDICAL CLAIMS" readonly />
+            </div>
 
-              <!-- Entitled & Usable Balance Pill Row -->
-              <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span class="field-label" style="margin-bottom: 0; min-width: 120px;">Entitled Balance:</span>
-                  <span id="entitledPillDisplay" class="balance-pill">800.00</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span class="field-label" style="margin-bottom: 0; min-width: 120px;">Usable Balance:</span>
-                  <span id="usablePillDisplay" class="balance-pill" style="background: rgba(16, 185, 129, 0.14); color: var(--secondary); border-color: rgba(16, 185, 129, 0.25);">640.10</span>
-                </div>
+            <!-- Entitled Balance: & Usable Balance: (Pill Badges matching Photo 1) -->
+            <div class="field-group" style="display: flex; flex-direction: column; gap: 12px; margin-top: 4px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span class="field-label" style="margin-bottom: 0;">Entitled Balance:</span>
+                <span id="entitledPillDisplay" class="dark-balance-pill">800.00</span>
               </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span class="field-label" style="margin-bottom: 0;">Usable Balance:</span>
+                <span id="usablePillDisplay" class="dark-balance-pill">640.10</span>
+              </div>
+            </div>
 
-              <!-- Claim Period -->
-              <div>
-                <label class="field-label">Claim Period :</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <select class="form-input-ctrl">
+            <!-- Claim Period : (Two side-by-side inputs from Photo 1) -->
+            <div class="field-group">
+              <label class="field-label">Claim Period :</label>
+              <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+                <div class="select-wrapper">
+                  <select class="form-ctrl">
                     <option value="2026" selected>2026</option>
                     <option value="2025">2025</option>
                   </select>
-                  <select class="form-input-ctrl">
+                </div>
+                <div class="select-wrapper">
+                  <select class="form-ctrl">
                     <option value="September" selected>September</option>
                     <option value="August">August</option>
                     <option value="July">July</option>
                   </select>
                 </div>
               </div>
-
-              <!-- Receipt Date & Receipt No. -->
-              <div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <div>
-                    <label class="field-label">Receipt Date :</label>
-                    <input type="text" class="form-input-ctrl" value="22/09/2026" />
-                  </div>
-                  <div>
-                    <label class="field-label">Receipt No. :</label>
-                    <input type="text" id="genReceiptNoInput" class="form-input-ctrl" placeholder="e.g. REC-88310" oninput="syncReceiptNo(this.value)" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Claim Total (RM) -->
-              <div style="background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
-                <span class="field-label" style="margin-bottom: 0; font-size: 13px; color: var(--text-primary);">Claim Total (RM):</span>
-                <span id="genClaimTotalDisplay" style="font-size: 17px; font-weight: 900; color: var(--purple-primary);">RM 0.00</span>
-              </div>
-
-              <!-- Remark -->
-              <div>
-                <label class="field-label">Remark :</label>
-                <textarea id="genRemarkInput" rows="3" class="form-input-ctrl" placeholder="Enter remarks or details..." style="resize: vertical;"></textarea>
-              </div>
-
-              <!-- Upload Attachments (Matching User Screenshot Layout & Icons Exactly) -->
-              <div style="margin-top: 6px;">
-                <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
-                
-                <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
-                  <!-- Select File(s) Circle Button -->
-                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('general')">
-                    <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
-                      <i class="fa-solid fa-file-arrow-up"></i>
-                    </div>
-                    <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
-                  </div>
-
-                  <!-- Take a Picture Circle Button -->
-                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('general')">
-                    <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
-                      <i class="fa-solid fa-camera"></i>
-                    </div>
-                    <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
-                  </div>
-                </div>
-
-                <!-- Attached Files Chips Container -->
-                <div id="genChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
-              </div>
-
             </div>
 
-            <!-- Bottom Navigation Step Helpers -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-              <button type="button" onclick="saveDraft()" style="padding: 10px 20px; border-radius: 20px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm);">
-                <i class="fa-solid fa-floppy-disk" style="font-size: 13px;"></i>
-                <span>Draft</span>
-              </button>
-              <button type="button" onclick="switchMedicalTab('medical')" style="padding: 10px 22px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: flex; align-items: center; gap: 6px;">
-                <span>Next: Medical</span>
-                <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i>
-              </button>
+            <!-- Receipt Date : (From Photo 1) -->
+            <div class="field-group">
+              <label class="field-label">Receipt Date :</label>
+              <input type="text" class="form-ctrl" value="23/09/2026" />
+            </div>
+
+            <!-- Receipt No. : (From Photo 1) -->
+            <div class="field-group">
+              <label class="field-label">Receipt No. :</label>
+              <input type="text" id="genReceiptNoInput" class="form-ctrl" value="" placeholder="" oninput="syncReceiptNo(this.value)" />
+            </div>
+
+            <!-- Claim Total (RM): (From Photo 1) -->
+            <div class="field-group">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+                <span class="field-label" style="margin-bottom: 0;">Claim Total (RM):</span>
+                <span id="genClaimTotalDisplay" style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">0.00</span>
+              </div>
+            </div>
+
+            <!-- Remark : (From Photo 1 - singular) -->
+            <div class="field-group">
+              <label class="field-label">Remark :</label>
+              <input type="text" id="genRemarkInput" class="form-ctrl" value="" />
+            </div>
+
+            <!-- Upload Attachments -->
+            <div style="margin-top: 14px;">
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+              
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
+                <!-- Select File(s) Circle Button -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('step1')">
+                  <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                </div>
+
+                <!-- Take a Picture Circle Button -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('step1')">
+                  <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                </div>
+              </div>
+
+              <div id="step1ChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
             </div>
 
           </div>
 
-          <!-- ========================================================= -->
-          <!-- TAB 2: MEDICAL -->
-          <!-- ========================================================= -->
-          <div id="tabContent-medical" style="display: none;">
+          <!-- Bottom Navigation Row -->
+          <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 18px;">
+            <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Draft</span>
+            </button>
+            <button type="button" class="btn-step-next" onclick="switchMedicalStep(2)">
+              <span>Next: Medical</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- STEP 2: MEDICAL (EXACT FIELDS FROM PHOTO 3) -->
+        <!-- ========================================================= -->
+        <div id="stepContent-2" style="display: none;">
+          
+          <div class="form-card">
             
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-              
-              <!-- Patient's Type -->
-              <div>
-                <label class="field-label">Patient's Type : <span class="req">*</span></label>
-                <select id="patientTypeSelect" class="form-input-ctrl" onchange="hideValError('errPatientType')">
-                  <option value="" selected>- Select Patient Type -</option>
-                  <option value="Self">Self</option>
+            <!-- Patient's Type : (From Photo 3) -->
+            <div class="field-group">
+              <label class="field-label">Patient's Type :</label>
+              <div class="select-wrapper">
+                <select id="patientTypeSelect" class="form-ctrl">
+                  <option value="Employee" selected>Employee</option>
                   <option value="Spouse">Spouse</option>
-                  <option value="Child">Child</option>
-                  <option value="Parent">Parent</option>
+                  <option value="Children">Children</option>
                 </select>
-                <span id="errPatientType" class="validation-err-text">Please Select Patient Type</span>
               </div>
+            </div>
 
-              <!-- Patient's Name -->
-              <div>
-                <label class="field-label">Patient's Name : <span class="req">*</span></label>
-                <select id="patientNameSelect" class="form-input-ctrl" onchange="hideValError('errPatientName')">
+            <!-- Patient's Name : (From Photo 3 - with error text if unselected) -->
+            <div class="field-group">
+              <label class="field-label">Patient's Name :</label>
+              <div class="select-wrapper">
+                <select id="patientNameSelect" class="form-ctrl" onchange="validatePatientName(this.value)">
                   <option value="" selected>- Select Patient Name -</option>
-                  <option value="John Tan (Self)">John Tan (Self)</option>
-                  <option value="Sarah Tan (Spouse)">Sarah Tan (Spouse)</option>
-                  <option value="Lucas Tan (Child)">Lucas Tan (Child)</option>
+                  <option value="FARHAN BINTI RAHMAT">FARHAN BINTI RAHMAT</option>
+                  <option value="AHMAD BIN RAZALI">AHMAD BIN RAZALI</option>
                 </select>
-                <span id="errPatientName" class="validation-err-text">Please Select Patient Name</span>
               </div>
+              <span id="errPatientName" class="validation-err-text">Please Select Patient Name</span>
+            </div>
 
-              <!-- Treatment Type -->
-              <div>
-                <label class="field-label">Treatment Type :</label>
-                <select id="treatmentTypeSelect" class="form-input-ctrl">
+            <!-- Treatment Type : (From Photo 3) -->
+            <div class="field-group">
+              <label class="field-label">Treatment Type :</label>
+              <div class="select-wrapper">
+                <select id="treatmentTypeSelect" class="form-ctrl">
                   <option value="Others" selected>Others</option>
                   <option value="Outpatient GP">Outpatient GP</option>
                   <option value="Specialist Consultation">Specialist Consultation</option>
@@ -536,35 +688,40 @@
                   <option value="Hospitalization">Hospitalization</option>
                 </select>
               </div>
+            </div>
 
-              <!-- Clinic / Hospital (Location & Panel dropdowns) -->
-              <div>
-                <label class="field-label">Clinic / Hospital :</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <select class="form-input-ctrl">
+            <!-- Clinic / Hospital : (Two side-by-side dropdowns from Photo 3) -->
+            <div class="field-group">
+              <label class="field-label">Clinic / Hospital :</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="select-wrapper">
+                  <select class="form-ctrl">
                     <option value="" selected>- Select Location -</option>
                     <option value="Kuala Lumpur">Kuala Lumpur</option>
                     <option value="Selangor">Selangor</option>
                     <option value="Penang">Penang</option>
                   </select>
-                  <select id="panelTypeSelect" class="form-input-ctrl" onchange="toggleNonPanelField(this.value)">
-                    <option value="Non-Panel" selected>- Non-Panel Clinic/Hospital -</option>
-                    <option value="Panel">Panel Clinic/Hospital</option>
+                </div>
+                <div class="select-wrapper">
+                  <select id="clinicCategorySelect" class="form-ctrl" onchange="toggleNonPanelField(this.value)">
+                    <option value="Non-Panel Clinic/Hospital" selected>- Non-Panel Clinic/Hospital -</option>
+                    <option value="Panel Clinic/Hospital">Panel Clinic/Hospital</option>
                   </select>
                 </div>
               </div>
+            </div>
 
-              <!-- Non-Panel Clinic / Hospital -->
-              <div id="nonPanelContainer">
-                <label class="field-label">Non-Panel Clinic / Hospital : <span class="req">*</span></label>
-                <input type="text" id="nonPanelInput" class="form-input-ctrl" placeholder="Enter non-panel clinic name..." oninput="hideValError('errNonPanel')" />
-                <span id="errNonPanel" class="validation-err-text">Please enter Non Panel Clinic</span>
-              </div>
+            <!-- Non-Panel Clinic / Hospital : (From Photo 3) -->
+            <div id="nonPanelContainer" class="field-group">
+              <label class="field-label">Non-Panel Clinic / Hospital :</label>
+              <input type="text" id="nonPanelInput" class="form-ctrl" placeholder="" />
+            </div>
 
-              <!-- Sickness Type -->
-              <div>
-                <label class="field-label">Sickness Type :</label>
-                <select class="form-input-ctrl">
+            <!-- Sickness Type : (From Photo 3) -->
+            <div class="field-group">
+              <label class="field-label">Sickness Type :</label>
+              <div class="select-wrapper">
+                <select class="form-ctrl">
                   <option value="" selected>- Select Sickness -</option>
                   <option value="Fever & Flu">Fever &amp; Flu</option>
                   <option value="Stomachache / Gastric">Stomachache / Gastric</option>
@@ -573,46 +730,47 @@
                   <option value="Others">Others</option>
                 </select>
               </div>
-
-            </div>
-
-            <!-- Bottom Navigation Step Helpers -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-              <button type="button" onclick="switchMedicalTab('general')" style="padding: 10px 18px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                <i class="fa-solid fa-arrow-left" style="font-size: 12px;"></i>
-                <span>Back</span>
-              </button>
-              <button type="button" onclick="switchMedicalTab('details')" style="padding: 10px 22px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: flex; align-items: center; gap: 6px;">
-                <span>Next: Details</span>
-                <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i>
-              </button>
             </div>
 
           </div>
 
-          <!-- ========================================================= -->
-          <!-- TAB 3: DETAILS -->
-          <!-- ========================================================= -->
-          <div id="tabContent-details" style="display: none;">
+          <!-- Bottom Navigation Row -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+            <button type="button" class="btn-step-back" onclick="switchMedicalStep(1)">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>Back</span>
+            </button>
+            <button type="button" class="btn-step-next" onclick="switchMedicalStep(3)">
+              <span>Next: Details</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- STEP 3: DETAILS (EXACT FIELDS FROM PHOTO 2) -->
+        <!-- ========================================================= -->
+        <div id="stepContent-3" style="display: none;">
+          
+          <div class="form-card">
             
-            <!-- Green Details Banner -->
+            <!-- Green Section Banner titled "Details" matching Photo 2 -->
             <div class="green-section-banner">
-              <span>Details Line Item</span>
-              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <span>Details</span>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-              
-              <!-- Receipt No. -->
-              <div>
-                <label class="field-label">Receipt No. :</label>
-                <input type="text" id="detReceiptNoInput" class="form-input-ctrl" placeholder="e.g. REC-88310" />
-              </div>
+            <!-- Receipt No. : (From Photo 2) -->
+            <div class="field-group">
+              <label class="field-label">Receipt No. :</label>
+              <input type="text" id="detReceiptNoInput" class="form-ctrl" value="" placeholder="" />
+            </div>
 
-              <!-- Expenses Type -->
-              <div>
-                <label class="field-label">Expenses : <span class="req">*</span></label>
-                <select id="expensesTypeSelect" class="form-input-ctrl" onchange="hideValError('errExpensesType')">
+            <!-- Expenses : (From Photo 2) -->
+            <div class="field-group">
+              <label class="field-label">Expenses :</label>
+              <div class="select-wrapper">
+                <select id="expensesTypeSelect" class="form-ctrl" onchange="hideValError('errExpensesType')">
                   <option value="" selected>Select Expense</option>
                   <option value="Consultation Fee">Consultation Fee</option>
                   <option value="Medication & Pharmacy">Medication &amp; Pharmacy</option>
@@ -620,99 +778,98 @@
                   <option value="Diagnostic X-Ray">Diagnostic X-Ray</option>
                   <option value="Treatment Fee">Treatment Fee</option>
                 </select>
-                <span id="errExpensesType" class="validation-err-text">Please Select Expenses Type</span>
               </div>
-
-              <!-- Amount & Currency -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div>
-                  <label class="field-label">Amount :</label>
-                  <input type="number" id="detAmountInput" class="form-input-ctrl" value="0" step="0.01" oninput="calcLocalAmount()" />
-                </div>
-                <div>
-                  <label class="field-label">Currency :</label>
-                  <select id="detCurrencySelect" class="form-input-ctrl" onchange="calcLocalAmount()">
-                    <option value="RINGGIT MALAYSIA" selected>RINGGIT MALAYSIA</option>
-                    <option value="US DOLLAR">US DOLLAR</option>
-                    <option value="SINGAPORE DOLLAR">SINGAPORE DOLLAR</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Forex Rate & Local Amount -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div>
-                  <label class="field-label">Forex Rate :</label>
-                  <input type="number" id="detForexRateInput" class="form-input-ctrl" value="1.000" step="0.001" oninput="calcLocalAmount()" />
-                </div>
-                <div>
-                  <label class="field-label">Local Amount :</label>
-                  <input type="text" id="detLocalAmountInput" class="form-input-ctrl" value="0.00" readonly style="opacity: 0.9;" />
-                </div>
-              </div>
-
-              <!-- Upload Attachments (Matching User Screenshot Layout & Icons Exactly) -->
-              <div style="margin-top: 6px;">
-                <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
-                
-                <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
-                  <!-- Select File(s) Circle Button -->
-                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('details')">
-                    <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
-                      <i class="fa-solid fa-file-arrow-up"></i>
-                    </div>
-                    <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
-                  </div>
-
-                  <!-- Take a Picture Circle Button -->
-                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('details')">
-                    <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
-                      <i class="fa-solid fa-camera"></i>
-                    </div>
-                    <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
-                  </div>
-                </div>
-
-                <!-- Attached Files Chips Container -->
-                <div id="detChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
-              </div>
-
-              <!-- Add Item Button -->
-              <div style="margin-top: 4px;">
-                <button type="button" onclick="addExpenseItem()" style="width: 100%; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 14px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-                  <i class="fa-solid fa-plus"></i>
-                  <span>Add Line Item</span>
-                </button>
-              </div>
-
-              <!-- Line Items Summary List Container -->
-              <div style="margin-top: 12px;">
-                <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Added Line Items:</div>
-                <div id="addedItemsListContainer">
-                  <div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 6px 0;">No expense line items added yet. Click "Add Line Item" above.</div>
-                </div>
-              </div>
-
+              <span id="errExpensesType" class="validation-err-text">Please Select Expenses Type</span>
             </div>
 
-            <!-- Bottom Navigation Action Buttons (MATCHING USER SCREENSHOT: DRAFT & SUBMIT PAPER PLANE BUTTONS) -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-              <button type="button" onclick="switchMedicalTab('medical')" style="padding: 10px 18px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                <i class="fa-solid fa-arrow-left" style="font-size: 12px;"></i>
-                <span>Back</span>
+            <!-- Amount : (From Photo 2) -->
+            <div class="field-group">
+              <label class="field-label">Amount :</label>
+              <input type="number" id="detAmountInput" class="form-ctrl" value="0" step="0.01" oninput="calcLocalAmount()" />
+            </div>
+
+            <!-- Currency : (From Photo 2) -->
+            <div class="field-group">
+              <label class="field-label">Currency :</label>
+              <div class="select-wrapper">
+                <select id="detCurrencySelect" class="form-ctrl" onchange="calcLocalAmount()">
+                  <option value="RINGGIT MALAYSIA" selected>RINGGIT MALAYSIA</option>
+                  <option value="US DOLLAR">US DOLLAR</option>
+                  <option value="SINGAPORE DOLLAR">SINGAPORE DOLLAR</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Forex Rate : (From Photo 2) -->
+            <div class="field-group">
+              <label class="field-label">Forex Rate :</label>
+              <input type="number" id="detForexRateInput" class="form-ctrl" value="1.000" step="0.001" oninput="calcLocalAmount()" />
+            </div>
+
+            <!-- Local Amount : (From Photo 2) -->
+            <div class="field-group">
+              <label class="field-label">Local Amount :</label>
+              <input type="text" id="detLocalAmountInput" class="form-ctrl" value="" readonly />
+            </div>
+
+            <!-- Upload Attachments -->
+            <div style="margin-top: 14px;">
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+              
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
+                <!-- Select File(s) Circle Button -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('step3')">
+                  <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                </div>
+
+                <!-- Take a Picture Circle Button -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('step3')">
+                  <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                </div>
+              </div>
+
+              <div id="step3ChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+            </div>
+
+            <!-- Add Button (Purple button matching Photo 2) -->
+            <div style="margin-top: 14px; margin-bottom: 16px;">
+              <button type="button" class="btn-add-purple" onclick="addExpenseItem()">
+                <span>Add</span>
               </button>
-              <div style="display: flex; gap: 10px;">
-                <button type="button" onclick="saveDraft()" style="padding: 10px 20px; border-radius: 20px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-                  <i class="fa-solid fa-floppy-disk" style="font-size: 13px;"></i>
-                  <span>Draft</span>
-                </button>
-                <button type="button" onclick="submitMedicalClaim()" style="padding: 10px 24px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45); display: flex; align-items: center; gap: 8px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-                  <span>Submit</span>
-                  <i class="fa-solid fa-paper-plane" style="font-size: 13px;"></i>
-                </button>
+            </div>
+
+            <!-- Added Line Items Table / Summary List -->
+            <div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Added Line Items:</div>
+              <div id="addedItemsListContainer">
+                <div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 6px 0;">No expense line items added yet. Click "Add" above.</div>
               </div>
             </div>
 
+          </div>
+
+          <!-- Bottom Navigation Row with Save Draft and Submit -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+            <button type="button" class="btn-step-back" onclick="switchMedicalStep(2)">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>Back</span>
+            </button>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Draft</span>
+              </button>
+              <button type="button" class="btn-submit-primary" onclick="submitMedicalClaim()">
+                <span>Submit</span>
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
           </div>
 
         </div>
@@ -720,6 +877,9 @@
       </div>
 
     </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="hiddenMedicalFileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelected(this)">
 
     <!-- ENTITLEMENT YEAR FILTER MODAL -->
     <div id="filterModalOverlay" class="modal-overlay" onclick="if(event.target===this) closeEntitlementYearFilterModal()">
@@ -734,7 +894,7 @@
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <div>
             <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Entitlement Year:</label>
-            <select id="entitlementYearSelectInput" class="form-input-ctrl">
+            <select id="entitlementYearSelectInput" class="form-ctrl">
               <option value="2026" selected>2026</option>
               <option value="2025">2025</option>
               <option value="2024">2024</option>
@@ -742,8 +902,8 @@
           </div>
 
           <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
-            <button type="button" onclick="closeEntitlementYearFilterModal()" style="padding: 10px 20px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; cursor: pointer;">Cancel</button>
-            <button type="button" onclick="applyEntitlementYearFilter()" style="padding: 10px 24px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">Apply Filter</button>
+            <button type="button" onclick="closeEntitlementYearFilterModal()" class="btn-step-back">Cancel</button>
+            <button type="button" onclick="applyEntitlementYearFilter()" class="btn-step-next">Apply Filter</button>
           </div>
         </div>
       </div>
@@ -754,16 +914,9 @@
   
   <script>
     let currentMainView = 'list';
-    let activeTab = 'general';
-    let currentUploadTarget = 'general';
+    let currentStep = 1;
+    let currentUploadTarget = 'step1';
     const addedItems = [];
-
-    const medicalBalances = {
-      'MEDICAL CLAIM': { entitled: '1,600.00', claimed: '450.00', pending: '50.00', usable: '1,100.00' },
-      'OUTPATIENT GP CLINIC': { entitled: '800.00', claimed: '300.00', pending: '0.00', usable: '500.00' },
-      'SPECIALIST CONSULTATION': { entitled: '500.00', claimed: '150.00', pending: '0.00', usable: '350.00' },
-      'PHARMACY & MEDICATION': { entitled: '300.00', claimed: '0.00', pending: '50.00', usable: '250.00' }
-    };
 
     function openMedicalClaimForm(type) {
       currentMainView = 'form';
@@ -771,22 +924,7 @@
       document.getElementById('viewMedicalForm').style.display = 'block';
       document.getElementById('headerTitleText').innerText = 'Medical Claim';
 
-      const data = medicalBalances[type] || { entitled: '800.00', usable: '640.10' };
-      document.getElementById('genBenefitTypeInput').value = type;
-      document.getElementById('entitledBalanceDisplay').innerText = `RM ${data.entitled}`;
-      document.getElementById('usableBalanceDisplay').innerText = `RM ${data.usable}`;
-      document.getElementById('entitledPillDisplay').innerText = data.entitled;
-      document.getElementById('usablePillDisplay').innerText = data.usable;
-
-      if (type === 'OUTPATIENT GP CLINIC') {
-        document.getElementById('treatmentTypeSelect').value = 'Outpatient GP';
-      } else if (type === 'SPECIALIST CONSULTATION') {
-        document.getElementById('treatmentTypeSelect').value = 'Specialist Consultation';
-      } else if (type === 'PHARMACY & MEDICATION') {
-        document.getElementById('treatmentTypeSelect').value = 'Others';
-      }
-
-      switchMedicalTab('general');
+      switchMedicalStep(1);
       window.scrollTo(0, 0);
     }
 
@@ -801,20 +939,34 @@
       }
     }
 
-    function switchMedicalTab(tab) {
-      activeTab = tab;
-      const tabs = ['general', 'medical', 'details'];
-      tabs.forEach(t => {
-        const btn = document.getElementById(`tabBtn-${t}`);
-        const content = document.getElementById(`tabContent-${t}`);
-        if (t === tab) {
-          btn.classList.add('active');
+    function switchMedicalStep(stepNum) {
+      currentStep = stepNum;
+      
+      // Update Stepper Line Active Width (connecting center of circle 1 to 3)
+      const lineActive = document.getElementById('stepperLineActive');
+      if (lineActive) {
+        if (stepNum === 1) lineActive.style.width = '0%';
+        else if (stepNum === 2) lineActive.style.width = '50%';
+        else if (stepNum === 3) lineActive.style.width = '100%';
+      }
+
+      // Update Header Stepper Items
+      for (let i = 1; i <= 3; i++) {
+        const item = document.getElementById(`stepHeader-${i}`);
+        const content = document.getElementById(`stepContent-${i}`);
+        if (!item || !content) continue;
+
+        if (i === stepNum) {
+          item.className = 'step-item active';
           content.style.display = 'block';
+        } else if (i < stepNum) {
+          item.className = 'step-item completed';
+          content.style.display = 'none';
         } else {
-          btn.classList.remove('active');
+          item.className = 'step-item';
           content.style.display = 'none';
         }
-      });
+      }
       window.scrollTo(0, 0);
     }
 
@@ -829,7 +981,7 @@
 
     function toggleNonPanelField(val) {
       const container = document.getElementById('nonPanelContainer');
-      if (val === 'Non-Panel') {
+      if (val.includes('Non-Panel')) {
         container.style.display = 'block';
       } else {
         container.style.display = 'none';
@@ -852,12 +1004,12 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      const containerId = currentUploadTarget === 'general' ? 'genChipsList' : 'detChipsList';
+      const containerId = `${currentUploadTarget}ChipsList`;
       const container = document.getElementById(containerId);
       if (container) {
         const chip = document.createElement('div');
-        chip.style.cssText = 'background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;';
-        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        chip.className = 'file-chip';
+        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="this.parentElement.remove()"></i>`;
         container.appendChild(chip);
       }
     }
@@ -879,14 +1031,14 @@
       calcLocalAmount();
 
       if (typeof showToast === 'function') {
-        showToast(`✅ Line item [${expenseType}] added successfully!`);
+        showToast(`✅ Line item [${expenseType}] added!`);
       }
     }
 
     function renderAddedItems() {
       const container = document.getElementById('addedItemsListContainer');
       if (addedItems.length === 0) {
-        container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 6px 0;">No expense line items added yet. Click "Add Item" above.</div>`;
+        container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 6px 0;">No expense line items added yet. Click "Add" above.</div>`;
         updateTotalDisplay(0);
         return;
       }
@@ -896,7 +1048,7 @@
       addedItems.forEach((item, idx) => {
         total += item.amount;
         html += `
-          <div class="item-chip-row">
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
             <div>
               <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${item.type}</div>
               <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Ref: ${item.receiptNo}</div>
@@ -938,7 +1090,8 @@
     }
 
     function updateTotalDisplay(total) {
-      document.getElementById('genClaimTotalDisplay').innerText = `RM ${total.toFixed(2)}`;
+      const totalEl = document.getElementById('genClaimTotalDisplay');
+      if (totalEl) totalEl.innerText = `${total.toFixed(2)}`;
     }
 
     function saveDraft() {
@@ -951,7 +1104,7 @@
 
     function submitMedicalClaim() {
       if (typeof showToast === 'function') {
-        showToast('✅ Medical Claim submitted successfully!');
+        showToast('🚀 Medical Claim submitted successfully!');
       } else {
         alert('Medical Claim submitted successfully!');
       }
