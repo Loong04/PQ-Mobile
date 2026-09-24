@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+import os
+
+file_path = r"C:\Users\loong\PQ-Mobile\modules\claims\options\travel-claim.html"
+
+new_html = """<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
@@ -65,10 +69,9 @@
       z-index: 20;
     }
 
-    /* VIEW CONTAINERS (4-LEVEL DRILL-DOWN ISOLATION) */
+    /* VIEW CONTAINERS (DRILL-DOWN ISOLATION) */
     .view-container {
       display: none;
-      width: 100%;
       animation: fadeIn 0.2s ease-in-out;
     }
     .view-container.active {
@@ -88,24 +91,6 @@
       margin-bottom: 14px;
       box-shadow: var(--shadow-card);
       position: relative;
-    }
-
-    .category-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      padding: 16px 18px;
-      margin-bottom: 12px;
-      box-shadow: var(--shadow-card);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .category-card:active {
-      transform: scale(0.98);
-      border-color: var(--purple-primary);
     }
 
     .section-header-bar {
@@ -149,10 +134,8 @@
       color: var(--text-muted);
       margin-bottom: 6px;
     }
-    .field-label .req {
-      color: #ef4444;
-      margin-left: 2px;
-    }
+
+    .req { color: #ef4444; }
 
     .form-ctrl {
       width: 100%;
@@ -166,7 +149,6 @@
       outline: none;
       transition: all 0.2s ease;
       appearance: none;
-      font-family: inherit;
     }
     .form-ctrl:focus {
       border-color: var(--purple-primary);
@@ -177,11 +159,9 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
-    .select-wrapper {
-      position: relative;
-    }
+    .select-wrapper { position: relative; }
     .select-wrapper::after {
-      content: "\f0d7";
+      content: "\\f0d7";
       font-family: "Font Awesome 6 Free";
       font-weight: 900;
       position: absolute;
@@ -193,70 +173,11 @@
       font-size: 12px;
     }
 
-    .btn-draft-bright {
-      padding: 11px 24px;
-      border-radius: 9999px;
-      background: var(--bg-card);
-      border: 1.5px solid var(--border-subtle);
-      color: var(--text-primary);
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.2s ease;
-    }
-    .btn-draft-bright:active {
-      transform: scale(0.96);
-    }
-
-    .btn-submit-primary {
-      padding: 11px 26px;
-      border-radius: 9999px;
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      border: none;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-    .btn-submit-primary:active {
-      transform: scale(0.96);
-      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
-    }
-
-    .btn-add-purple {
-      padding: 9px 18px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      border: none;
-      color: #ffffff;
-      font-size: 12.5px;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
     .btn-step-back {
-      padding: 11px 22px;
-      border-radius: 9999px;
+      padding: 11px 20px;
+      border-radius: 20px;
       background: var(--bg-card);
-      border: 1.5px solid var(--border-subtle);
+      border: 1px solid var(--border-subtle);
       color: var(--text-primary);
       font-size: 13.5px;
       font-weight: 700;
@@ -264,13 +185,90 @@
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
       box-shadow: var(--shadow-sm);
+    }
+
+    .btn-step-next {
+      padding: 11px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-draft-bright {
+      padding: 11px 22px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-submit-primary {
+      padding: 11px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-add-purple {
+      padding: 10px 22px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
       transition: all 0.2s ease;
     }
-    .btn-step-back:active {
-      transform: scale(0.96);
+    .category-card:active {
+      transform: scale(0.98);
+      border-color: var(--purple-primary);
     }
 
     .file-chip {
@@ -296,7 +294,7 @@
     
     <!-- Top Header -->
     <div class="cal-top-header">
-      <phone-status-bar time="13:08" style="color: #ffffff;"></phone-status-bar>
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -306,22 +304,73 @@
           </button>
           <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Travel Mileage</h1>
         </div>
-        <button type="button" aria-label="Menu" title="Menu" style="background: transparent; border: none; color: #ffffff; font-size: 18px; cursor: pointer;">
-          <i class="fa-solid fa-ellipsis-vertical"></i>
-        </button>
       </div>
     </div>
 
-    <!-- Main Content Container (4-Level Drill-Down Views) -->
+    <!-- Main Scrollable Area -->
     <div class="main-content">
+      
+      <!-- ========================================================= -->
+      <!-- GLOBAL PERSISTENT CONTEXT CARD (Appears in all 4 views) -->
+      <!-- ========================================================= -->
+      <div class="context-card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 14px 16px; margin-bottom: 16px; box-shadow: var(--shadow-card);">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-plane-departure"></i>
+            </div>
+            <div>
+              <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">SALLY FIELD</div>
+              <!-- EMPLOYEE ID DISPLAY STANDARD FROM AGENTS.MD RULE -->
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#A100</div>
+              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Travelling &amp; Mileage Claim Form</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block;">DATE SUBMIT</span>
+            <span style="font-size: 12.5px; font-weight: 800; color: var(--purple-primary);">23/09/2026</span>
+          </div>
+        </div>
+      </div>
 
       <!-- ========================================================= -->
-      <!-- VIEW 1: MAIN FORM VIEW (主申请表单 - 钻取 Level 1) -->
+      <!-- VIEW 1: MAIN FORM VIEW (主表单页) -->
       <!-- ========================================================= -->
       <div class="view-container active" id="view-1-main">
+        
+        <!-- TRAVEL & MILEAGE ENTITLEMENT SUMMARY CARD -->
+        <div style="background: var(--bg-card); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-card); border: 1px solid var(--border-subtle); margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">TRAVEL &amp; MILEAGE CLAIM</h3>
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-top: 3px;">RM 535.00 available</span>
+            </div>
+            <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.25);">2026</span>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 8px 6px; border-radius: 12px; margin-top: 10px; text-align: center;">
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 1,000.00</div>
+            </div>
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM 420.00</div>
+            </div>
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: #f59e0b; text-transform: uppercase;">PENDING</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: #f59e0b; margin-top: 2px;">RM 45.00</div>
+            </div>
+            <div>
+              <div style="font-size: 9px; font-weight: 700; color: #10b981; text-transform: uppercase;">USABLE</div>
+              <div style="font-size: 11.5px; font-weight: 800; color: #10b981; margin-top: 2px;">RM 535.00</div>
+            </div>
+          </div>
+        </div>
 
-        <!-- MAIN APPLICATION DETAILS CARD -->
+        <!-- MAIN INFO FORM CARD -->
         <div class="form-card">
+          
           <div class="section-header-bar no-top-border">
             <span class="section-title-accent"></span>
             <span class="section-title-text">APPLICATION DETAILS</span>
@@ -359,15 +408,15 @@
             </div>
           </div>
 
-          <!-- Benefit Type : -->
+          <!-- Travel Claim Type : -->
           <div class="field-group">
-            <label class="field-label">Benefit Type :</label>
+            <label class="field-label">Travel Claim Type : <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="v1TravelClaimType" class="form-ctrl">
-                <option value="" selected>Select Benefit</option>
+                <option value="Travel Record" selected>Travel Record</option>
                 <option value="MILEAGE">MILEAGE (RM0.80/KM)</option>
-                <option value="TRAVEL RECORD">TRAVEL RECORD</option>
                 <option value="PARKING & TOLLS">PARKING &amp; TOLL RECEIPTS</option>
+                <option value="ACCOMMODATION & FLIGHTS">ACCOMMODATION &amp; FLIGHTS</option>
               </select>
             </div>
           </div>
@@ -384,7 +433,14 @@
           <!-- Cost Centre : -->
           <div class="field-group">
             <label class="field-label">Cost Centre :</label>
-            <input type="text" id="v1CostCentre" class="form-ctrl" value="MANAGEMENT" />
+            <div class="select-wrapper">
+              <select id="v1CostCentre" class="form-ctrl">
+                <option value="MANAGEMENT" selected>MANAGEMENT</option>
+                <option value="ADMINISTRATION">ADMINISTRATION</option>
+                <option value="FINANCE & ACCOUNTING">FINANCE &amp; ACCOUNTING</option>
+                <option value="IT DEPARTMENT">IT DEPARTMENT</option>
+              </select>
+            </div>
           </div>
 
           <!-- Charge To : -->
@@ -403,7 +459,7 @@
           <!-- Purpose : -->
           <div class="field-group">
             <label class="field-label">Purpose :</label>
-            <input type="text" id="v1Purpose" class="form-ctrl" placeholder="" />
+            <input type="text" id="v1Purpose" class="form-ctrl" placeholder="Enter travel purpose..." />
           </div>
 
           <!-- Project : -->
@@ -412,8 +468,9 @@
             <div class="select-wrapper">
               <select id="v1Project" class="form-ctrl">
                 <option value="" selected>- Select Project -</option>
-                <option value="PROJ-01">HQ Digitalization</option>
-                <option value="PROJ-02">Enterprise Migration</option>
+                <option value="HQ Digitalization">HQ Digitalization</option>
+                <option value="Mobile HCM App">Mobile HCM App</option>
+                <option value="Regional Expansion">Regional Expansion</option>
               </select>
             </div>
           </div>
@@ -423,25 +480,17 @@
             <label class="field-label">Claim Currency :</label>
             <div class="select-wrapper">
               <select id="v1ClaimCurrency" class="form-ctrl">
-                <option value="MYR" selected>RINGGIT MALAYSIA</option>
-                <option value="USD">US DOLLAR</option>
-                <option value="SGD">SINGAPORE DOLLAR</option>
+                <option value="RINGGIT MALAYSIA" selected>RINGGIT MALAYSIA</option>
+                <option value="US DOLLAR">US DOLLAR</option>
+                <option value="SINGAPORE DOLLAR">SINGAPORE DOLLAR</option>
               </select>
             </div>
           </div>
 
-          <!-- Claim Total : -->
+          <!-- Remark : -->
           <div class="field-group">
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
-              <span class="field-label" style="margin-bottom: 0;">Claim Total :</span>
-              <span id="travelClaimTotalDisplay" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">0.00</span>
-            </div>
-          </div>
-
-          <!-- Remarks : (Exact label matching Image 4) -->
-          <div class="field-group">
-            <label class="field-label">Remarks :</label>
-            <input type="text" id="v1Remarks" class="form-ctrl" placeholder="" />
+            <label class="field-label">Remark :</label>
+            <input type="text" id="v1Remark" class="form-ctrl" value="" placeholder="Additional remarks..." />
           </div>
 
         </div>
@@ -487,14 +536,14 @@
           <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
         </div>
 
-        <!-- BOTTOM ACTION BUTTONS (Save Draft & Submit side-by-side on right matching Image 4) -->
-        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
           <button type="button" class="btn-draft-bright" onclick="saveDraft()">
             <i class="fa-solid fa-floppy-disk"></i>
-            <span>Save Draft</span>
+            <span>Draft</span>
           </button>
           <button type="button" class="btn-submit-primary" onclick="submitTravelClaim()">
-            <span>Submit</span>
+            <span>Submit Claim</span>
             <i class="fa-solid fa-paper-plane"></i>
           </button>
         </div>
@@ -502,7 +551,7 @@
       </div>
 
       <!-- ========================================================= -->
-      <!-- VIEW 2: CATEGORY SUMMARY VIEW (分类聚合页 - Level 2) -->
+      <!-- VIEW 2: CATEGORY SUMMARY VIEW (分类聚合导航页) -->
       <!-- ========================================================= -->
       <div class="view-container" id="view-2-categories">
         
@@ -511,14 +560,14 @@
           <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Select a category to view or add detailed item receipts</span>
         </div>
 
-        <!-- CATEGORY 1: MILEAGE -->
+        <!-- CATEGORY 1: MILEAGE CLAIM -->
         <div class="category-card" onclick="openCategoryItems('mileage')">
           <div style="display: flex; align-items: center; gap: 14px;">
             <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
               <i class="fa-solid fa-route"></i>
             </div>
             <div>
-              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Mileage</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Mileage Claim</div>
               <div id="catMileageSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (RM 0.80/KM)</div>
             </div>
           </div>
@@ -528,14 +577,14 @@
           </div>
         </div>
 
-        <!-- CATEGORY 2: TRAVEL -->
+        <!-- CATEGORY 2: TRAVELLING RECEIPT -->
         <div class="category-card" onclick="openCategoryItems('travel')">
           <div style="display: flex; align-items: center; gap: 14px;">
             <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 18px;">
-              <i class="fa-solid fa-plane-departure"></i>
+              <i class="fa-solid fa-ticket-simple"></i>
             </div>
             <div>
-              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Travel</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Travelling Receipt</div>
               <div id="catTravelSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (Flights, Trains, Grab)</div>
             </div>
           </div>
@@ -545,14 +594,14 @@
           </div>
         </div>
 
-        <!-- CATEGORY 3: EXPENSE -->
+        <!-- CATEGORY 3: OTHER EXPENSES -->
         <div class="category-card" onclick="openCategoryItems('expense')">
           <div style="display: flex; align-items: center; gap: 14px;">
             <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 18px;">
               <i class="fa-solid fa-receipt"></i>
             </div>
             <div>
-              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Expense</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Other Expenses</div>
               <div id="catExpenseSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (Hotel, Tolls, Meals)</div>
             </div>
           </div>
@@ -569,7 +618,7 @@
             <span>Back to Application</span>
           </button>
           <button type="button" class="btn-submit-primary" onclick="submitTravelClaim()">
-            <span>Submit</span>
+            <span>Submit Claim</span>
             <i class="fa-solid fa-paper-plane"></i>
           </button>
         </div>
@@ -577,7 +626,7 @@
       </div>
 
       <!-- ========================================================= -->
-      <!-- VIEW 3: ITEM LIST VIEW (明细项列表页 - Level 3) -->
+      <!-- VIEW 3: ITEM LIST VIEW (明细项列表页) -->
       <!-- ========================================================= -->
       <div class="view-container" id="view-3-list">
         
@@ -588,7 +637,7 @@
               <i class="fa-solid fa-list-check"></i>
             </div>
             <div>
-              <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Mileage Items</h2>
+              <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Mileage Items List</h2>
               <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
             </div>
           </div>
@@ -610,7 +659,7 @@
             <span>Back to Categories</span>
           </button>
           <button type="button" class="btn-submit-primary" onclick="submitTravelClaim()">
-            <span>Submit</span>
+            <span>Submit Claim</span>
             <i class="fa-solid fa-paper-plane"></i>
           </button>
         </div>
@@ -618,7 +667,7 @@
       </div>
 
       <!-- ========================================================= -->
-      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW (子表单录入页 - Level 4) -->
+      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW (子表单录入页) -->
       <!-- ========================================================= -->
       <div class="view-container" id="view-4-entry">
         
@@ -649,33 +698,39 @@
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
 
-  <!-- DRILL-DOWN NAVIGATION & FORM STATE MANAGEMENT SCRIPT -->
+  <!-- STATE MANAGEMENT & DRILL-DOWN NAVIGATION SCRIPT -->
   <script>
+    // =========================================================
+    // UNIFIED GLOBAL FORM STATE (SCHEMA & STATE ARCHITECTURE)
+    // =========================================================
     const formData = {
       applicationInfo: {
         claimPeriodYear: '2026',
         claimPeriodMonth: 'September',
         travellingReqNo: '',
-        travelClaimType: 'Select Benefit',
+        travelClaimType: 'Travel Record',
         claimStartDate: '23/09/2026',
         claimEndDate: '23/09/2026',
         costCentre: 'MANAGEMENT',
-        chargeTo: '',
+        chargeTo: 'Company HQ',
         purpose: '',
-        project: '',
+        project: 'HQ Digitalization',
         claimCurrency: 'RINGGIT MALAYSIA',
-        remarks: ''
+        remark: ''
       },
       claimDetails: {
         mileageItems: [],
         travelItems: [],
         generalExpenseItems: []
       },
-      activeCategory: 'mileage',
+      activeCategory: 'mileage', // 'mileage' | 'travel' | 'expense'
       currentView: 'view-1-main',
       uploadTarget: 'main'
     };
 
+    // =========================================================
+    // NAVIGATION & VIEW DRILL-DOWN LOGIC
+    // =========================================================
     function switchView(viewId, headerTitle) {
       formData.currentView = viewId;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
@@ -705,12 +760,15 @@
     }
 
     function getCategoryTitle(catKey) {
-      if (catKey === 'mileage') return 'Mileage Items';
-      if (catKey === 'travel') return 'Travel Items';
-      if (catKey === 'expense') return 'Expense Items';
+      if (catKey === 'mileage') return 'Mileage Claim Items';
+      if (catKey === 'travel') return 'Travelling Receipt Items';
+      if (catKey === 'expense') return 'Other Expenses Items';
       return 'Claim Items';
     }
 
+    // =========================================================
+    // LEVEL 2 & LEVEL 3 CATEGORY MANAGEMENT
+    // =========================================================
     function openCategoryItems(categoryKey) {
       formData.activeCategory = categoryKey;
       renderView3List();
@@ -725,116 +783,128 @@
       const container = document.getElementById('v3ItemsContainer');
 
       let items = [];
-      let catName = getCategoryTitle(catKey);
+      let catName = '';
       let iconHtml = '';
 
       if (catKey === 'mileage') {
-        items = formData.claimDetails.mileageItems || [];
+        items = formData.claimDetails.mileageItems;
+        catName = 'Mileage Claim Items';
         iconHtml = '<i class="fa-solid fa-route"></i>';
       } else if (catKey === 'travel') {
-        items = formData.claimDetails.travelItems || [];
-        iconHtml = '<i class="fa-solid fa-plane-departure"></i>';
+        items = formData.claimDetails.travelItems;
+        catName = 'Travelling Receipt Items';
+        iconHtml = '<i class="fa-solid fa-ticket-simple"></i>';
       } else if (catKey === 'expense') {
-        items = formData.claimDetails.generalExpenseItems || [];
+        items = formData.claimDetails.generalExpenseItems;
+        catName = 'Other Expenses Items';
         iconHtml = '<i class="fa-solid fa-receipt"></i>';
       }
 
       if (iconBox) iconBox.innerHTML = iconHtml;
       if (titleText) titleText.innerText = catName;
-      if (countText) countText.innerText = `${items.length} records in this category`;
-
-      if (!container) return;
+      if (countText) countText.innerText = `${items.length} item(s) recorded`;
 
       if (items.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 20px;">
-            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
-              ${iconHtml}
+          <div style="background: var(--bg-card); border: 1.5px dashed var(--border-subtle); border-radius: 22px; padding: 36px 20px; text-align: center; margin-bottom: 16px;">
+            <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 12px;">
+              <i class="fa-solid fa-folder-open"></i>
             </div>
-            <div style="font-size: 14.5px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">No items added yet</div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Click the button below to add your first record</div>
-            <button type="button" class="btn-submit-primary" style="padding: 9px 20px; font-size: 13px;" onclick="openEntryForm()">
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">Click below to add a new line item receipt for ${catName}</div>
+            <button type="button" class="btn-add-purple" onclick="openEntryForm()">
               <i class="fa-solid fa-plus"></i>
-              <span>Add Item</span>
+              <span>Add ${catName.replace(' Items', '')}</span>
             </button>
           </div>
         `;
         return;
       }
 
-      let listHtml = '';
+      let html = '';
       items.forEach((item, idx) => {
         if (catKey === 'mileage') {
-          listHtml += `
+          html += `
             <div class="form-card" style="margin-bottom: 10px;">
               <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.orig || 'Origin'} → ${item.dest || 'Destination'}</div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.orig} → ${item.dest}</div>
                   <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
-                    ${item.distKm || 0} KM • Meter: ${item.meterIn || 0} - ${item.meterOut || 0}
+                    ${item.distanceKm} KM (${item.vehicle || 'Car'}) • ${item.way || 'Return'}
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${item.amount.toFixed(2)}</div>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
                 </div>
               </div>
+              ${item.desc ? `<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 6px;">"${item.desc}"</div>` : ''}
             </div>
           `;
         } else if (catKey === 'travel') {
-          listHtml += `
+          html += `
             <div class="form-card" style="margin-bottom: 10px;">
               <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.orig || 'Location'} → ${item.dest || 'Destination'} (${item.transport || 'Transit'})</div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.orig} → ${item.dest} (${item.transport || 'Transit'})</div>
                   <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
-                    ${item.receiptNo ? 'Ref: ' + item.receiptNo + ' • ' : ''}${item.noOfDays || 1} Days
+                    Task: ${item.task || 'General Travel'} • Players: ${item.noOfPlayers || 1}
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="font-size: 15px; font-weight: 800; color: #3b82f6;">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <div style="font-size: 15px; font-weight: 800; color: #3b82f6;">RM ${item.amount.toFixed(2)}</div>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
                 </div>
               </div>
+              ${item.desc ? `<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 6px;">"${item.desc}"</div>` : ''}
             </div>
           `;
         } else if (catKey === 'expense') {
-          listHtml += `
+          html += `
             <div class="form-card" style="margin-bottom: 10px;">
               <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type || item.expense || 'Expense Item'} ${item.receiptNo ? `(#${item.receiptNo})` : ''}</div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type} ${item.receiptNo ? `(#${item.receiptNo})` : ''}</div>
                   <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
-                    ${item.companyName || item.company || 'Merchant'} ${item.project ? `• ${item.project}` : ''}
+                    ${item.companyName || 'General Merchant'} ${item.project ? `• ${item.project}` : ''}
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="font-size: 15px; font-weight: 800; color: #10b981;">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <div style="font-size: 15px; font-weight: 800; color: #10b981;">RM ${item.amount.toFixed(2)}</div>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
                 </div>
               </div>
+              ${item.desc ? `<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 6px;">"${item.desc}"</div>` : ''}
             </div>
           `;
         }
       });
 
-      container.innerHTML = listHtml;
+      container.innerHTML = html;
     }
 
     function deleteSubItem(idx) {
       const catKey = formData.activeCategory;
-      if (catKey === 'mileage') formData.claimDetails.mileageItems.splice(idx, 1);
-      else if (catKey === 'travel') formData.claimDetails.travelItems.splice(idx, 1);
-      else if (catKey === 'expense') formData.claimDetails.generalExpenseItems.splice(idx, 1);
+      if (catKey === 'mileage') {
+        formData.claimDetails.mileageItems.splice(idx, 1);
+      } else if (catKey === 'travel') {
+        formData.claimDetails.travelItems.splice(idx, 1);
+      } else if (catKey === 'expense') {
+        formData.claimDetails.generalExpenseItems.splice(idx, 1);
+      }
 
       recalcAllTotals();
       renderView3List();
 
-      if (typeof showToast === 'function') showToast('🗑️ Item removed!');
+      if (typeof showToast === 'function') {
+        showToast('🗑️ Line item removed successfully!');
+      }
     }
 
-    // LEVEL 4 ENTRY FORM BUILDER
-    function openEntryForm(mode, index = -1) {
+    // =========================================================
+    // LEVEL 4 ENTRY FORM BUILDER & LOGIC
+    // =========================================================
+    function openEntryForm() {
       const catKey = formData.activeCategory;
       const container = document.getElementById('v4SubFormContainer');
 
@@ -843,27 +913,27 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">MILEAGE DETAILS</span>
+              <span class="section-title-text">MILEAGE ENTRY DETAILS</span>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Origin :</label>
+              <label class="field-label">Origin Location : <span class="req">*</span></label>
               <div class="select-wrapper">
                 <select id="mOriginSelect" class="form-ctrl">
-                  <option value="" selected>- Select Location -</option>
-                  <option value="Kuala Lumpur HQ">Kuala Lumpur HQ</option>
+                  <option value="Kuala Lumpur HQ" selected>Kuala Lumpur HQ</option>
                   <option value="Petaling Jaya Office">Petaling Jaya Office</option>
+                  <option value="Shah Alam Warehouse">Shah Alam Warehouse</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Destination :</label>
+              <label class="field-label">Destination Location : <span class="req">*</span></label>
               <div class="select-wrapper">
                 <select id="mDestSelect" class="form-ctrl">
-                  <option value="" selected>- Select Location -</option>
-                  <option value="Penang Branch">Penang Branch</option>
+                  <option value="Penang Branch" selected>Penang Branch</option>
                   <option value="Johor Bahru Site">Johor Bahru Site</option>
+                  <option value="Cyberjaya Tech Park">Cyberjaya Tech Park</option>
                 </select>
               </div>
             </div>
@@ -895,53 +965,46 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Project :</label>
-              <div class="select-wrapper">
-                <select id="mProjectSelect" class="form-ctrl">
-                  <option value="" selected>- Select Project -</option>
-                  <option value="PROJ-01">Project Alpha</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="field-group">
               <label class="field-label">Vehicle :</label>
               <div class="select-wrapper">
                 <select id="mVehicleSelect" class="form-ctrl">
-                  <option value="" selected>- Select Vehicle -</option>
-                  <option value="Personal Car (VAA 1234)">Personal Car (VAA 1234)</option>
+                  <option value="Personal Car (VAA 1234)" selected>Personal Car (VAA 1234)</option>
                   <option value="Company Car (WXX 8899)">Company Car (WXX 8899)</option>
+                  <option value="Motorcycle (BQQ 7766)">Motorcycle (BQQ 7766)</option>
                 </select>
               </div>
             </div>
 
-            <div class="field-group">
-              <label class="field-label">Meter In :</label>
-              <input type="number" id="mMeterIn" class="form-ctrl" value="0" oninput="calcSubMileage()" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
+              <div>
+                <label class="field-label">Meter In :</label>
+                <input type="number" id="mMeterIn" class="form-ctrl" value="1000" oninput="calcSubMileage()" />
+              </div>
+              <div>
+                <label class="field-label">Meter Out :</label>
+                <input type="number" id="mMeterOut" class="form-ctrl" value="1350" oninput="calcSubMileage()" />
+              </div>
             </div>
 
-            <div class="field-group">
-              <label class="field-label">Meter Out :</label>
-              <input type="number" id="mMeterOut" class="form-ctrl" value="0" oninput="calcSubMileage()" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Distance(KM):</label>
-              <input type="number" id="mDistanceKm" class="form-ctrl" value="0" oninput="calcSubMileageKm()" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Amount :</label>
-              <input type="number" id="mAmount" class="form-ctrl" value="0" step="0.01" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
+              <div>
+                <label class="field-label">Distance (KM):</label>
+                <input type="number" id="mDistanceKm" class="form-ctrl" value="350" oninput="calcSubMileageKm()" />
+              </div>
+              <div>
+                <label class="field-label">Amount (RM):</label>
+                <input type="number" id="mAmount" class="form-ctrl" value="280.00" step="0.01" />
+              </div>
             </div>
 
             <div class="field-group">
               <label class="field-label">Description :</label>
-              <input type="text" id="mDesc" class="form-ctrl" placeholder="" />
+              <input type="text" id="mDesc" class="form-ctrl" placeholder="e.g. Site visit trip" />
             </div>
 
+            <!-- Attachments -->
             <div style="margin-top: 14px;">
-              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Item Attachments</label>
               <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -958,6 +1021,7 @@
               </div>
               <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
             </div>
+
           </div>
         `;
       } else if (catKey === 'travel') {
@@ -965,77 +1029,36 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">TRAVEL DETAILS</span>
+              <span class="section-title-text">TRAVELLING RECEIPT DETAILS</span>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Origin :</label>
+              <label class="field-label">Origin Location :</label>
               <div class="select-wrapper">
                 <select id="tOriginSelect" class="form-ctrl">
-                  <option value="" selected>- Select Location -</option>
-                  <option value="Kuala Lumpur HQ">Kuala Lumpur HQ</option>
+                  <option value="Kuala Lumpur" selected>Kuala Lumpur</option>
+                  <option value="Petaling Jaya">Petaling Jaya</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Destination :</label>
+              <label class="field-label">Destination Location :</label>
               <div class="select-wrapper">
                 <select id="tDestSelect" class="form-ctrl">
-                  <option value="" selected>- Select Location -</option>
-                  <option value="Penang Branch">Penang Branch</option>
+                  <option value="Penang" selected>Penang</option>
+                  <option value="Johor Bahru">Johor Bahru</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Departure :</label>
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" class="form-ctrl" value="23/09/2026" />
-                <input type="text" class="form-ctrl" value="13:07" />
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Arrival :</label>
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" class="form-ctrl" value="23/09/2026" />
-                <input type="text" class="form-ctrl" value="15:07" />
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Transport :</label>
+              <label class="field-label">Transport Type :</label>
               <div class="select-wrapper">
                 <select id="tTransportSelect" class="form-ctrl">
-                  <option value="" selected>- Select Transport -</option>
-                  <option value="Flight">Flight</option>
+                  <option value="Flight" selected>Flight</option>
+                  <option value="Express Train">Express Train</option>
                   <option value="Grab / Taxi">Grab / Taxi</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Way :</label>
-              <div class="select-wrapper">
-                <select id="tWaySelect" class="form-ctrl">
-                  <option value="Return" selected>Return</option>
-                  <option value="One Way">One Way</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">No Of Days :</label>
-              <input type="number" id="tNoOfDays" class="form-ctrl" value="1" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Project :</label>
-              <div class="select-wrapper">
-                <select id="tProjectSelect" class="form-ctrl">
-                  <option value="" selected>- Select Project -</option>
-                  <option value="PROJ-01">Project Alpha</option>
                 </select>
               </div>
             </div>
@@ -1044,202 +1067,131 @@
               <label class="field-label">Task :</label>
               <div class="select-wrapper">
                 <select id="tTaskSelect" class="form-ctrl">
-                  <option value="" selected>- Select Task -</option>
+                  <option value="Client Implementation" selected>Client Implementation</option>
                   <option value="Site Survey">Site Survey</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
+              <label class="field-label">Amount (RM): <span class="req">*</span></label>
+              <input type="number" id="tAmount" class="form-ctrl" value="180.00" step="0.01" />
+            </div>
+
+            <div class="field-group">
               <label class="field-label">Description :</label>
-              <input type="text" id="tDesc" class="form-ctrl" placeholder="" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Receipt # :</label>
-              <input type="text" id="tReceiptNo" class="form-ctrl" placeholder="" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Amount :</label>
-              <input type="number" id="tAmount" class="form-ctrl" value="0" step="0.01" />
+              <input type="text" id="tDesc" class="form-ctrl" placeholder="e.g. Flight ticket receipt" />
             </div>
           </div>
         `;
       } else if (catKey === 'expense') {
-        const item = (index >= 0 && formData.items && formData.items[catKey]) ? formData.items[catKey][index] : null;
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">EXPENSE DETAILS</span>
+              <span class="section-title-text">OTHER EXPENSE DETAILS</span>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Expense :</label>
+              <label class="field-label">Receipt No. :</label>
+              <input type="text" id="eReceiptNo" class="form-ctrl" value="REC-8899" placeholder="Enter receipt number" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Expense Category : <span class="req">*</span></label>
               <div class="select-wrapper">
                 <select id="eTypeSelect" class="form-ctrl">
-                  <option value="" ${!item || !item.expense ? 'selected' : ''}>Select Expense</option>
-                  <option value="Hotel Accommodation" ${item && item.expense === 'Hotel Accommodation' ? 'selected' : ''}>Hotel Accommodation</option>
-                  <option value="Flight Ticket" ${item && item.expense === 'Flight Ticket' ? 'selected' : ''}>Flight Ticket</option>
-                  <option value="Tolls & Parking" ${item && item.expense === 'Tolls & Parking' ? 'selected' : ''}>Tolls &amp; Parking</option>
-                  <option value="Office Supplies" ${item && item.expense === 'Office Supplies' ? 'selected' : ''}>Office Supplies</option>
-                  <option value="Meals & Entertainment" ${item && item.expense === 'Meals & Entertainment' ? 'selected' : ''}>Meals &amp; Entertainment</option>
+                  <option value="Hotel Accommodation" selected>Hotel Accommodation</option>
+                  <option value="Flight Ticket">Flight Ticket</option>
+                  <option value="Tolls & Parking">Tolls &amp; Parking</option>
+                  <option value="Client Dining">Client Dining</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Expense From :</label>
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="eDateFrom" class="form-ctrl" value="24/09/2026" />
-                <input type="text" id="eTimeFrom" class="form-ctrl" value="10:56" />
-              </div>
+              <label class="field-label">Merchant / Company Name :</label>
+              <input type="text" id="eCompanyName" class="form-ctrl" value="Hilton KL" placeholder="Merchant name" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Expense To :</label>
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="eDateTo" class="form-ctrl" value="24/09/2026" />
-                <input type="text" id="eTimeTo" class="form-ctrl" value="12:56" />
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Project :</label>
-              <div class="select-wrapper">
-                <select id="eProjectSelect" class="form-ctrl">
-                  <option value="" selected>- Select Project -</option>
-                  <option value="PROJ-01">Project Alpha</option>
-                  <option value="PROJ-02">Enterprise Migration</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Receipt # :</label>
-              <input type="text" id="eReceiptNo" class="form-ctrl" value="${item ? item.receiptNo : ''}" placeholder="" />
+              <label class="field-label">Amount (RM): <span class="req">*</span></label>
+              <input type="number" id="eAmount" class="form-ctrl" value="220.00" step="0.01" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Description :</label>
-              <input type="text" id="eDesc" class="form-ctrl" value="${item ? item.desc : ''}" placeholder="" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Company Name</label>
-              <input type="text" id="eCompanyName" class="form-ctrl" value="${item ? item.company : ''}" placeholder="" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Business RN</label>
-              <input type="text" id="eBusinessRN" class="form-ctrl" value="${item ? item.businessRN : ''}" placeholder="" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Amount :</label>
-              <input type="number" id="eAmount" class="form-ctrl" value="${item ? item.amount : 0}" step="0.01" oninput="calcSubExpenseLocal()" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Claim Currency :</label>
-              <input type="text" id="eCurrency" class="form-ctrl" value="RINGGIT MALAYSIA" readonly />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Forex Rate :</label>
-              <input type="number" id="eForex" class="form-ctrl" value="1" step="0.001" oninput="calcSubExpenseLocal()" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Local Amount :</label>
-              <input type="text" id="eLocalAmount" class="form-ctrl" value="${item ? item.amount.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
-            </div>
-
-            <div style="margin-top: 14px;">
-              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments:</label>
-              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
-                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
-                    <i class="fa-solid fa-file-arrow-up"></i>
-                  </div>
-                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
-                </div>
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
-                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
-                    <i class="fa-solid fa-camera"></i>
-                  </div>
-                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
-                </div>
-              </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+              <input type="text" id="eDesc" class="form-ctrl" placeholder="e.g. 1 night hotel stay" />
             </div>
           </div>
         `;
       }
 
-      switchView('view-4-entry', `Configure ${getCategoryTitle(catKey)}`);
-    }
-
-    function calcSubExpenseLocal() {
-      const amt = parseFloat(document.getElementById('eAmount')?.value || 0);
-      const forex = parseFloat(document.getElementById('eForex')?.value || 1);
-      const locEl = document.getElementById('eLocalAmount');
-      if (locEl) locEl.value = (amt * forex).toFixed(2);
+      switchView('view-4-entry', `Add ${getCategoryTitle(catKey).replace(' Items', '')}`);
     }
 
     function calcSubMileage() {
-      const mIn = parseFloat(document.getElementById('mMeterIn')?.value || 0);
-      const mOut = parseFloat(document.getElementById('mMeterOut')?.value || 0);
+      const mIn = parseFloat(document.getElementById('mMeterIn').value) || 0;
+      const mOut = parseFloat(document.getElementById('mMeterOut').value) || 0;
       const dist = Math.max(0, mOut - mIn);
-      const distEl = document.getElementById('mDistanceKm');
-      const amtEl = document.getElementById('mAmount');
-      if (distEl) distEl.value = dist;
-      if (amtEl) amtEl.value = (dist * 0.80).toFixed(2);
+      document.getElementById('mDistanceKm').value = dist;
+      document.getElementById('mAmount').value = (dist * 0.80).toFixed(2);
     }
 
     function calcSubMileageKm() {
-      const dist = parseFloat(document.getElementById('mDistanceKm')?.value || 0);
-      const amtEl = document.getElementById('mAmount');
-      if (amtEl) amtEl.value = (dist * 0.80).toFixed(2);
+      const dist = parseFloat(document.getElementById('mDistanceKm').value) || 0;
+      document.getElementById('mAmount').value = (dist * 0.80).toFixed(2);
     }
 
     function saveSubItem() {
       const catKey = formData.activeCategory;
 
       if (catKey === 'mileage') {
-        const orig = document.getElementById('mOriginSelect')?.value || 'Origin';
-        const dest = document.getElementById('mDestSelect')?.value || 'Destination';
-        const dist = parseFloat(document.getElementById('mDistanceKm')?.value || 0);
-        const amt = parseFloat(document.getElementById('mAmount')?.value || 0);
-        const vehicle = document.getElementById('mVehicleSelect')?.value || '';
-        const way = document.getElementById('mWaySelect')?.value || 'Return';
+        const orig = document.getElementById('mOriginSelect').value;
+        const dest = document.getElementById('mDestSelect').value;
+        const dist = parseFloat(document.getElementById('mDistanceKm').value) || 0;
+        const amt = parseFloat(document.getElementById('mAmount').value) || 0;
+        const vehicle = document.getElementById('mVehicleSelect').value;
+        const way = document.getElementById('mWaySelect').value;
+        const desc = document.getElementById('mDesc').value;
 
-        formData.claimDetails.mileageItems.push({ orig, dest, distanceKm: dist, amount: amt, vehicle, way });
+        formData.claimDetails.mileageItems.push({
+          orig, dest, distanceKm: dist, amount: amt, vehicle, way, desc
+        });
       } else if (catKey === 'travel') {
-        const orig = document.getElementById('tOriginSelect')?.value || 'Origin';
-        const dest = document.getElementById('tDestSelect')?.value || 'Destination';
-        const transport = document.getElementById('tTransportSelect')?.value || 'Transport';
-        const noOfDays = document.getElementById('tNoOfDays')?.value || 1;
-        const receiptNo = document.getElementById('tReceiptNo')?.value || '';
-        const amt = parseFloat(document.getElementById('tAmount')?.value || 0);
+        const orig = document.getElementById('tOriginSelect').value;
+        const dest = document.getElementById('tDestSelect').value;
+        const transport = document.getElementById('tTransportSelect').value;
+        const task = document.getElementById('tTaskSelect').value;
+        const amt = parseFloat(document.getElementById('tAmount').value) || 0;
+        const desc = document.getElementById('tDesc').value;
 
-        formData.claimDetails.travelItems.push({ orig, dest, transport, noOfDays, receiptNo, amount: amt });
+        formData.claimDetails.travelItems.push({
+          orig, dest, transport, task, amount: amt, desc
+        });
       } else if (catKey === 'expense') {
-        const receiptNo = document.getElementById('eReceiptNo')?.value || '';
-        const type = document.getElementById('eTypeSelect')?.value || 'Expense';
-        const companyName = document.getElementById('eCompanyName')?.value || '';
-        const amt = parseFloat(document.getElementById('eAmount')?.value || 0);
+        const receiptNo = document.getElementById('eReceiptNo').value;
+        const type = document.getElementById('eTypeSelect').value;
+        const companyName = document.getElementById('eCompanyName').value;
+        const amt = parseFloat(document.getElementById('eAmount').value) || 0;
+        const desc = document.getElementById('eDesc').value;
 
-        formData.claimDetails.generalExpenseItems.push({ receiptNo, type, companyName, amount: amt });
+        formData.claimDetails.generalExpenseItems.push({
+          receiptNo, type, companyName, amount: amt, desc
+        });
       }
 
       recalcAllTotals();
       openCategoryItems(catKey);
 
-      if (typeof showToast === 'function') showToast('✅ Item saved!');
+      if (typeof showToast === 'function') {
+        showToast('✅ Line item saved successfully!');
+      }
     }
 
+    // =========================================================
+    // AUTO ROLLUP & TOTAL CALCULATIONS
+    // =========================================================
     function recalcAllTotals() {
       const mTotal = formData.claimDetails.mileageItems.reduce((sum, i) => sum + i.amount, 0);
       const tTotal = formData.claimDetails.travelItems.reduce((sum, i) => sum + i.amount, 0);
@@ -1247,30 +1199,34 @@
       const grandTotal = mTotal + tTotal + eTotal;
       const totalCount = formData.claimDetails.mileageItems.length + formData.claimDetails.travelItems.length + formData.claimDetails.generalExpenseItems.length;
 
-      const totalEl = document.getElementById('travelClaimTotalDisplay');
+      formData.totalAmount = grandTotal;
+
+      // Update Level 1 Display
       const v1TotalEl = document.getElementById('v1TotalClaimDisplay');
       const v1SubEl = document.getElementById('v1ItemsCountSubtitle');
-
-      if (totalEl) totalEl.innerText = grandTotal.toFixed(2);
       if (v1TotalEl) v1TotalEl.innerText = `RM ${grandTotal.toFixed(2)}`;
       if (v1SubEl) v1SubEl.innerText = `${totalCount} claim item(s) added`;
 
-      const catM = document.getElementById('catMileageAmount');
+      // Update Level 2 Category Cards
+      const catMEl = document.getElementById('catMileageAmount');
       const catMSub = document.getElementById('catMileageSubtitle');
-      if (catM) catM.innerText = `RM ${mTotal.toFixed(2)}`;
+      if (catMEl) catMEl.innerText = `RM ${mTotal.toFixed(2)}`;
       if (catMSub) catMSub.innerText = `${formData.claimDetails.mileageItems.length} items added (RM 0.80/KM)`;
 
-      const catT = document.getElementById('catTravelAmount');
+      const catTEl = document.getElementById('catTravelAmount');
       const catTSub = document.getElementById('catTravelSubtitle');
-      if (catT) catT.innerText = `RM ${tTotal.toFixed(2)}`;
+      if (catTEl) catTEl.innerText = `RM ${tTotal.toFixed(2)}`;
       if (catTSub) catTSub.innerText = `${formData.claimDetails.travelItems.length} items added (Flights, Trains, Grab)`;
 
-      const catE = document.getElementById('catExpenseAmount');
+      const catEEl = document.getElementById('catExpenseAmount');
       const catESub = document.getElementById('catExpenseSubtitle');
-      if (catE) catE.innerText = `RM ${eTotal.toFixed(2)}`;
+      if (catEEl) catEEl.innerText = `RM ${eTotal.toFixed(2)}`;
       if (catESub) catESub.innerText = `${formData.claimDetails.generalExpenseItems.length} items added (Hotel, Tolls, Meals)`;
     }
 
+    // =========================================================
+    // ATTACHMENTS & UTILS
+    // =========================================================
     function triggerFileUpload(target) {
       formData.uploadTarget = target;
       const input = document.getElementById('hiddenTravelFileInput');
@@ -1291,19 +1247,32 @@
     }
 
     function saveDraft() {
-      if (typeof showToast === 'function') showToast('💾 Travel Mileage draft saved!');
-      else alert('Travel Mileage draft saved!');
+      if (typeof showToast === 'function') {
+        showToast('💾 Travel Mileage draft saved successfully!');
+      } else {
+        alert('Travel Mileage draft saved successfully!');
+      }
     }
 
     function submitTravelClaim() {
-      if (typeof showToast === 'function') showToast('🚀 Travel Mileage submitted successfully!');
-      else alert('Travel Mileage submitted successfully!');
+      if (typeof showToast === 'function') {
+        showToast('🚀 Travel Mileage submitted successfully!');
+      } else {
+        alert('Travel Mileage submitted successfully!');
+      }
       window.location.href = '../index.html';
     }
 
+    // Initialize on page load
     window.addEventListener('DOMContentLoaded', () => {
       recalcAllTotals();
     });
   </script>
 </body>
 </html>
+"""
+
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(new_html)
+
+print("Hierarchical Drill-down Travel Mileage form updated successfully!")

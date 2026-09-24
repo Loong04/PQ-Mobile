@@ -18,4 +18,16 @@
 - **Attendance Feedback**: When viewing details (`View Details`) of an Attendance Feedback request in Pending Approvals, the modal header **MUST** be set to `Attendance Advice Approval`.
 - **Final OT Request**: When viewing details (`View Details`) of a Final OT request in Pending Approvals, the modal header **MUST** be set to `Final OT Approval`.
 
+## Summary & Detail Card Design Standard
+
+- **Summary & Detail Card Layout**: Summary and detail cards across Attendance & Shift Planning (including Work Shift Summary, No Work Summary, OT Plan Summary, Leave Summary) **MUST** follow the **History Card** container style (`.history-card-item`, `border-radius: 18px`), but **MUST NOT** include the left date badge box (`.history-date-badge` with `SEP 23 2026`) since the date is already filtered at the top bar.
+- **Card Structure Specification**:
+  - **Container**: Translucent rounded card (`.history-card-item`, `border-radius: 18px`, translucent background with subtle border).
+  - **Top Row**: Bold title text (`.history-time-row`, e.g. `0700:1500`, `8.30:17.30W`, `ANNUAL LEAVE`, `Rest / Off Day`) on the left, with the chevron right arrow (`<i class="fa-solid fa-chevron-right"></i>`) on the right.
+  - **Detail Rows**: Key-value text rows aligned underneath (Headcount, Scheduled Hours, Work Hours, OT Type, Shift, etc.).
+
+
+
+
+
 

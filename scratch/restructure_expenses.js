@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+const fs = require('fs');
+
+const new_expenses_html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -175,7 +177,7 @@
     }
 
     .select-wrapper::after {
-      content: "\f0d7";
+      content: "\\f0d7";
       font-family: "Font Awesome 6 Free";
       font-weight: 900;
       position: absolute;
@@ -719,7 +721,7 @@
       document.getElementById('view3CatTitle').innerText = catName;
 
       if (items.length === 0) {
-        container.innerHTML = `
+        container.innerHTML = \`
           <div class="empty-state-box">
             <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 22px; margin: 0 auto 12px;">
               <i class="fa-solid fa-receipt"></i>
@@ -728,31 +730,31 @@
             <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">Click button below to add your first expense item</div>
             <button type="button" class="btn-submit-primary" style="padding: 9px 20px; font-size: 13px;" onclick="openSubForm('add')">
               <i class="fa-solid fa-plus"></i>
-              <span>Add Item</span>
+              <span>+ Add Item</span>
             </button>
           </div>
-        `;
+        \`;
         return;
       }
 
       let html = '';
       items.forEach((item, idx) => {
-        html += `
+        html += \`
           <div class="item-record-card">
-            <div style="flex: 1;" onclick="openSubForm('edit', ${idx})">
-              <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.company || item.expense}</div>
+            <div style="flex: 1;" onclick="openSubForm('edit', \${idx})">
+              <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">\${item.company || item.expense}</div>
               <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">
-                ${item.receiptNo ? item.receiptNo + ' • ' : ''}${item.desc || item.expense}
+                \${item.receiptNo ? item.receiptNo + ' • ' : ''}\${item.desc || item.expense}
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="font-size: 15px; font-weight: 900; color: #ffffff;">RM ${item.amount.toFixed(2)}</div>
-              <button type="button" onclick="deleteSubItem(${idx})" style="background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+              <div style="font-size: 15px; font-weight: 900; color: #ffffff;">RM \${item.amount.toFixed(2)}</div>
+              <button type="button" onclick="deleteSubItem(\${idx})" style="background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-trash-can" style="font-size: 12px;"></i>
               </button>
             </div>
           </div>
-        `;
+        \`;
       });
 
       container.innerHTML = html;
@@ -764,7 +766,7 @@
       const container = document.getElementById('v4SubFormContainer');
       const item = index >= 0 ? formData.items[catKey][index] : null;
 
-      container.innerHTML = `
+      container.innerHTML = \`
         <div class="form-card">
           <div class="section-header-bar no-top-border">
             <span class="section-title-accent"></span>
@@ -772,114 +774,65 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Expense :</label>
+            <label class="field-label">Receipt No. :</label>
+            <input type="text" id="eReceiptNo" class="form-ctrl" value="\${item ? item.receiptNo : ''}" placeholder="" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Expenses :</label>
             <div class="select-wrapper">
               <select id="eTypeSelect" class="form-ctrl">
-                <option value="" ${!item || !item.expense ? 'selected' : ''}>Select Expense</option>
-                <option value="Office Supplies" ${item && item.expense === 'Office Supplies' ? 'selected' : ''}>Office Supplies</option>
-                <option value="Meal & Entertainment" ${item && item.expense === 'Meal & Entertainment' ? 'selected' : ''}>Meal & Entertainment</option>
-                <option value="Subscriptions & Software" ${item && item.expense === 'Subscriptions & Software' ? 'selected' : ''}>Subscriptions & Software</option>
-                <option value="Travel Mileage & Tolls" ${item && item.expense === 'Travel Mileage & Tolls' ? 'selected' : ''}>Travel Mileage & Tolls</option>
+                <option value="" \${!item || !item.expense ? 'selected' : ''}>Select Expense</option>
+                <option value="Office Supplies" \${item && item.expense === 'Office Supplies' ? 'selected' : ''}>Office Supplies</option>
+                <option value="Meal & Entertainment" \${item && item.expense === 'Meal & Entertainment' ? 'selected' : ''}>Meal & Entertainment</option>
+                <option value="Subscriptions & Software" \${item && item.expense === 'Subscriptions & Software' ? 'selected' : ''}>Subscriptions & Software</option>
+                <option value="Travel Mileage & Tolls" \${item && item.expense === 'Travel Mileage & Tolls' ? 'selected' : ''}>Travel Mileage & Tolls</option>
               </select>
             </div>
           </div>
 
           <div class="field-group">
-            <label class="field-label">Expense From :</label>
-            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-              <input type="text" id="eDateFrom" class="form-ctrl" value="24/09/2026" />
-              <input type="text" id="eTimeFrom" class="form-ctrl" value="10:56" />
-            </div>
+            <label class="field-label">Company Name :</label>
+            <input type="text" id="eCompanyName" class="form-ctrl" value="\${item ? item.company : ''}" placeholder="" />
           </div>
 
           <div class="field-group">
-            <label class="field-label">Expense To :</label>
-            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-              <input type="text" id="eDateTo" class="form-ctrl" value="24/09/2026" />
-              <input type="text" id="eTimeTo" class="form-ctrl" value="12:56" />
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Project :</label>
-            <div class="select-wrapper">
-              <select id="eProjectSelect" class="form-ctrl">
-                <option value="" selected>- Select Project -</option>
-                <option value="PROJ-01">Project Alpha</option>
-                <option value="PROJ-02">Enterprise Migration</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Receipt # :</label>
-            <input type="text" id="eReceiptNo" class="form-ctrl" value="${item ? item.receiptNo : ''}" placeholder="" />
+            <label class="field-label">Business RN :</label>
+            <input type="text" id="eBusinessRN" class="form-ctrl" value="\${item ? item.businessRN : ''}" placeholder="" />
           </div>
 
           <div class="field-group">
             <label class="field-label">Description :</label>
-            <input type="text" id="eDesc" class="form-ctrl" value="${item ? item.desc : ''}" placeholder="" />
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Company Name</label>
-            <input type="text" id="eCompanyName" class="form-ctrl" value="${item ? item.company : ''}" placeholder="" />
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Business RN</label>
-            <input type="text" id="eBusinessRN" class="form-ctrl" value="${item ? item.businessRN : ''}" placeholder="" />
+            <input type="text" id="eDesc" class="form-ctrl" value="\${item ? item.desc : ''}" placeholder="" />
           </div>
 
           <div class="field-group">
             <label class="field-label">Amount :</label>
-            <input type="number" id="eAmount" class="form-ctrl" value="${item ? item.amount : 0}" step="0.01" oninput="calcSubExpenseLocal()" />
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Claim Currency :</label>
-            <input type="text" id="eCurrency" class="form-ctrl" value="RINGGIT MALAYSIA" readonly />
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Forex Rate :</label>
-            <input type="number" id="eForex" class="form-ctrl" value="1" step="0.001" oninput="calcSubExpenseLocal()" />
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Local Amount :</label>
-            <input type="text" id="eLocalAmount" class="form-ctrl" value="${item ? item.amount.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
+            <input type="number" id="eAmount" class="form-ctrl" value="\${item ? item.amount : 0}" step="0.01" />
           </div>
 
           <div style="margin-top: 14px;">
-            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments:</label>
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
             <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
               <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
                   <i class="fa-solid fa-file-arrow-up"></i>
                 </div>
-                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
               </div>
               <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
                   <i class="fa-solid fa-camera"></i>
                 </div>
-                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
               </div>
             </div>
             <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
           </div>
         </div>
-      `;
+      \`;
 
       switchView('view-4-entry', 'Configure Expense Items');
-    }
-
-    function calcSubExpenseLocal() {
-      const amt = parseFloat(document.getElementById('eAmount')?.value || 0);
-      const forex = parseFloat(document.getElementById('eForex')?.value || 1);
-      const locEl = document.getElementById('eLocalAmount');
-      if (locEl) locEl.value = (amt * forex).toFixed(2);
     }
 
     function saveSubItem() {
@@ -915,10 +868,10 @@
     function updateTotals() {
       const expSum = (formData.items.expense || []).reduce((sum, item) => sum + item.amount, 0);
 
-      document.getElementById('catExpenseSum').innerText = `RM ${expSum.toFixed(2)}`;
-      document.getElementById('catExpenseCount').innerText = `${formData.items.expense.length} records added`;
+      document.getElementById('catExpenseSum').innerText = \`RM \${expSum.toFixed(2)}\`;
+      document.getElementById('catExpenseCount').innerText = \`\${formData.items.expense.length} records added\`;
 
-      document.getElementById('mainTotalClaimDisplay').innerText = `RM ${expSum.toFixed(2)}`;
+      document.getElementById('mainTotalClaimDisplay').innerText = \`RM \${expSum.toFixed(2)}\`;
     }
 
     function triggerFileUpload(ctx) {
@@ -942,12 +895,12 @@
     function renderChips(containerId, list) {
       const container = document.getElementById(containerId);
       if (!container) return;
-      container.innerHTML = list.map(f => `
+      container.innerHTML = list.map(f => \`
         <div class="file-chip">
           <i class="fa-solid fa-paperclip"></i>
-          <span>${f}</span>
+          <span>\${f}</span>
         </div>
-      `).join('');
+      \`).join('');
     }
 
     function saveDraft() {
@@ -965,3 +918,7 @@
   </script>
 </body>
 </html>
+`;
+
+fs.writeFileSync('modules/claims/options/expenses-claim.html', new_expenses_html, 'utf-8');
+console.log('Successfully updated expenses-claim.html with Node.js!');
