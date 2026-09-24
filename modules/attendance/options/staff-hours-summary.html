@@ -248,6 +248,133 @@
     .detail-list-item {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
+
+    /* AGENTS.md View Chart Button Presentation Standard */
+    .view-chart-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 12px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .view-chart-btn:active {
+      transform: scale(0.95);
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    /* Collapsible Filter Accordion Card */
+    .filter-accordion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s;
+    }
+    .filter-header-bar {
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.05) 100%);
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .filter-header-bar.expanded {
+      border-bottom-color: var(--border-subtle);
+    }
+    .filter-badge-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      letter-spacing: 0.3px;
+    }
+    .filter-toggle-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.15);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      transition: transform 0.25s ease;
+    }
+    .filter-toggle-icon.open {
+      transform: rotate(180deg);
+    }
+    .filter-body-container {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Modern Enterprise Summary Table Card (Table Show) */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 120px 1fr 90px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(109, 40, 217, 0.08) 100%);
+      padding: 13px 16px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1.5px solid var(--purple-border);
+      align-items: center;
+    }
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 90px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
+    .summary-table-row:active { transform: scale(0.995); background: rgba(124, 58, 237, 0.08); }
+    
+    .summary-table-footer {
+      display: grid;
+      grid-template-columns: 120px 1fr 90px;
+      padding: 13px 16px;
+      background: rgba(124, 58, 237, 0.08);
+      border-top: 1.5px solid var(--purple-border);
+      font-size: 12.5px;
+      font-weight: 800;
+      align-items: center;
+    }
       border-radius: 20px;
       padding: 16px;
       margin-bottom: 12px;
@@ -429,21 +556,149 @@
       <!-- ================= DASHBOARD VIEW ================= -->
       <div id="view-dashboard" style="display: block;">
 
-        <!-- Enterprise Toast Filter Bar -->
-        <div class="enterprise-toast-bar" onclick="openFilterModal()">
-          <div class="toast-info-col" style="padding-left: 2px;">
-            <div class="toast-subtitle">
-              <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--purple-primary, #7c3aed); display: inline-block; margin-right: 6px;"></span>
-              CURRENT FILTER
+        <!-- 1. COLLAPSIBLE DATA FILTER CARD -->
+        <div class="filter-accordion-card">
+          <div class="filter-header-bar" id="filterHeaderBar" onclick="toggleFilterAccordion()">
+            <div class="filter-badge-title">
+              <i class="fa-solid fa-filter" style="font-size: 12px;"></i>
+              <span>Data Filter</span>
             </div>
-            <div class="toast-title" id="filterSummaryText">
-              16/08/2026 – 14/09/2026
+            <div class="filter-toggle-icon" id="filterToggleIcon">
+              <i class="fa-solid fa-chevron-down"></i>
             </div>
           </div>
-          <button class="toast-filter-btn" type="button" onclick="event.stopPropagation(); openFilterModal()" title="Open Filter Options">
-            <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
-          </button>
+
+          <div class="filter-body-container" id="filterBodyContainer">
+            <div class="filter-field-row" style="display: flex; flex-direction: column; gap: 4px;">
+              <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Date</label>
+              <div style="display: flex; align-items: center; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 2px 6px;">
+                <button type="button" class="date-nav-btn" onclick="adjustDate(-1)" title="Previous Day" style="width: 32px; height: 32px; border-radius: 9px; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px;">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <input type="date" id="filterDateInput" value="2026-09-24" onchange="handleDateInputChange()" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 13px; font-weight: 800; text-align: center; outline: none; padding: 8px 4px;">
+                <button type="button" class="date-nav-btn" onclick="adjustDate(1)" title="Next Day" style="width: 32px; height: 32px; border-radius: 9px; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px;">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Department</label>
+              <select id="filterDepartment" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 700; padding: 9px 12px; border-radius: 12px; outline: none;" onchange="applyFilters()">
+                <option value="all">- All Departments -</option>
+                <option value="Accounting">Accounting</option>
+                <option value="Operations">Operations</option>
+                <option value="Quality Control">Quality Control</option>
+                <option value="Production">Production</option>
+              </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--border-subtle);">
+              <button type="button" onclick="resetFilters()" style="padding: 8px 16px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+              </button>
+              <button type="button" onclick="applyFilters()" style="padding: 8px 20px; border-radius: 12px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 12.5px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
+                <i class="fa-solid fa-magnifying-glass"></i> Search
+              </button>
+            </div>
+          </div>
         </div>
+
+        <!-- 2. HERO TOTAL KPI OVERVIEW CARD WITH AGENTS.MD VIEW CHART BUTTON -->
+        <div class="history-card-item" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(109, 40, 217, 0.05) 100%); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.6px;">Total Staff Hours</div>
+              <div style="font-size: 28px; font-weight: 900; color: var(--text-primary); margin: 2px 0;" id="kpiTotalStaffHoursVal">2,184.00 Hrs</div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                <span><i class="fa-regular fa-calendar" style="margin-right: 4px;"></i><span id="kpiStaffPeriodSubtitle">16 Aug - 14 Sep 2026</span></span>
+                <span>&bull;</span>
+                <span><span style="color: #10b981; font-weight: 800;">13</span> Staff</span>
+              </div>
+            </div>
+
+            <!-- AGENTS.md View Chart Button Presentation Standard -->
+            <button type="button" class="view-chart-btn" onclick="openChartModal()" title="View Chart">
+              <i class="fa-solid fa-chart-pie"></i><span>View Chart</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. STAFF HOURS SUMMARY DATA TABLE HEADER -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-table-list" style="color: var(--purple-primary);"></i>
+            <span>Staff Hours Breakdown Table</span>
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+            13 Records
+          </div>
+        </div>
+
+        <!-- 4. STAFF HOURS SUMMARY DATA TABLE GRID (TABLE SHOW DATA) -->
+        <div class="summary-table-card">
+          <div class="summary-table-hdr">
+            <div>Employee</div>
+            <div>Job Title / Department</div>
+            <div style="text-align: right;">Total Hours</div>
+          </div>
+          <div id="staffHoursSummaryTableContainer">
+            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
+              <div>
+                <div style="font-weight: 800;">Lee Soon Hock</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004101</div>
+              </div>
+              <div style="color: var(--text-secondary);">ACCOUNT EXECUTIVE</div>
+              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
+            </div>
+            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
+              <div>
+                <div style="font-weight: 800;">Jinny Wat</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004102</div>
+              </div>
+              <div style="color: var(--text-secondary);">BARTENDER</div>
+              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
+            </div>
+            <div class="summary-table-row" onclick="openListDetails('Normal OT Hours')">
+              <div>
+                <div style="font-weight: 800;">Raju Kumar</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004103</div>
+              </div>
+              <div style="color: var(--text-secondary);">PRODUCTION OPERATOR</div>
+              <div style="text-align: right; color: #60a5fa; font-weight: 800;">168.50 Hrs</div>
+            </div>
+            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
+              <div>
+                <div style="font-weight: 800;">Tee Ang Lung</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004104</div>
+              </div>
+              <div style="color: var(--text-secondary);">QUALITY CHECKER</div>
+              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
+            </div>
+            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
+              <div>
+                <div style="font-weight: 800;">Tay Siow Kung</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004105</div>
+              </div>
+              <div style="color: var(--text-secondary);">OPERATION DIRECTOR</div>
+              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
+            </div>
+            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
+              <div>
+                <div style="font-weight: 800;">Tan Siow Soon</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004106</div>
+              </div>
+              <div style="color: var(--text-secondary);">CLEANING SPECIALIST</div>
+              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
+            </div>
+          </div>
+          <div class="summary-table-footer">
+            <div style="color: var(--purple-primary); font-weight: 900;">Total</div>
+            <div style="color: var(--text-muted); font-size: 11.5px;">13 Staff Summary</div>
+            <div style="text-align: right; color: var(--purple-primary); font-weight: 900; font-size: 13.5px;">2,184.50 Hrs</div>
+          </div>
+        </div>
+
 
         <!-- Section 1: Work & Attendance (3 Metrics) -->
         <div class="dashboard-section-header">

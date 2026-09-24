@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Claims - Travel Request</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 100px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* VIEW CONTAINERS (4-LEVEL DRILL-DOWN ISOLATION) */
+    .view-container {
+      display: none;
+      width: 100%;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .view-container.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .category-card:active {
+      transform: scale(0.98);
+      border-color: var(--purple-primary);
+    }
+
+    /* Standard PeopleHCM Purple Section Header Bar with Vertical Accent Line */
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .section-title-accent {
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .section-title-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
+    }
+    .form-ctrl:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    /* Radio Circle Option Button */
+    .radio-circle-opt {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #a855f7;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+    }
+    .radio-circle-opt.checked {
+      background: #a855f7;
+    }
+    .radio-circle-opt.checked::after {
+      content: '';
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #ffffff;
+    }
+
+    /* Action Buttons Matching PeopleHCM Purple Design System */
+    .btn-draft-bright {
+      padding: 11px 24px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-draft-bright:active {
+      transform: scale(0.96);
+    }
+
+    .btn-submit-primary {
+      padding: 11px 26px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-submit-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-add-purple {
+      padding: 9px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-step-back {
+      padding: 11px 22px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-step-back:active {
+      transform: scale(0.96);
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .toast-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Header (Clean executive purple style, centered title) -->
+    <div class="cal-top-header">
+      <phone-status-bar time="14:51" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <button type="button" id="headerBackBtn" onclick="handleHeaderBack()" aria-label="Back" title="Back"
+          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; outline: none;">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Travel Request</h1>
+        <div style="width: 36px;"></div>
+      </div>
+    </div>
+
+    <!-- Main Content Container (4-Level Drill-Down Isolation) -->
+    <div class="main-content">
+
+      <!-- ========================================================= -->
+      <!-- VIEW 1: MAIN FORM VIEW (Level 1) -->
+      <!-- ========================================================= -->
+      <div class="view-container active" id="view-1-main">
+
+        <!-- MAIN APPLICATION DETAILS CARD -->
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">APPLICATION DETAILS</span>
+          </div>
+
+          <!-- Traveling Period : -->
+          <div class="field-group">
+            <label class="field-label">Traveling Period :</label>
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+              <div class="select-wrapper">
+                <select id="v1PeriodYear" class="form-ctrl">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <select id="v1PeriodMonth" class="form-ctrl">
+                  <option value="September" selected>September</option>
+                  <option value="August">August</option>
+                  <option value="July">July</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Travel Date : -->
+          <div class="field-group">
+            <label class="field-label">Travel Date :</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="text" id="v1StartDate" class="form-ctrl" value="24/09/2026" />
+              <input type="text" id="v1EndDate" class="form-ctrl" value="24/09/2026" />
+            </div>
+          </div>
+
+          <!-- Training Reference : -->
+          <div class="field-group">
+            <label class="field-label">Training Reference :</label>
+            <div class="select-wrapper">
+              <select id="v1TrainingRef" class="form-ctrl">
+                <option value="" selected>- Select Training Ref -</option>
+                <option value="TR-2026-001">TR-2026-001 (User Training)</option>
+                <option value="TR-2026-002">TR-2026-002 (System Integration)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Benefit Type : -->
+          <div class="field-group">
+            <label class="field-label">Benefit Type :</label>
+            <div class="select-wrapper">
+              <select id="v1BenefitType" class="form-ctrl">
+                <option value="" selected>Select Benefit</option>
+                <option value="TRAVEL ALLOWANCE">TRAVEL ALLOWANCE</option>
+                <option value="OUTSTATION BENEFIT">OUTSTATION BENEFIT</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Travel Type : -->
+          <div class="field-group">
+            <label class="field-label">Travel Type :</label>
+            <div class="select-wrapper">
+              <select id="v1TravelType" class="form-ctrl">
+                <option value="" selected>- Select Travel Type -</option>
+                <option value="DOMESTIC">DOMESTIC</option>
+                <option value="OVERSEAS">OVERSEAS</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Purpose : -->
+          <div class="field-group">
+            <label class="field-label">Purpose :</label>
+            <input type="text" id="v1Purpose" class="form-ctrl" placeholder="" />
+          </div>
+
+          <!-- Destination : -->
+          <div class="field-group">
+            <label class="field-label">Destination :</label>
+            <input type="text" id="v1Destination" class="form-ctrl" placeholder="" />
+          </div>
+
+          <!-- Reason : -->
+          <div class="field-group">
+            <label class="field-label">Reason :</label>
+            <div class="select-wrapper">
+              <select id="v1Reason" class="form-ctrl">
+                <option value="" selected>- Select Reason -</option>
+                <option value="CLIENT MEETING">CLIENT MEETING</option>
+                <option value="USER TRAINING">USER TRAINING</option>
+                <option value="SITE INSPECTION">SITE INSPECTION</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Car Type : -->
+          <div class="field-group">
+            <label class="field-label">Car Type :</label>
+            <input type="text" id="v1CarType" class="form-ctrl" value="Personal" />
+          </div>
+
+          <!-- Passenger(s) : -->
+          <div class="field-group">
+            <label class="field-label">Passenger(s) :</label>
+            <div class="select-wrapper">
+              <select id="v1Passengers" class="form-ctrl" onchange="handlePassengerAdd(this)">
+                <option value="" selected>- Select Passenger -</option>
+                <option value="Sarah Chen">Sarah Chen (#EBB01)</option>
+                <option value="Marcus Tan">Marcus Tan (#004177)</option>
+                <option value="Daniel Lee">Daniel Lee (#000582)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Selected Passenger(s) : -->
+          <div class="field-group">
+            <label class="field-label">Selected Passenger(s) :</label>
+            <div id="v1SelectedPassengersContainer" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px;">
+              <span style="font-size: 12px; color: var(--text-muted); font-style: italic;">None selected</span>
+            </div>
+          </div>
+
+          <!-- Charge To : -->
+          <div class="field-group">
+            <label class="field-label">Charge To :</label>
+            <div class="select-wrapper">
+              <select id="v1ChargeTo" class="form-ctrl">
+                <option value="" selected>- Select Charge -</option>
+                <option value="Company HQ">Company HQ</option>
+                <option value="Project Budget">Project Budget</option>
+                <option value="Client Account">Client Account</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Accomodation? : -->
+          <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
+            <label class="field-label" style="margin-bottom: 0;">Accomodation? :</label>
+            <div class="radio-circle-opt" id="v1Accomodation" onclick="toggleRadioCircle('v1Accomodation')"></div>
+          </div>
+
+          <!-- Flight? : -->
+          <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
+            <label class="field-label" style="margin-bottom: 0;">Flight? :</label>
+            <div class="radio-circle-opt" id="v1Flight" onclick="toggleRadioCircle('v1Flight')"></div>
+          </div>
+
+          <!-- Remarks : -->
+          <div class="field-group">
+            <label class="field-label">Remarks :</label>
+            <input type="text" id="v1Remarks" class="form-ctrl" placeholder="" />
+          </div>
+
+        </div>
+
+        <!-- AGGREGATED SUMMARY ROW (Categories Drill-down Entry) -->
+        <div class="category-summary-row" onclick="switchView('view-2-categories', 'Request Categories')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">TRAVEL REQUEST DETAILS</div>
+              <div id="v1ItemsCountTitle" style="font-size: 16px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">3 Request Categories</div>
+              <div id="v1ItemsCountSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">0 detailed items added</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
+            <span>Details</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </div>
+        </div>
+
+        <!-- ATTACHMENTS CARD -->
+        <div class="form-card">
+          <label class="field-label" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Upload Attachments:</label>
+          
+          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                <i class="fa-solid fa-file-arrow-up"></i>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                <i class="fa-solid fa-camera"></i>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+            </div>
+          </div>
+
+          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+          <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="submitTravelRequest()">
+            <span>Submit</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 2: CATEGORY SUMMARY VIEW (Level 2) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-2-categories">
+        
+        <div style="margin-bottom: 14px;">
+          <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Request Categories (3)</h2>
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Select a category to view or add detailed items</span>
+        </div>
+
+        <!-- CATEGORY 1: TASK -->
+        <div class="category-card" onclick="openCategoryItems('task')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Task</div>
+              <div id="catTaskSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (User Training, Meetings)</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- CATEGORY 2: TRAVELING -->
+        <div class="category-card" onclick="openCategoryItems('traveling')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-plane-departure"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Traveling</div>
+              <div id="catTravelingSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (AirAsia, Flights, Transit)</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- CATEGORY 3: ACCOMODATION -->
+        <div class="category-card" onclick="openCategoryItems('accomodation')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-hotel"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Accomodation</div>
+              <div id="catAccomodationSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (Hotel & Lodging Details)</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'Travel Request')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Application</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="submitTravelRequest()">
+            <span>Submit</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 3: ITEM LIST VIEW (Level 3) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-3-list">
+        
+        <!-- Category Summary Title Header -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+              <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Task Items</h2>
+              <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
+            </div>
+          </div>
+          <button type="button" class="btn-add-purple" onclick="openEntryForm()">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Item</span>
+          </button>
+        </div>
+
+        <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+        <div id="v3ItemsContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-2-categories', 'Request Categories')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Categories</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="submitTravelRequest()">
+            <span>Submit</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW (Level 4) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-4-entry">
+        
+        <!-- SUB-FORM FORM CARDS CONTAINER -->
+        <div id="v4SubFormContainer">
+          <!-- Populated by JS according to active category -->
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS FOR ENTRY FORM -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-3-list')">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="hiddenTravelFileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelected(this)">
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-box">
+    <span id="toastText">Action completed successfully</span>
+  </div>
+
+  <!-- DRILL-DOWN NAVIGATION & FORM STATE MANAGEMENT SCRIPT -->
+  <script>
+    const formData = {
+      applicationInfo: {
+        periodYear: '2026',
+        periodMonth: 'September',
+        startDate: '24/09/2026',
+        endDate: '24/09/2026',
+        trainingRef: '',
+        benefitType: 'Select Benefit',
+        travelType: '',
+        purpose: '',
+        destination: '',
+        reason: '',
+        carType: 'Personal',
+        selectedPassengers: [],
+        chargeTo: '',
+        hasAccomodation: false,
+        hasFlight: false,
+        remarks: ''
+      },
+      requestDetails: {
+        taskItems: [],
+        travelingItems: [],
+        accomodationItems: []
+      },
+      activeCategory: 'task',
+      currentView: 'view-1-main',
+      uploadTarget: 'main',
+      mainAttachments: [],
+      subAttachments: []
+    };
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const toastText = document.getElementById('toastText');
+      if (toast && toastText) {
+        toastText.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2800);
+      }
+    }
+
+    function switchView(viewId, headerTitle) {
+      formData.currentView = viewId;
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById(viewId);
+      if (targetView) targetView.classList.add('active');
+
+      const titleTextEl = document.getElementById('headerTitleText');
+      if (titleTextEl && headerTitle) {
+        titleTextEl.innerText = headerTitle;
+      }
+
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    function handleHeaderBack() {
+      if (formData.currentView === 'view-4-entry') {
+        switchView('view-3-list', getCategoryTitle(formData.activeCategory));
+      } else if (formData.currentView === 'view-3-list') {
+        switchView('view-2-categories', 'Request Categories');
+      } else if (formData.currentView === 'view-2-categories') {
+        switchView('view-1-main', 'Travel Request');
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
+
+    function getCategoryTitle(catKey) {
+      if (catKey === 'task') return 'Task Items';
+      if (catKey === 'traveling') return 'Traveling Items';
+      if (catKey === 'accomodation') return 'Accomodation Items';
+      return 'Request Items';
+    }
+
+    function toggleRadioCircle(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.toggle('checked');
+        if (id === 'v1Accomodation') formData.applicationInfo.hasAccomodation = el.classList.contains('checked');
+        if (id === 'v1Flight') formData.applicationInfo.hasFlight = el.classList.contains('checked');
+      }
+    }
+
+    function handlePassengerAdd(selectEl) {
+      const val = selectEl.value;
+      if (!val) return;
+      if (!formData.applicationInfo.selectedPassengers.includes(val)) {
+        formData.applicationInfo.selectedPassengers.push(val);
+        renderSelectedPassengers();
+      }
+      selectEl.value = '';
+    }
+
+    function removePassenger(index) {
+      formData.applicationInfo.selectedPassengers.splice(index, 1);
+      renderSelectedPassengers();
+    }
+
+    function renderSelectedPassengers() {
+      const container = document.getElementById('v1SelectedPassengersContainer');
+      if (!container) return;
+      if (formData.applicationInfo.selectedPassengers.length === 0) {
+        container.innerHTML = `<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">None selected</span>`;
+        return;
+      }
+      container.innerHTML = formData.applicationInfo.selectedPassengers.map((p, idx) => `
+        <span style="background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+          ${p}
+          <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 11px;" onclick="removePassenger(${idx})"></i>
+        </span>
+      `).join('');
+    }
+
+    function openCategoryItems(categoryKey) {
+      formData.activeCategory = categoryKey;
+      renderView3List();
+      switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function renderView3List() {
+      const catKey = formData.activeCategory;
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const container = document.getElementById('v3ItemsContainer');
+
+      let items = [];
+      let catName = getCategoryTitle(catKey);
+      let iconHtml = '';
+
+      if (catKey === 'task') {
+        items = formData.requestDetails.taskItems || [];
+        iconHtml = '<i class="fa-solid fa-list-check"></i>';
+      } else if (catKey === 'traveling') {
+        items = formData.requestDetails.travelingItems || [];
+        iconHtml = '<i class="fa-solid fa-plane-departure"></i>';
+      } else if (catKey === 'accomodation') {
+        items = formData.requestDetails.accomodationItems || [];
+        iconHtml = '<i class="fa-solid fa-hotel"></i>';
+      }
+
+      if (iconBox) iconBox.innerHTML = iconHtml;
+      if (titleText) titleText.innerText = catName;
+      if (countText) countText.innerText = `${items.length} records in this category`;
+
+      if (!container) return;
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 20px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              ${iconHtml}
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Click the button below to add your first record</div>
+            <button type="button" class="btn-submit-primary" style="padding: 9px 20px; font-size: 13px;" onclick="openEntryForm()">
+              <i class="fa-solid fa-plus"></i>
+              <span>Add Item</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      let listHtml = '';
+      items.forEach((item, idx) => {
+        if (catKey === 'task') {
+          listHtml += `
+            <div class="form-card" style="margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.taskName || 'USER TRAINING'}</div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                    ${item.location || 'HQ'} • ${item.startDate || '24/09/2026'} (${item.startTime || '08:00'} - ${item.endTime || '10:00'})
+                  </div>
+                </div>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+              </div>
+            </div>
+          `;
+        } else if (catKey === 'traveling') {
+          listHtml += `
+            <div class="form-card" style="margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.transport || 'AIR ASIA'} (${item.origin || 'KL'} → ${item.dest || 'PENANG'})</div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                    ${item.depDate || '24/09/2026'} • ${item.noOfDays || 1} Days
+                  </div>
+                </div>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+              </div>
+            </div>
+          `;
+        } else if (catKey === 'accomodation') {
+          listHtml += `
+            <div class="form-card" style="margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.hotelName || 'Concorde Hotel'}</div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                    ${item.location || 'Penang'} • ${item.nights || 1} Nights
+                  </div>
+                </div>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      container.innerHTML = listHtml;
+    }
+
+    function deleteSubItem(idx) {
+      const catKey = formData.activeCategory;
+      if (catKey === 'task') formData.requestDetails.taskItems.splice(idx, 1);
+      else if (catKey === 'traveling') formData.requestDetails.travelingItems.splice(idx, 1);
+      else if (catKey === 'accomodation') formData.requestDetails.accomodationItems.splice(idx, 1);
+
+      updateSubtitles();
+      renderView3List();
+      showToast('🗑️ Item removed!');
+    }
+
+    function updateSubtitles() {
+      const taskCount = formData.requestDetails.taskItems.length;
+      const trvCount = formData.requestDetails.travelingItems.length;
+      const accCount = formData.requestDetails.accomodationItems.length;
+
+      const subTask = document.getElementById('catTaskSubtitle');
+      const subTrv = document.getElementById('catTravelingSubtitle');
+      const subAcc = document.getElementById('catAccomodationSubtitle');
+      const mainSub = document.getElementById('v1ItemsCountSubtitle');
+
+      if (subTask) subTask.innerText = `${taskCount} items added (User Training, Meetings)`;
+      if (subTrv) subTrv.innerText = `${trvCount} items added (AirAsia, Flights, Transit)`;
+      if (subAcc) subAcc.innerText = `${accCount} items added (Hotel & Lodging Details)`;
+
+      const totalItems = taskCount + trvCount + accCount;
+      if (mainSub) mainSub.innerText = `${totalItems} detailed items added`;
+    }
+
+    /* ENTRY FORM BUILDER (Standard PeopleHCM Purple Vertical Bar Section Headers) */
+    function openEntryForm() {
+      const catKey = formData.activeCategory;
+      const container = document.getElementById('v4SubFormContainer');
+
+      if (catKey === 'task') {
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">TASK DETAILS</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Task :</label>
+              <input type="text" id="entryTaskName" class="form-ctrl" value="USER TRAINING" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Purpose :</label>
+              <input type="text" id="entryTaskPurpose" class="form-ctrl" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Location :</label>
+              <input type="text" id="entryTaskLocation" class="form-ctrl" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Start Date :</label>
+              <input type="text" id="entryTaskStartDate" class="form-ctrl" value="24/09/2026" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">End Date :</label>
+              <input type="text" id="entryTaskEndDate" class="form-ctrl" value="24/09/2026" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Est. Start Time :</label>
+              <input type="text" id="entryTaskStartTime" class="form-ctrl" value="08:00" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Est. End Time :</label>
+              <input type="text" id="entryTaskEndTime" class="form-ctrl" value="10:00" />
+            </div>
+
+            <div style="margin-top: 18px;">
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments :</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+                </div>
+              </div>
+              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+            </div>
+
+            <div style="margin-top: 18px;">
+              <button type="button" class="btn-submit-primary" style="width: 100px;" onclick="saveSubItem()">Add</button>
+            </div>
+          </div>
+        `;
+      } else if (catKey === 'traveling') {
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">TRAVEL DETAILS</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Origin :</label>
+              <div class="select-wrapper">
+                <select id="entryTrvOrigin" class="form-ctrl">
+                  <option value="" selected>- Select Location -</option>
+                  <option value="KUALA LUMPUR">KUALA LUMPUR</option>
+                  <option value="PENANG">PENANG</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Destination :</label>
+              <div class="select-wrapper">
+                <select id="entryTrvDest" class="form-ctrl">
+                  <option value="" selected>- Select Location -</option>
+                  <option value="PENANG">PENANG</option>
+                  <option value="KUALA LUMPUR">KUALA LUMPUR</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Departure :</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="text" id="entryTrvDepDate" class="form-ctrl" value="24/09/2026" />
+                <input type="text" id="entryTrvDepTime" class="form-ctrl" value="14:51" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Arrival :</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="text" id="entryTrvArrDate" class="form-ctrl" value="24/09/2026" />
+                <input type="text" id="entryTrvArrTime" class="form-ctrl" value="15:51" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">No Of Days :</label>
+              <input type="number" id="entryTrvDays" class="form-ctrl" value="1" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Project :</label>
+              <div class="select-wrapper">
+                <select id="entryTrvProject" class="form-ctrl">
+                  <option value="" selected>- Select Project -</option>
+                  <option value="HQ Digitalization">HQ Digitalization</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Transport :</label>
+              <input type="text" id="entryTrvTransport" class="form-ctrl" value="AIR ASIA" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Justification :</label>
+              <input type="text" id="entryTrvJustification" class="form-ctrl" value="-" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Pref. Transport :</label>
+              <div class="select-wrapper">
+                <select id="entryTrvPrefTransport" class="form-ctrl">
+                  <option value="" selected>- Select Transport Type -</option>
+                  <option value="FLIGHT">FLIGHT</option>
+                  <option value="TRAIN">TRAIN</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Transport No :</label>
+              <input type="text" id="entryTrvTransportNo" class="form-ctrl" placeholder="" />
+            </div>
+
+            <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
+              <label class="field-label" style="margin-bottom: 0;">Need Accommodation? :</label>
+              <div class="radio-circle-opt" id="entryRadioAcc" onclick="this.classList.toggle('checked')"></div>
+            </div>
+
+            <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
+              <label class="field-label" style="margin-bottom: 0;">Need Allowance? :</label>
+              <div class="radio-circle-opt" id="entryRadioAllow" onclick="this.classList.toggle('checked')"></div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Accommodation Details :</label>
+              <input type="text" id="entryTrvAccDetails" class="form-ctrl" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Booking Type :</label>
+              <div class="select-wrapper">
+                <select id="entryTrvBookingType" class="form-ctrl">
+                  <option value="" selected>- Select Booking Type -</option>
+                  <option value="COMPANY BOOKED">COMPANY BOOKED</option>
+                  <option value="SELF BOOKED">SELF BOOKED</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Class :</label>
+              <div class="select-wrapper">
+                <select id="entryTrvClass" class="form-ctrl">
+                  <option value="" selected>- Select Class -</option>
+                  <option value="ECONOMY">ECONOMY</option>
+                  <option value="BUSINESS">BUSINESS</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Est. Distance :</label>
+              <input type="number" id="entryTrvEstDist" class="form-ctrl" value="0" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Est. Cost :</label>
+              <input type="number" id="entryTrvEstCost" class="form-ctrl" value="0" step="0.01" />
+            </div>
+
+            <div style="margin-top: 18px;">
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments :</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+                </div>
+              </div>
+              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+            </div>
+
+            <div style="margin-top: 18px;">
+              <button type="button" class="btn-submit-primary" style="width: 100px;" onclick="saveSubItem()">Add</button>
+            </div>
+          </div>
+        `;
+      } else if (catKey === 'accomodation') {
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">ACCOMODATION DETAILS</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Hotel / Accommodation Name :</label>
+              <input type="text" id="entryAccHotel" class="form-ctrl" placeholder="e.g. Concorde Hotel Penang" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Location / Address :</label>
+              <input type="text" id="entryAccLocation" class="form-ctrl" placeholder="e.g. George Town, Penang" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Check-In Date :</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="text" id="entryAccCheckInDate" class="form-ctrl" value="24/09/2026" />
+                <input type="text" id="entryAccCheckInTime" class="form-ctrl" value="14:00" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Check-Out Date :</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="text" id="entryAccCheckOutDate" class="form-ctrl" value="25/09/2026" />
+                <input type="text" id="entryAccCheckOutTime" class="form-ctrl" value="12:00" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">No Of Nights :</label>
+              <input type="number" id="entryAccNights" class="form-ctrl" value="1" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Booking Type :</label>
+              <div class="select-wrapper">
+                <select id="entryAccBookingType" class="form-ctrl">
+                  <option value="" selected>- Select Booking Type -</option>
+                  <option value="COMPANY BOOKED">COMPANY BOOKED</option>
+                  <option value="SELF BOOKED">SELF BOOKED</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Room Type / Class :</label>
+              <div class="select-wrapper">
+                <select id="entryAccRoomType" class="form-ctrl">
+                  <option value="" selected>- Select Room Type -</option>
+                  <option value="STANDARD ROOM">STANDARD ROOM</option>
+                  <option value="DELUXE SUITE">DELUXE SUITE</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Est. Cost :</label>
+              <input type="number" id="entryAccEstCost" class="form-ctrl" value="0.00" step="0.01" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Remarks :</label>
+              <input type="text" id="entryAccRemarks" class="form-ctrl" placeholder="" />
+            </div>
+
+            <div style="margin-top: 18px;">
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments :</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+                </div>
+              </div>
+              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+            </div>
+
+            <div style="margin-top: 18px;">
+              <button type="button" class="btn-submit-primary" style="width: 100px;" onclick="saveSubItem()">Add</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function saveSubItem() {
+      const catKey = formData.activeCategory;
+
+      if (catKey === 'task') {
+        const taskName = document.getElementById('entryTaskName') ? document.getElementById('entryTaskName').value : 'USER TRAINING';
+        const location = document.getElementById('entryTaskLocation') ? document.getElementById('entryTaskLocation').value : 'HQ';
+        const startDate = document.getElementById('entryTaskStartDate') ? document.getElementById('entryTaskStartDate').value : '24/09/2026';
+        const startTime = document.getElementById('entryTaskStartTime') ? document.getElementById('entryTaskStartTime').value : '08:00';
+        const endTime = document.getElementById('entryTaskEndTime') ? document.getElementById('entryTaskEndTime').value : '10:00';
+
+        formData.requestDetails.taskItems.push({
+          taskName: taskName || 'USER TRAINING',
+          location: location || 'HQ',
+          startDate: startDate || '24/09/2026',
+          startTime: startTime || '08:00',
+          endTime: endTime || '10:00'
+        });
+      } else if (catKey === 'traveling') {
+        const transport = document.getElementById('entryTrvTransport') ? document.getElementById('entryTrvTransport').value : 'AIR ASIA';
+        const origin = document.getElementById('entryTrvOrigin') ? document.getElementById('entryTrvOrigin').value : 'KL';
+        const dest = document.getElementById('entryTrvDest') ? document.getElementById('entryTrvDest').value : 'PENANG';
+        const depDate = document.getElementById('entryTrvDepDate') ? document.getElementById('entryTrvDepDate').value : '24/09/2026';
+        const noOfDays = document.getElementById('entryTrvDays') ? document.getElementById('entryTrvDays').value : 1;
+
+        formData.requestDetails.travelingItems.push({
+          transport: transport || 'AIR ASIA',
+          origin: origin || 'KUALA LUMPUR',
+          dest: dest || 'PENANG',
+          depDate: depDate || '24/09/2026',
+          noOfDays: noOfDays || 1
+        });
+      } else if (catKey === 'accomodation') {
+        const hotelName = document.getElementById('entryAccHotel') ? document.getElementById('entryAccHotel').value : 'Concorde Hotel';
+        const location = document.getElementById('entryAccLocation') ? document.getElementById('entryAccLocation').value : 'Penang';
+        const nights = document.getElementById('entryAccNights') ? document.getElementById('entryAccNights').value : 1;
+
+        formData.requestDetails.accomodationItems.push({
+          hotelName: hotelName || 'Concorde Hotel Penang',
+          location: location || 'George Town, Penang',
+          nights: nights || 1
+        });
+      }
+
+      updateSubtitles();
+      showToast('✅ Item added successfully!');
+      switchView('view-3-list', getCategoryTitle(catKey));
+    }
+
+    function triggerFileUpload(target) {
+      formData.uploadTarget = target;
+      const fileInput = document.getElementById('hiddenTravelFileInput');
+      if (fileInput) fileInput.click();
+    }
+
+    function handleFileSelected(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const fileName = file.name;
+        
+        if (formData.uploadTarget === 'main') {
+          formData.mainAttachments.push(fileName);
+          renderFileChips('mainChipsList', formData.mainAttachments, 'main');
+        } else {
+          formData.subAttachments.push(fileName);
+          renderFileChips('subChipsList', formData.subAttachments, 'sub');
+        }
+
+        showToast(`📎 Attachment added: ${fileName}`);
+        input.value = '';
+      }
+    }
+
+    function renderFileChips(containerId, list, target) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = list.map((fn, idx) => `
+        <div style="background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); padding: 5px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-paperclip"></i>
+          <span>${fn}</span>
+          <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 11px;" onclick="removeFile('${target}', ${idx})"></i>
+        </div>
+      `).join('');
+    }
+
+    function removeFile(target, idx) {
+      if (target === 'main') {
+        formData.mainAttachments.splice(idx, 1);
+        renderFileChips('mainChipsList', formData.mainAttachments, 'main');
+      } else {
+        formData.subAttachments.splice(idx, 1);
+        renderFileChips('subChipsList', formData.subAttachments, 'sub');
+      }
+      showToast('🗑️ Attachment removed');
+    }
+
+    function saveDraft() {
+      showToast('💾 Travel Request saved as Draft');
+    }
+
+    function submitTravelRequest() {
+      showToast('🚀 Travel Request submitted successfully!');
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 1400);
+    }
+
+    // Initialize passenger list rendering on page load
+    renderSelectedPassengers();
+  </script>
+</body>
+</html>

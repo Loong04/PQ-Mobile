@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Shift Summary</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    /* Top Header Bar */
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.15s ease;
+      backdrop-filter: blur(4px);
+    }
+    .header-btn-icon:active { transform: scale(0.94); }
+
+    /* AGENTS.md View Chart Button Presentation Standard */
+    .view-chart-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 12px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .view-chart-btn:active {
+      transform: scale(0.95);
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    /* Collapsible Filter Accordion Card */
+    .filter-accordion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s;
+    }
+    .filter-header-bar {
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.05) 100%);
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .filter-header-bar.expanded {
+      border-bottom-color: var(--border-subtle);
+    }
+    .filter-badge-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      letter-spacing: 0.3px;
+    }
+    .filter-toggle-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.15);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      transition: transform 0.25s ease;
+    }
+    .filter-toggle-icon.open {
+      transform: rotate(180deg);
+    }
+    .filter-body-container {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Date Switcher in Filter */
+    .filter-field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .filter-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .filter-input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 2px 6px;
+    }
+    .date-nav-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+    .date-nav-btn:active {
+      transform: scale(0.9);
+      background: var(--purple-primary);
+      color: #ffffff;
+    }
+    .date-input-field {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      outline: none;
+      padding: 8px 4px;
+    }
+    .filter-select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .filter-select:focus {
+      border-color: var(--purple-primary);
+    }
+    .filter-actions-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .btn-filter-reset {
+      padding: 8px 16px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-filter-reset:active { transform: scale(0.95); }
+    .btn-filter-search {
+      padding: 8px 20px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+      transition: all 0.15s;
+    }
+    .btn-filter-search:active { transform: scale(0.95); }
+
+    /* Modern Enterprise Summary Table Card (Table Show) */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 88px 1fr 85px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(109, 40, 217, 0.08) 100%);
+      padding: 13px 16px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1.5px solid var(--purple-border);
+      align-items: center;
+    }
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 85px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
+    .summary-table-row:active { transform: scale(0.995); background: rgba(124, 58, 237, 0.08); }
+    
+    .summary-table-footer {
+      display: grid;
+      grid-template-columns: 88px 1fr 85px;
+      padding: 13px 16px;
+      background: rgba(124, 58, 237, 0.08);
+      border-top: 1.5px solid var(--purple-border);
+      font-size: 12.5px;
+      font-weight: 800;
+      align-items: center;
+    }
+
+    /* Shift Badge in Table */
+    .table-shift-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .table-shift-badge.cyan { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .table-shift-badge.rose { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    /* History Card Styling following AGENTS.md Standard */
+    .history-card-item {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.05);
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: block;
+    }
+    [data-theme="dark"] .history-card-item, html[data-theme="dark"] .history-card-item {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(167, 139, 250, 0.05) 100%);
+      border-color: rgba(167, 139, 250, 0.25);
+    }
+
+    /* Employee Detail Card Styling following AGENTS.md standard */
+    .staff-emp-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.8;
+      font-family: monospace, sans-serif;
+      margin-bottom: 4px;
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(16, 185, 129, 0.95);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      z-index: 1200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Toast Notice -->
+    <div class="toast-box" id="toastNotice">
+      <i class="fa-solid fa-circle-check"></i> <span id="toastMsg">Filter applied successfully</span>
+    </div>
+
+    <!-- Top Executive Purple Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="header-btn-icon" onclick="handleHeaderBack()" aria-label="Back">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <div>
+            <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;" id="pageHeaderTitle">Shift Summary</h1>
+            <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.8);" id="headerSubDate">Thu, 24 Sep 2026</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;" id="headerActionsArea">
+          <button class="header-btn-icon" onclick="toggleFilterAccordion()" title="Toggle Filter" aria-label="Toggle Filter" id="btnToggleFilter">
+            <i class="fa-solid fa-sliders" style="font-size: 14px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Body -->
+    <div class="main-content">
+
+      <!-- ========================================================
+           VIEW 1: SHIFT SUMMARY MAIN DASHBOARD VIEW (TABLE SHOW)
+           ======================================================== -->
+      <div id="view-summary" style="display: block;">
+
+        <!-- 1. COLLAPSIBLE DATA FILTER CARD -->
+        <div class="filter-accordion-card">
+          <div class="filter-header-bar" id="filterHeaderBar" onclick="toggleFilterAccordion()">
+            <div class="filter-badge-title">
+              <i class="fa-solid fa-filter" style="font-size: 12px;"></i>
+              <span>Data Filter</span>
+            </div>
+            <div class="filter-toggle-icon" id="filterToggleIcon">
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+
+          <div class="filter-body-container" id="filterBodyContainer">
+            <!-- Date Filter Row with Prev / Next Navigation -->
+            <div class="filter-field-row">
+              <label class="filter-label">Date</label>
+              <div class="filter-input-wrap">
+                <button type="button" class="date-nav-btn" onclick="adjustDate(-1)" title="Previous Day">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <input type="date" id="filterDateInput" class="date-input-field" value="2026-09-24" onchange="handleDateInputChange()">
+                <button type="button" class="date-nav-btn" onclick="adjustDate(1)" title="Next Day">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Shift Type Dropdown -->
+            <div class="filter-field-row">
+              <label class="filter-label">Shift Type</label>
+              <select id="filterShiftType" class="filter-select" onchange="applyFilters()">
+                <option value="all">- All Shift Types -</option>
+                <option value="OFF DAY">OFF DAY</option>
+                <option value="N/A">N/A (Unassigned)</option>
+              </select>
+            </div>
+
+            <!-- Department Dropdown -->
+            <div class="filter-field-row">
+              <label class="filter-label">Department</label>
+              <select id="filterDepartment" class="filter-select" onchange="applyFilters()">
+                <option value="all">- All Departments -</option>
+                <option value="Accounting">Accounting</option>
+                <option value="Operations">Operations</option>
+                <option value="Quality Control">Quality Control</option>
+                <option value="Production">Production</option>
+                <option value="Human Resource">Human Resource</option>
+                <option value="Logistics">Logistics</option>
+              </select>
+            </div>
+
+            <!-- Branch Dropdown -->
+            <div class="filter-field-row">
+              <label class="filter-label">Branch</label>
+              <select id="filterBranch" class="filter-select" onchange="applyFilters()">
+                <option value="all">- All Branches -</option>
+                <option value="HQ Main Branch">HQ Main Branch</option>
+                <option value="Times Square Branch">Times Square Branch</option>
+                <option value="Subang Factory">Subang Factory</option>
+                <option value="Penang Hub">Penang Hub</option>
+              </select>
+            </div>
+
+            <!-- Section Dropdown -->
+            <div class="filter-field-row">
+              <label class="filter-label">Section</label>
+              <select id="filterSection" class="filter-select" onchange="applyFilters()">
+                <option value="all">- All Sections -</option>
+                <option value="General Operations">General Operations</option>
+                <option value="Assembly Line">Assembly Line</option>
+                <option value="Finance Operations">Finance Operations</option>
+              </select>
+            </div>
+
+            <!-- Cost Centre Dropdown -->
+            <div class="filter-field-row">
+              <label class="filter-label">Cost Centre</label>
+              <select id="filterCostCentre" class="filter-select" onchange="applyFilters()">
+                <option value="all">- All Cost Centers -</option>
+                <option value="CC-101 HQ Ops">CC-101 HQ Ops</option>
+                <option value="CC-202 Tech Dept">CC-202 Tech Dept</option>
+                <option value="CC-303 Accounts">CC-303 Accounts</option>
+                <option value="CC-404 Logistics">CC-404 Logistics</option>
+              </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="filter-actions-row">
+              <button type="button" class="btn-filter-reset" onclick="resetFilters()">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+              </button>
+              <button type="button" class="btn-filter-search" onclick="applyFilters()">
+                <i class="fa-solid fa-magnifying-glass"></i> Search
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. HERO TOTAL OVERVIEW CARD (WITH AGENTS.md VIEW CHART BUTTON) -->
+        <div class="history-card-item" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(109, 40, 217, 0.05) 100%); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.6px;">Total Headcount</div>
+              <div style="font-size: 28px; font-weight: 900; color: var(--text-primary); margin: 2px 0;" id="kpiTotalHeadcount">287 Staff</div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                <span><i class="fa-regular fa-calendar" style="margin-right: 4px;"></i><span id="kpiDateSubtitle">24 Sep 2026</span></span>
+                <span>&bull;</span>
+                <span><span id="kpiShiftCount" style="color: var(--purple-primary); font-weight: 800;">2</span> Shifts</span>
+              </div>
+            </div>
+
+            <!-- AGENTS.md View Chart Button Presentation Standard -->
+            <button type="button" class="view-chart-btn" onclick="showSectionView('chart')" title="View Chart">
+              <i class="fa-solid fa-chart-pie"></i><span>View Chart</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. SHIFT SUMMARY DATA TABLE HEADER -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-table-list" style="color: var(--purple-primary);"></i>
+            <span>Shift Breakdown Table</span>
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);" id="tableRecordCountBadge">
+            11 Records
+          </div>
+        </div>
+
+        <!-- 4. SHIFT SUMMARY DATA TABLE (TABLE SHOW) -->
+        <div class="summary-table-card">
+          <!-- Table Header -->
+          <div class="summary-table-hdr">
+            <div>Shift</div>
+            <div>Job Title</div>
+            <div style="text-align: right;">Headcount</div>
+          </div>
+
+          <!-- Table Body Rows -->
+          <div id="summaryTableRowsContainer">
+            <!-- Dynamically populated via JS strictly matching legacy screenshot -->
+          </div>
+
+          <!-- Table Footer Total Row -->
+          <div class="summary-table-footer">
+            <div style="color: var(--purple-primary); font-weight: 900;">Total</div>
+            <div style="color: var(--text-muted); font-size: 11.5px;" id="footerShiftCategorySummary">2 Shifts &bull; 11 Roles</div>
+            <div style="text-align: right; color: var(--purple-primary); font-size: 14px; font-weight: 900;" id="footerTotalHeadcount">287.00</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================================
+           VIEW 2: DEDICATED CHART PAGE VIEW (CONSISTENT PROJECT STANDARD)
+           ======================================================== -->
+      <div id="view-chart" style="display: none;">
+        
+        <!-- Top Action Bar inside Chart Page -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 0 2px;">
+          <button type="button" onclick="showSectionView('summary')" style="background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--purple-primary); padding: 7px 14px; border-radius: 12px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.15s ease;">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back to Summary</span>
+          </button>
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-regular fa-calendar" style="color: var(--purple-primary);"></i>
+            <span id="chartViewDateLabel">24 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- SVG Donut Chart Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 22px 18px 20px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center; margin-bottom: 14px;">
+          <div style="width: 100%; display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px;">
+            <div>
+              <h3 style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px;">Headcount by Shift</h3>
+              <p style="font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0;">Share of total scheduled workforce</p>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; border: 1px solid rgba(245, 158, 11, 0.3);">
+              <i class="fa-solid fa-chart-pie" style="margin-right: 4px;"></i>Distribution
+            </div>
+          </div>
+
+          <!-- Donut SVG Slices -->
+          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 210px; height: 210px; margin: 10px 0 12px;">
+            <svg id="summaryDonutSvg" width="210" height="210" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 20px rgba(124, 58, 237, 0.18));">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22" opacity="0.4"></circle>
+              <g id="summaryDonutCircles"></g>
+            </svg>
+            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 120px;">
+              <div id="summaryCenterTotal" style="font-size: 26px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px;">287</div>
+              <div id="summaryCenterBadge" style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.4px;">Total Headcount</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown Legend Table Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 18px 16px; box-shadow: var(--shadow-sm); margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 70px 75px; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px;">
+            <div>SHIFT / CATEGORY</div>
+            <div style="text-align: right;">COUNT</div>
+            <div style="text-align: right;">% TOTAL</div>
+          </div>
+
+          <div id="summaryChartLegendGrid" style="display: flex; flex-direction: column; gap: 14px; padding-top: 14px;">
+            <!-- Generated dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================================
+           VIEW 3: SHIFT EMPLOYEE DETAIL VIEW (MATCHING AGENTS.MD + SCREENSHOT)
+           ======================================================== -->
+      <div id="view-shift-detail" style="display: none;">
+        
+        <!-- Back Button Row -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 2px;">
+          <button type="button" onclick="showSectionView('summary')" style="background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--purple-primary); padding: 7px 14px; border-radius: 12px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.15s ease;">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back to Shift Summary</span>
+          </button>
+        </div>
+
+        <!-- Shift Overview Info Card (Matching Work Shift Employee Detail Standard) -->
+        <div class="history-card-item" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle);">
+            <i class="fa-regular fa-calendar-check" style="color: var(--purple-primary); font-size: 14px;"></i>
+            <span style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Date:</span>
+            <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);" id="detailDateDisplay">24 Sep 2026</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px;">
+              <span style="color: var(--text-muted); font-weight: 600;">Shift:</span>
+              <span style="color: var(--text-primary); font-weight: 800;" id="detailShiftNameDisplay">N/A</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px;">
+              <span style="color: var(--text-muted); font-weight: 600;">Job Title / Role:</span>
+              <span style="color: var(--text-primary); font-weight: 800;" id="detailRoleDisplay">All Roles</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px;">
+              <span style="color: var(--text-muted); font-weight: 600;">Total Headcount:</span>
+              <span style="color: var(--purple-primary); font-weight: 800; font-size: 13.5px;" id="detailHeadcountDisplay">13 Staff</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Title -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">
+            Personnel Roster List
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);" id="detailRecordCountBadge">
+            13 Staff
+          </div>
+        </div>
+
+        <!-- Employee Cards Container -->
+        <div id="detailEmployeeListContainer" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <phone-bottom-nav active="attendance"></phone-bottom-nav>
+  </div>
+
+  <script>
+    // Master Dataset strictly matching the user's screenshot
+    const shiftSummaryData = [
+      // Shift: N/A (13 headcount)
+      { shift: 'N/A', jobTitle: 'ACCOUNT EXECUTIVE', count: 3.00, dept: 'Accounting', branch: 'HQ Main Branch', color: '#f43f5e', badgeClass: 'rose' },
+      { shift: 'N/A', jobTitle: 'BARTENDER', count: 1.00, dept: 'Operations', branch: 'Times Square Branch', color: '#f43f5e', badgeClass: 'rose' },
+      { shift: 'N/A', jobTitle: 'PRODUCTION OPERATOR', count: 4.00, dept: 'Production', branch: 'Subang Factory', color: '#f43f5e', badgeClass: 'rose' },
+      { shift: 'N/A', jobTitle: 'QUALITY CHECKER', count: 2.00, dept: 'Quality Control', branch: 'Subang Factory', color: '#f43f5e', badgeClass: 'rose' },
+      { shift: 'N/A', jobTitle: 'OPERATION DIRECTOR', count: 1.00, dept: 'Operations', branch: 'HQ Main Branch', color: '#f43f5e', badgeClass: 'rose' },
+      { shift: 'N/A', jobTitle: 'CLEANING SPECIALIST', count: 2.00, dept: 'Operations', branch: 'Penang Hub', color: '#f43f5e', badgeClass: 'rose' },
+
+      // Shift: OFF DAY (274 headcount)
+      { shift: 'OFF DAY', jobTitle: 'PRODUCTION OPERATOR', count: 180.00, dept: 'Production', branch: 'Subang Factory', color: '#06b6d4', badgeClass: 'cyan' },
+      { shift: 'OFF DAY', jobTitle: 'SENIOR BARISTA', count: 35.00, dept: 'Operations', branch: 'Times Square Branch', color: '#06b6d4', badgeClass: 'cyan' },
+      { shift: 'OFF DAY', jobTitle: 'HR EXECUTIVE', count: 12.00, dept: 'Human Resource', branch: 'HQ Main Branch', color: '#06b6d4', badgeClass: 'cyan' },
+      { shift: 'OFF DAY', jobTitle: 'ACCOUNT EXECUTIVE', count: 15.00, dept: 'Accounting', branch: 'HQ Main Branch', color: '#06b6d4', badgeClass: 'cyan' },
+      { shift: 'OFF DAY', jobTitle: 'WAREHOUSE ASSISTANT', count: 32.00, dept: 'Logistics', branch: 'Penang Hub', color: '#06b6d4', badgeClass: 'cyan' }
+    ];
+
+    // Master Employee Dataset corresponding to the screenshot details
+    const masterEmployeesByShift = {
+      'N/A': [
+        { empNo: '#00012345', name: 'TEST', jobTitle: 'ACCOUNT EXECUTIVE', dept: 'Accounting', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#00012346', name: 'Tan Mei Ling', jobTitle: 'ACCOUNT EXECUTIVE', dept: 'Accounting', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#00012347', name: 'Chong Wei Kit', jobTitle: 'ACCOUNT EXECUTIVE', dept: 'Accounting', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#012345', name: 'hey', jobTitle: 'BARTENDER', dept: 'Operations', branch: 'Times Square Branch', count: 1.00 },
+        { empNo: '#620578', name: 'BHIM BAHADUR TAMANG', jobTitle: 'PRODUCTION OPERATOR', dept: 'Production', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#620657', name: 'PRITIMAN GURUNG', jobTitle: 'PRODUCTION OPERATOR', dept: 'Production', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#620717', name: 'MD SHOHEL', jobTitle: 'PRODUCTION OPERATOR', dept: 'Production', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#620803', name: 'SHER BAHADUR THAPA MAGAR', jobTitle: 'PRODUCTION OPERATOR', dept: 'Production', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#620675', name: 'HAFIZUR RAHMAN', jobTitle: 'OPERATION DIRECTOR', dept: 'Operations', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#620836', name: 'DAN BAHADUR THAPA', jobTitle: 'QUALITY CHECKER', dept: 'Quality Control', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#620840', name: 'KUMAR RAI', jobTitle: 'QUALITY CHECKER', dept: 'Quality Control', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#620855', name: 'SITI AISHAH', jobTitle: 'CLEANING SPECIALIST', dept: 'Operations', branch: 'Penang Hub', count: 1.00 },
+        { empNo: '#620856', name: 'NURUL HUDA', jobTitle: 'CLEANING SPECIALIST', dept: 'Operations', branch: 'Penang Hub', count: 1.00 }
+      ],
+      'OFF DAY': [
+        { empNo: '#000019', name: 'Tee ang lung', jobTitle: 'ACCOUNT EXECUTIVE', dept: 'Accounting', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#000054', name: 'Anderson ng', jobTitle: 'ACCOUNT EXECUTIVE', dept: 'Accounting', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#000070', name: 'Yee seong liew', jobTitle: 'ACCOUNT EXECUTIVE', dept: 'Accounting', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#27637', name: 'Tan li', jobTitle: 'PRODUCTION OPERATOR', dept: 'Production', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#EBB55', name: 'Ahmad bin ali', jobTitle: 'PRODUCTION OPERATOR', dept: 'Production', branch: 'Subang Factory', count: 1.00 },
+        { empNo: '#0099', name: 'Hanis', jobTitle: 'HR EXECUTIVE', dept: 'Human Resource', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#500006', name: 'Danial', jobTitle: 'HR EXECUTIVE', dept: 'Human Resource', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#500007', name: 'Tony', jobTitle: 'HR EXECUTIVE', dept: 'Human Resource', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#500012', name: 'Sim', jobTitle: 'HR EXECUTIVE', dept: 'Human Resource', branch: 'HQ Main Branch', count: 1.00 },
+        { empNo: '#EBB01', name: 'Muhammad ali bin man', jobTitle: 'SENIOR BARISTA', dept: 'Operations', branch: 'Times Square Branch', count: 1.00 },
+        { empNo: '#EBB02', name: 'Wong Kah Fai', jobTitle: 'SENIOR BARISTA', dept: 'Operations', branch: 'Times Square Branch', count: 1.00 },
+        { empNo: '#EBB03', name: 'Chok Ching Hou', jobTitle: 'WAREHOUSE ASSISTANT', dept: 'Logistics', branch: 'Penang Hub', count: 1.00 },
+        { empNo: '#004177', name: 'AHMAD RAFY BIN ZULKIPLE', jobTitle: 'WAREHOUSE ASSISTANT', dept: 'Logistics', branch: 'Penang Hub', count: 1.00 }
+      ]
+    };
+
+    let currentDate = new Date(2026, 8, 24); // 24 Sep 2026
+    let currentActiveSection = 'summary'; // 'summary' | 'chart' | 'detail'
+    let currentSelectedShift = 'N/A';
+    let currentSelectedRole = 'all';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDateDisplay();
+      renderAll();
+    });
+
+    // Navigation and Back button handler
+    function handleHeaderBack() {
+      if (currentActiveSection === 'chart' || currentActiveSection === 'detail') {
+        showSectionView('summary');
+      } else {
+        javascript:history.back();
+      }
+    }
+
+    // Switch between Summary, Chart, and Detail Sections
+    function showSectionView(section) {
+      currentActiveSection = section;
+      const summaryView = document.getElementById('view-summary');
+      const chartView = document.getElementById('view-chart');
+      const detailView = document.getElementById('view-shift-detail');
+      const pageTitle = document.getElementById('pageHeaderTitle');
+      const filterBtn = document.getElementById('btnToggleFilter');
+
+      summaryView.style.display = 'none';
+      chartView.style.display = 'none';
+      detailView.style.display = 'none';
+
+      if (section === 'chart') {
+        chartView.style.display = 'block';
+        pageTitle.innerText = 'Shift Distribution Chart';
+        if (filterBtn) filterBtn.style.display = 'none';
+        renderDedicatedDonutChart();
+      } else if (section === 'detail') {
+        detailView.style.display = 'block';
+        pageTitle.innerText = 'Shift Employee Detail';
+        if (filterBtn) filterBtn.style.display = 'none';
+        renderShiftEmployeeDetail(currentSelectedShift, currentSelectedRole);
+      } else {
+        summaryView.style.display = 'block';
+        pageTitle.innerText = 'Shift Summary';
+        if (filterBtn) filterBtn.style.display = 'flex';
+      }
+    }
+
+    // Date Adjustment Controls
+    function adjustDate(days) {
+      currentDate.setDate(currentDate.getDate() + days);
+      updateDateDisplay();
+      applyFilters();
+    }
+
+    function handleDateInputChange() {
+      const input = document.getElementById('filterDateInput');
+      if (input.value) {
+        const parts = input.value.split('-');
+        currentDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        updateDateDisplay();
+        applyFilters();
+      }
+    }
+
+    function updateDateDisplay() {
+      const yyyy = currentDate.getFullYear();
+      const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(currentDate.getDate()).padStart(2, '0');
+      document.getElementById('filterDateInput').value = `${yyyy}-${mm}-${dd}`;
+
+      const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+      const formatted = currentDate.toLocaleDateString('en-GB', options);
+      document.getElementById('headerSubDate').textContent = formatted;
+      document.getElementById('kpiDateSubtitle').textContent = formatted;
+      document.getElementById('chartViewDateLabel').textContent = formatted;
+      document.getElementById('detailDateDisplay').textContent = formatted;
+    }
+
+    // Toggle Filter Accordion
+    function toggleFilterAccordion() {
+      const container = document.getElementById('filterBodyContainer');
+      const icon = document.getElementById('filterToggleIcon');
+      const header = document.getElementById('filterHeaderBar');
+
+      if (container.style.display === 'none') {
+        container.style.display = 'flex';
+        icon.classList.add('open');
+        header.classList.add('expanded');
+      } else {
+        container.style.display = 'none';
+        icon.classList.remove('open');
+        header.classList.remove('expanded');
+      }
+    }
+
+    // Reset Filters
+    function resetFilters() {
+      currentDate = new Date(2026, 8, 24);
+      updateDateDisplay();
+      document.getElementById('filterShiftType').value = 'all';
+      document.getElementById('filterDepartment').value = 'all';
+      document.getElementById('filterBranch').value = 'all';
+      document.getElementById('filterSection').value = 'all';
+      document.getElementById('filterCostCentre').value = 'all';
+      renderAll();
+      showToast('Filters reset to default');
+    }
+
+    // Apply Filters
+    function applyFilters() {
+      renderAll();
+      if (currentActiveSection === 'chart') {
+        renderDedicatedDonutChart();
+      }
+      showToast('Filters applied');
+    }
+
+    // Filter Dataset based on controls
+    function getFilteredData() {
+      const shiftVal = document.getElementById('filterShiftType').value;
+      const deptVal = document.getElementById('filterDepartment').value;
+      const branchVal = document.getElementById('filterBranch').value;
+
+      return shiftSummaryData.filter(item => {
+        if (shiftVal !== 'all' && item.shift !== shiftVal) return false;
+        if (deptVal !== 'all' && item.dept !== deptVal) return false;
+        if (branchVal !== 'all' && item.branch !== branchVal) return false;
+        return true;
+      });
+    }
+
+    // Render Master Views
+    function renderAll() {
+      const filtered = getFilteredData();
+      const total = filtered.reduce((sum, item) => sum + item.count, 0);
+      
+      // Update Top KPI Card
+      document.getElementById('kpiTotalHeadcount').textContent = `${Math.round(total)} Staff`;
+      
+      const shiftGroups = {};
+      filtered.forEach(item => { shiftGroups[item.shift] = true; });
+      document.getElementById('kpiShiftCount').textContent = Object.keys(shiftGroups).length;
+
+      renderSummaryTable(filtered);
+    }
+
+    // Render Main Summary Table (Table Show)
+    function renderSummaryTable(data) {
+      const container = document.getElementById('summaryTableRowsContainer');
+      const badge = document.getElementById('tableRecordCountBadge');
+      const footerSummary = document.getElementById('footerShiftCategorySummary');
+      const footerTotal = document.getElementById('footerTotalHeadcount');
+      
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (data.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 13px; font-weight: 700;">
+            No shift breakdown records found matching filters.
+          </div>
+        `;
+        badge.innerText = `0 Records`;
+        footerSummary.innerText = `0 Shifts &bull; 0 Roles`;
+        footerTotal.innerText = `0.00`;
+        return;
+      }
+
+      badge.innerText = `${data.length} Record${data.length === 1 ? '' : 's'}`;
+
+      const total = data.reduce((sum, item) => sum + item.count, 0);
+      const shiftGroups = {};
+      data.forEach(item => { shiftGroups[item.shift] = true; });
+
+      footerSummary.innerText = `${Object.keys(shiftGroups).length} Shifts &bull; ${data.length} Roles`;
+      footerTotal.innerText = `${total.toFixed(2)}`;
+
+      container.innerHTML = data.map(item => `
+        <div class="summary-table-row" onclick="openShiftEmployeeDetail('${item.shift}', '${item.jobTitle}')">
+          <div>
+            <span class="table-shift-badge ${item.badgeClass}">${item.shift}</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); text-transform: uppercase;">
+            ${item.jobTitle}
+          </div>
+          <div style="text-align: right; font-size: 13.5px; font-weight: 800; color: var(--text-primary);">
+            ${item.count.toFixed(2)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render Dedicated Donut Chart View (Consistent Project Standard)
+    function renderDedicatedDonutChart() {
+      const filtered = getFilteredData();
+      const total = filtered.reduce((sum, item) => sum + item.count, 0);
+      
+      document.getElementById('summaryCenterTotal').innerText = Math.round(total);
+
+      // Group totals by shift
+      const shiftGroups = {};
+      filtered.forEach(item => {
+        if (!shiftGroups[item.shift]) {
+          shiftGroups[item.shift] = { count: 0, color: item.color, items: [] };
+        }
+        shiftGroups[item.shift].count += item.count;
+        shiftGroups[item.shift].items.push(item);
+      });
+
+      const shiftKeys = Object.keys(shiftGroups);
+      const svgGroup = document.getElementById('summaryDonutCircles');
+      const legendGrid = document.getElementById('summaryChartLegendGrid');
+      
+      if (!svgGroup || !legendGrid) return;
+      svgGroup.innerHTML = '';
+      legendGrid.innerHTML = '';
+
+      if (total === 0) {
+        legendGrid.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">No shift records matching current filters.</div>`;
+        return;
+      }
+
+      const C = 439.82; // 2 * PI * 70
+      let currentOffset = 0;
+      let circlesHtml = '';
+      let legendHtml = '';
+
+      shiftKeys.forEach(shiftName => {
+        const group = shiftGroups[shiftName];
+        const pct = total > 0 ? (group.count / total) * 100 : 0;
+        const dashLen = (pct / 100) * C;
+        const dashOffset = -currentOffset;
+        currentOffset += dashLen;
+
+        circlesHtml += `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${group.color}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease; cursor: pointer;" onclick="openShiftEmployeeDetail('${shiftName}', 'all')"></circle>`;
+
+        legendHtml += `
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 12px 14px; cursor: pointer; transition: all 0.15s ease;" onclick="openShiftEmployeeDetail('${shiftName}', 'all')">
+            <div style="display: grid; grid-template-columns: 1fr 70px 75px; gap: 10px; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                <span style="width: 10px; height: 10px; border-radius: 4px; background: ${group.color}; flex-shrink: 0;"></span>
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${shiftName}</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 900; color: var(--text-primary); text-align: right;">${Math.round(group.count)} Staff</div>
+              <div style="font-size: 12.5px; font-weight: 800; color: ${group.color}; text-align: right;">${pct.toFixed(2)}%</div>
+            </div>
+            <!-- Progress Bar -->
+            <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+              <div style="height: 100%; width: ${pct.toFixed(1)}%; background: ${group.color}; border-radius: 4px;"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      svgGroup.innerHTML = circlesHtml;
+      legendGrid.innerHTML = legendHtml;
+    }
+
+    // Open Shift Employee Detail Screen
+    function openShiftEmployeeDetail(shiftName, role = 'all') {
+      currentSelectedShift = shiftName;
+      currentSelectedRole = role;
+      showSectionView('detail');
+    }
+
+    // Render Employee Detail List
+    function renderShiftEmployeeDetail(shiftName, role = 'all') {
+      const allList = masterEmployeesByShift[shiftName] || [];
+      const list = role !== 'all' ? allList.filter(e => e.jobTitle.toUpperCase() === role.toUpperCase()) : allList;
+      const themeColor = shiftName === 'OFF DAY' ? '#06b6d4' : '#f43f5e';
+      
+      document.getElementById('detailShiftNameDisplay').innerHTML = `
+        <span style="color: ${themeColor}; font-weight: 900;">${shiftName}</span>
+      `;
+      document.getElementById('detailRoleDisplay').innerText = role === 'all' ? 'All Roles' : role;
+      document.getElementById('detailHeadcountDisplay').innerText = `${list.length} Staff`;
+      document.getElementById('detailRecordCountBadge').innerText = `${list.length} Record${list.length === 1 ? '' : 's'}`;
+
+      const container = document.getElementById('detailEmployeeListContainer');
+      if (!container) return;
+
+      if (list.length === 0) {
+        container.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px;">No personnel records found for this shift / role.</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(emp => `
+        <div class="history-card-item" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 14px 16px; margin-bottom: 0; box-shadow: var(--shadow-sm); cursor: default;">
+          <!-- Top Row: Employee Name + Right Badge -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.3;">
+              ${emp.name}
+            </div>
+            <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; color: ${themeColor};">
+              ${emp.count.toFixed(2)} Staff
+            </div>
+          </div>
+
+          <!-- AGENTS.md RULE: Employee ID placed directly BELOW name with leading # -->
+          <div class="staff-emp-badge">
+            ${emp.empNo}
+          </div>
+
+          <!-- Detail Rows -->
+          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-subtle); font-size: 12px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted); font-weight: 600;">Job Title:</span>
+              <span style="color: var(--text-primary); font-weight: 700;">${emp.jobTitle}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted); font-weight: 600;">Department:</span>
+              <span style="color: var(--text-muted); font-weight: 600;">${emp.dept}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted); font-weight: 600;">Branch:</span>
+              <span style="color: var(--text-muted); font-weight: 600;">${emp.branch}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Helper Toast
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotice');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2600);
+    }
+  </script>
+</body>
+</html>

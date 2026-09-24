@@ -1,86 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Claims - Expense Claim</title>
   <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
   <style>
-    body {
+    * {
       margin: 0;
       padding: 0;
-      background-color: var(--bg-primary, #0f172a);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: var(--text-primary, #f8fafc);
+      box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
     }
 
     .phone-container {
-      max-width: 430px;
-      margin: 0 auto;
-      background: var(--bg-primary, #0f172a);
-      min-height: 100vh;
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
       display: flex;
       flex-direction: column;
-      position: relative;
-      padding-bottom: 30px;
     }
 
-    /* Top Sticky Header */
-    .cal-top-header {
-      background: linear-gradient(180deg, rgba(124, 58, 237, 0.28) 0%, rgba(15, 23, 42, 0) 100%);
-      padding: 12px 18px 14px;
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    .header-nav-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 4px;
-    }
-
-    .header-back-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-
-    .header-title-text {
-      font-size: 18.5px;
-      font-weight: 800;
-      color: #ffffff;
-      margin: 0;
-      letter-spacing: -0.3px;
-    }
-
-    /* Main Scroll Area */
     .main-content {
       flex: 1;
-      padding: 0 16px 20px;
+      overflow-y: auto;
+      padding: 16px 16px 100px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
     }
 
-    /* Views System */
+    /* VIEW CONTAINERS (4-LEVEL DRILL-DOWN ISOLATION) */
     .view-container {
       display: none;
+      width: 100%;
       animation: fadeIn 0.2s ease-in-out;
     }
-
     .view-container.active {
       display: block;
     }
@@ -90,63 +80,75 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Form Cards */
     .form-card {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
     }
 
-    .section-title-bar {
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .category-card:active {
+      transform: scale(0.98);
+      border-color: var(--purple-primary);
     }
 
     .section-header-bar {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 14px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
     }
-
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
     .section-title-accent {
-      width: 4px;
-      height: 16px;
-      background: var(--purple-primary, #8b5cf6);
-      border-radius: 4px;
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
     }
-
     .section-title-text {
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.5px;
+      color: var(--text-primary);
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    /* Form Controls */
     .field-group {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
 
     .field-label {
       display: block;
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 700;
-      color: var(--text-secondary, #94a3b8);
+      color: var(--text-muted);
       margin-bottom: 6px;
     }
-
     .field-label .req {
       color: #ef4444;
       margin-left: 2px;
@@ -154,26 +156,30 @@
 
     .form-ctrl {
       width: 100%;
-      padding: 12px 14px;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
       border-radius: 12px;
-      color: #ffffff;
-      font-size: 14px;
+      padding: 12px 14px;
+      font-size: 13.5px;
       font-weight: 600;
-      box-sizing: border-box;
+      color: var(--text-primary);
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
     }
-
     .form-ctrl:focus {
-      border-color: var(--purple-primary, #8b5cf6);
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 0.9;
+      background: rgba(255, 255, 255, 0.03);
     }
 
     .select-wrapper {
       position: relative;
     }
-
     .select-wrapper::after {
       content: "\f0d7";
       font-family: "Font Awesome 6 Free";
@@ -182,184 +188,97 @@
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: var(--text-muted);
       pointer-events: none;
-      font-size: 13px;
+      font-size: 12px;
     }
-
-    select.form-ctrl {
-      appearance: none;
-      -webkit-appearance: none;
-      padding-right: 36px;
-      cursor: pointer;
-    }
-
-    /* Aggregated Summary Row */
-    .summary-aggregate-row {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 18px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .summary-aggregate-row:active {
-      transform: scale(0.98);
-      background: rgba(124, 58, 237, 0.25);
-    }
-
-    .agg-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .agg-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      background: rgba(124, 58, 237, 0.2);
-      border: 1px solid rgba(124, 58, 237, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--purple-primary, #8b5cf6);
-      font-size: 18px;
-    }
-
-    .agg-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-secondary, #94a3b8);
-      margin-bottom: 2px;
-    }
-
-    .agg-amount {
-      font-size: 18px;
-      font-weight: 900;
-      color: #ffffff;
-    }
-
-    .agg-btn-drill {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: var(--purple-primary, #8b5cf6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 15px;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-    }
-
-    /* Category Cards (View 2) */
-    .category-card {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .category-card:active {
-      transform: scale(0.98);
-      background: rgba(30, 41, 59, 0.9);
-    }
-
-    /* Item Card (View 3) */
-    .item-record-card {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .empty-state-box {
-      text-align: center;
-      padding: 36px 20px;
-      background: rgba(30, 41, 59, 0.4);
-      border: 1px dashed rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
-
-    /* Buttons */
-    .btn-submit-primary {
-      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-      border: none;
-      color: #ffffff;
-      padding: 12px 28px;
-      border-radius: 9999px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
-      transition: transform 0.15s;
-    }
-
-    .btn-submit-primary:active { transform: scale(0.96); }
 
     .btn-draft-bright {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #ffffff;
-      padding: 12px 22px;
+      padding: 11px 24px;
       border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
       font-size: 14px;
       font-weight: 800;
       cursor: pointer;
+      white-space: nowrap;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: transform 0.15s;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-draft-bright:active {
+      transform: scale(0.96);
     }
 
-    .btn-draft-bright:active { transform: scale(0.96); }
+    .btn-submit-primary {
+      padding: 11px 26px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-submit-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
 
     .btn-step-back {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: var(--text-secondary, #94a3b8);
-      padding: 10px 20px;
+      padding: 11px 22px;
       border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
       font-size: 13.5px;
       font-weight: 700;
       cursor: pointer;
+      white-space: nowrap;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-step-back:active {
+      transform: scale(0.96);
     }
 
-    .file-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(124, 58, 237, 0.15);
-      border: 1px solid rgba(124, 58, 237, 0.3);
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: 11.5px;
-      color: #c4b5fd;
+    /* Toast Notification */
+    .toast-box {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .toast-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
@@ -369,20 +288,17 @@
 
   <div class="phone-container">
     
-    <!-- TOP STICKY HEADER -->
+    <!-- TOP HEADER -->
     <div class="cal-top-header">
       <phone-status-bar time="13:08" style="color: #ffffff;"></phone-status-bar>
       
-      <div class="header-nav-row">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="javascript:void(0)" class="header-back-btn" onclick="handleHeaderBack()" aria-label="Back">
-            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-          </a>
-          <h1 class="header-title-text" id="headerNavTitle">Expense Claim</h1>
-        </div>
-        <div style="color: #ffffff; opacity: 0.8; cursor: pointer; padding: 4px;">
-          <i class="fa-solid fa-ellipsis-vertical" style="font-size: 18px;"></i>
-        </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <button type="button" class="header-back-btn" onclick="handleHeaderBack()" aria-label="Back" title="Back"
+          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; outline: none;">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        <h1 id="headerNavTitle" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Expense Claim</h1>
+        <div style="width: 36px;"></div>
       </div>
     </div>
 
@@ -396,9 +312,9 @@
 
         <!-- MAIN INFO CARD -->
         <div class="form-card">
-          <div class="section-title-bar">
-            <i class="fa-solid fa-file-invoice-dollar" style="color: var(--purple-primary);"></i>
-            <span>Main Form Info</span>
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">MAIN FORM INFO</span>
           </div>
 
           <!-- Claim Period (Year) & Month -->
@@ -432,11 +348,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
             <div>
               <label class="field-label">Date From :</label>
-              <input type="date" id="claimDateFrom" class="form-ctrl" value="2026-09-23" />
+              <input type="text" id="claimDateFrom" class="form-ctrl" value="23/09/2026" />
             </div>
             <div>
               <label class="field-label">Date To :</label>
-              <input type="date" id="claimDateTo" class="form-ctrl" value="2026-09-23" />
+              <input type="text" id="claimDateTo" class="form-ctrl" value="23/09/2026" />
             </div>
           </div>
 
@@ -511,54 +427,55 @@
           <!-- Remarks -->
           <div class="field-group" style="margin-bottom: 0;">
             <label class="field-label">Remarks :</label>
-            <textarea id="claimRemarks" class="form-ctrl" rows="2" placeholder="Enter remarks..." style="resize: none;"></textarea>
+            <input type="text" id="claimRemarks" class="form-ctrl" placeholder="Enter remarks..." />
           </div>
         </div>
 
-        <!-- AGGREGATED SUMMARY ROW (Drill-down to View 2) -->
-        <div class="summary-aggregate-row" onclick="switchView('view-2-categories', 'Claim Categories')">
-          <div class="agg-left">
-            <div class="agg-icon-box">
+        <!-- AGGREGATED SUMMARY ROW (Vibrant purple summary card) -->
+        <div class="category-summary-row" onclick="switchView('view-2-categories', 'Claim Categories')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
               <i class="fa-solid fa-receipt"></i>
             </div>
             <div>
-              <div class="agg-title">Total Claim</div>
-              <div class="agg-amount" id="mainTotalClaimDisplay">RM 165.00</div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL CLAIM AMOUNT</div>
+              <div id="mainTotalClaimDisplay" style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">RM 165.00</div>
             </div>
           </div>
-          <div class="agg-btn-drill">
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
+            <span>Details</span>
             <i class="fa-solid fa-chevron-right"></i>
           </div>
         </div>
 
         <!-- UPLOAD ATTACHMENTS (Main Form) -->
         <div class="form-card">
-          <div class="section-title-bar">
-            <i class="fa-solid fa-paperclip" style="color: var(--purple-primary);"></i>
-            <span>Upload Attachments</span>
-          </div>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 10px 0;">
+          <label class="field-label" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Upload Attachments:</label>
+          
+          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
             <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
-              <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px;">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
                 <i class="fa-solid fa-file-arrow-up"></i>
               </div>
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
             </div>
+
             <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
-              <div style="width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
                 <i class="fa-solid fa-camera"></i>
               </div>
               <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
             </div>
           </div>
-          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+
+          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
         </div>
 
         <!-- BOTTOM ACTION BUTTONS -->
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
           <button type="button" class="btn-draft-bright" onclick="saveDraft()">
             <i class="fa-solid fa-floppy-disk"></i>
-            <span>Draft</span>
+            <span>Save Draft</span>
           </button>
           <button type="button" class="btn-submit-primary" onclick="submitExpenseClaim()">
             <span>Submit</span>
@@ -573,25 +490,25 @@
       <!-- ========================================================= -->
       <div class="view-container" id="view-2-categories">
         
-        <div style="font-size: 14px; font-weight: 800; color: #ffffff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-layer-group" style="color: var(--purple-primary);"></i>
-          <span>Select Expense Category</span>
+        <div style="margin-bottom: 14px;">
+          <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Select Expense Category</h2>
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Select a category to view or add detailed items</span>
         </div>
 
         <!-- CATEGORY: EXPENSE ITEMS -->
         <div class="category-card" onclick="openCategoryItems('expense')">
           <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.18); border: 1px solid rgba(124, 58, 237, 0.35); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
               <i class="fa-solid fa-receipt"></i>
             </div>
             <div>
-              <div style="font-size: 15px; font-weight: 800; color: #ffffff;">Expense Items</div>
-              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;" id="catExpenseCount">2 records added</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Expense Items</div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;" id="catExpenseCount">2 records added</div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 16px; font-weight: 900; color: #ffffff;" id="catExpenseSum">RM 165.00</div>
-            <i class="fa-solid fa-chevron-right" style="color: var(--text-secondary); font-size: 14px;"></i>
+            <div style="font-size: 15px; font-weight: 900; color: var(--text-primary);" id="catExpenseSum">RM 165.00</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
 
@@ -609,8 +526,16 @@
       <!-- ========================================================= -->
       <div class="view-container" id="view-3-list">
         
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-          <div style="font-size: 15px; font-weight: 800; color: #ffffff;" id="view3CatTitle">Expense Items</div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+              <h2 id="view3CatTitle" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Expense Items</h2>
+              <span style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Manage detailed claim items</span>
+            </div>
+          </div>
           <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px;" onclick="openSubForm('add')">
             <i class="fa-solid fa-plus"></i>
             <span>Add Item</span>
@@ -640,7 +565,7 @@
           <!-- Populated by JS for Expense Details -->
         </div>
 
-        <!-- BOTTOM ACTION BUTTONS (Matching Screenshot 2026-09-24 110146.png) -->
+        <!-- BOTTOM ACTION BUTTONS -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
           <button type="button" class="btn-step-back" onclick="switchView('view-3-list', getCategoryTitle(formData.activeCategory))">
             <i class="fa-solid fa-xmark"></i>
@@ -655,9 +580,16 @@
       </div>
 
     </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
 
   <input type="file" id="globalFileInput" style="display: none;" onchange="handleFileSelect(this)" />
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-box">
+    <span id="toastText">Action completed successfully</span>
+  </div>
 
   <script>
     const formData = {
@@ -676,6 +608,18 @@
     const mainAttachments = [];
     const subAttachments = [];
 
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const toastText = document.getElementById('toastText');
+      if (toast && toastText) {
+        toastText.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2800);
+      }
+    }
+
     function switchView(viewId, title) {
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
       const target = document.getElementById(viewId);
@@ -685,6 +629,8 @@
       if (title) {
         document.getElementById('headerNavTitle').innerText = title;
       }
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
       window.scrollTo(0, 0);
     }
 
@@ -720,12 +666,12 @@
 
       if (items.length === 0) {
         container.innerHTML = `
-          <div class="empty-state-box">
-            <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 22px; margin: 0 auto 12px;">
+          <div style="text-align: center; padding: 40px 20px; background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 20px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
               <i class="fa-solid fa-receipt"></i>
             </div>
-            <div style="font-size: 15px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">No items added yet</div>
-            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">Click button below to add your first expense item</div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Click button below to add your first expense item</div>
             <button type="button" class="btn-submit-primary" style="padding: 9px 20px; font-size: 13px;" onclick="openSubForm('add')">
               <i class="fa-solid fa-plus"></i>
               <span>Add Item</span>
@@ -738,18 +684,18 @@
       let html = '';
       items.forEach((item, idx) => {
         html += `
-          <div class="item-record-card">
-            <div style="flex: 1;" onclick="openSubForm('edit', ${idx})">
-              <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.company || item.expense}</div>
-              <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">
-                ${item.receiptNo ? item.receiptNo + ' • ' : ''}${item.desc || item.expense}
+          <div class="form-card" style="margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="flex: 1; cursor: pointer;" onclick="openSubForm('edit', ${idx})">
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.company || item.expense}</div>
+                <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                  ${item.receiptNo ? item.receiptNo + ' • ' : ''}${item.desc || item.expense}
+                </div>
               </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="font-size: 15px; font-weight: 900; color: #ffffff;">RM ${item.amount.toFixed(2)}</div>
-              <button type="button" onclick="deleteSubItem(${idx})" style="background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-trash-can" style="font-size: 12px;"></i>
-              </button>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 15px; font-weight: 900; color: var(--text-primary);">RM ${item.amount.toFixed(2)}</div>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+              </div>
             </div>
           </div>
         `;
@@ -851,23 +797,23 @@
             <input type="text" id="eLocalAmount" class="form-ctrl" value="${item ? item.amount.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
           </div>
 
-          <div style="margin-top: 14px;">
+          <div style="margin-top: 18px;">
             <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments:</label>
             <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
               <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
                   <i class="fa-solid fa-file-arrow-up"></i>
                 </div>
-                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
               </div>
               <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
                   <i class="fa-solid fa-camera"></i>
                 </div>
-                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
               </div>
             </div>
-            <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+            <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
           </div>
         </div>
       `;
@@ -901,7 +847,7 @@
 
       updateTotals();
       openCategoryItems(catKey);
-      if (typeof showToast === 'function') showToast('✓ Expense Item saved!');
+      showToast('✅ Expense Item saved!');
     }
 
     function deleteSubItem(index) {
@@ -909,16 +855,19 @@
       formData.items[catKey].splice(index, 1);
       updateTotals();
       renderView3List();
-      if (typeof showToast === 'function') showToast('Item deleted');
+      showToast('🗑️ Item removed');
     }
 
     function updateTotals() {
       const expSum = (formData.items.expense || []).reduce((sum, item) => sum + item.amount, 0);
 
-      document.getElementById('catExpenseSum').innerText = `RM ${expSum.toFixed(2)}`;
-      document.getElementById('catExpenseCount').innerText = `${formData.items.expense.length} records added`;
+      const catSumEl = document.getElementById('catExpenseSum');
+      const catCntEl = document.getElementById('catExpenseCount');
+      const mainTotEl = document.getElementById('mainTotalClaimDisplay');
 
-      document.getElementById('mainTotalClaimDisplay').innerText = `RM ${expSum.toFixed(2)}`;
+      if (catSumEl) catSumEl.innerText = `RM ${expSum.toFixed(2)}`;
+      if (catCntEl) catCntEl.innerText = `${formData.items.expense.length} records added`;
+      if (mainTotEl) mainTotEl.innerText = `RM ${expSum.toFixed(2)}`;
     }
 
     function triggerFileUpload(ctx) {
@@ -931,33 +880,44 @@
         const fname = input.files[0].name;
         if (activeUploadContext === 'main') {
           mainAttachments.push(fname);
-          renderChips('mainChipsList', mainAttachments);
+          renderChips('mainChipsList', mainAttachments, 'main');
         } else {
           subAttachments.push(fname);
-          renderChips('subChipsList', subAttachments);
+          renderChips('subChipsList', subAttachments, 'sub');
         }
+        showToast(`📎 Attachment added: ${fname}`);
       }
     }
 
-    function renderChips(containerId, list) {
+    function renderChips(containerId, list, target) {
       const container = document.getElementById(containerId);
       if (!container) return;
-      container.innerHTML = list.map(f => `
-        <div class="file-chip">
+      container.innerHTML = list.map((f, idx) => `
+        <div style="background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); padding: 5px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
           <i class="fa-solid fa-paperclip"></i>
           <span>${f}</span>
+          <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 11px;" onclick="removeFile('${target}', ${idx})"></i>
         </div>
       `).join('');
     }
 
+    function removeFile(target, idx) {
+      if (target === 'main') {
+        mainAttachments.splice(idx, 1);
+        renderChips('mainChipsList', mainAttachments, 'main');
+      } else {
+        subAttachments.splice(idx, 1);
+        renderChips('subChipsList', subAttachments, 'sub');
+      }
+      showToast('🗑️ Attachment removed');
+    }
+
     function saveDraft() {
-      if (typeof showToast === 'function') showToast('💾 Expense Claim draft saved!');
-      else alert('Expense Claim draft saved!');
+      showToast('💾 Expense Claim draft saved!');
     }
 
     function submitExpenseClaim() {
-      if (typeof showToast === 'function') showToast('🚀 Expense Claim submitted successfully!');
-      else alert('Expense Claim submitted successfully!');
+      showToast('🚀 Expense Claim submitted successfully!');
       setTimeout(() => {
         window.location.href = '../index.html';
       }, 1200);

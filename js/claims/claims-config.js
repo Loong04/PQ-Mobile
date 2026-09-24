@@ -137,6 +137,22 @@ window.CLAIM_OPTIONS = [
     ]
   },
   {
+    id: 'travel_request',
+    name: 'Travel Request',
+    icon: '✈️',
+    entitlementYear: '2026',
+    subCategories: [
+      {
+        id: 'travel_req',
+        name: 'TRAVEL REQUEST',
+        entitled: 5000.00,
+        claimed: 1200.00,
+        pending: 0.00,
+        usable: 3800.00
+      }
+    ]
+  },
+  {
     id: 'entertainment',
     name: 'Entertainment',
     icon: '🍽️',
