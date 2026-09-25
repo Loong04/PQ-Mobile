@@ -318,8 +318,8 @@
     .stepper-line-bg {
       position: absolute;
       top: 15px;
-      left: 12.5%;
-      right: 12.5%;
+      left: 16.66%;
+      right: 16.66%;
       height: 2px;
       background: rgba(255, 255, 255, 0.12);
       z-index: 1;
@@ -327,7 +327,7 @@
     .stepper-line-fill {
       position: absolute;
       top: 15px;
-      left: 12.5%;
+      left: 16.66%;
       height: 2px;
       background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -348,7 +348,7 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      background: var(--bg-card);
+      background: #171529;
       border: 2px solid rgba(255, 255, 255, 0.2);
       color: var(--text-muted);
       display: flex;
@@ -365,11 +365,12 @@
       white-space: nowrap;
       transition: all 0.25s ease;
     }
-    /* Completed State: Green Outline & Text */
+    /* Completed State: Green Outline & Text on Opaque Dark Background */
     .stepper-item.completed .stepper-circle {
       border-color: #10b981;
-      background: rgba(16, 185, 129, 0.18);
+      background: #171529;
       color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
     }
     .stepper-item.completed .stepper-label {
       color: #34d399;
@@ -412,7 +413,7 @@
     <!-- Main Content Container (4-Level Drill-down Views) -->
     <div class="main-content">
       
-      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Treatment, 3: Expense) -->
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Medical, 3: Details) -->
       <div class="claim-stepper-card">
         <div class="stepper-track-container">
           <div class="stepper-line-bg"></div>
@@ -424,11 +425,11 @@
           </div>
           <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
             <div class="stepper-circle">2</div>
-            <span class="stepper-label">Treatment</span>
+            <span class="stepper-label">Medical</span>
           </div>
           <div class="stepper-item" id="stepNode-3" onclick="navigateToStep(3)">
             <div class="stepper-circle">3</div>
-            <span class="stepper-label">Expense</span>
+            <span class="stepper-label">Details</span>
           </div>
         </div>
       </div>
@@ -637,10 +638,6 @@
               <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
             </div>
           </div>
-          <button type="button" class="btn-add-purple" onclick="openEntryForm()">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add Item</span>
-          </button>
         </div>
 
         <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
@@ -715,7 +712,7 @@
         sicknessType: 'Fever & Flu'
       },
       expenseItems: [],
-      activeCategory: 'expense',
+      activeCategory: '',
       currentView: 'view-1-main',
       uploadTarget: 'main'
     };
@@ -723,7 +720,7 @@
     function updateStepperUI(stepNum) {
       const lineFill = document.getElementById('stepperLineFill');
       if (lineFill) {
-        const pcts = ['0%', '33.33%', '66.66%'];
+        const pcts = ['0%', '50%', '100%'];
         lineFill.style.width = pcts[stepNum - 1] || '0%';
       }
 
@@ -731,6 +728,8 @@
         const node = document.getElementById(`stepNode-${i}`);
         if (!node) continue;
         node.classList.remove('active', 'completed');
+        const circle = node.querySelector('.stepper-circle');
+        if (circle) circle.textContent = i;
         if (i < stepNum) {
           node.classList.add('completed');
         } else if (i === stepNum) {
@@ -750,7 +749,6 @@
         renderView3List();
         switchView('view-3-list', 'Details');
       }
-      updateStepperUI(stepNum);
     }
 
     function switchView(viewId, headerTitle) {
@@ -764,11 +762,15 @@
         titleTextEl.innerText = headerTitle;
       }
 
-      if (viewId === 'view-1-main') updateStepperUI(1);
-      else if (viewId === 'view-2-categories') updateStepperUI(2);
-      else if (viewId === 'view-3-list') updateStepperUI(3);
-      else if (viewId === 'view-4-entry') {
-        updateStepperUI(formData.activeCategory === 'treatment' ? 2 : 3);
+      // Sync stepper state based on active category & view
+      if (viewId === 'view-1-main') {
+        updateStepperUI(1);
+      } else if (formData.activeCategory === 'treatment') {
+        updateStepperUI(2);
+      } else if (formData.activeCategory === 'expense') {
+        updateStepperUI(3);
+      } else {
+        updateStepperUI(1);
       }
 
       const mainContent = document.querySelector('.main-content');
@@ -778,7 +780,11 @@
 
     function handleHeaderBack() {
       if (formData.currentView === 'view-4-entry') {
-        switchView('view-3-list', getCategoryTitle(formData.activeCategory));
+        if (formData.activeCategory === 'treatment') {
+          switchView('view-2-categories', 'Claim Categories');
+        } else {
+          switchView('view-3-list', getCategoryTitle(formData.activeCategory));
+        }
       } else if (formData.currentView === 'view-3-list') {
         switchView('view-2-categories', 'Claim Categories');
       } else if (formData.currentView === 'view-2-categories') {
@@ -847,6 +853,16 @@
           </div>
         `;
       });
+
+      html += `
+        <div style="text-align: center; margin-top: 14px; margin-bottom: 6px;">
+          <button type="button" class="btn-submit-primary" style="padding: 9px 22px; font-size: 13px;" onclick="openEntryForm('add')">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Item</span>
+          </button>
+        </div>
+      `;
+
       container.innerHTML = html;
     }
 

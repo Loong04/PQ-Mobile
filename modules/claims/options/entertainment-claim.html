@@ -341,7 +341,7 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      background: var(--bg-card);
+      background: #171529;
       border: 2px solid rgba(255, 255, 255, 0.2);
       color: var(--text-muted);
       display: flex;
@@ -361,8 +361,9 @@
     /* Completed State: Green Outline & Text */
     .stepper-item.completed .stepper-circle {
       border-color: #10b981;
-      background: rgba(16, 185, 129, 0.18);
+      background: #171529;
       color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
     }
     .stepper-item.completed .stepper-label {
       color: #34d399;
@@ -732,10 +733,6 @@
               <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
             </div>
           </div>
-          <button type="button" class="btn-add-purple" onclick="openEntryForm()">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add Item</span>
-          </button>
         </div>
 
         <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
@@ -817,7 +814,7 @@
         addedEmployees: [],
         addedGuests: []
       },
-      activeCategory: 'details',
+      activeCategory: '',
       currentView: 'view-1-main',
       uploadTarget: 'main'
     };
@@ -828,15 +825,18 @@
       if (!steps.length) return;
 
       const totalSteps = steps.length;
-      let maxPercent = totalSteps === 2 ? 50 : 75;
-      let progressRatio = (stepNum - 1) / (totalSteps - 1);
+      let progressRatio = totalSteps > 1 ? (stepNum - 1) / (totalSteps - 1) : 0;
       if (lineFill) {
-        lineFill.style.width = (progressRatio * maxPercent) + '%';
+        lineFill.style.width = (progressRatio * 75) + '%';
       }
 
       steps.forEach((stepEl, idx) => {
         const s = idx + 1;
         stepEl.classList.remove('active', 'completed');
+        const circle = stepEl.querySelector('.stepper-circle');
+
+        if (circle) circle.textContent = s;
+
         if (s < stepNum) {
           stepEl.classList.add('completed');
         } else if (s === stepNum) {
@@ -878,7 +878,7 @@
       } else if (formData.activeCategory === 'guests') {
         updateStepper(4);
       } else {
-        updateStepper(2);
+        updateStepper(1);
       }
 
       const mainContent = document.querySelector('.main-content');
@@ -909,6 +909,20 @@
       formData.activeCategory = categoryKey;
       renderView3List();
       switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function toggleItemCard(cardId) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const body = card.querySelector('.item-details-body');
+      const icon = card.querySelector('.toggle-icon');
+      if (!body) return;
+
+      const isHidden = body.style.display === 'none';
+      body.style.display = isHidden ? 'block' : 'none';
+      if (icon) {
+        icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
     }
 
     function renderView3List() {
@@ -945,7 +959,7 @@
             </div>
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
             <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">Click below to add a new record to ${catName}</div>
-            <button type="button" class="btn-add-purple" onclick="openEntryForm()">
+            <button type="button" class="btn-add-purple" onclick="openEntryForm('add')">
               <i class="fa-solid fa-plus"></i>
               <span>Add to ${catName}</span>
             </button>
@@ -956,48 +970,132 @@
 
       let html = '';
       items.forEach((item, idx) => {
+        const cardId = `entCard_${catKey}_${idx}`;
         if (catKey === 'details') {
           html += `
-            <div class="form-card" style="margin-bottom: 10px;">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type}</div>
-                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desc}</div>
+            <div class="form-card" id="${cardId}" style="margin-bottom: 12px; transition: all 0.25s ease;">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-receipt"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type || 'Entertainment Item'}</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desc || 'No description'}</div>
+                  </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${item.amt.toFixed(2)}</div>
-                  <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.amt || 0).toFixed(2)}</div>
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px; margin-bottom: 12px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expense Category:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'CLIENT ENTERTAINMENT'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Receipt Ref:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.ref || 'REC-88412'}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'Client Business Lunch Meeting'}</div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+                  <button type="button" class="btn-step-back" style="padding: 6px 14px; font-size: 11.5px; border-radius: 10px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Edit Details</span>
+                  </button>
                 </div>
               </div>
             </div>
           `;
         } else if (catKey === 'employees') {
           html += `
-            <div class="form-card" style="margin-bottom: 10px;">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.name}</div>
-                  <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#${item.empNo}</div>
-                  <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${item.pos} • ${item.dept}</div>
+            <div class="form-card" id="${cardId}" style="margin-bottom: 12px; transition: all 0.25s ease;">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.14); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-user"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.name}</div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#${item.empNo}</div>
+                  </div>
                 </div>
-                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px; margin-bottom: 12px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Position / Title:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.pos || 'Staff'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Department:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dept || 'Engineering'}</div>
+                  </div>
+                </div>
               </div>
             </div>
           `;
         } else if (catKey === 'guests') {
           html += `
-            <div class="form-card" style="margin-bottom: 10px;">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.name} <span style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); margin-left: 4px;">${item.rel}</span></div>
-                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desig ? item.desig + ' • ' : ''}${item.comp}</div>
+            <div class="form-card" id="${cardId}" style="margin-bottom: 12px; transition: all 0.25s ease;">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-user-tie"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.name} <span style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); margin-left: 4px;">${item.rel}</span></div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desig ? item.desig + ' • ' : ''}${item.comp}</div>
+                  </div>
                 </div>
-                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px; margin-bottom: 12px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Organization / Company:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.comp || 'Acme Corp'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Relationship:</span>
+                    <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">${item.rel || 'Client'}</div>
+                  </div>
+                </div>
               </div>
             </div>
           `;
         }
       });
+
+      html += `
+        <div style="text-align: center; margin-top: 14px; margin-bottom: 6px;">
+          <button type="button" class="btn-submit-primary" style="padding: 9px 22px; font-size: 13px;" onclick="openEntryForm('add')">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Item</span>
+          </button>
+        </div>
+      `;
+
       container.innerHTML = html;
     }
 

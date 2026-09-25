@@ -300,8 +300,8 @@
     .stepper-line-bg {
       position: absolute;
       top: 15px;
-      left: 16.66%;
-      right: 16.66%;
+      left: 25%;
+      right: 25%;
       height: 2px;
       background: rgba(255, 255, 255, 0.12);
       z-index: 1;
@@ -309,7 +309,7 @@
     .stepper-line-fill {
       position: absolute;
       top: 15px;
-      left: 16.66%;
+      left: 25%;
       height: 2px;
       background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -330,7 +330,7 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      background: var(--bg-card);
+      background: #171529;
       border: 2px solid rgba(255, 255, 255, 0.2);
       color: var(--text-muted);
       display: flex;
@@ -350,8 +350,9 @@
     /* Completed State */
     .stepper-item.completed .stepper-circle {
       border-color: #10b981;
-      background: rgba(16, 185, 129, 0.18);
+      background: #171529;
       color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
     }
     .stepper-item.completed .stepper-label {
       color: #34d399;
@@ -394,11 +395,11 @@
     <!-- Main Content Container (4-Level Drill-down Views) -->
     <div class="main-content">
       
-      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Advance, 3: Details) -->
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Details) -->
       <div class="claim-stepper-card">
-        <div class="stepper-track-container">
-          <div class="stepper-line-bg"></div>
-          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%;"></div>
+        <div class="stepper-track-container" style="justify-content: space-around;">
+          <div class="stepper-line-bg" style="left: 25%; width: 50%;"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="left: 25%; width: 0%;"></div>
           
           <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
             <div class="stepper-circle">1</div>
@@ -406,10 +407,6 @@
           </div>
           <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
             <div class="stepper-circle">2</div>
-            <span class="stepper-label">Advance</span>
-          </div>
-          <div class="stepper-item" id="stepNode-3" onclick="navigateToStep(3)">
-            <div class="stepper-circle">3</div>
             <span class="stepper-label">Details</span>
           </div>
         </div>
@@ -526,7 +523,7 @@
         </div>
 
         <!-- AGGREGATED SUMMARY ROW (Level 1 Total Claim & Drill-down Entry) -->
-        <div class="category-summary-row" onclick="switchView('view-2-categories', 'Advance Categories')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+        <div class="category-summary-row" onclick="openCategoryItems('advance')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
           <div style="display: flex; align-items: center; gap: 14px;">
             <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
               <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -581,47 +578,6 @@
       </div>
 
       <!-- ========================================================= -->
-      <!-- VIEW 2: CATEGORY SUMMARY VIEW (分类聚合导航页) -->
-      <!-- ========================================================= -->
-      <div class="view-container" id="view-2-categories">
-        
-        <div style="margin-bottom: 14px;">
-          <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Advance Categories (1)</h2>
-          <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Manage your advance line items and amounts</span>
-        </div>
-
-        <!-- CATEGORY 1: ADVANCE EXPENSE DETAILS -->
-        <div class="category-card" onclick="openCategoryItems('advance')">
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
-              <i class="fa-solid fa-receipt"></i>
-            </div>
-            <div>
-              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Expense</div>
-              <div id="catAdvanceSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (Travel, Meals, Lodging)</div>
-            </div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catAdvanceAmount" style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM 0.00</div>
-            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
-          </div>
-        </div>
-
-        <!-- BOTTOM ACTION BUTTONS -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'Advance Request')">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span>Back to Application</span>
-          </button>
-          <button type="button" class="btn-submit-primary" onclick="submitAdvanceClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
-
-      </div>
-
-      <!-- ========================================================= -->
       <!-- VIEW 3: ITEM LIST VIEW (明细项列表页) -->
       <!-- ========================================================= -->
       <div class="view-container" id="view-3-list">
@@ -637,10 +593,6 @@
               <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
             </div>
           </div>
-          <button type="button" class="btn-add-purple" onclick="openEntryForm()">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add Item</span>
-          </button>
         </div>
 
         <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
@@ -650,9 +602,9 @@
 
         <!-- BOTTOM ACTION BUTTONS -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-          <button type="button" class="btn-step-back" onclick="switchView('view-2-categories', 'Advance Categories')">
+          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'Advance Request')">
             <i class="fa-solid fa-arrow-left"></i>
-            <span>Back to Categories</span>
+            <span>Back to Application</span>
           </button>
           <button type="button" class="btn-submit-primary" onclick="submitAdvanceClaim()">
             <span>Submit</span>
@@ -674,7 +626,7 @@
 
         <!-- BOTTOM ACTION BUTTONS -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-          <button type="button" class="btn-step-back" onclick="switchView('view-3-list')">
+          <button type="button" class="btn-step-back" onclick="switchView('view-3-list', getCategoryTitle(formData.activeCategory))">
             <i class="fa-solid fa-xmark"></i>
             <span>Cancel</span>
           </button>
@@ -713,7 +665,7 @@
       claimDetails: {
         addedDetails: []
       },
-      activeCategory: 'advance',
+      activeCategory: '',
       currentView: 'view-1-main',
       uploadTarget: 'main'
     };
@@ -721,14 +673,15 @@
     function updateStepperUI(stepNum) {
       const lineFill = document.getElementById('stepperLineFill');
       if (lineFill) {
-        const pcts = ['0%', '33.33%', '66.66%'];
-        lineFill.style.width = pcts[stepNum - 1] || '0%';
+        lineFill.style.width = stepNum >= 2 ? '50%' : '0%';
       }
 
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 2; i++) {
         const node = document.getElementById(`stepNode-${i}`);
         if (!node) continue;
         node.classList.remove('active', 'completed');
+        const circle = node.querySelector('.stepper-circle');
+        if (circle) circle.textContent = i;
         if (i < stepNum) {
           node.classList.add('completed');
         } else if (i === stepNum) {
@@ -742,10 +695,7 @@
         switchView('view-1-main', 'Advance Request');
       } else if (stepNum === 2) {
         openCategoryItems('advance');
-      } else if (stepNum === 3) {
-        openEntryForm();
       }
-      updateStepperUI(stepNum);
     }
 
     function switchView(viewId, headerTitle) {
@@ -759,10 +709,11 @@
         titleTextEl.innerText = headerTitle;
       }
 
-      if (viewId === 'view-1-main') updateStepperUI(1);
-      else if (viewId === 'view-2-categories') updateStepperUI(2);
-      else if (viewId === 'view-3-list') updateStepperUI(2);
-      else if (viewId === 'view-4-entry') updateStepperUI(3);
+      if (viewId === 'view-3-list' || viewId === 'view-4-entry' || formData.activeCategory === 'advance') {
+        updateStepperUI(2);
+      } else {
+        updateStepperUI(1);
+      }
 
       const mainContent = document.querySelector('.main-content');
       if (mainContent) mainContent.scrollTop = 0;
@@ -773,8 +724,6 @@
       if (formData.currentView === 'view-4-entry') {
         switchView('view-3-list', getCategoryTitle(formData.activeCategory));
       } else if (formData.currentView === 'view-3-list') {
-        switchView('view-2-categories', 'Advance Categories');
-      } else if (formData.currentView === 'view-2-categories') {
         switchView('view-1-main', 'Advance Request');
       } else {
         window.location.href = '../index.html';
@@ -839,6 +788,16 @@
           </div>
         `;
       });
+
+      html += `
+        <div style="text-align: center; margin-top: 14px; margin-bottom: 6px;">
+          <button type="button" class="btn-submit-primary" style="padding: 9px 22px; font-size: 13px;" onclick="openEntryForm('add')">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Item</span>
+          </button>
+        </div>
+      `;
+
       container.innerHTML = html;
     }
 
@@ -850,6 +809,7 @@
     }
 
     function openEntryForm() {
+      formData.activeCategory = 'advance';
       const container = document.getElementById('v4SubFormContainer');
 
       container.innerHTML = `

@@ -4,7 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PeopleHCM - Shift Plan</title>
-  <script src="../../../js/components.js"></script>
+  <script src="../../../js/components.js">
+    function adjustDate(offset) {
+      if (!window.currentSummaryFilterDate) {
+        window.currentSummaryFilterDate = new Date(2026, 8, 24);
+      }
+      window.currentSummaryFilterDate.setDate(window.currentSummaryFilterDate.getDate() + offset);
+      const d = window.currentSummaryFilterDate;
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      
+      const displayEl = document.getElementById('filterDateDisplay');
+      if (displayEl) displayEl.value = `${dd}/${mm}/${yyyy}`;
+      const inputEl = document.getElementById('filterDateInput');
+      if (inputEl) inputEl.value = `${yyyy}-${mm}-${dd}`;
+      
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const dateFormattedStr = `${dd} ${monthNames[d.getMonth()]} ${yyyy}`;
+      const subDateEl = document.getElementById('kpiDateSubtitle');
+      if (subDateEl) subDateEl.textContent = dateFormattedStr;
+    }
+
+    function resetShiftTypeFilter() {
+      const select = document.getElementById('filterShiftType');
+      if (select) {
+        select.value = 'all';
+        if (typeof applyFilters === 'function') applyFilters();
+      }
+    }
+
+  </script>
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -439,13 +469,13 @@
     .cal-summary-stat { display: flex; flex-direction: column; gap: 2px; flex: 1; }
     .cal-summary-stat-val { font-size: 20px; font-weight: 800; color: var(--tag-blue-text); }
     .cal-summary-stat-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
-    .cal-summary-ot { font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #f1f5f9; margin-bottom: 16px; }
+    .cal-summary-ot { font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-subtle); margin-bottom: 16px; }
     .cal-summary-btn { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #7c3aed; background: transparent; color: var(--purple-primary); font-size: 12.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
-    .cal-summary-btn:active { transform: scale(0.98); background: #f5f3ff; }
+    .cal-summary-btn:active { transform: scale(0.98); background: var(--purple-subtle); }
 
     
     /* Hub and Spoke View Container */
-    .view-container { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: var(--bg-body); z-index: 10; overflow: hidden; flex-direction: column; }
+    .view-container { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: var(--bg-phone); z-index: 10; overflow: hidden; flex-direction: column; }
     .view-container.active { display: flex; z-index: 20; }
 
     /* Toast Notification */
@@ -646,7 +676,84 @@
     .card-kv-val {
       color: var(--text-primary);
       font-weight: 800;
-    }</style>
+    }
+    /* Filter Accordion Header Bar Pill (Matching Target Screenshot) */
+    .filter-header-bar-pill {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    }
+    .filter-header-pill-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.3px;
+    }
+    .filter-header-pill-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: #7c3aed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: transform 0.25s ease;
+    }
+    .filter-header-pill-icon.open {
+      transform: rotate(180deg);
+    }
+
+    /* Filter 2-Column Row Layout matching Target Screenshot */
+    .filter-row-grid {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .filter-row-label {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      width: 95px;
+      flex-shrink: 0;
+    }
+    .filter-row-input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 6px 10px;
+      gap: 6px;
+    }
+    .date-circle-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+      flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+    .date-circle-btn:active { transform: scale(0.9); }
+
+  </style>
 </head>
 <body>
   <preview-top-bar active-page="attendance"></preview-top-bar>
@@ -750,7 +857,7 @@
       </div>
 
       <!-- ================= 2. CALENDAR TAB CONTENT ================= -->
-      <div id="calendarTabView" style="display: none;">
+      <div id="calendarTabView" style="display: none; padding-bottom: 24px;">
         <div class="grid-cal-card">
           <div class="grid-cal-header">
             <div>
@@ -798,239 +905,246 @@
         <div class="cal-summary-card" id="calSummaryCard" style="display: none;">
           <div class="cal-summary-title" id="calSummaryTitle">Tue, 15 Sep 2026</div>
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0 0 0;">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="switchView('view-work-shift-summary')">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="openSummaryViewFromCal('view-work-shift-summary')">
               <div style="font-size: 12px; font-weight: 800; color: var(--text-muted);">Work Shift</div>
-              <div style="background: #52525b; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">269.00</div>
+              <div style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">269.00</div>
             </div>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="switchView('view-no-work-summary')">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="openSummaryViewFromCal('view-no-work-summary')">
               <div style="font-size: 12px; font-weight: 800; color: var(--text-muted);">No Work</div>
-              <div style="background: #52525b; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">13</div>
+              <div style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">13</div>
             </div>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="switchView('view-ot-plan-summary')">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="openSummaryViewFromCal('view-ot-plan-summary')">
               <div style="font-size: 12px; font-weight: 800; color: var(--text-muted);">OT Plan</div>
-              <div style="background: #52525b; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">73 / 127.00</div>
+              <div style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">73 / 127.00</div>
             </div>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="switchView('view-leave-summary')">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="openSummaryViewFromCal('view-leave-summary')">
               <div style="font-size: 12px; font-weight: 800; color: var(--text-muted);">On Leave</div>
-              <div style="background: #52525b; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">5.00</div>
+              <div style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 4px 12px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">5.00</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- ================= 3. SUMMARY TAB CONTENT ================= -->
-      <div id="summaryTabView" style="display: none;">
+      
+      <!-- ================= 3. SUMMARY TAB CONTENT (MATCHING TARGET DESIGN) ================= -->
+      <div id="summaryTabView" style="display: none; padding-bottom: 24px;">
 
-        <!-- 1. COLLAPSIBLE DATA FILTER ACCORDION CARD -->
-        <div class="filter-accordion-card">
-          <div class="filter-header-bar expanded" id="filterHeaderBar" onclick="toggleFilterAccordion()" title="Click to expand/collapse filters">
-            <div class="filter-badge-title">
-              <i class="fa-solid fa-sliders" style="font-size: 14px;"></i>
-              <span>Data Filter</span>
-            </div>
-            <div class="filter-toggle-icon open" id="filterToggleIcon">
+        <!-- 1. DATA FILTER PILL ACCORDION CARD -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+          <div class="filter-header-bar-pill" onclick="toggleFilterAccordion()" id="filterHeaderBar">
+            <span class="filter-header-pill-title">Data Filter</span>
+            <div class="filter-header-pill-icon open" id="filterToggleIcon">
               <i class="fa-solid fa-chevron-down"></i>
             </div>
           </div>
 
-          <div class="filter-body-container" id="filterBodyContainer">
-            <!-- Date Filter Field with Navigation Arrows -->
-            <div class="filter-field-row">
-              <label class="filter-label">Date:</label>
-              <div class="filter-input-wrap">
-                <button type="button" class="date-nav-btn" onclick="adjustDate(-1)" title="Previous Day">
+          <div id="filterBodyContainer" style="padding: 6px 16px 14px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Date Filter Row -->
+            <div class="filter-row-grid">
+              <label class="filter-row-label">Date:</label>
+              <div class="filter-row-input-wrap">
+                <input type="text" id="filterDateDisplay" value="24/09/2026" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 13px; font-weight: 800; outline: none;" readonly>
+                <button type="button" class="date-circle-btn" onclick="adjustDate(-1)" title="Previous Day">
                   <i class="fa-solid fa-arrow-left"></i>
                 </button>
-                <input type="date" id="filterDateInput" class="date-input-field" value="2026-09-24" onchange="handleDateInputChange()">
-                <button type="button" class="date-nav-btn" onclick="adjustDate(1)" title="Next Day">
+                <button type="button" class="date-circle-btn" onclick="adjustDate(1)" title="Next Day">
                   <i class="fa-solid fa-arrow-right"></i>
                 </button>
               </div>
             </div>
 
-            <!-- Shift Type Dropdown -->
-            <div class="filter-field-row">
-              <label class="filter-label">Shift Type:</label>
-              <select id="filterShiftType" class="filter-select" onchange="applyFilters()">
-                <option value="all">- All Shift Types -</option>
-                <option value="N/A">N/A (Non-Shift / Unassigned)</option>
-                <option value="OFF DAY">OFF DAY (Rest Day)</option>
-                <option value="0700:1500">0700:1500 (Morning)</option>
-                <option value="8.30:17.30W">8.30:17.30W (Standard)</option>
-              </select>
-            </div>
-
-            <!-- Department Dropdown -->
-            <div class="filter-field-row">
-              <label class="filter-label">Department:</label>
-              <select id="filterDepartment" class="filter-select" onchange="applyFilters()">
-                <option value="all">- All Departments -</option>
-                <option value="Accounting">Accounting</option>
-                <option value="Operations">Operations</option>
-                <option value="Production">Production</option>
-                <option value="Human Resource">Human Resource</option>
-                <option value="Logistics">Logistics</option>
-                <option value="Quality Control">Quality Control</option>
-              </select>
-            </div>
-
-            <!-- Branch Dropdown -->
-            <div class="filter-field-row">
-              <label class="filter-label">Branch:</label>
-              <select id="filterBranch" class="filter-select" onchange="applyFilters()">
-                <option value="all">- All Branches -</option>
-                <option value="HQ Main Branch">HQ Main Branch</option>
-                <option value="Times Square Branch">Times Square Branch</option>
-                <option value="Subang Factory">Subang Factory</option>
-                <option value="Penang Hub">Penang Hub</option>
-              </select>
-            </div>
-
-            <!-- Section Dropdown -->
-            <div class="filter-field-row">
-              <label class="filter-label">Section:</label>
-              <select id="filterSection" class="filter-select" onchange="applyFilters()">
-                <option value="all">- All Sections -</option>
-                <option value="General Operations">General Operations</option>
-                <option value="Assembly Line">Assembly Line</option>
-                <option value="Finance Operations">Finance Operations</option>
-              </select>
-            </div>
-
-            <!-- Cost Centre Dropdown -->
-            <div class="filter-field-row">
-              <label class="filter-label">Cost Centre:</label>
-              <select id="filterCostCentre" class="filter-select" onchange="applyFilters()">
-                <option value="all">- All Cost Centers -</option>
-                <option value="CC-101 HQ Ops">CC-101 HQ Ops</option>
-                <option value="CC-202 Tech Dept">CC-202 Tech Dept</option>
-                <option value="CC-303 Accounts">CC-303 Accounts</option>
-                <option value="CC-404 Logistics">CC-404 Logistics</option>
-              </select>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="filter-actions-row">
-              <button type="button" class="btn-filter-reset" onclick="resetFilters()">
-                <i class="fa-solid fa-rotate-left"></i> Reset
-              </button>
-              <button type="button" class="btn-filter-search" onclick="applyFilters()">
-                <i class="fa-solid fa-magnifying-glass"></i> Search
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. HERO TOTAL OVERVIEW CARD WITH VIEW CHART BUTTON -->
-        <div class="history-card-item" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(109, 40, 217, 0.05) 100%); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.6px;">Total Headcount</div>
-              <div style="font-size: 28px; font-weight: 900; color: var(--text-primary); margin: 2px 0;" id="kpiTotalHeadcount">287 Staff</div>
-              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
-                <span><i class="fa-regular fa-calendar" style="margin-right: 4px;"></i><span id="kpiDateSubtitle">24 Sep 2026</span></span>
-                <span>&bull;</span>
-                <span><span id="kpiShiftCount" style="color: var(--purple-primary); font-weight: 800;">2</span> Shifts</span>
+            <!-- Shift Type Row -->
+            <div class="filter-row-grid">
+              <label class="filter-row-label">Shift Type:</label>
+              <div class="filter-row-input-wrap">
+                <select id="filterShiftType" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 12.5px; font-weight: 700; outline: none;" onchange="applyFilters()">
+                  <option value="all">- All Shift Types -</option>
+                  <option value="N/A">N/A (Unassigned)</option>
+                  <option value="OFF DAY">OFF DAY</option>
+                </select>
+                <i class="fa-solid fa-circle-xmark" style="color: var(--text-muted); cursor: pointer; font-size: 13px;" onclick="resetShiftTypeFilter()"></i>
               </div>
             </div>
 
-            <!-- AGENTS.md View Chart Button Presentation Standard -->
-            <button type="button" class="view-chart-btn" onclick="openChartModal()" title="View Chart">
-              <i class="fa-solid fa-chart-pie"></i><span>View Chart</span>
-            </button>
+            <!-- Department Row -->
+            <div class="filter-row-grid">
+              <label class="filter-row-label">Department:</label>
+              <div class="filter-row-input-wrap">
+                <select id="filterDepartment" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 12.5px; font-weight: 700; outline: none;" onchange="applyFilters()">
+                  <option value="all">- All Departments -</option>
+                  <option value="Accounting">Accounting</option>
+                  <option value="Operations">Operations</option>
+                  <option value="Quality Control">Quality Control</option>
+                  <option value="Production">Production</option>
+                  <option value="Human Resource">Human Resource</option>
+                  <option value="Logistics">Logistics</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Branch Row -->
+            <div class="filter-row-grid">
+              <label class="filter-row-label">Branch:</label>
+              <div class="filter-row-input-wrap">
+                <select id="filterBranch" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 12.5px; font-weight: 700; outline: none;" onchange="applyFilters()">
+                  <option value="all">- All Branches -</option>
+                  <option value="HQ Main Branch">HQ Main Branch</option>
+                  <option value="Times Square Branch">Times Square Branch</option>
+                  <option value="Subang Factory">Subang Factory</option>
+                  <option value="Penang Hub">Penang Hub</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Section Row -->
+            <div class="filter-row-grid">
+              <label class="filter-row-label">Section:</label>
+              <div class="filter-row-input-wrap">
+                <select id="filterSection" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 12.5px; font-weight: 700; outline: none;" onchange="applyFilters()">
+                  <option value="all">- All Sections -</option>
+                  <option value="General Operations">General Operations</option>
+                  <option value="Assembly Line">Assembly Line</option>
+                  <option value="Finance Operations">Finance Operations</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Cost Centre Row -->
+            <div class="filter-row-grid">
+              <label class="filter-row-label">Cost Centre:</label>
+              <div class="filter-row-input-wrap">
+                <select id="filterCostCentre" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 12.5px; font-weight: 700; outline: none;" onchange="applyFilters()">
+                  <option value="all">- All Cost Centers -</option>
+                  <option value="CC-101 HQ Ops">CC-101 HQ Ops</option>
+                  <option value="CC-202 Tech Dept">CC-202 Tech Dept</option>
+                  <option value="CC-303 Accounts">CC-303 Accounts</option>
+                  <option value="CC-404 Logistics">CC-404 Logistics</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Action Buttons Row -->
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; padding-top: 8px;">
+              <button type="button" class="btn-filter-reset" onclick="resetFilters()" style="padding: 7px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 700;">Reset</button>
+              <button type="button" class="btn-filter-search" onclick="applyFilters()" style="padding: 7px 20px; border-radius: 8px; font-size: 12.5px; font-weight: 800;">Search</button>
+            </div>
           </div>
         </div>
 
-        <!-- 3. SHIFT SUMMARY DATA TABLE HEADER -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
-          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-table-list" style="color: var(--purple-primary);"></i>
-            <span>Shift Breakdown Table</span>
+        <!-- 2. INLINE DONUT CHART & LEGEND CONTAINER (MATCHING TARGET SCREENSHOT) -->
+        <div class="inline-chart-container" style="padding: 8px 4px 14px; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 8px;">
+            <!-- Donut SVG Slices -->
+            <div style="position: relative; width: 160px; height: 160px; flex-shrink: 0;">
+              <svg width="160" height="160" viewBox="0 0 160 160" style="transform: rotate(-90deg);">
+                <circle cx="80" cy="80" r="58" fill="transparent" stroke="var(--border-subtle)" stroke-width="26" opacity="0.3"></circle>
+                <!-- Cyan slice for OFF DAY (95.47%) -->
+                <circle cx="80" cy="80" r="58" fill="transparent" stroke="#06b6d4" stroke-width="26" stroke-dasharray="347.8 364.4" stroke-dashoffset="0" id="chartCyanSlice"></circle>
+                <!-- Rose slice for N/A (4.53%) -->
+                <circle cx="80" cy="80" r="58" fill="transparent" stroke="#f43f5e" stroke-width="26" stroke-dasharray="16.5 364.4" stroke-dashoffset="-347.8" id="chartRoseSlice"></circle>
+              </svg>
+            </div>
+
+            <!-- Legend List on Right -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 24px; padding-left: 24px;">
+              <!-- Item 1: OFF DAY -->
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase;">OFF DAY</div>
+                  <div style="font-size: 13px; font-weight: 800; color: #06b6d4; margin-top: 2px;" id="legendOffDayVal">95.47% 274</div>
+                </div>
+                <div style="width: 14px; height: 14px; background: #06b6d4; border-radius: 2px;"></div>
+              </div>
+              <!-- Item 2: N/A -->
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase;">N/A</div>
+                  <div style="font-size: 13px; font-weight: 800; color: #f43f5e; margin-top: 2px;" id="legendNaVal">4.53% 13</div>
+                </div>
+                <div style="width: 14px; height: 14px; background: #f43f5e; border-radius: 2px;"></div>
+              </div>
+            </div>
           </div>
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);" id="tableRecordCountBadge">
-            11 Records
+
+          <!-- Centered text below chart -->
+          <div style="text-align: center; margin-top: 14px;">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Headcount by Shift</div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-top: 3px;" id="chartTotalHeadcountLabel">Total Headcount :287</div>
           </div>
         </div>
 
-        <!-- 4. SHIFT SUMMARY DATA TABLE (TABLE SHOW GRID STRICTLY MATCHING SCREENSHOT) -->
-        <div class="summary-table-card">
-          <!-- Table Header -->
-          <div class="summary-table-hdr">
+        <!-- 3. SHIFT BREAKDOWN TABLE (MATCHING TARGET SCREENSHOT PURPLE HEADER GRID) -->
+        <div class="summary-table-card" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-subtle);">
+          <!-- Purple Table Header -->
+          <div style="display: grid; grid-template-columns: 85px 1fr 90px; background: rgba(124, 58, 237, 0.18); padding: 12px 16px; font-size: 13px; font-weight: 800; color: var(--purple-primary); border-bottom: 1px solid var(--border-subtle);">
             <div>Shift</div>
             <div>Job Title</div>
             <div style="text-align: right;">Headcount</div>
           </div>
 
-          <!-- Table Body Rows -->
+          <!-- Rows Container -->
           <div id="summaryTableRowsContainer">
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge rose">N/A</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">ACCOUNT EXECUTIVE</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">3.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>N/A</div>
+              <div style="font-weight: 800;">ACCOUNT EXECUTIVE</div>
+              <div style="text-align: right; font-weight: 800;">3.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge rose">N/A</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">BARTENDER</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">1.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>N/A</div>
+              <div style="font-weight: 800;">BARTENDER</div>
+              <div style="text-align: right; font-weight: 800;">1.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge rose">N/A</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">PRODUCTION OPERATOR</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">4.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>N/A</div>
+              <div style="font-weight: 800;">PRODUCTION OPERATOR</div>
+              <div style="text-align: right; font-weight: 800;">4.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge rose">N/A</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">QUALITY CHECKER</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">2.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>N/A</div>
+              <div style="font-weight: 800;">QUALITY CHECKER</div>
+              <div style="text-align: right; font-weight: 800;">2.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge rose">N/A</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">OPERATION DIRECTOR</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">1.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>N/A</div>
+              <div style="font-weight: 800;">OPERATION DIRECTOR</div>
+              <div style="text-align: right; font-weight: 800;">1.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge rose">N/A</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">CLEANING SPECIALIST</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">2.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>N/A</div>
+              <div style="font-weight: 800;">CLEANING SPECIALIST</div>
+              <div style="text-align: right; font-weight: 800;">2.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge cyan">OFF DAY</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">PRODUCTION OPERATOR</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">180.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>OFF DAY</div>
+              <div style="font-weight: 800;">PRODUCTION OPERATOR</div>
+              <div style="text-align: right; font-weight: 800;">180.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge cyan">OFF DAY</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">SENIOR BARISTA</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">35.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>OFF DAY</div>
+              <div style="font-weight: 800;">SENIOR BARISTA</div>
+              <div style="text-align: right; font-weight: 800;">35.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge cyan">OFF DAY</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">HR EXECUTIVE</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">12.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>OFF DAY</div>
+              <div style="font-weight: 800;">HR EXECUTIVE</div>
+              <div style="text-align: right; font-weight: 800;">12.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge cyan">OFF DAY</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">ACCOUNT EXECUTIVE</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">15.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>OFF DAY</div>
+              <div style="font-weight: 800;">ACCOUNT EXECUTIVE</div>
+              <div style="text-align: right; font-weight: 800;">15.00</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge cyan">OFF DAY</span></div>
-              <div style="font-weight: 800; font-size: 12.5px;">WAREHOUSE ASSISTANT</div>
-              <div style="text-align: right; font-weight: 800; color: var(--text-primary);">32.00</div>
+            <div class="summary-table-row" style="display: grid; grid-template-columns: 85px 1fr 90px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+              <div>OFF DAY</div>
+              <div style="font-weight: 800;">WAREHOUSE ASSISTANT</div>
+              <div style="text-align: right; font-weight: 800;">32.00</div>
             </div>
-          </div>
-
-          <!-- Table Footer Total Row -->
-          <div class="summary-table-footer">
-            <div style="color: var(--purple-primary); font-weight: 900;">Total</div>
-            <div style="color: var(--text-muted); font-size: 11.5px;" id="footerShiftCategorySummary">2 Shifts &bull; 11 Roles</div>
-            <div style="text-align: right; color: var(--purple-primary); font-size: 14px; font-weight: 900;" id="footerTotalHeadcount">287.00</div>
           </div>
         </div>
 
       </div>
 
-    </div>
 
     <!-- ================= VIEW: WORK SHIFT SUMMARY ================= -->
     <div id="view-work-shift-summary" class="view-container">
@@ -1038,7 +1152,7 @@
         <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
         <div class="header-nav">
           <div class="header-title-wrap">
-            <button type="button" class="icon-btn-ghost" onclick="switchView('view-main')" aria-label="Back">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
               <i class="fa-solid fa-chevron-left"></i>
             </button>
             <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Work Shift Summary</h1>
@@ -1052,7 +1166,7 @@
           </div>
           <div>
             <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
-            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">23 Sep 2026</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="wsSummaryDateFilter">23 Sep 2026</div>
           </div>
         </div>
         <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
@@ -1196,7 +1310,7 @@
         <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
         <div class="header-nav">
           <div class="header-title-wrap">
-            <button type="button" class="icon-btn-ghost" onclick="switchView('view-main')" aria-label="Back">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
               <i class="fa-solid fa-chevron-left"></i>
             </button>
             <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">No Work Summary</h1>
@@ -1210,7 +1324,7 @@
           </div>
           <div>
             <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
-            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">23 Sep 2026</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="nwSummaryDateFilter">23 Sep 2026</div>
           </div>
         </div>
         <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
@@ -1242,7 +1356,7 @@
         <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
         <div class="header-nav">
           <div class="header-title-wrap">
-            <button type="button" class="icon-btn-ghost" onclick="switchView('view-main')" aria-label="Back">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
               <i class="fa-solid fa-chevron-left"></i>
             </button>
             <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">OT Plan Summary</h1>
@@ -1256,7 +1370,7 @@
           </div>
           <div>
             <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
-            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">23 Sep 2026</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="otSummaryDateFilter">23 Sep 2026</div>
           </div>
         </div>
         <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
@@ -1314,7 +1428,7 @@
         <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
         <div class="header-nav">
           <div class="header-title-wrap">
-            <button type="button" class="icon-btn-ghost" onclick="switchView('view-main')" aria-label="Back">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
               <i class="fa-solid fa-chevron-left"></i>
             </button>
             <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Leave Summary</h1>
@@ -1328,7 +1442,7 @@
           </div>
           <div>
             <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
-            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">23 Sep 2026</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="lvSummaryDateFilter">23 Sep 2026</div>
           </div>
         </div>
         <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
@@ -1875,7 +1989,8 @@
       document.getElementById('calendarTabView').style.display = tab === 'calendar' ? 'block' : 'none';
       document.getElementById('summaryTabView').style.display = tab === 'summary' ? 'block' : 'none';
 
-      document.getElementById('stickySelectionBar').style.display = tab === 'staff' ? 'flex' : 'none';
+      const stickyBar = document.getElementById('stickySelectionBar');
+      if (stickyBar) stickyBar.style.display = tab === 'staff' ? 'flex' : 'none';
     }
 
     // Selection Mode (Change shift vs Copy to dates)
@@ -2046,13 +2161,14 @@
     function updateStickyBar() {
       const selectedEn = staffDatabase.filter(e => e.selected && (currentSelectionMode === 'copy_dates' || e.eligibleForW02));
       const count = selectedEn.length;
-      document.getElementById('selectedCountText').textContent = `${count} staff selected`;
+      const countEl = document.getElementById('selectedCountText');
+      if (countEl) countEl.textContent = `${count} staff selected`;
 
       const btn = document.getElementById('bottomMainActionBtn');
       if (currentSelectionMode === 'change_shift') {
-        btn.textContent = 'Update';
+        if (btn) btn.textContent = 'Update';
       } else {
-        btn.textContent = 'Copy';
+        if (btn) btn.textContent = 'Copy';
       }
     }
 
@@ -2255,6 +2371,7 @@
           document.querySelectorAll('.grid-cal-cell').forEach(c => c.classList.remove('selected'));
           cell.classList.add('selected');
           document.getElementById('calSummaryCard').style.display = 'block';
+          selectedCalDateText = new Date(year, month, day).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'});
           document.getElementById('calSummaryTitle').textContent = `${new Date(year, month, day).toLocaleDateString('en-GB', {weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'})}`;
         };
         
@@ -2466,6 +2583,27 @@
       `).join('');
       
       switchView('view-leave-detail');
+    }
+
+    let selectedCalDateText = "15 Sep 2026";
+
+    function openSummaryViewFromCal(viewId) {
+      if (document.getElementById('wsSummaryDateFilter')) document.getElementById('wsSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('nwSummaryDateFilter')) document.getElementById('nwSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('otSummaryDateFilter')) document.getElementById('otSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('lvSummaryDateFilter')) document.getElementById('lvSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('wsDetailDate')) document.getElementById('wsDetailDate').textContent = selectedCalDateText;
+      if (document.getElementById('nwDetailDate')) document.getElementById('nwDetailDate').textContent = selectedCalDateText;
+      if (document.getElementById('otDetailDate')) document.getElementById('otDetailDate').textContent = selectedCalDateText;
+      if (document.getElementById('lvDetailDate')) document.getElementById('lvDetailDate').textContent = selectedCalDateText;
+      switchView(viewId);
+    }
+
+    function goBackToCalendar() {
+      switchView('view-main');
+      if (typeof switchMainTab === 'function') {
+        switchMainTab('calendar');
+      }
     }
 
     function switchView(viewId) {

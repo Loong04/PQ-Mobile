@@ -577,28 +577,47 @@
         card.className = 'history-card-item';
         card.onclick = () => openClaimDetailsModal(item);
 
+        const periodDisplay = item.claimPeriod
+          ? (item.claimPeriod.length === 6 ? `${item.claimPeriod.substring(0,4)}-${item.claimPeriod.substring(4)}` : item.claimPeriod)
+          : (item.paymentPeriod || item.benefitYear || '2026-09');
+
+        let datesDisplay = item.date || '09 SEP 2026';
+        if (item.dateFrom && item.dateTo) {
+          datesDisplay = item.dateFrom === item.dateTo ? item.dateFrom : `${item.dateFrom} - ${item.dateTo}`;
+        } else if (item.receiptDate) {
+          datesDisplay = item.receiptDate;
+        }
+
         card.innerHTML = `
-          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
-            <div class="history-date-badge">
-              <div class="history-date-month">${item.dayName}</div>
-              <div class="history-date-day">${item.day}</div>
-              <div class="history-date-year">${item.month}</div>
-            </div>
-
-            <div style="flex: 1; min-width: 0;">
-              <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 3px;">
-                <h4 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.title}</h4>
+          <div style="width: 100%;">
+            <!-- Top Row: Title, Status Badge & Chevron -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                <h4 style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                  ${item.title}
+                </h4>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.7;">#${item.id}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                 <span class="status-pill ${item.status}">${item.statusText}</span>
-              </div>
-              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">${item.subtype} &bull; <span style="opacity:0.8;">${item.id}</span></div>
-              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
-                <span style="color: var(--text-muted); font-size: 11px;">📍 ${item.merchant}</span>
-                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+                <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.7;"></i>
               </div>
             </div>
 
-            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
-              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            <!-- Detail Rows: Claim Period, Claim Dates, Amount -->
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; background: rgba(255, 255, 255, 0.03); padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Claim Period :</span>
+                <span style="color: var(--text-primary); font-weight: 700; font-family: monospace, sans-serif;">${periodDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Claim Dates :</span>
+                <span style="color: var(--text-primary); font-weight: 700;">${datesDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-divider); padding-top: 6px; margin-top: 2px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Amount :</span>
+                <span style="font-size: 15px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+              </div>
             </div>
           </div>
         `;
