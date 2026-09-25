@@ -63,6 +63,38 @@
       overflow: hidden;
     }
 
+    .popout-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      border-radius: 44px;
+      overflow: hidden;
+    }
+
+    .popout-dialog-card {
+      width: 100%;
+      max-width: 370px;
+      max-height: 82vh;
+      background: var(--bg-card);
+      border-radius: 24px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 20px 45px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.85);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
     .filter-bottom-sheet {
       width: 100%;
       background: var(--bg-card);
@@ -178,112 +210,91 @@
         <!-- 4. Full Height Data Table Container (Enterprise Zebra + Purple Accents) -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); margin-bottom: 20px;">
           <div class="table-scroll-container" style="overflow-x: auto; flex: 1; -webkit-overflow-scrolling: touch;">
-            <table style="width: 100%; min-width: 720px; border-collapse: collapse; text-align: left; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
               <thead>
                 <tr style="background: var(--purple-subtle); border-bottom: 2px solid var(--purple-border);">
-                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">EMP#</th>
-                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">NAME</th>
-                  <th id="tableMetricHeaderCol" style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">AMOUNT</th>
-                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">BRANCH</th>
-                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">DEPARTMENT</th>
-                  <th style="padding: 14px 16px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">POSITION</th>
+                  <th style="padding: 12px 14px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">EMP#</th>
+                  <th style="padding: 12px 14px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap;">NAME</th>
+                  <th id="tableMetricHeaderCol" style="padding: 12px 14px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; white-space: nowrap; text-align: right;">AMOUNT</th>
                 </tr>
               </thead>
               <tbody id="benefitHighlightTableBody">
                 <!-- Row 1 -->
                 <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">004177</span>
+                  <td style="padding: 12px 14px; white-space: nowrap;">
+                    <span style="font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.85;">#004177</span>
                   </td>
-                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">AHMAD RAFY BIN ZULKIPLE</td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: rgba(124, 58, 237, 0.14); color: #7c3aed; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(124, 58, 237, 0.25);">RM 3,240.00</span>
+                  <td style="padding: 12px 14px; font-weight: 800; color: var(--text-primary); font-size: 13px;">AHMAD RAFY BIN ZULKIPLE</td>
+                  <td style="padding: 12px 14px; text-align: right; white-space: nowrap; cursor: pointer;" onclick="openBenefitDetailsModal('#004177', 'AHMAD RAFY BIN ZULKIPLE')">
+                    <span style="background: rgba(124, 58, 237, 0.14); color: #7c3aed; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(124, 58, 237, 0.25); display: inline-flex; align-items: center; gap: 5px;">
+                      RM 3,240.00 <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.7;"></i>
+                    </span>
                   </td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
-                  </td>
-                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">ADMINISTRATION DEPARTMENT</td>
-                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">ADMIN MANAGER</td>
                 </tr>
 
                 <!-- Row 2 -->
                 <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">TEST69</span>
+                  <td style="padding: 12px 14px; white-space: nowrap;">
+                    <span style="font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.85;">#EBB01</span>
                   </td>
-                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">TEST69 Test</td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: rgba(59, 130, 246, 0.14); color: #3b82f6; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(59, 130, 246, 0.25);">RM 2,180.00</span>
+                  <td style="padding: 12px 14px; font-weight: 800; color: var(--text-primary); font-size: 13px;">MUHAMMAD ALI BIN MAN</td>
+                  <td style="padding: 12px 14px; text-align: right; white-space: nowrap; cursor: pointer;" onclick="openBenefitDetailsModal('#EBB01', 'MUHAMMAD ALI BIN MAN')">
+                    <span style="background: rgba(59, 130, 246, 0.14); color: #3b82f6; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(59, 130, 246, 0.25); display: inline-flex; align-items: center; gap: 5px;">
+                      RM 5,458.32 <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.7;"></i>
+                    </span>
                   </td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
-                  </td>
-                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">FINANCE & ACCOUNTING DEPARTMENT</td>
-                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">ACCOUNT EXECUTIVE</td>
                 </tr>
 
                 <!-- Row 3 -->
                 <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">007216</span>
+                  <td style="padding: 12px 14px; white-space: nowrap;">
+                    <span style="font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.85;">#007216</span>
                   </td>
-                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">HAILIZAM BIN MOHAMED IKHSAN</td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: rgba(16, 185, 129, 0.14); color: #10b981; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(16, 185, 129, 0.25);">RM 1,950.00</span>
+                  <td style="padding: 12px 14px; font-weight: 800; color: var(--text-primary); font-size: 13px;">HAILIZAM BIN MOHAMED IKHSAN</td>
+                  <td style="padding: 12px 14px; text-align: right; white-space: nowrap; cursor: pointer;" onclick="openBenefitDetailsModal('#007216', 'HAILIZAM BIN MOHAMED IKHSAN')">
+                    <span style="background: rgba(16, 185, 129, 0.14); color: #10b981; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(16, 185, 129, 0.25); display: inline-flex; align-items: center; gap: 5px;">
+                      RM 1,950.00 <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.7;"></i>
+                    </span>
                   </td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">SOUTHERN REGION BRANCH</span>
-                  </td>
-                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">SALES & MARKETING DEPARTMENT</td>
-                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">SALES REPRESENTATIVE</td>
                 </tr>
 
                 <!-- Row 4 -->
                 <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">006611</span>
+                  <td style="padding: 12px 14px; white-space: nowrap;">
+                    <span style="font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.85;">#006611</span>
                   </td>
-                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">POR SUAT BEE</td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">RM 1,450.00</span>
+                  <td style="padding: 12px 14px; font-weight: 800; color: var(--text-primary); font-size: 13px;">POR SUAT BEE</td>
+                  <td style="padding: 12px 14px; text-align: right; white-space: nowrap; cursor: pointer;" onclick="openBenefitDetailsModal('#006611', 'POR SUAT BEE')">
+                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25); display: inline-flex; align-items: center; gap: 5px;">
+                      RM 1,450.00 <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.7;"></i>
+                    </span>
                   </td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">NORTHERN REGION BRANCH</span>
-                  </td>
-                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">OPERATIONS DEPARTMENT</td>
-                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">OPERATIONS OFFICER</td>
                 </tr>
 
                 <!-- Row 5 -->
                 <tr style="background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card)'">
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">008004</span>
+                  <td style="padding: 12px 14px; white-space: nowrap;">
+                    <span style="font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.85;">#008004</span>
                   </td>
-                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">NURFARHANA BINTI MOHAMAD</td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: rgba(124, 58, 237, 0.14); color: #7c3aed; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(124, 58, 237, 0.25);">RM 880.00</span>
+                  <td style="padding: 12px 14px; font-weight: 800; color: var(--text-primary); font-size: 13px;">NURFARHANA BINTI MOHAMAD</td>
+                  <td style="padding: 12px 14px; text-align: right; white-space: nowrap; cursor: pointer;" onclick="openBenefitDetailsModal('#008004', 'NURFARHANA BINTI MOHAMAD')">
+                    <span style="background: rgba(124, 58, 237, 0.14); color: #7c3aed; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(124, 58, 237, 0.25); display: inline-flex; align-items: center; gap: 5px;">
+                      RM 880.00 <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.7;"></i>
+                    </span>
                   </td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
-                  </td>
-                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">HUMAN RESOURCES DEPARTMENT</td>
-                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">HR EXECUTIVE</td>
                 </tr>
 
                 <!-- Row 6 -->
                 <tr style="background: var(--bg-card-hover); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='var(--purple-subtle)'" onmouseout="this.style.background='var(--bg-card-hover)'">
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--purple-subtle); color: var(--purple-primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-family: monospace; font-size: 11.5px; border: 1px solid var(--purple-border); display: inline-block;">009102</span>
+                  <td style="padding: 12px 14px; white-space: nowrap;">
+                    <span style="font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.85;">#009102</span>
                   </td>
-                  <td style="padding: 13px 16px; font-weight: 800; color: var(--text-primary); font-size: 13px; white-space: nowrap;">ALEX TAN CHIN HOCK</td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: rgba(59, 130, 246, 0.14); color: #3b82f6; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(59, 130, 246, 0.25);">RM 650.00</span>
+                  <td style="padding: 12px 14px; font-weight: 800; color: var(--text-primary); font-size: 13px;">ALEX TAN CHIN HOCK</td>
+                  <td style="padding: 12px 14px; text-align: right; white-space: nowrap; cursor: pointer;" onclick="openBenefitDetailsModal('#009102', 'ALEX TAN CHIN HOCK')">
+                    <span style="background: rgba(59, 130, 246, 0.14); color: #3b82f6; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(59, 130, 246, 0.25); display: inline-flex; align-items: center; gap: 5px;">
+                      RM 650.00 <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.7;"></i>
+                    </span>
                   </td>
-                  <td style="padding: 13px 16px; white-space: nowrap;">
-                    <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">EAST COAST BRANCH</span>
-                  </td>
-                  <td style="padding: 13px 16px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">IT DEPARTMENT</td>
-                  <td style="padding: 13px 16px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">SYSTEM ANALYST</td>
                 </tr>
               </tbody>
             </table>
@@ -490,45 +501,85 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 14px;">
-          <!-- Keyword -->
+          <!-- 1. Search Keyword -->
           <div>
-            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">SEARCH EMPLOYEE</label>
-            <input type="text" id="filterKeyword" placeholder="Name or Employee ID..." style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">SEARCH KEYWORD</label>
+            <input type="text" id="filterKeyword" placeholder="Search Name or Employee ID..." style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
           </div>
 
-          <!-- Department -->
-          <div>
-            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">DEPARTMENT</label>
-            <select id="filterDepartment" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
-              <option value="all">All Departments</option>
-              <option value="ADMINISTRATION DEPARTMENT">Administration</option>
-              <option value="FINANCE & ACCOUNTING">Finance &amp; Accounting</option>
-              <option value="SALES & MARKETING">Sales &amp; Marketing</option>
-              <option value="OPERATIONS DEPARTMENT">Operations</option>
-            </select>
+          <!-- 2. Start Period & End Period -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">START PERIOD</label>
+              <input type="text" id="filterStartPeriod" value="01/09/2026" placeholder="DD/MM/YYYY" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+            </div>
+            <div>
+              <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">END PERIOD</label>
+              <input type="text" id="filterEndPeriod" value="30/09/2026" placeholder="DD/MM/YYYY" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+            </div>
           </div>
 
-          <!-- Benefit Category -->
+          <!-- 3. Benefit Type -->
           <div>
-            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">BENEFIT CATEGORY</label>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">BENEFIT TYPE</label>
             <select id="filterHighlightType" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
-              <option value="Benefit Claim Utilization">All Benefit Categories</option>
+              <option value="All Benefit Types">All Benefit Types</option>
               <option value="Car Maintenance">Car Maintenance</option>
               <option value="Mobile Phone Allowance">Mobile Phone Allowance</option>
               <option value="Optical & Dental">Optical &amp; Dental</option>
               <option value="Personal Allowance">Personal Allowance</option>
+              <option value="Outpatient GP Clinic">Outpatient GP Clinic</option>
+              <option value="Specialist Consultation">Specialist Consultation</option>
             </select>
           </div>
 
+          <!-- 4. Amount Range -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">AMOUNT RANGE (RM)</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="number" id="filterMinAmount" placeholder="Min Amount (0)" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+              <input type="number" id="filterMaxAmount" placeholder="Max Amount (10000)" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+            </div>
+          </div>
+
           <!-- Buttons -->
-          <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button type="button" onclick="resetHighlightFilterModal()" style="flex: 1; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 800; cursor: pointer;">
-              Reset
-            </button>
-            <button type="button" onclick="submitHighlightFilterModal()" style="flex: 2; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+          <div style="margin-top: 10px;">
+            <button type="button" onclick="submitHighlightFilterModal()" style="width: 100%; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 13.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
               Apply Filter
             </button>
           </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================
+         BENEFIT HIGHLIGHT DETAILS POPUP MODAL (CENTER POP-OUT DIALOG)
+         ======================================================== -->
+    <div id="benefitDetailsModal" class="popout-modal-overlay" onclick="closeBenefitDetailsModal(event)">
+      <div class="popout-dialog-card" style="background: #171523; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(168, 85, 247, 0.15);">
+        
+        <!-- Header Bar -->
+        <div style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);">
+          <div>
+            <div id="modalEmpIdBadge" style="display: inline-block; font-family: monospace, sans-serif; background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 800; margin-bottom: 4px;">#EBB01</div>
+            <div id="modalEmpNameText" style="font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1.25;">MUHAMMAD ALI BIN MAN</div>
+            <div style="font-size: 10.5px; color: rgba(255, 255, 255, 0.75); font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px;">Benefit Highlight Details</div>
+          </div>
+          <button type="button" onclick="closeBenefitDetailsModal()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+            <i class="fa-solid fa-xmark" style="font-size: 15px;"></i>
+          </button>
+        </div>
+
+        <!-- Details List (Scrollable) -->
+        <div id="benefitDetailsList" style="flex: 1; overflow-y: auto; padding: 16px 18px 10px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none;">
+          <!-- Items populated via JS -->
+        </div>
+
+        <!-- Modal Total Footer -->
+        <div style="padding: 16px 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.25);">
+          <span style="font-size: 11.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px;">TOTAL CLAIM AMOUNT</span>
+          <span id="modalTotalAmountDisplay" style="font-size: 18px; font-weight: 900; color: #c084fc; letter-spacing: -0.4px; text-shadow: 0 0 12px rgba(168, 85, 247, 0.3);">RM 0.00</span>
         </div>
 
       </div>
@@ -826,30 +877,167 @@
 
     function resetHighlightFilterModal() {
       if (document.getElementById('filterKeyword')) document.getElementById('filterKeyword').value = '';
-      if (document.getElementById('filterDepartment')) document.getElementById('filterDepartment').value = 'all';
-      if (document.getElementById('filterHighlightType')) document.getElementById('filterHighlightType').value = 'Benefit Claim Utilization';
+      if (document.getElementById('filterStartPeriod')) document.getElementById('filterStartPeriod').value = '01/09/2026';
+      if (document.getElementById('filterEndPeriod')) document.getElementById('filterEndPeriod').value = '30/09/2026';
+      if (document.getElementById('filterHighlightType')) document.getElementById('filterHighlightType').value = 'All Benefit Types';
+      if (document.getElementById('filterMinAmount')) document.getElementById('filterMinAmount').value = '';
+      if (document.getElementById('filterMaxAmount')) document.getElementById('filterMaxAmount').value = '';
       closeHighlightFilterModal();
       submitHighlightFilterModal();
     }
 
     function submitHighlightFilterModal() {
       const kw = document.getElementById('filterKeyword')?.value.trim() || '';
-      const dept = document.getElementById('filterDepartment')?.value || 'all';
-      const type = document.getElementById('filterHighlightType')?.value || 'Benefit Claim Utilization';
+      const startP = document.getElementById('filterStartPeriod')?.value.trim() || '';
+      const endP = document.getElementById('filterEndPeriod')?.value.trim() || '';
+      const type = document.getElementById('filterHighlightType')?.value || 'All Benefit Types';
+      const minA = document.getElementById('filterMinAmount')?.value || '';
+      const maxA = document.getElementById('filterMaxAmount')?.value || '';
 
-      let summaryParts = ['Entitlement Year 2026'];
+      let summaryParts = [];
       if (kw) summaryParts.push(`"${kw}"`);
-      else if (dept !== 'all') summaryParts.push(dept);
+      if (startP && endP) summaryParts.push(`${startP} - ${endP}`);
+      if (type && type !== 'All Benefit Types') summaryParts.push(type);
+      if (minA || maxA) summaryParts.push(`RM${minA || 0} - RM${maxA || '∞'}`);
+
+      if (summaryParts.length === 0) {
+        summaryParts.push('All Records');
+      }
 
       const sumEl = document.getElementById('highlightFilterSummaryText');
       if (sumEl) {
-        sumEl.innerHTML = `<span>${summaryParts.join(' • ')}</span><span style="color: var(--purple-primary);">• ${type}</span>`;
+        sumEl.innerHTML = `<span>${summaryParts.join(' • ')}</span>`;
       }
 
       closeHighlightFilterModal();
       if (typeof showToast === 'function') {
-        showToast(`Filter applied: ${type}`);
+        showToast(`Filter applied: ${summaryParts.join(' • ')}`);
       }
+    }
+
+    const benefitDetailsMockData = {
+      '#004177': {
+        name: 'AHMAD RAFY BIN ZULKIPLE',
+        items: [
+          { period: '202609', type: 'CAR MAINTENANCE', amount: 'RM 1,850.00' },
+          { period: '202609', type: 'PERSONAL ALLOWANCE', amount: 'RM 850.00' },
+          { period: '202608', type: 'MOBILE PHONE', amount: 'RM 340.00' },
+          { period: '202608', type: 'ENTERTAINMENT', amount: 'RM 200.00' }
+        ]
+      },
+      '#EBB01': {
+        name: 'MUHAMMAD ALI BIN MAN',
+        items: [
+          { period: '202105', type: 'ENTERTAINMENT', amount: 'RM 3,588.00' },
+          { period: '202105', type: 'PERSONAL ALLOWANCE', amount: 'RM 1,400.00' },
+          { period: '202106', type: 'HAND PHONE SUBSIDY', amount: 'RM 299.99' },
+          { period: '202106', type: 'CAR MAINTENANCE', amount: 'RM 146.00' },
+          { period: '202107', type: 'MOBILE PHONE', amount: 'RM 20.34' },
+          { period: '202103', type: 'CAR MAINTENANCE', amount: 'RM 4.99' }
+        ]
+      },
+      '#007216': {
+        name: 'HAILIZAM BIN MOHAMED IKHSAN',
+        items: [
+          { period: '202609', type: 'OPTICAL & DENTAL', amount: 'RM 1,200.00' },
+          { period: '202607', type: 'OUTPATIENT GP CLINIC', amount: 'RM 450.00' },
+          { period: '202605', type: 'MOBILE PHONE', amount: 'RM 300.00' }
+        ]
+      },
+      '#006611': {
+        name: 'POR SUAT BEE',
+        items: [
+          { period: '202608', type: 'CAR MAINTENANCE', amount: 'RM 950.00' },
+          { period: '202606', type: 'PERSONAL ALLOWANCE', amount: 'RM 500.00' }
+        ]
+      },
+      '#008004': {
+        name: 'NURFARHANA BINTI MOHAMAD',
+        items: [
+          { period: '202609', type: 'OUTPATIENT GP CLINIC', amount: 'RM 580.00' },
+          { period: '202607', type: 'MOBILE PHONE', amount: 'RM 300.00' }
+        ]
+      },
+      '#009102': {
+        name: 'ALEX TAN CHIN HOCK',
+        items: [
+          { period: '202609', type: 'SPECIALIST CONSULTATION', amount: 'RM 450.00' },
+          { period: '202608', type: 'MOBILE PHONE', amount: 'RM 200.00' }
+        ]
+      }
+    };
+
+    function getBenefitCategoryColor(type) {
+      const t = (type || '').toUpperCase();
+      if (t.includes('CAR')) return { border: '#c084fc', text: '#c084fc' };
+      if (t.includes('PERSONAL')) return { border: '#38bdf8', text: '#38bdf8' };
+      if (t.includes('ENTERTAINMENT') || t.includes('DINING')) return { border: '#f43f5e', text: '#f43f5e' };
+      if (t.includes('PHONE') || t.includes('MOBILE')) return { border: '#fbbf24', text: '#fbbf24' };
+      if (t.includes('OPTICAL') || t.includes('DENTAL')) return { border: '#34d399', text: '#34d399' };
+      return { border: '#a78bfa', text: '#a78bfa' };
+    }
+
+    function openBenefitDetailsModal(empNo, empName) {
+      const modal = document.getElementById('benefitDetailsModal');
+      if (!modal) return;
+
+      const data = benefitDetailsMockData[empNo] || {
+        name: empName,
+        items: [
+          { period: '202609', type: 'BENEFIT CLAIM', amount: 'RM 500.00' }
+        ]
+      };
+
+      document.getElementById('modalEmpIdBadge').textContent = empNo;
+      document.getElementById('modalEmpNameText').textContent = data.name || empName;
+
+      const listContainer = document.getElementById('benefitDetailsList');
+      let html = '';
+      let totalNum = 0;
+
+      data.items.forEach(item => {
+        const rawVal = parseFloat(item.amount.replace(/[^0-9.]/g, '')) || 0;
+        totalNum += rawVal;
+
+        const theme = getBenefitCategoryColor(item.type);
+
+        html += `
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 4px solid ${theme.border}; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 14px rgba(0,0,0,0.25); transition: all 0.2s ease;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
+                ${item.type}
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: ${theme.text};">
+                <i class="fa-solid fa-calendar-day" style="font-size: 10.5px; opacity: 0.85;"></i>
+                <span style="font-family: monospace, sans-serif; letter-spacing: 0.4px;">Period ${item.period}</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 16px; font-weight: 900; color: #10b981; letter-spacing: -0.3px;">
+                ${item.amount}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      listContainer.innerHTML = html;
+      document.getElementById('modalTotalAmountDisplay').textContent = 'RM ' + totalNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.popout-dialog-card').style.transform = 'scale(1)';
+      }, 10);
+    }
+
+    function closeBenefitDetailsModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const modal = document.getElementById('benefitDetailsModal');
+      if (!modal) return;
+      modal.style.opacity = '0';
+      modal.querySelector('.popout-dialog-card').style.transform = 'scale(0.85)';
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
     }
   </script>
 </body>

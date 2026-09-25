@@ -1,9 +1,12 @@
 /**
- * PeopleHCM - Claims Application Engine (High Fidelity Screenshot Parity)
- * Matches Screenshots 1 & 2 for Benefit Claim category cards and exact 14-field Claim Form.
+ * PeopleHCM - Claims Application Engine
+ * Renders Individual & Team Dashboards matching screenshots 1 & 2.
+ * Adheres strictly to AGENTS.md rules & DESIGN.md guidelines.
  */
 
 (function () {
+  let activeScope = 'individual'; // 'individual' or 'team'
+  let activeBreakdownCategory = 'benefits'; // 'benefits' or 'claims'
   let activeOptionId = 'benefit';
   let activeSubCategoryObj = null;
   let isAttachmentUploaded = false;
@@ -22,15 +25,345 @@
   }
 
   function initClaimsApp() {
-    renderOptionSquareGrid();
-    renderMySubmissions('all');
-    renderManagerSquareGrid();
-    renderTeamQueue();
+    renderDashboardScope(activeScope);
     populateFormDropdowns();
   }
 
   /**
-   * Render Recent Submissions & Audit Status List
+   * Switch between Individual and Team scope
+   */
+  function switchClaimScope(scope) {
+    activeScope = scope;
+    const tabIndiv = document.getElementById('tabClaimIndividual');
+    const tabTeam = document.getElementById('tabClaimTeam');
+    const secIndiv = document.getElementById('scopeIndividualSection');
+    const secTeam = document.getElementById('scopeTeamSection');
+    const subtitle = document.getElementById('headerSubtitleText');
+
+    if (scope === 'team') {
+      if (tabIndiv) tabIndiv.classList.remove('active');
+      if (tabTeam) tabTeam.classList.add('active');
+      if (secIndiv) secIndiv.style.display = 'none';
+      if (secTeam) secTeam.style.display = 'block';
+      if (subtitle) subtitle.textContent = 'Team Overview';
+      renderTeamDashboard();
+    } else {
+      if (tabTeam) tabTeam.classList.remove('active');
+      if (tabIndiv) tabIndiv.classList.add('active');
+      if (secTeam) secTeam.style.display = 'none';
+      if (secIndiv) secIndiv.style.display = 'block';
+      if (subtitle) subtitle.textContent = 'Individual';
+      renderIndividualDashboard();
+    }
+  }
+
+  function renderDashboardScope(scope) {
+    switchClaimScope(scope);
+  }
+
+  /**
+   * ==========================================
+   * 1. INDIVIDUAL DASHBOARD RENDERING
+   * ==========================================
+   */
+  function renderIndividualDashboard() {
+    renderBreakdownDonutChart('individual', activeBreakdownCategory);
+    renderIndividualCalendar();
+    renderOptionSquareGrid();
+    renderMySubmissions('all');
+  }
+
+  /**
+   * ==========================================
+   * 2. TEAM DASHBOARD RENDERING
+   * ==========================================
+   */
+  function renderTeamDashboard() {
+    renderBreakdownDonutChart('team', activeBreakdownCategory);
+    renderTeamCalendar();
+    renderManagerSquareGrid();
+    renderTeamQueue();
+  }
+
+  /**
+   * ==========================================
+   * DYNAMIC SVG DONUT CHART & LEGEND
+   * ==========================================
+   */
+  function toggleBreakdownCategory(scope, cat) {
+    activeBreakdownCategory = cat;
+    
+    // Update button states
+    const benefitsBtn = document.getElementById(`${scope}-breakdown-benefits-btn`);
+    const claimsBtn = document.getElementById(`${scope}-breakdown-claims-btn`);
+
+    if (benefitsBtn && claimsBtn) {
+      if (cat === 'benefits') {
+        benefitsBtn.className = 'breakdown-toggle-pill active';
+        claimsBtn.className = 'breakdown-toggle-pill';
+      } else {
+        benefitsBtn.className = 'breakdown-toggle-pill';
+        claimsBtn.className = 'breakdown-toggle-pill active';
+      }
+    }
+
+    renderBreakdownDonutChart(scope, cat);
+  }
+
+  function renderBreakdownDonutChart(scope, cat) {
+    const dataSet = window.CLAIM_BREAKDOWN_DATA?.[scope]?.[cat];
+    if (!dataSet) return;
+
+    const chartContainer = document.getElementById(`${scope}-donut-svg-container`);
+    const legendContainer = document.getElementById(`${scope}-breakdown-legend-container`);
+    if (!chartContainer || !legendContainer) return;
+
+    const items = dataSet.items;
+    const totalVal = items.reduce((acc, i) => acc + i.value, 0);
+
+    // SVG Donut calculation: Radius R=38, Center (50,50), Circumference = 2*PI*38 = 238.761
+    const R = 38;
+    const C = 238.761;
+    let offset = 0;
+
+    let circlesSvg = '';
+    items.forEach(item => {
+      const pct = item.value / totalVal;
+      const dashLen = pct * C;
+      const dashOffset = -offset;
+      offset += dashLen;
+
+      circlesSvg += `
+        <circle 
+          cx="50" cy="50" r="${R}" 
+          fill="none" 
+          stroke="${item.color}" 
+          stroke-width="12" 
+          stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" 
+          stroke-dashoffset="${dashOffset.toFixed(2)}"
+          transform="rotate(-90 50 50)"
+          style="transition: all 0.4s ease;"
+        />
+      `;
+    });
+
+    chartContainer.innerHTML = `
+      <svg viewBox="0 0 100 100" style="width: 170px; height: 170px; display: block; margin: 0 auto; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));">
+        <circle cx="50" cy="50" r="${R}" fill="none" stroke="var(--bg-input)" stroke-width="12" />
+        ${circlesSvg}
+        <text x="50" y="46" text-anchor="middle" font-size="9.5" font-weight="900" fill="var(--text-primary)">${dataSet.total}</text>
+        <text x="50" y="57" text-anchor="middle" font-size="5" font-weight="700" fill="var(--text-muted)">${dataSet.label}</text>
+      </svg>
+    `;
+
+    // Render Legend List
+    legendContainer.innerHTML = `
+      <div style="display: flex; justify-content: space-between; padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border-subtle); margin-bottom: 8px;">
+        <span>Category</span>
+        <div style="display: flex; gap: 32px;">
+          <span>Amount</span>
+          <span>Share</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        ${items.map(item => `
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; padding: 2px 4px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 10px; height: 10px; border-radius: 3px; background: ${item.color}; display: inline-block;"></span>
+              <span style="font-weight: 700; color: var(--text-primary);">${item.category}</span>
+            </div>
+            <div style="display: flex; gap: 24px; font-weight: 800;">
+              <span style="color: var(--text-primary); text-align: right; min-width: 60px;">${item.amount}</span>
+              <span style="color: var(--text-muted); text-align: right; min-width: 40px; font-weight: 700;">${item.share}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  /**
+   * ==========================================
+   * INDIVIDUAL TRAVEL CALENDAR (Screenshot 1)
+   * ==========================================
+   */
+  function renderIndividualCalendar() {
+    const gridContainer = document.getElementById('individual-calendar-grid');
+    if (!gridContainer) return;
+
+    // September 2026 (1st is Tuesday)
+    // Days layout: 1 to 30
+    const travelDays = [28, 29, 30];
+    const today = 24;
+
+    let daysHtml = '';
+    // Empty padding slot for Monday 31 Aug
+    daysHtml += `<div class="cal-day empty"></div>`;
+
+    for (let d = 1; d <= 30; d++) {
+      let isToday = (d === today);
+      let isTravel = travelDays.includes(d);
+      let classes = ['cal-day'];
+
+      if (isToday) classes.push('today');
+      if (isTravel) classes.push('travel-highlight');
+      if (d === 28) classes.push('active-pill');
+
+      daysHtml += `
+        <div class="${classes.join(' ')}" onclick="selectIndividualCalendarDay(${d})">
+          <span>${d}</span>
+          ${isTravel ? '<span class="dot-indicator"></span>' : ''}
+        </div>
+      `;
+    }
+
+    gridContainer.innerHTML = daysHtml;
+    updateIndividualTripDetail(28);
+  }
+
+  function selectIndividualCalendarDay(day) {
+    document.querySelectorAll('#individual-calendar-grid .cal-day').forEach(el => {
+      el.classList.remove('active-pill');
+      if (el.textContent.trim().startsWith(day.toString())) {
+        el.classList.add('active-pill');
+      }
+    });
+    updateIndividualTripDetail(day);
+  }
+
+  function updateIndividualTripDetail(day) {
+    const detailBox = document.getElementById('individual-trip-detail-card');
+    if (!detailBox) return;
+
+    if (day >= 28 && day <= 30) {
+      detailBox.innerHTML = `
+        <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
+          Monday, 28 September 2026
+        </div>
+        <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Kuala Lumpur ➔ Penang</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 3px;">28–30 Sep 2026 • 3 days</div>
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">Client visit</div>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+            Approved
+          </span>
+        </div>
+      `;
+    } else if (day === 24) {
+      detailBox.innerHTML = `
+        <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
+          Thursday, 24 September 2026 (Today)
+        </div>
+        <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-muted);">
+          No travel schedules for today. Office working day.
+        </div>
+      `;
+    } else {
+      detailBox.innerHTML = `
+        <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
+          September ${day}, 2026
+        </div>
+        <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-muted);">
+          No travel records for this date.
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * ==========================================
+   * TEAM TRAVEL CALENDAR (Screenshot 2)
+   * ==========================================
+   */
+  function renderTeamCalendar() {
+    const gridContainer = document.getElementById('team-calendar-grid');
+    if (!gridContainer) return;
+
+    const travelBadges = window.TEAM_TRAVEL_DATA?.travelBadges || {};
+    const today = 24;
+
+    let daysHtml = '';
+    // Empty padding slot for Monday 31 Aug
+    daysHtml += `<div class="cal-day empty"></div>`;
+
+    for (let d = 1; d <= 30; d++) {
+      let isToday = (d === today);
+      let count = travelBadges[d] || 0;
+      let classes = ['cal-day'];
+
+      if (isToday) classes.push('today');
+      if (count > 0) classes.push('staff-travel-highlight');
+      if (d === 28) classes.push('active-pill');
+
+      daysHtml += `
+        <div class="${classes.join(' ')}" onclick="selectTeamCalendarDay(${d})">
+          <span>${d}</span>
+          ${count > 0 ? `<span class="staff-count-badge">${count}</span>` : ''}
+        </div>
+      `;
+    }
+
+    gridContainer.innerHTML = daysHtml;
+    updateTeamTripDetail(28);
+  }
+
+  function selectTeamCalendarDay(day) {
+    document.querySelectorAll('#team-calendar-grid .cal-day').forEach(el => {
+      el.classList.remove('active-pill');
+      if (el.textContent.trim().startsWith(day.toString())) {
+        el.classList.add('active-pill');
+      }
+    });
+    updateTeamTripDetail(day);
+  }
+
+  function updateTeamTripDetail(day) {
+    const detailBox = document.getElementById('team-trip-detail-card');
+    if (!detailBox) return;
+
+    const data = window.TEAM_TRAVEL_DATA;
+    if (!data) return;
+
+    if (day >= 28 && day <= 30) {
+      const staffList = data.staffTrips;
+      detailBox.innerHTML = `
+        <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">
+          Monday 28 September - ${staffList.length} staff
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${staffList.map(s => `
+            <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${s.name}</div>
+                <!-- AGENTS.md Employee ID Presentation Standard: Directly below name, leading # -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#${s.empNo.replace(/^#/, '')}</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${s.trip}</div>
+              </div>
+              <span style="font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 8px; ${s.status === 'Approved' ? 'background: rgba(16, 185, 129, 0.15); color: #10b981;' : 'background: rgba(245, 158, 11, 0.15); color: #f59e0b;'}">
+                ${s.status}
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else {
+      detailBox.innerHTML = `
+        <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
+          September ${day}, 2026
+        </div>
+        <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-muted);">
+          No staff travel scheduled for this date.
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * ==========================================
+   * RECENT SUBMISSIONS (INDIVIDUAL)
+   * ==========================================
    */
   function renderMySubmissions(filterType = 'all') {
     const container = document.getElementById('mySubmissionsListContainer');
@@ -91,9 +424,10 @@
     renderMySubmissions(filterType);
   }
 
-
   /**
-   * Render 3 Columns x 2 Rows Max Option Cards Grid on Main Page (5 Items + View All)
+   * ==========================================
+   * QUICK OPTIONS GRID HUB
+   * ==========================================
    */
   function renderOptionSquareGrid() {
     const container = document.getElementById('claimOptionsHubGrid');
@@ -121,7 +455,7 @@
     };
 
     const MAX_VISIBLE = 5;
-    const shouldShowViewAll = options.length > 6;
+    const shouldShowViewAll = options.length > 5;
     const displayOptions = shouldShowViewAll ? options.slice(0, MAX_VISIBLE) : options;
 
     displayOptions.forEach(opt => {
@@ -146,10 +480,60 @@
       viewAllCard.onclick = () => openAllClaimOptionsModal();
 
       viewAllCard.innerHTML = `
-        <div class="claim-square-icon-wrap" style="background: rgba(168, 85, 247, 0.16); color: #c084fc;">
-          <i class="fa-solid fa-ellipsis" style="font-size: 18px;"></i>
+        <div class="claim-square-icon-wrap" style="background: rgba(124, 58, 237, 0.16); color: #7c3aed;">
+          <i class="fa-solid fa-grip" style="font-size: 18px;"></i>
         </div>
-        <div class="claim-square-title" style="color: var(--text-primary);">View All</div>
+        <div class="claim-square-title" style="color: var(--text-primary); font-weight: 800;">View All</div>
+      `;
+
+      container.appendChild(viewAllCard);
+    }
+  }
+
+  function renderManagerSquareGrid() {
+    const container = document.getElementById('managerOptionsGrid');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const options = window.MANAGER_OPTIONS || [];
+
+    const managerFileMap = {
+      benefit_highlight: 'options/benefit-highlight.html',
+      staff_entitlement: 'options/staff-entitlement.html',
+      expenses_highlight: 'options/expenses-highlight.html',
+      staff_summary: 'options/staff-summary.html'
+    };
+
+    const MAX_VISIBLE = 5;
+    const shouldShowViewAll = options.length > 5;
+    const displayOptions = shouldShowViewAll ? options.slice(0, MAX_VISIBLE) : options;
+
+    displayOptions.forEach(opt => {
+      const card = document.createElement('a');
+      card.className = 'claim-square-card';
+      card.style.textDecoration = 'none';
+      card.href = opt.link || managerFileMap[opt.id] || `options/${opt.id}.html`;
+
+      card.innerHTML = `
+        <div class="claim-square-icon-wrap">
+          ${opt.icon}
+        </div>
+        <div class="claim-square-title">${opt.name}</div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    if (shouldShowViewAll) {
+      const viewAllCard = document.createElement('div');
+      viewAllCard.className = 'claim-square-card';
+      viewAllCard.onclick = () => openAllClaimOptionsModal();
+
+      viewAllCard.innerHTML = `
+        <div class="claim-square-icon-wrap" style="background: rgba(124, 58, 237, 0.16); color: #7c3aed;">
+          <i class="fa-solid fa-grip" style="font-size: 18px;"></i>
+        </div>
+        <div class="claim-square-title" style="color: var(--text-primary); font-weight: 800;">View All</div>
       `;
 
       container.appendChild(viewAllCard);
@@ -204,420 +588,10 @@
   }
 
   /**
-   * Render Manager Options Grid (Navigating to individual manager option files)
+   * ==========================================
+   * TEAM APPROVALS QUEUE (TEAM DASHBOARD)
+   * ==========================================
    */
-  function renderManagerSquareGrid() {
-    const container = document.getElementById('managerOptionsGrid');
-    if (!container) return;
-
-    container.innerHTML = '';
-    const options = window.MANAGER_OPTIONS || [];
-
-    const managerFileMap = {
-      benefit_highlight: 'options/benefit-highlight.html',
-      staff_entitlement: 'options/staff-entitlement.html',
-      expenses_highlight: 'options/expenses-highlight.html',
-      staff_summary: 'options/staff-summary.html'
-    };
-
-    options.forEach(opt => {
-      const card = document.createElement('a');
-      card.className = 'claim-square-card';
-      card.style.textDecoration = 'none';
-      card.href = managerFileMap[opt.id] || `options/${opt.id}.html`;
-
-      card.innerHTML = `
-        <div class="claim-square-icon-wrap">
-          ${opt.icon}
-        </div>
-        <div class="claim-square-title">${opt.name}</div>
-      `;
-
-      container.appendChild(card);
-    });
-  }
-
-  function getSubCategoryIcon(id) {
-    const iconMap = {
-      car_maint: '🚗',
-      personal_allow: '👤',
-      mobile_phone: '📱',
-      optical_dental: '🦷',
-      gp_clinic: '🏥',
-      specialist: '👨‍⚕️',
-      pharmacy: '💊',
-      ot_meal: '🍱',
-      ot_transport: '🚕',
-      mileage: '🚘',
-      tolls_parking: '🅿️',
-      client_dining: '🍽️',
-      travel_adv: '💵',
-      office_supplies: '📦'
-    };
-    return iconMap[id] || '💳';
-  }
-
-  /**
-   * Navigate from Option Card to Sub-Page 1 (Ultra-Modern Premium Category Cards View)
-   */
-  function openOptionDetailById(optId) {
-    activeOptionId = optId;
-    const options = window.CLAIM_OPTIONS || [];
-    const opt = options.find(o => o.id === optId);
-    if (!opt) return;
-
-    const globalTitleEl = document.getElementById('globalTopTitle');
-    const container = document.getElementById('benefitAllowanceCardsContainer');
-
-    if (globalTitleEl) globalTitleEl.textContent = opt.name;
-
-    if (container) {
-      container.innerHTML = '';
-
-      const subCats = opt.subCategories || [];
-      if (subCats.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 28px 16px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-subtle); font-size: 13px; color: var(--text-muted);">
-            No allowance sub-categories defined for this claim option.
-          </div>
-        `;
-      } else {
-        subCats.forEach(sub => {
-          const icon = getSubCategoryIcon(sub.id);
-          const entitled = sub.entitled > 0 ? sub.entitled : 1;
-          const claimedPct = Math.min(100, Math.max(0, (sub.claimed / entitled) * 100));
-          const pendingPct = Math.min(100, Math.max(0, (sub.pending / entitled) * 100));
-          const availPct = Math.min(100, Math.max(0, (sub.usable / entitled) * 100));
-
-          const card = document.createElement('div');
-          card.className = 'leave-list-item';
-          card.style.cssText = 'background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 16px; box-shadow: var(--shadow-card); margin-bottom: 14px; transition: transform 0.2s ease;';
-
-          card.innerHTML = `
-            <!-- Item Header matching leave.html -->
-            <div class="item-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <div class="item-title-wrap" style="display: flex; align-items: center; gap: 12px;">
-                <div class="item-icon" style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; font-size: 20px;">
-                  ${icon}
-                </div>
-                <div>
-                  <h3 class="item-name" style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2;">${sub.name}</h3>
-                  <span class="item-avail" style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 3px;">RM ${sub.usable.toFixed(2)} available</span>
-                </div>
-              </div>
-              <button class="btn-apply-sm" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; padding: 7px 18px; border-radius: 20px; font-size: 12.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35); transition: transform 0.15s ease;" onclick="window.ClaimsEngine.openClaimFormForSubCategory('${sub.id}')">
-                Claim
-              </button>
-            </div>
-
-            <!-- 4-Stat Metric Box matching leave.html -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-input); padding: 10px 8px; border-radius: 14px; margin-top: 12px; text-align: center; border: 1px solid var(--border-subtle);">
-              <div>
-                <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">ENTITLED</div>
-                <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 3px;">RM ${sub.entitled.toFixed(2)}</div>
-              </div>
-              <div>
-                <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">CLAIMED</div>
-                <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 3px;">RM ${sub.claimed.toFixed(2)}</div>
-              </div>
-              <div>
-                <div style="font-size: 9px; font-weight: 800; color: #f59e0b; text-transform: uppercase;">PENDING</div>
-                <div style="font-size: 12px; font-weight: 800; color: #f59e0b; margin-top: 3px;">RM ${sub.pending.toFixed(2)}</div>
-              </div>
-              <div>
-                <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase;">AVAILABLE</div>
-                <div style="font-size: 12px; font-weight: 800; color: #10b981; margin-top: 3px;">RM ${sub.usable.toFixed(2)}</div>
-              </div>
-            </div>
-
-            <!-- Multi-segment Progress Bar matching leave.html -->
-            <div class="progress-bar-bg" style="height: 6px; background: var(--border-subtle); border-radius: 4px; overflow: hidden; display: flex; margin-top: 10px;">
-              <div class="progress-segment segment-taken" style="width: ${claimedPct}%; background: #7c3aed;"></div>
-              <div class="progress-segment segment-pending" style="width: ${pendingPct}%; background: #f59e0b;"></div>
-              <div class="progress-segment segment-available" style="width: ${availPct}%; background: #10b981;"></div>
-            </div>
-          `;
-
-          container.appendChild(card);
-        });
-      }
-    }
-
-    // Switch View to Sub-Page 1 (Hide Scope Switcher when in Sub-Pages)
-    const switcher = document.getElementById('mainScopeSwitcher');
-    if (switcher) switcher.style.display = 'none';
-
-    document.getElementById('optionsGridSubView').style.display = 'none';
-    document.getElementById('benefitClaimFormSubPage').style.display = 'none';
-    document.getElementById('optionDetailSubPage').style.display = 'block';
-    document.querySelector('.main-content').scrollTop = 0;
-  }
-
-  /**
-   * Navigate from Sub-Page 1 (`Claim` button) to Sub-Page 2 (Form View - Matching Screenshot 2)
-   */
-  function openClaimFormForSubCategory(subCatId) {
-    const options = window.CLAIM_OPTIONS || [];
-    const opt = options.find(o => o.id === activeOptionId);
-    if (!opt) return;
-
-    const sub = (opt.subCategories || []).find(s => s.id === subCatId);
-    if (!sub) return;
-
-    activeSubCategoryObj = sub;
-
-    // Populate Form Summary Info (Screenshot 2 Header)
-    const yearVal = document.getElementById('formYearVal');
-    const benefitTypeVal = document.getElementById('formBenefitTypeVal');
-    const entitledVal = document.getElementById('formEntitledVal');
-    const usableVal = document.getElementById('formUsableVal');
-
-    if (yearVal) yearVal.textContent = opt.entitlementYear || '2026';
-    if (benefitTypeVal) benefitTypeVal.textContent = sub.name;
-    if (entitledVal) entitledVal.textContent = sub.entitled.toFixed(2);
-    if (usableVal) usableVal.textContent = sub.usable.toFixed(2);
-
-    // Pre-fill Form Default Values logically
-    const claimAmtInput = document.getElementById('formClaimAmount');
-    const claimQtyInput = document.getElementById('formClaimQuantity');
-    
-    if (claimAmtInput) claimAmtInput.value = sub.pending > 0 ? sub.pending.toFixed(2) : '150.00';
-    if (claimQtyInput) claimQtyInput.value = 1;
-
-    resetAttachmentStatus();
-
-    // Switch View to Sub-Page 2 (Hide Scope Switcher when in Sub-Pages)
-    const switcher = document.getElementById('mainScopeSwitcher');
-    if (switcher) switcher.style.display = 'none';
-
-    document.getElementById('optionsGridSubView').style.display = 'none';
-    document.getElementById('optionDetailSubPage').style.display = 'none';
-    document.getElementById('benefitClaimFormSubPage').style.display = 'block';
-    document.querySelector('.main-content').scrollTop = 0;
-  }
-
-  function backToOptionsGrid() {
-    // Restore global title
-    const globalTitleEl = document.getElementById('globalTopTitle');
-    if (globalTitleEl) globalTitleEl.textContent = 'Claims & Expenses Hub';
-    // Show Scope Switcher on Main Options Grid
-    const switcher = document.getElementById('mainScopeSwitcher');
-    if (switcher) switcher.style.display = 'flex';
-
-    document.getElementById('benefitClaimFormSubPage').style.display = 'none';
-    document.getElementById('optionDetailSubPage').style.display = 'none';
-    document.getElementById('optionsGridSubView').style.display = 'block';
-    document.querySelector('.main-content').scrollTop = 0;
-  }
-
-  function backToCategoryCards() {
-    // Hide Scope Switcher when in Sub-Pages
-    const switcher = document.getElementById('mainScopeSwitcher');
-    if (switcher) switcher.style.display = 'none';
-
-    document.getElementById('benefitClaimFormSubPage').style.display = 'none';
-    document.getElementById('optionsGridSubView').style.display = 'none';
-    document.getElementById('optionDetailSubPage').style.display = 'block';
-    document.querySelector('.main-content').scrollTop = 0;
-  }
-
-  /**
-   * Populate Form Dropdowns (Month & Currency)
-   */
-  function populateFormDropdowns() {
-    const monthSelect = document.getElementById('formPeriodMonth');
-    const currSelect = document.getElementById('formCurrency');
-
-    if (monthSelect) {
-      monthSelect.innerHTML = '';
-      (window.CLAIM_PERIOD_MONTHS || []).forEach(m => {
-        const el = document.createElement('option');
-        el.value = m;
-        el.textContent = m;
-        if (m === 'September') el.selected = true;
-        monthSelect.appendChild(el);
-      });
-    }
-
-    if (currSelect) {
-      currSelect.innerHTML = '';
-      (window.CURRENCIES || []).forEach(c => {
-        const el = document.createElement('option');
-        el.value = c;
-        el.textContent = c;
-        if (c.includes('MYR')) el.selected = true;
-        currSelect.appendChild(el);
-      });
-    }
-  }
-
-  function triggerFileUpload() {
-    isAttachmentUploaded = true;
-    const badge = document.getElementById('formAttachmentBadge');
-    if (badge) {
-      badge.textContent = '✔ File Attached Successfully';
-      badge.style.display = 'block';
-    }
-    showToast('📄 Selected file attachment!');
-  }
-
-  function triggerCameraUpload() {
-    isAttachmentUploaded = true;
-    const badge = document.getElementById('formAttachmentBadge');
-    if (badge) {
-      badge.textContent = '✔ Photo Captured Successfully';
-      badge.style.display = 'block';
-    }
-    showToast('📷 Photo captured via camera!');
-  }
-
-  function resetAttachmentStatus() {
-    isAttachmentUploaded = false;
-    const badge = document.getElementById('formAttachmentBadge');
-    if (badge) badge.style.display = 'none';
-  }
-
-  /**
-   * Handle Exact Form Submit (Screenshot 2 Submit Handler)
-   */
-  function handleExactFormSubmit(e) {
-    e.preventDefault();
-
-    const amt = parseFloat(document.getElementById('formClaimAmount').value || '0');
-    const sub = activeSubCategoryObj;
-
-    if (sub) {
-      sub.pending += amt;
-      sub.usable = Math.max(0, sub.usable - amt);
-    }
-
-    if (window.MOCK_MY_SUBMISSIONS) {
-      window.MOCK_MY_SUBMISSIONS.unshift({
-        id: 'CLM-' + Date.now().toString().slice(-6),
-        category: sub ? sub.name : 'BENEFIT CLAIM',
-        optionName: 'Benefit Claim',
-        date: '14 Sep 2026',
-        amount: amt,
-        status: 'pending',
-        statusText: 'Pending Approval',
-        merchant: document.getElementById('formPurpose')?.value || 'Benefit Claim',
-        receipt: 'Ref #' + (document.getElementById('formReceiptNo')?.value || 'NEW')
-      });
-    }
-
-    renderMySubmissions('all');
-    showToast(`✅ Benefit claim of RM ${amt.toFixed(2)} for ${sub ? sub.name : 'Benefit'} submitted!`);
-
-    // Re-render Sub-Page 1 Cards with updated Usable & Pending values
-    openOptionDetailById(activeOptionId);
-  }
-
-  function openSummaryModal() {
-    openOptionDetailById('summary');
-  }
-
-  function openBenefitHighlightModal() {
-    showToast('🌟 Loaded Team Benefit Highlight Report');
-    const m = document.getElementById('managerDetailModal');
-    const t = document.getElementById('managerModalTitle');
-    const c = document.getElementById('managerModalBody');
-    if (t) t.textContent = 'Benefit Highlight & Analytics';
-    if (c) {
-      c.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="background: var(--bg-phone); padding: 14px; border-radius: 16px; border: 1px solid var(--border-subtle);">
-            <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Top Team Benefit Usage</div>
-            <div style="font-size: 20px; font-weight: 900; color: var(--purple-primary); margin: 4px 0;">Wellness & Gym (45%)</div>
-            <div style="font-size: 12px; color: var(--text-muted);">Optical & Vision (30%) • Dental Care (25%)</div>
-          </div>
-        </div>
-      `;
-    }
-    if (m) m.classList.add('active');
-  }
-
-  function openStaffEntitlementModal() {
-    showToast('💳 Loaded Staff Benefit Entitlement Roster');
-    const m = document.getElementById('managerDetailModal');
-    const t = document.getElementById('managerModalTitle');
-    const c = document.getElementById('managerModalBody');
-    if (t) t.textContent = 'Staff Benefit Entitlements';
-    if (c) {
-      const staffList = window.MOCK_STAFF_ENTITLEMENTS || [];
-      c.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          ${staffList.map(s => `
-            <div style="background: var(--bg-phone); padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${s.name}</div>
-                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">${s.dept}</div>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 13px; font-weight: 800; color: var(--secondary);">RM ${s.balance.toFixed(2)}</div>
-                <div style="font-size: 10.5px; color: var(--text-muted);">Claimed: ${s.pct}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-    if (m) m.classList.add('active');
-  }
-
-  function openExpensesHighlightModal() {
-    showToast('📈 Loaded Expenses Highlight & Analytics');
-    const m = document.getElementById('managerDetailModal');
-    const t = document.getElementById('managerModalTitle');
-    const c = document.getElementById('managerModalBody');
-    if (t) t.textContent = 'Expenses Spikes & Analytics';
-    if (c) {
-      c.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="background: var(--bg-phone); padding: 14px; border-radius: 16px; border: 1px solid var(--border-subtle);">
-            <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Department Spend Breakdown</div>
-            <div style="font-size: 18px; font-weight: 900; color: var(--text-primary); margin-top: 4px;">RM 4,250.00 / 15,000</div>
-            <div style="font-size: 12px; color: var(--secondary); font-weight: 700; margin-top: 2px;">✔ 28.3% Budget Utilized (Normal Range)</div>
-          </div>
-        </div>
-      `;
-    }
-    if (m) m.classList.add('active');
-  }
-
-  function openStaffSummaryModal() {
-    showToast('📋 Loaded Staff Claim Summary Report');
-    const m = document.getElementById('managerDetailModal');
-    const t = document.getElementById('managerModalTitle');
-    const c = document.getElementById('managerModalBody');
-    if (t) t.textContent = 'Staff Claim YTD Statements';
-    if (c) {
-      c.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="background: var(--bg-phone); padding: 14px; border-radius: 16px; border: 1px solid var(--border-subtle);">
-            <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Subordinates YTD Claim Statement</div>
-            <div style="font-size: 11.5px; color: var(--text-muted); line-height: 1.4;">Total Claims Processed: 24 Requests<br>Approved: 21 • Pending: 3 • Rejected: 0</div>
-          </div>
-          <button class="btn-submit-claim" onclick="window.ClaimsEngine.showToast('📥 Exported Staff Claim Summary PDF Report')">
-            <span>Download Team YTD PDF Report</span>
-          </button>
-        </div>
-      `;
-    }
-    if (m) m.classList.add('active');
-  }
-
-  function closeManagerModal() {
-    const m = document.getElementById('managerDetailModal');
-    if (m) m.classList.remove('active');
-  }
-
-  function handleManagerOptionClick(id, name) {
-    if (id === 'benefit_highlight') openBenefitHighlightModal();
-    else if (id === 'staff_entitlement') openStaffEntitlementModal();
-    else if (id === 'expenses_highlight') openExpensesHighlightModal();
-    else if (id === 'staff_summary') openStaffSummaryModal();
-  }
-
   function renderTeamQueue() {
     const container = document.getElementById('teamApprovalsQueue');
     const countVal = document.getElementById('teamPendingCountVal');
@@ -654,6 +628,7 @@
           <div class="team-user-avatar" style="width: 42px; height: 42px; border-radius: 12px; background: ${item.avatarBg}; color: ${item.avatarColor}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">${item.avatar}</div>
           <div>
             <div class="team-user-name" style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${item.userName}</div>
+            <!-- AGENTS.md Employee ID Presentation Standard: Directly below name, leading # -->
             <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">${empIdFormatted}</div>
             <div class="team-user-dept" style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${item.dept}</div>
           </div>
@@ -671,7 +646,6 @@
         <div class="team-action-buttons" style="display: flex; gap: 8px;">
           <button class="btn-approve" style="flex: 1; padding: 10px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'approve', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✔ Approve</button>
           <button class="btn-reject" style="flex: 1; padding: 10px; border-radius: 12px; background: transparent; border: 1px solid #ef4444; color: #ef4444; font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'reject', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✕ Reject</button>
-          <button class="btn-detail" style="padding: 10px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.openTeamDetailModal(${item.id})">👁️</button>
         </div>
       `;
 
@@ -697,48 +671,39 @@
   }
 
   /**
-   * Switch Scope between Individual and Team Manager
+   * ==========================================
+   * FORM DROPDOWNS & ATTACHMENTS
+   * ==========================================
    */
-  function switchClaimScope(scope) {
-    const tabIndiv = document.getElementById('tabClaimIndividual');
-    const tabTeam = document.getElementById('tabClaimTeam');
-    const secIndiv = document.getElementById('scopeIndividualSection');
-    const secTeam = document.getElementById('scopeTeamSection');
+  function populateFormDropdowns() {
+    const monthSelect = document.getElementById('formPeriodMonth');
+    const currSelect = document.getElementById('formCurrency');
 
-    if (scope === 'team') {
-      if (tabIndiv) tabIndiv.classList.remove('active');
-      if (tabTeam) tabTeam.classList.add('active');
-      if (secIndiv) secIndiv.style.display = 'none';
-      if (secTeam) secTeam.style.display = 'block';
-      renderManagerSquareGrid();
-      renderTeamQueue();
-    } else {
-      if (tabTeam) tabTeam.classList.remove('active');
-      if (tabIndiv) tabIndiv.classList.add('active');
-      if (secTeam) secTeam.style.display = 'none';
-      if (secIndiv) secIndiv.style.display = 'block';
-      renderOptionSquareGrid();
-      renderMySubmissions('all');
+    if (monthSelect) {
+      monthSelect.innerHTML = '';
+      (window.CLAIM_PERIOD_MONTHS || []).forEach(m => {
+        const el = document.createElement('option');
+        el.value = m;
+        el.textContent = m;
+        if (m === 'September') el.selected = true;
+        monthSelect.appendChild(el);
+      });
+    }
+
+    if (currSelect) {
+      currSelect.innerHTML = '';
+      (window.CURRENCIES || []).forEach(c => {
+        const el = document.createElement('option');
+        el.value = c;
+        el.textContent = c;
+        if (c.includes('MYR')) el.selected = true;
+        currSelect.appendChild(el);
+      });
     }
   }
 
-  /**
-   * Handle Centralized Global Back Button Navigation
-   */
   function handleGlobalBack() {
-    const formPage = document.getElementById('benefitClaimFormSubPage');
-    const detailPage = document.getElementById('optionDetailSubPage');
-    
-    if (formPage && formPage.style.display === 'block') {
-      // If we are in Form view, go back to Cards view
-      backToCategoryCards();
-    } else if (detailPage && detailPage.style.display === 'block') {
-      // If we are in Cards view, go back to Main Options grid
-      backToOptionsGrid();
-    } else {
-      // Otherwise default history back
-      window.history.back();
-    }
+    window.history.back();
   }
 
   // Global Engine Export
@@ -746,19 +711,13 @@
     initClaimsApp,
     showToast,
     switchClaimScope,
-    openOptionDetailById,
-    openClaimFormForSubCategory,
-    backToOptionsGrid,
-    backToCategoryCards,
-    triggerFileUpload,
-    triggerCameraUpload,
-    handleExactFormSubmit,
-    openSummaryModal,
+    toggleBreakdownCategory,
+    selectIndividualCalendarDay,
+    selectTeamCalendarDay,
     renderMySubmissions,
     filterMySubmissions,
     actionTeamClaim,
     approveAllTeamClaims,
-    closeManagerModal,
     openAllClaimOptionsModal,
     closeAllClaimOptionsModal,
     handleGlobalBack
@@ -771,4 +730,3 @@
   }
   window.addEventListener('load', initClaimsApp);
 })();
-

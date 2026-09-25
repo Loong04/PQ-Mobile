@@ -279,6 +279,95 @@
       font-weight: 700;
       margin-top: 6px;
     }
+
+    /* Top Claim Stepper Progress Indicator Standard */
+    .claim-stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .stepper-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stepper-line-bg {
+      position: absolute;
+      top: 15px;
+      left: 16.66%;
+      right: 16.66%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      z-index: 1;
+    }
+    .stepper-line-fill {
+      position: absolute;
+      top: 15px;
+      left: 16.66%;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
+    }
+    .stepper-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      z-index: 3;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+    }
+    .stepper-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .stepper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    /* Completed State */
+    .stepper-item.completed .stepper-circle {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.18);
+      color: #10b981;
+    }
+    .stepper-item.completed .stepper-label {
+      color: #34d399;
+    }
+    /* Active State */
+    .stepper-item.active .stepper-circle {
+      border-color: #a855f7;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
+    }
+    .stepper-item.active .stepper-label {
+      color: #ffffff;
+      font-weight: 900;
+    }
   </style>
 </head>
 <body>
@@ -305,6 +394,27 @@
     <!-- Main Content Container (4-Level Drill-down Views) -->
     <div class="main-content">
       
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Advance, 3: Details) -->
+      <div class="claim-stepper-card">
+        <div class="stepper-track-container">
+          <div class="stepper-line-bg"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%;"></div>
+          
+          <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
+            <div class="stepper-circle">1</div>
+            <span class="stepper-label">General</span>
+          </div>
+          <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
+            <div class="stepper-circle">2</div>
+            <span class="stepper-label">Advance</span>
+          </div>
+          <div class="stepper-item" id="stepNode-3" onclick="navigateToStep(3)">
+            <div class="stepper-circle">3</div>
+            <span class="stepper-label">Details</span>
+          </div>
+        </div>
+      </div>
+
       <!-- ========================================================= -->
       <!-- VIEW 1: MAIN FORM VIEW (主申请表单) -->
       <!-- ========================================================= -->
@@ -608,6 +718,36 @@
       uploadTarget: 'main'
     };
 
+    function updateStepperUI(stepNum) {
+      const lineFill = document.getElementById('stepperLineFill');
+      if (lineFill) {
+        const pcts = ['0%', '33.33%', '66.66%'];
+        lineFill.style.width = pcts[stepNum - 1] || '0%';
+      }
+
+      for (let i = 1; i <= 3; i++) {
+        const node = document.getElementById(`stepNode-${i}`);
+        if (!node) continue;
+        node.classList.remove('active', 'completed');
+        if (i < stepNum) {
+          node.classList.add('completed');
+        } else if (i === stepNum) {
+          node.classList.add('active');
+        }
+      }
+    }
+
+    function navigateToStep(stepNum) {
+      if (stepNum === 1) {
+        switchView('view-1-main', 'Advance Request');
+      } else if (stepNum === 2) {
+        openCategoryItems('advance');
+      } else if (stepNum === 3) {
+        openEntryForm();
+      }
+      updateStepperUI(stepNum);
+    }
+
     function switchView(viewId, headerTitle) {
       formData.currentView = viewId;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
@@ -618,6 +758,11 @@
       if (titleTextEl && headerTitle) {
         titleTextEl.innerText = headerTitle;
       }
+
+      if (viewId === 'view-1-main') updateStepperUI(1);
+      else if (viewId === 'view-2-categories') updateStepperUI(2);
+      else if (viewId === 'view-3-list') updateStepperUI(2);
+      else if (viewId === 'view-4-entry') updateStepperUI(3);
 
       const mainContent = document.querySelector('.main-content');
       if (mainContent) mainContent.scrollTop = 0;
