@@ -61,7 +61,7 @@ const APP_ROUTES = {
   'nav_calendar': 'calendar.html',
   'nav_favourite': 'favourite.html',
   'nav_apps': () => getCurrentTheme() === 'light' ? 'applight.html' : 'appdark.html',
-  'nav_me': 'modules/me/index.html'
+  'nav_me': 'me.html'
 };
 
 // 2. Safe Navigation Handler
