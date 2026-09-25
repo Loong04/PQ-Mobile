@@ -16,7 +16,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 12px 14px 220px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 14px 100px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
 
     /* Top Purple Header */
@@ -712,6 +712,17 @@
       <!-- ================= 3. SUMMARY TAB CONTENT ================= -->
       <div id="summaryTabView" style="display: none; padding-bottom: 24px;">
 
+        <!-- 0. HOURS TYPE SELECTOR DROPDOWN (MATCHING TARGET SCREENSHOT) -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 10px 14px; box-shadow: var(--shadow-sm);">
+          <label for="hoursTypeSelect" style="font-size: 13px; font-weight: 800; color: var(--text-primary); white-space: nowrap;">Hours Type:</label>
+          <select id="hoursTypeSelect" onchange="if(document.getElementById('chartTitleText')) document.getElementById('chartTitleText').innerText = this.value + ' by Shift';" style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none; cursor: pointer;">
+            <option value="Approved Hours" selected>Approved Hours</option>
+            <option value="Planned Hours">Planned Hours</option>
+            <option value="Actual Hours">Actual Hours</option>
+            <option value="Requested Hours">Requested Hours</option>
+          </select>
+        </div>
+
         <!-- 1. HERO TOTAL OVERVIEW CARD WITH INLINE DONUT CHART (AGENTS.MD STANDARD) -->
         <div class="history-card-item" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(109, 40, 217, 0.05) 100%); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default; flex-direction: column; align-items: stretch; gap: 16px;">
           <!-- Top Row Header -->
@@ -743,6 +754,12 @@
                 <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);">127.0h</div>
                 <div style="font-size: 9.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total OT</div>
               </div>
+            </div>
+
+            <!-- Subtitle & Subtotal Format Matching Target Reference -->
+            <div style="text-align: center; margin: 2px 0;">
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);" id="chartTitleText">Approved Hours by Shift</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--purple-primary); margin-top: 2px;" id="chartSubtotalText">Total Hours : 127.00 (73)</div>
             </div>
 
             <!-- Legend Container -->
@@ -801,47 +818,48 @@
             <span>OT Breakdown Table</span>
           </div>
           <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
-            3 OT Types
+            4 Records
           </div>
         </div>
 
-        <!-- 4. OT BREAKDOWN TABLE -->
+        <!-- 4. OT BREAKDOWN TABLE (3 COLUMNS MATCHING TARGET SCREENSHOT: Shift | Job Title | Hours) -->
         <div class="summary-table-card">
-          <div class="summary-table-hdr">
-            <div>OT Type</div>
+          <div class="summary-table-hdr" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+            <div>Shift</div>
             <div>Job Title</div>
-            <div style="text-align: right;">Staff</div>
             <div style="text-align: right;">Hours</div>
           </div>
           <div id="summaryOtTableRows">
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge amber">OT 1.5 BEFORE</span></div>
-              <div style="font-weight: 800; font-size: 12px;">ACCOUNT EXEC</div>
-              <div style="text-align: right; font-weight: 800;">28</div>
-              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">45.00</div>
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge amber">8.30AM-5.30PM (W01)</span></div>
+              <div style="font-weight: 800; font-size: 12px;">ACCOUNT EXECUTIVE</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">10.00 (6)</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge purple">OT 1.5 AFTER</span></div>
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge purple">8.30AM-5.30PM (W01)</span></div>
+              <div style="font-weight: 800; font-size: 12px;">ACCOUNT MANAGER</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">2.00 (2)</div>
+            </div>
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge blue">0700:1500 (W02)</span></div>
               <div style="font-weight: 800; font-size: 12px;">BARISTA OPERATIONS</div>
-              <div style="text-align: right; font-weight: 800;">35</div>
-              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">62.00</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">62.00 (35)</div>
             </div>
-            <div class="summary-table-row">
-              <div><span class="table-shift-badge blue">OT 2.0 REST DAY</span></div>
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge amber">0830:1730 (W03)</span></div>
               <div style="font-weight: 800; font-size: 12px;">QA ENGINEER</div>
-              <div style="text-align: right; font-weight: 800;">10</div>
-              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">20.00</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">53.00 (30)</div>
             </div>
           </div>
-          <div class="summary-table-footer">
+          <div class="summary-table-footer" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
             <div style="color: var(--text-primary);">Total</div>
             <div></div>
-            <div style="text-align: right; color: var(--text-primary);">73</div>
-            <div style="text-align: right; color: var(--purple-primary);">127.00</div>
+            <div style="text-align: right; color: var(--purple-primary);">127.00 (73)</div>
           </div>
         </div>
-
       </div>
+
+    </div> <!-- end main-content -->
 
     <!-- Sticky Bottom Action Bar (Staff Tab) -->
     <div class="sticky-bottom-bar" id="stickySelectionBar">
@@ -857,8 +875,6 @@
     </div>
 
     <phone-bottom-nav active="apps"></phone-bottom-nav>
-  </div>
-
   </div> <!-- end view-main -->
 
 

@@ -127,75 +127,37 @@
     .modal-overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 100;
       display: none;
       align-items: flex-end;
       justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
     }
     .modal-overlay.active {
       display: flex;
+      opacity: 1;
     }
     .modal-sheet {
       width: 100%;
       max-height: 85%;
-      background: var(--bg-card);
-      border-top-left-radius: 24px;
-      border-top-right-radius: 24px;
-      padding: 24px 16px;
+      background: #0f172a; /* Solid dark background to prevent transparency bleed */
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 22px 18px 30px;
       overflow-y: auto;
       transform: translateY(100%);
-      transition: transform 0.3s ease;
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
     }
     .modal-overlay.active .modal-sheet {
       transform: translateY(0);
     }
 
-    .period-input {
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-primary);
-      padding: 10px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 700;
-      text-align: center;
-      width: 120px;
-      outline: none;
-    }
-
-    .period-nav-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: var(--purple-primary);
-      border: none;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    /* Checkbox */
-    .checkbox-container input { display: none; }
-    .checkmark-box {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: transparent;
-    }
-    .checkbox-container input:checked + .checkmark-box {
-      background: var(--purple-primary);
-      border-color: var(--purple-primary);
-      color: #ffffff;
-    }
+    /* Remove unused checkbox CSS */
 
   </style>
 </head>
@@ -238,20 +200,14 @@
       </div>
 
       <!-- KPI Bar -->
-      <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-        <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow-sm);">
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Claim</span>
-          <span id="totalAmountText" style="font-size: 22px; font-weight: 900; color: var(--text-primary); margin-top: 4px;">RM 0.00</span>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: center;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Claim Amount</span>
+          <span id="totalAmountText" style="font-size: 20px; font-weight: 900; color: var(--text-primary);">RM 0.00</span>
         </div>
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-          <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
-            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Categories</span>
-            <span id="totalCategoriesCountText" style="font-size: 14px; font-weight: 800; color: var(--text-primary);">0</span>
-          </div>
-          <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
-            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Records</span>
-            <span id="totalRecordsCountText" style="font-size: 14px; font-weight: 800; color: var(--text-primary);">0</span>
-          </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: center;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Records Found</span>
+          <span id="totalRecordsCountText" style="font-size: 20px; font-weight: 900; color: var(--text-primary);">0</span>
         </div>
       </div>
 
@@ -260,45 +216,46 @@
 
     </div>
 
-    <!-- Filter Modal -->
-    <div class="modal-overlay" id="filterModalOverlay" onclick="closeFilterModal(event)">
-      <div class="modal-sheet" onclick="event.stopPropagation()">
+    <!-- Filter Modal (Consistent Aesthetic) -->
+    <div class="modal-overlay" id="filterModalOverlay" onclick="if(event.target===this) closeFilterModalForce()">
+      <div class="modal-sheet" style="padding: 16px 20px 28px; max-height: 85vh; border: 1px solid var(--border-subtle); border-bottom: none; border-radius: 28px 28px 0 0; background: var(--bg-card); display: flex; flex-direction: column; box-sizing: border-box;">
+        <div style="width: 38px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 0 auto 16px; opacity: 0.7;"></div>
         
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 14px;">
           <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
-          <button type="button" onclick="resetFilters()" style="padding: 6px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer;">
-            Reset
+          <button type="button" onclick="resetFilters()" style="background: transparent; border: 1px solid rgba(255,255,255,0.15); color: var(--text-primary); border-radius: 20px; font-size: 12px; font-weight: 800; padding: 5px 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
           </button>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 12px 16px; border-radius: 16px; border: 1px solid var(--border-subtle);">
-            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Period:</span>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <input type="text" id="periodInput" class="period-input" value="202605" onchange="handlePeriodInputChange()" />
-              <button type="button" class="period-nav-btn" onclick="stepPeriod(-1)">
-                <i class="fa-solid fa-arrow-left"></i>
-              </button>
-              <button type="button" class="period-nav-btn" onclick="stepPeriod(1)">
-                <i class="fa-solid fa-arrow-right"></i>
-              </button>
+        <div style="display: flex; flex-direction: column; overflow-y: auto; flex: 1; padding-right: 2px; gap: 14px;">
+          
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">PERIOD</label>
+            <div style="position: relative;">
+              <input type="month" id="periodInput" value="2026-05"
+                style="width: 100%; padding: 12px 14px; border-radius: 12px; background: transparent; border: 1px solid var(--border-subtle); color: #ffffff; font-size: 14px; font-weight: 700; outline: none; -webkit-appearance: none; appearance: none; box-sizing: border-box;">
+              <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;"></i>
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 14px 16px; border-radius: 16px; border: 1px solid var(--border-subtle);">
-            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Include Pending?:</span>
-            <label class="checkbox-container">
-              <input type="checkbox" id="includePendingCheckbox" checked />
-              <div class="checkmark-box">
-                <i class="fa-solid fa-check" style="font-size: 12px;"></i>
-              </div>
-            </label>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">INCLUDE PENDING?</label>
+            <div style="position: relative;">
+              <select id="includePendingSelect" 
+                style="width: 100%; padding: 12px 14px; border-radius: 12px; background: transparent; border: 1px solid var(--border-subtle); color: #ffffff; font-size: 14px; font-weight: 700; outline: none; -webkit-appearance: none; appearance: none; cursor: pointer; box-sizing: border-box;">
+                <option value="yes" style="background: var(--bg-card); color: #fff;">Yes</option>
+                <option value="no" style="background: var(--bg-card); color: #fff;">No</option>
+              </select>
+              <i class="fa-solid fa-chevron-down" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-primary); font-size: 12px; pointer-events: none;"></i>
+            </div>
           </div>
-        </div>
 
-        <button type="button" onclick="applyFiltersAndClose()" style="width: 100%; padding: 16px; border-radius: 16px; background: var(--purple-primary); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer;">
-          Apply Filter
-        </button>
+          <button type="button" onclick="applyFiltersAndClose()" style="width: 100%; margin-top: 6px; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 14.5px; font-weight: 800; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">
+            <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
+            <span>Apply Filter</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -386,54 +343,56 @@
       }
     ];
 
-    let currentPeriod = '202605';
+    let currentPeriod = '2026-05';
 
     function openFilterModal() {
       const modal = document.getElementById('filterModalOverlay');
-      if (modal) modal.classList.add('active');
-    }
-
-    function closeFilterModal(e) {
-      if (e.target.id === 'filterModalOverlay') {
-        const modal = document.getElementById('filterModalOverlay');
-        if (modal) modal.classList.remove('active');
+      if (modal) {
+        modal.style.display = 'flex';
+        // Small delay to allow display to apply before fading in
+        setTimeout(() => modal.classList.add('active'), 10);
       }
     }
 
-    function stepPeriod(delta) {
-      let year = parseInt(currentPeriod.substring(0, 4));
-      let month = parseInt(currentPeriod.substring(4, 6));
-
-      month += delta;
-      if (month > 12) { month = 1; year += 1; } 
-      else if (month < 1) { month = 12; year -= 1; }
-
-      currentPeriod = `${year}${month.toString().padStart(2, '0')}`;
-      document.getElementById('periodInput').value = currentPeriod;
-    }
-
-    function handlePeriodInputChange() {
-      const input = document.getElementById('periodInput');
-      if (input.value.trim().length === 6) currentPeriod = input.value.trim();
+    function closeFilterModalForce() {
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300); // Wait for transition
+      }
     }
 
     function resetFilters() {
-      currentPeriod = '202605';
+      currentPeriod = '2026-05';
       document.getElementById('periodInput').value = currentPeriod;
-      document.getElementById('includePendingCheckbox').checked = true;
+      document.getElementById('includePendingSelect').value = 'yes';
       applyFilters();
       closeFilterModalForce();
     }
 
     function applyFiltersAndClose() {
+      currentPeriod = document.getElementById('periodInput').value || '2026-05';
       applyFilters();
       closeFilterModalForce();
     }
 
     function applyFilters() {
-      const includePending = document.getElementById('includePendingCheckbox').checked;
+      const includePending = document.getElementById('includePendingSelect').value === 'yes';
       const container = document.getElementById('summaryCardsContainer');
       container.innerHTML = '';
+
+      // Format currentPeriod (YYYY-MM to YYYYMM) for display compatibility
+      let displayPeriod = currentPeriod.replace('-', '');
+      let displayPeriodLabel = currentPeriod;
+      
+      // Convert "2026-05" into "May 2026" for the filter toast display
+      if (currentPeriod.includes('-')) {
+        const parts = currentPeriod.split('-');
+        if (parts.length === 2) {
+          const dateObj = new Date(parts[0], parseInt(parts[1]) - 1, 1);
+          displayPeriodLabel = dateObj.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+        }
+      }
 
       let totalCat = 0;
       let totalRec = 0;
@@ -472,8 +431,10 @@
         }
       });
 
-      document.getElementById('claimSummaryFilterText').innerHTML = `Period: ${currentPeriod} &bull; ${includePending ? 'Include Pending' : 'Approved Only'}`;
-      document.getElementById('totalCategoriesCountText').textContent = totalCat;
+      document.getElementById('claimSummaryFilterText').innerHTML = `Period: ${displayPeriodLabel} &bull; ${includePending ? 'Include Pending' : 'Approved Only'}`;
+      if (document.getElementById('totalCategoriesCountText')) {
+        document.getElementById('totalCategoriesCountText').textContent = totalCat;
+      }
       document.getElementById('totalRecordsCountText').textContent = totalRec;
       document.getElementById('totalAmountText').textContent = `RM ${totalAmt.toFixed(2)}`;
     }
