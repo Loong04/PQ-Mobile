@@ -20,6 +20,31 @@
     .main-content::-webkit-scrollbar { display: none; }
     .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 16px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
     .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
+    .center-modal-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
+      z-index: 999; display: none; align-items: center; justify-content: center;
+      padding: 24px; opacity: 0; transition: opacity 0.25s ease;
+    }
+    .center-modal-overlay.active { display: flex; opacity: 1; }
+    .popout-card {
+      width: 100%; max-height: 80vh; background: var(--bg-card);
+      border-radius: 28px; border: 1px solid var(--border-subtle);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+      transform: scale(0.95) translateY(10px); transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .center-modal-overlay.active .popout-card { transform: scale(1) translateY(0); }
+    .popout-header {
+      padding: 24px 20px 16px; border-bottom: 1px solid var(--border-subtle);
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .popout-body { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    
+    .history-card-item {
+      background: var(--bg-input); border: 1px solid var(--border-subtle);
+      border-radius: 18px; padding: 16px;
+    }
   </style>
 </head>
 <body>
@@ -52,7 +77,7 @@
       <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">Individual Staff YTD Summary</div>
 
       <!-- Staff 1 -->
-      <div class="card">
+      <div class="card" style="cursor: pointer;" onclick="openStaffModal('EBB01')">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 10px;">
           <div>
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Sarah Chen</div>
@@ -71,7 +96,7 @@
       </div>
 
       <!-- Staff 2 -->
-      <div class="card">
+      <div class="card" style="cursor: pointer;" onclick="openStaffModal('004177')">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 10px;">
           <div>
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Marcus Tan</div>
@@ -90,7 +115,7 @@
       </div>
 
       <!-- Staff 3 -->
-      <div class="card">
+      <div class="card" style="cursor: pointer;" onclick="openStaffModal('000582')">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 10px;">
           <div>
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Daniel Lee</div>
@@ -114,7 +139,96 @@
 
     </div>
 
+    <!-- Center Pop-out Modal for Staff Details -->
+    <div class="center-modal-overlay" id="staffDetailsModalOverlay" onclick="if(event.target===this) closeStaffModal()">
+      <div class="popout-card" onclick="event.stopPropagation()">
+        <div class="popout-header">
+          <div>
+            <div id="modalStaffName" style="font-size: 18px; font-weight: 800; color: var(--text-primary);">Staff Name</div>
+            <div id="modalStaffId" style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EMP001</div>
+            <div id="modalStaffTotal" style="font-size: 13px; font-weight: 800; color: var(--purple-primary); margin-top: 2px;">Total: RM 0.00</div>
+          </div>
+          <button type="button" onclick="closeStaffModal()" style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="popout-body" id="modalRecordsList">
+          <!-- Cards injected here -->
+        </div>
+      </div>
+    </div>
+
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
+
+  <script>
+    const STAFF_DATA = {
+      'EBB01': {
+        name: 'Sarah Chen', empNo: 'EBB01', total: '1,250.00',
+        records: [
+          { dateToDate: '01/05/2026 - 05/05/2026', period: '202605', expense: 'Entertainment', amount: 450.00 },
+          { dateToDate: '10/05/2026 - 12/05/2026', period: '202605', expense: 'Travel Mileage', amount: 300.00 },
+          { dateToDate: '20/05/2026 - 22/05/2026', period: '202605', expense: 'Entertainment', amount: 500.00 }
+        ]
+      },
+      '004177': {
+        name: 'Marcus Tan', empNo: '004177', total: '950.00',
+        records: [
+          { dateToDate: '15/05/2026 - 16/05/2026', period: '202605', expense: 'OT Meal & Taxi', amount: 150.00 },
+          { dateToDate: '18/05/2026 - 18/05/2026', period: '202605', expense: 'OT Meal & Taxi', amount: 800.00 }
+        ]
+      },
+      '000582': {
+        name: 'Daniel Lee', empNo: '000582', total: '1,420.00',
+        records: [
+          { dateToDate: '02/05/2026 - 08/05/2026', period: '202605', expense: 'Travel Mileage', amount: 1420.00 }
+        ]
+      }
+    };
+
+    function openStaffModal(empId) {
+      const data = STAFF_DATA[empId];
+      if (!data) return;
+
+      document.getElementById('modalStaffName').textContent = data.name;
+      document.getElementById('modalStaffId').textContent = '#' + data.empNo;
+      document.getElementById('modalStaffTotal').textContent = 'Total: RM ' + data.total;
+
+      const container = document.getElementById('modalRecordsList');
+      container.innerHTML = '';
+
+      data.records.forEach(rec => {
+        const card = document.createElement('div');
+        card.className = 'history-card-item';
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);"><i class="fa-solid fa-receipt" style="color: var(--text-muted); font-size: 12px; margin-right: 6px;"></i>${rec.expense}</div>
+            <div style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${rec.amount.toFixed(2)}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Period</span>
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${rec.period}</span>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Date to Date</span>
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${rec.dateToDate}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      const modal = document.getElementById('staffDetailsModalOverlay');
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('active'), 10);
+    }
+
+    function closeStaffModal() {
+      const modal = document.getElementById('staffDetailsModalOverlay');
+      modal.classList.remove('active');
+      setTimeout(() => modal.style.display = 'none', 250);
+    }
+  </script>
 </body>
 </html>

@@ -261,27 +261,29 @@
 
     <!-- Category Details Modal -->
     <div class="modal-overlay" id="summaryDetailsModalOverlay" onclick="closeDetailsModal(event)">
-      <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-sheet" onclick="event.stopPropagation()" style="padding-bottom: 100px; border-top-left-radius: 32px; border-top-right-radius: 32px; background: var(--bg-phone);">
         
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-          <h2 id="modalCategoryTitle" style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Category Details</h2>
-          <button type="button" onclick="closeDetailsModalForce()" style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <div class="sheet-handle" style="width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 0 auto 20px;"></div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+          <h2 id="modalCategoryTitle" style="font-size: 20px; font-weight: 900; color: #ffffff; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Category Details</h2>
+          <button type="button" onclick="closeDetailsModalForce()" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px;">
-          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px;">
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Current Amount</div>
-            <div id="modalCurrentAmt" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">RM 0.00</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+          <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 16px;">
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Current Amount</div>
+            <div id="modalCurrentAmt" style="font-size: 18px; font-weight: 900; color: #ffffff;">RM 0.00</div>
           </div>
-          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px;">
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">YTD Total</div>
-            <div id="modalYtdAmt" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">RM 0.00</div>
+          <div style="background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 16px;">
+            <div style="font-size: 11.5px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">YTD Total</div>
+            <div id="modalYtdAmt" style="font-size: 18px; font-weight: 900; color: #ffffff;">RM 0.00</div>
           </div>
         </div>
 
-        <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Itemized Records</div>
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px;">Itemized Records</div>
         <div id="modalRecordsListContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
 
       </div>
@@ -294,12 +296,22 @@
     const SUMMARY_CATEGORIES = [
       {
         id: 'PHARMACY', title: 'PHARMACY', icon: '💊', period: '202605',
-        currentAmount: 69.90, ytdAmount: 129.90,
+        currentAmount: 489.80, ytdAmount: 1129.90,
         records: [
           {
             dateRange: '01/05/2026 - 09/05/2026', period: '202605', expense: 'PHARMACY',
             empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Guardian Pharmacy KLCC',
             amount: 69.90, status: 'approved', statusText: 'Approved'
+          },
+          {
+            dateRange: '10/05/2026 - 20/05/2026', period: '202605', expense: 'PHARMACY',
+            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Teo Seng Car Workshop',
+            amount: 350.00, status: 'pending', statusText: 'Pending Approval'
+          },
+          {
+            dateRange: '21/05/2026 - 25/05/2026', period: '202605', expense: 'PHARMACY',
+            empName: 'Sarah Chen', empNo: 'EBB01', merchant: 'Watsons Mid Valley',
+            amount: 70.00, status: 'rejected', statusText: 'Rejected'
           }
         ]
       },
@@ -457,27 +469,29 @@
         recItem.style.cursor = 'default';
         
         recItem.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 12px;">
             <div>
-              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">${r.empName}</div>
-              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#${r.empNo}</div>
+              <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">${r.empName}</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#${r.empNo}</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+                <i class="fa-solid fa-location-dot"></i> ${r.merchant}
+              </div>
             </div>
-            <span class="status-pill ${r.status}">${r.statusText}</span>
+            <div style="text-align: right;">
+              <span class="status-pill ${r.status}" style="display: inline-block; margin-bottom: 8px;">${r.statusText}</span>
+              <div style="font-size: 15px; font-weight: 900; color: var(--purple-primary);">RM ${r.amount.toFixed(2)}</div>
+            </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <div style="display: flex; flex-direction: column;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Date</span>
-              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">${r.dateRange}</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Period</span>
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${r.period}</span>
             </div>
             <div style="display: flex; flex-direction: column;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Amount</span>
-              <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">RM ${r.amount.toFixed(2)}</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Date to Date</span>
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${r.dateRange}</span>
             </div>
-          </div>
-          
-          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted);">
-            <i class="fa-solid fa-location-dot"></i> ${r.merchant}
           </div>
         `;
         recordsContainer.appendChild(recItem);
