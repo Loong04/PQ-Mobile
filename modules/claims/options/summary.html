@@ -8,18 +8,195 @@
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
-    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 16px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* Standard Enterprise Filter Bar */
+    .enterprise-toast-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+    
+    .filter-slider-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* History Card Container Style */
+    .history-card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+    }
+
+    .history-time-row {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .status-pill {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .status-pill.submitted { background: rgba(59, 130, 246, 0.16); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-pill.pending { background: rgba(245, 158, 11, 0.16); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-pill.approved { background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-pill.rejected { background: rgba(239, 68, 68, 0.16); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* Bottom Sheet Modal */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.65);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-sheet {
+      width: 100%;
+      max-height: 85%;
+      background: var(--bg-card);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 24px 16px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+    }
+    .modal-overlay.active .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .period-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      width: 120px;
+      outline: none;
+    }
+
+    .period-nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--purple-primary);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Checkbox */
+    .checkbox-container input { display: none; }
+    .checkmark-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+    }
+    .checkbox-container input:checked + .checkmark-box {
+      background: var(--purple-primary);
+      border-color: var(--purple-primary);
+      color: #ffffff;
+    }
+
   </style>
 </head>
 <body>
@@ -27,72 +204,332 @@
   <preview-top-bar active-page="claims"></preview-top-bar>
 
   <div class="phone-container">
+    
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="../index.html" class="me-back-btn" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
+          <a href="../index.html" class="me-back-btn" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </a>
-          <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Claim Summary</h1>
+          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Claim Summary</h1>
         </div>
       </div>
     </div>
 
     <div class="main-content">
       
-      <!-- Summary Card -->
-      <div class="card" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); color: #ffffff;">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85;">Annual Entitlement Statement</div>
-        <div style="font-size: 26px; font-weight: 900; margin-top: 4px;">RM 2,450.00 <span style="font-size: 13px; font-weight: 600; opacity: 0.8;">Claimed</span></div>
-        <div style="font-size: 12px; font-weight: 600; margin-top: 8px; opacity: 0.9;">Remaining Usable Balance: RM 2,250.00 (52% Used)</div>
+      <!-- Standard Enterprise Toast Bar -->
+      <div class="enterprise-toast-bar" onclick="openFilterModal()">
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">
+            Filter
+          </div>
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <span style="color: var(--purple-primary);">ஃ</span>
+            <span id="claimSummaryFilterText">Period: 202605 &bull; Include Pending</span>
+          </div>
+        </div>
+        <button type="button" class="filter-slider-btn">
+          <i class="fa-solid fa-sliders"></i>
+        </button>
       </div>
 
-      <!-- Breakdown by Category -->
-      <div class="card">
-        <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px;">Entitlement Breakdown</h3>
-
-        <!-- Item 1 -->
-        <div style="margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-          <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: var(--text-primary);">
-            <span>Benefit Claim</span>
-            <span>RM 803.00 Avail</span>
+      <!-- KPI Bar -->
+      <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+        <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow-sm);">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Claim</span>
+          <span id="totalAmountText" style="font-size: 22px; font-weight: 900; color: var(--text-primary); margin-top: 4px;">RM 0.00</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Categories</span>
+            <span id="totalCategoriesCountText" style="font-size: 14px; font-weight: 800; color: var(--text-primary);">0</span>
           </div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Entitled: RM 3,900 &bull; Claimed: RM 250 &bull; Pending: RM 847</div>
-          <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 6px;">
-            <div style="width: 28%; height: 100%; background: #7c3aed; border-radius: 4px;"></div>
+          <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Records</span>
+            <span id="totalRecordsCountText" style="font-size: 14px; font-weight: 800; color: var(--text-primary);">0</span>
           </div>
         </div>
-
-        <!-- Item 2 -->
-        <div style="margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-          <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: var(--text-primary);">
-            <span>Medical Claim</span>
-            <span>RM 1,100.00 Avail</span>
-          </div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Entitled: RM 1,600 &bull; Claimed: RM 450 &bull; Pending: RM 50</div>
-          <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 6px;">
-            <div style="width: 31%; height: 100%; background: #3b82f6; border-radius: 4px;"></div>
-          </div>
-        </div>
-
-        <!-- Item 3 -->
-        <div style="margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-          <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: var(--text-primary);">
-            <span>Travel Mileage</span>
-            <span>RM 731.00 Avail</span>
-          </div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Entitled: RM 1,300 &bull; Claimed: RM 500 &bull; Pending: RM 69</div>
-          <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 6px;">
-            <div style="width: 43%; height: 100%; background: #10b981; border-radius: 4px;"></div>
-          </div>
-        </div>
-
       </div>
 
+      <!-- Summary Cards -->
+      <div id="summaryCardsContainer"></div>
+
+    </div>
+
+    <!-- Filter Modal -->
+    <div class="modal-overlay" id="filterModalOverlay" onclick="closeFilterModal(event)">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
+          <button type="button" onclick="resetFilters()" style="padding: 6px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer;">
+            Reset
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 12px 16px; border-radius: 16px; border: 1px solid var(--border-subtle);">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Period:</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="text" id="periodInput" class="period-input" value="202605" onchange="handlePeriodInputChange()" />
+              <button type="button" class="period-nav-btn" onclick="stepPeriod(-1)">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <button type="button" class="period-nav-btn" onclick="stepPeriod(1)">
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 14px 16px; border-radius: 16px; border: 1px solid var(--border-subtle);">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Include Pending?:</span>
+            <label class="checkbox-container">
+              <input type="checkbox" id="includePendingCheckbox" checked />
+              <div class="checkmark-box">
+                <i class="fa-solid fa-check" style="font-size: 12px;"></i>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button type="button" onclick="applyFiltersAndClose()" style="width: 100%; padding: 16px; border-radius: 16px; background: var(--purple-primary); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer;">
+          Apply Filter
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Details Modal -->
+    <div class="modal-overlay" id="summaryDetailsModalOverlay" onclick="closeDetailsModal(event)">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <h2 id="modalCategoryTitle" style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Category Details</h2>
+          <button type="button" onclick="closeDetailsModalForce()" style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px;">
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Current Amount</div>
+            <div id="modalCurrentAmt" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">RM 0.00</div>
+          </div>
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">YTD Total</div>
+            <div id="modalYtdAmt" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">RM 0.00</div>
+          </div>
+        </div>
+
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Itemized Records</div>
+        <div id="modalRecordsListContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
+      </div>
     </div>
 
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
+
+  <script>
+    const SUMMARY_CATEGORIES = [
+      {
+        id: 'PHARMACY', title: 'PHARMACY', icon: '💊', period: '202605',
+        currentAmount: 69.90, ytdAmount: 129.90,
+        records: [
+          {
+            dateRange: '01/05/2026 - 09/05/2026', period: '202605', expense: 'PHARMACY',
+            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Guardian Pharmacy KLCC',
+            amount: 69.90, status: 'approved', statusText: 'Approved'
+          }
+        ]
+      },
+      {
+        id: 'MOBILE_PHONE', title: 'MOBILE PHONE', icon: '📱', period: '202605',
+        currentAmount: 120.00, ytdAmount: 600.00,
+        records: [
+          {
+            dateRange: '01/05/2026 - 01/05/2026', period: '202605', expense: 'MOBILE PHONE',
+            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Maxis Mobile MY',
+            amount: 120.00, status: 'approved', statusText: 'Approved'
+          }
+        ]
+      },
+      {
+        id: 'CAR_MAINTENANCE', title: 'CAR MAINTENANCE', icon: '🚗', period: '202605',
+        currentAmount: 350.00, ytdAmount: 850.00,
+        records: [
+          {
+            dateRange: '10/05/2026 - 20/05/2026', period: '202605', expense: 'CAR MAINTENANCE',
+            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Teo Seng Car Workshop',
+            amount: 350.00, status: 'pending', statusText: 'Pending Approval'
+          }
+        ]
+      },
+      {
+        id: 'CLIENT_ENTERTAINMENT', title: 'CLIENT ENTERTAINMENT', icon: '🍽️', period: '202605',
+        currentAmount: 490.60, ytdAmount: 1420.00,
+        records: [
+          {
+            dateRange: '12/05/2026 - 18/05/2026', period: '202605', expense: 'CLIENT ENTERTAINMENT',
+            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Naughty Nuri’s Pavilion',
+            amount: 270.60, status: 'approved', statusText: 'Approved'
+          },
+          {
+            dateRange: '20/05/2026 - 25/05/2026', period: '202605', expense: 'CLIENT ENTERTAINMENT',
+            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Chili’s KLCC',
+            amount: 220.00, status: 'submitted', statusText: 'Submitted'
+          }
+        ]
+      }
+    ];
+
+    let currentPeriod = '202605';
+
+    function openFilterModal() {
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeFilterModal(e) {
+      if (e.target.id === 'filterModalOverlay') {
+        const modal = document.getElementById('filterModalOverlay');
+        if (modal) modal.classList.remove('active');
+      }
+    }
+
+    function stepPeriod(delta) {
+      let year = parseInt(currentPeriod.substring(0, 4));
+      let month = parseInt(currentPeriod.substring(4, 6));
+
+      month += delta;
+      if (month > 12) { month = 1; year += 1; } 
+      else if (month < 1) { month = 12; year -= 1; }
+
+      currentPeriod = `${year}${month.toString().padStart(2, '0')}`;
+      document.getElementById('periodInput').value = currentPeriod;
+    }
+
+    function handlePeriodInputChange() {
+      const input = document.getElementById('periodInput');
+      if (input.value.trim().length === 6) currentPeriod = input.value.trim();
+    }
+
+    function resetFilters() {
+      currentPeriod = '202605';
+      document.getElementById('periodInput').value = currentPeriod;
+      document.getElementById('includePendingCheckbox').checked = true;
+      applyFilters();
+      closeFilterModalForce();
+    }
+
+    function applyFiltersAndClose() {
+      applyFilters();
+      closeFilterModalForce();
+    }
+
+    function applyFilters() {
+      const includePending = document.getElementById('includePendingCheckbox').checked;
+      const container = document.getElementById('summaryCardsContainer');
+      container.innerHTML = '';
+
+      let totalCat = 0;
+      let totalRec = 0;
+      let totalAmt = 0;
+
+      SUMMARY_CATEGORIES.forEach(cat => {
+        const validRecords = cat.records.filter(r => includePending || (r.status !== 'pending' && r.status !== 'submitted'));
+        let catCurrentAmount = validRecords.reduce((sum, r) => sum + r.amount, 0);
+
+        if (validRecords.length > 0) {
+          totalCat++;
+          totalRec += validRecords.length;
+          totalAmt += catCurrentAmount;
+
+          const card = document.createElement('div');
+          card.className = 'history-card-item';
+          card.onclick = () => openDetailsModal(cat.id);
+
+          card.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <div class="history-time-row">${cat.icon} ${cat.title}</div>
+              <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 13px;"></i>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Current Amount</span>
+                <span style="font-size: 14px; font-weight: 800; color: var(--text-primary);">RM ${catCurrentAmount.toFixed(2)}</span>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">YTD Total</span>
+                <span style="font-size: 14px; font-weight: 800; color: var(--text-primary);">RM ${cat.ytdAmount.toFixed(2)}</span>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        }
+      });
+
+      document.getElementById('claimSummaryFilterText').innerHTML = `Period: ${currentPeriod} &bull; ${includePending ? 'Include Pending' : 'Approved Only'}`;
+      document.getElementById('totalCategoriesCountText').textContent = totalCat;
+      document.getElementById('totalRecordsCountText').textContent = totalRec;
+      document.getElementById('totalAmountText').textContent = `RM ${totalAmt.toFixed(2)}`;
+    }
+
+    function openDetailsModal(catId) {
+      const cat = SUMMARY_CATEGORIES.find(c => c.id === catId);
+      if (!cat) return;
+
+      document.getElementById('modalCategoryTitle').textContent = `${cat.icon} ${cat.title}`;
+      document.getElementById('modalCurrentAmt').textContent = `RM ${cat.currentAmount.toFixed(2)}`;
+      document.getElementById('modalYtdAmt').textContent = `RM ${cat.ytdAmount.toFixed(2)}`;
+      
+      const recordsContainer = document.getElementById('modalRecordsListContainer');
+      recordsContainer.innerHTML = '';
+      
+      cat.records.forEach(r => {
+        const recItem = document.createElement('div');
+        recItem.className = 'history-card-item';
+        recItem.style.marginBottom = '0';
+        recItem.style.cursor = 'default';
+        
+        recItem.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">${r.empName}</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#${r.empNo}</div>
+            </div>
+            <span class="status-pill ${r.status}">${r.statusText}</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Date</span>
+              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">${r.dateRange}</span>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Amount</span>
+              <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">RM ${r.amount.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            <i class="fa-solid fa-location-dot"></i> ${r.merchant}
+          </div>
+        `;
+        recordsContainer.appendChild(recItem);
+      });
+
+      document.getElementById('summaryDetailsModalOverlay').classList.add('active');
+    }
+
+    function closeDetailsModalForce() {
+      document.getElementById('summaryDetailsModalOverlay').classList.remove('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', applyFilters);
+  </script>
 </body>
 </html>

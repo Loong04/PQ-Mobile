@@ -136,9 +136,12 @@
       border-radius: 10px;
       white-space: nowrap;
     }
+    .status-pill.submitted { background: rgba(59, 130, 246, 0.16); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
     .status-pill.pending { background: rgba(245, 158, 11, 0.16); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
     .status-pill.approved { background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
     .status-pill.rejected { background: rgba(239, 68, 68, 0.16); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-pill.draft,
+    .status-pill.cancelled { background: rgba(148, 163, 184, 0.16); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
 
     /* Bottom Sheet Drawer Modal */
     .modal-overlay {
@@ -479,8 +482,8 @@
         }
       ],
       ot: [
-        { id: 'OTC-2026-0511', title: 'OT 1.5x (NORMAL DAY)', subtype: 'Peak Sprint System Deployment', date: '22 SEP 2026', isoDate: '2026-09-22', day: '22', month: 'SEP', dayName: 'TUE', merchant: '6.0 Hours • Project Alpha', amount: '150.00', quantity: '6.00', claimPeriod: '202609', dateFrom: '22 Sep 2026', dateTo: '22 Sep 2026', benefitYear: '2026', receiptNo: 'OT-77491', otherRef: '', purpose: 'Deployment Overtime', remark: 'Approved by Supervisor', cancellationRemark: '', attachments: 'OT_Timesheet.pdf', currency: 'MYR', status: 'pending', statusText: 'Pending Approval', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
-        { id: 'OTC-2026-0480', title: 'OT 2.0x (REST DAY)', subtype: 'Weekend Data Server Migration', date: '14 SEP 2026', isoDate: '2026-09-14', day: '14', month: 'SEP', dayName: 'MON', merchant: '8.0 Hours • System Maintenance', amount: '260.00', quantity: '8.00', claimPeriod: '202609', dateFrom: '14 Sep 2026', dateTo: '14 Sep 2026', benefitYear: '2026', receiptNo: 'OT-88301', otherRef: '', purpose: 'Server Migration', remark: 'Weekend maintenance', cancellationRemark: '', attachments: 'Server_Log.pdf', currency: 'MYR', status: 'approved', statusText: 'Approved', empName: 'Farhan binti rahmat', empNo: 'EBB12' }
+        { id: 'OTC-2026-0511', title: 'OT 1.5x (NORMAL DAY)', subtype: 'Peak Sprint System Deployment', date: '22 SEP 2026', isoDate: '2026-09-22', day: '22', month: 'SEP', dayName: 'TUE', merchant: '6.0 Hours • Project Alpha', amount: '150.00', quantity: '6.00', otTime: '18:00 - 00:00', claimPeriod: '202609', dateFrom: '22 Sep 2026', dateTo: '22 Sep 2026', benefitYear: '2026', receiptNo: 'OT-77491', otherRef: '', purpose: 'Deployment Overtime', remark: 'Approved by Supervisor', cancellationRemark: '', attachments: 'OT_Timesheet.pdf', currency: 'MYR', status: 'pending', statusText: 'Pending Approval', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
+        { id: 'OTC-2026-0480', title: 'OT 2.0x (REST DAY)', subtype: 'Weekend Data Server Migration', date: '14 SEP 2026', isoDate: '2026-09-14', day: '14', month: 'SEP', dayName: 'MON', merchant: '8.0 Hours • System Maintenance', amount: '260.00', quantity: '8.00', otTime: '09:00 - 17:00', claimPeriod: '202609', dateFrom: '14 Sep 2026', dateTo: '14 Sep 2026', benefitYear: '2026', receiptNo: 'OT-88301', otherRef: '', purpose: 'Server Migration', remark: 'Weekend maintenance', cancellationRemark: '', attachments: 'Server_Log.pdf', currency: 'MYR', status: 'approved', statusText: 'Approved', empName: 'Farhan binti rahmat', empNo: 'EBB12' }
       ],
       travel: [
         { id: 'TRV-2026-0102', title: 'KL - PENANG MILEAGE', subtype: '420 km Business Mileage (RM0.80/km)', date: '10 SEP 2026', isoDate: '2026-09-10', day: '10', month: 'SEP', dayName: 'THU', merchant: 'Client Site Visit • Own Car', amount: '336.00', quantity: '420.00', claimPeriod: '202609', dateFrom: '10 Sep 2026', dateTo: '10 Sep 2026', benefitYear: '2026', receiptNo: 'TNG-88912', otherRef: 'NSE Highway', purpose: 'Penang Site Audit', remark: 'Toll included', cancellationRemark: '', attachments: 'Toll_Receipt.pdf', currency: 'MYR', status: 'approved', statusText: 'Approved', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
@@ -588,24 +591,29 @@
           datesDisplay = item.receiptDate;
         }
 
-        card.innerHTML = `
-          <div style="width: 100%;">
-            <!-- Top Row: Title, Status Badge & Chevron -->
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                <h4 style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                  ${item.title}
-                </h4>
-                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.7;">#${item.id}</span>
+        let detailsBlock = '';
+        if (activeTabKey === 'ot') {
+          const timeDisplay = item.otTime || item.time || '18:00 - 00:00';
+          const hoursDisplay = `${item.quantity || item.hours || '6.0'} Hours`;
+          detailsBlock = `
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Date :</span>
+                <span style="color: var(--text-primary); font-weight: 700;">${datesDisplay}</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                <span class="status-pill ${item.status}">${item.statusText}</span>
-                <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.7;"></i>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Time :</span>
+                <span style="color: var(--text-primary); font-weight: 700;">${timeDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Hours :</span>
+                <span style="font-size: 15px; font-weight: 900; color: var(--purple-primary);">${hoursDisplay}</span>
               </div>
             </div>
-
-            <!-- Detail Rows: Claim Period, Claim Dates, Amount -->
-            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; background: rgba(255, 255, 255, 0.03); padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+          `;
+        } else {
+          detailsBlock = `
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Claim Period :</span>
                 <span style="color: var(--text-primary); font-weight: 700; font-family: monospace, sans-serif;">${periodDisplay}</span>
@@ -614,11 +622,27 @@
                 <span style="color: var(--text-muted); font-weight: 600;">Claim Dates :</span>
                 <span style="color: var(--text-primary); font-weight: 700;">${datesDisplay}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-divider); padding-top: 6px; margin-top: 2px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
                 <span style="color: var(--text-muted); font-weight: 600;">Amount :</span>
-                <span style="font-size: 15px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+                <span style="font-size: 15.5px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
               </div>
             </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div style="width: 100%;">
+            <!-- Top Row: Title, Status Badge & Chevron -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+              <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1;">
+                ${item.title}
+              </h4>
+              <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                <span class="status-pill ${item.status}">${item.statusText}</span>
+                <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.7;"></i>
+              </div>
+            </div>
+            ${detailsBlock}
           </div>
         `;
 
