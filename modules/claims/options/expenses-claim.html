@@ -277,8 +277,96 @@
       white-space: nowrap;
     }
     .toast-box.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+    /* Top Claim Stepper Progress Indicator Standard */
+    .claim-stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+    .stepper-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stepper-track-container.two-steps .stepper-line-bg {
+      left: 25%;
+      right: 25%;
+    }
+    .stepper-track-container.two-steps .stepper-line-fill {
+      left: 25%;
+    }
+    .stepper-line-bg {
+      position: absolute;
+      top: 15px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      z-index: 1;
+    }
+    .stepper-line-fill {
+      position: absolute;
+      top: 15px;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
+    }
+    .stepper-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      z-index: 3;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+    }
+    .stepper-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .stepper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    /* Completed State: Green Outline & Text */
+    .stepper-item.completed .stepper-circle {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.18);
+      color: #10b981;
+    }
+    .stepper-item.completed .stepper-label {
+      color: #34d399;
+    }
+    /* Active State: Vibrant Purple Filled Circle */
+    .stepper-item.active .stepper-circle {
+      border-color: #a855f7;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
+    }
+    .stepper-item.active .stepper-label {
+      color: #ffffff;
+      font-weight: 900;
     }
   </style>
 </head>
@@ -304,6 +392,23 @@
 
     <!-- MAIN SCROLLABLE CONTENT -->
     <div class="main-content">
+
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Expense) -->
+      <div class="claim-stepper-card">
+        <div class="stepper-track-container two-steps">
+          <div class="stepper-line-bg"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%;"></div>
+          
+          <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
+            <div class="stepper-circle">1</div>
+            <span class="stepper-label">General</span>
+          </div>
+          <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
+            <div class="stepper-circle">2</div>
+            <span class="stepper-label">Expense</span>
+          </div>
+        </div>
+      </div>
 
       <!-- ========================================================= -->
       <!-- VIEW 1: MAIN APPLICATION VIEW (Level 1) -->
@@ -620,6 +725,37 @@
       }
     }
 
+    function updateStepper(stepNum) {
+      const steps = document.querySelectorAll('.stepper-item');
+      const lineFill = document.getElementById('stepperLineFill');
+      if (!steps.length) return;
+
+      const totalSteps = steps.length;
+      let maxPercent = totalSteps === 2 ? 50 : 75;
+      let progressRatio = (stepNum - 1) / (totalSteps - 1);
+      if (lineFill) {
+        lineFill.style.width = (progressRatio * maxPercent) + '%';
+      }
+
+      steps.forEach((stepEl, idx) => {
+        const s = idx + 1;
+        stepEl.classList.remove('active', 'completed');
+        if (s < stepNum) {
+          stepEl.classList.add('completed');
+        } else if (s === stepNum) {
+          stepEl.classList.add('active');
+        }
+      });
+    }
+
+    function navigateToStep(stepNum) {
+      if (stepNum === 1) {
+        switchView('view-1-main', 'Expense Claim');
+      } else if (stepNum === 2) {
+        openCategoryItems('expense');
+      }
+    }
+
     function switchView(viewId, title) {
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
       const target = document.getElementById(viewId);
@@ -629,6 +765,13 @@
       if (title) {
         document.getElementById('headerNavTitle').innerText = title;
       }
+
+      if (viewId === 'view-1-main') {
+        updateStepper(1);
+      } else {
+        updateStepper(2);
+      }
+
       const mainContent = document.querySelector('.main-content');
       if (mainContent) mainContent.scrollTop = 0;
       window.scrollTo(0, 0);
@@ -666,8 +809,8 @@
 
       if (items.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 20px;">
-            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+          <div style="text-align: center; padding: 40px 20px; background: var(--bg-card); border: 1px dashed var(--border-subtle); border-radius: 20px; box-shadow: var(--shadow-card);">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
               <i class="fa-solid fa-receipt"></i>
             </div>
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
