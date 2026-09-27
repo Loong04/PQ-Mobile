@@ -778,20 +778,74 @@
       let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
       items.forEach((item, idx) => {
         const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
+        const cardId = `advCard_${idx}`;
         html += `
-          <div style="transition: all 0.25s ease; ${borderStyle}">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div onclick="openEntryForm('edit', ${idx})" style="cursor: pointer; flex: 1;">
-                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type}</div>
-                <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
-                  ${item.desc} • ${item.currency} (${item.forexRate})
+          <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+            <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type || 'ADVANCE EXPENSE'}</div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                    ${item.desc || 'Expense description'}
+                  </div>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${item.localAmount.toFixed(2)}</div>
-                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); cursor: pointer; font-size: 15px;" onclick="openEntryForm('edit', ${idx})" title="Edit Item"></i>
-                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})" title="Delete Item"></i>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.localAmount || 0).toFixed(2)}</div>
+                <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
               </div>
+            </div>
+
+            <!-- Expandable Detailed View -->
+            <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Expense:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'TRAVEL EXPENSE'}</div>
+                </div>
+                <div></div>
+                <div style="grid-column: span 2;">
+                  <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'N/A'}</div>
+                </div>
+                <div style="grid-column: span 2;">
+                  <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'Project Alpha'}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Amount:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.amt || 0}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Claim Currency:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.currency || 'IDR'}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Forex Rate:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.forexRate || 1}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Local Amount (RM):</span>
+                  <div style="font-weight: 800; color: #10b981; margin-top: 2px;">RM ${(item.localAmount || 0).toFixed(2)}</div>
+                </div>
+              </div>
+              ${item.attachments && item.attachments.length > 0 ? `
+              <div style="margin-top: 12px; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Attachments:</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                  ${item.attachments.map(att => `
+                    <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                      <i class="fa-solid fa-paperclip"></i> ${att}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              ` : ''}
             </div>
           </div>
         `;
@@ -799,6 +853,20 @@
       html += '</div>';
 
       container.innerHTML = html;
+    }
+
+    function toggleItemCard(cardId) {
+      const cardEl = document.getElementById(cardId);
+      if (!cardEl) return;
+      const bodyEl = cardEl.querySelector('.item-details-body');
+      const iconEl = cardEl.querySelector('.toggle-icon');
+      if (bodyEl) {
+        const isHidden = bodyEl.style.display === 'none' || !bodyEl.style.display;
+        bodyEl.style.display = isHidden ? 'block' : 'none';
+        if (iconEl) {
+          iconEl.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+      }
     }
 
     function deleteSubItem(idx) {
@@ -820,6 +888,9 @@
 
       const isEdit = formData.editingIndex >= 0;
       const item = isEdit ? (formData.claimDetails.addedDetails[formData.editingIndex] || {}) : {};
+      
+      formData.subAttachments = [...(item.attachments || [])];
+      
       const titleText = isEdit ? 'EDIT ADVANCE EXPENSE DETAILS' : 'ADD ADVANCE EXPENSE DETAILS';
       const btnText = isEdit ? 'Save Changes' : 'Save Item';
 
@@ -909,6 +980,7 @@
       `;
 
       switchView('view-4-entry', titleText);
+      renderSubChips();
     }
 
     function calcSubLocalAmount() {
@@ -929,7 +1001,16 @@
       const localAmount = parseFloat(document.getElementById('expenseLocalAmount').value) || 0;
 
       const isEdit = formData.editingIndex >= 0;
-      const itemObj = { type, desc, project, amt, currency, forexRate, localAmount };
+      const itemObj = { 
+        type, 
+        desc, 
+        project, 
+        amt, 
+        currency, 
+        forexRate, 
+        localAmount,
+        attachments: [...(formData.subAttachments || [])]
+      };
 
       if (isEdit) {
         formData.claimDetails.addedDetails[formData.editingIndex] = itemObj;
@@ -969,14 +1050,31 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      const containerId = `${formData.uploadTarget}ChipsList`;
-      const container = document.getElementById(containerId);
-      if (container) {
-        const chip = document.createElement('div');
-        chip.className = 'file-chip';
-        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="this.parentElement.remove()"></i>`;
-        container.appendChild(chip);
+      if (!formData.subAttachments) formData.subAttachments = [];
+      formData.subAttachments.push(file.name);
+      renderSubChips();
+    }
+
+    function removeSubAttachment(idx) {
+      if (!formData.subAttachments) return;
+      formData.subAttachments.splice(idx, 1);
+      renderSubChips();
+    }
+
+    function renderSubChips() {
+      const container = document.getElementById('subChipsList');
+      if (!container) return;
+      if (!formData.subAttachments || formData.subAttachments.length === 0) {
+        container.innerHTML = '';
+        return;
       }
+      container.innerHTML = formData.subAttachments.map((att, idx) => `
+        <div class="file-chip">
+          <i class="fa-solid fa-paperclip"></i>
+          <span>${att}</span>
+          <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="removeSubAttachment(${idx})"></i>
+        </div>
+      `).join('');
     }
 
     function saveAdvanceDraft() {

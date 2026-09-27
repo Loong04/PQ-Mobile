@@ -1041,54 +1041,248 @@
       let listHtml = '<div style="display: flex; flex-direction: column; gap: 16px;">';
       items.forEach((item, idx) => {
         const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
+        const cardId = `trCard_${catKey}_${idx}`;
         if (catKey === 'task') {
           listHtml += `
-            <div style="transition: all 0.25s ease; ${borderStyle}">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div onclick="openEntryForm('edit', ${idx})" style="cursor: pointer; flex: 1;">
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.taskName || 'USER TRAINING'}</div>
-                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
-                    ${item.location || 'HQ'} • ${item.startDate || '24/09/2026'} (${item.startTime || '08:00'} - ${item.endTime || '10:00'})
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-list-check"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.taskName || 'USER TRAINING'}</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                      ${item.location || 'HQ'} • ${item.startDate || '24/09/2026'}
+                    </div>
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); cursor: pointer; font-size: 15px;" onclick="openEntryForm('edit', ${idx})" title="Edit Item"></i>
-                  <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})" title="Delete Item"></i>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
                 </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Task:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.taskName || 'USER TRAINING'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Purpose:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.purpose || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Location:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.location || 'HQ'}</div>
+                  </div>
+                  <div></div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Start Date:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.startDate || '24/09/2026'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">End Date:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.endDate || item.startDate || '24/09/2026'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Est. Start Time:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.startTime || '08:00'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Est. End Time:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.endTime || '10:00'}</div>
+                  </div>
+                </div>
+                ${item.attachments && item.attachments.length > 0 ? `
+                <div style="margin-top: 12px;">
+                  <span style="color: var(--text-muted); font-weight: 600;">Attachments:</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                    ${item.attachments.map(att => `
+                      <span style="background: rgba(124, 58, 237, 0.1); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.2); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-paperclip"></i> ${att}
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
               </div>
             </div>
           `;
         } else if (catKey === 'traveling') {
           listHtml += `
-            <div style="transition: all 0.25s ease; ${borderStyle}">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div onclick="openEntryForm('edit', ${idx})" style="cursor: pointer; flex: 1;">
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.transport || 'AIR ASIA'} (${item.origin || 'KL'} → ${item.dest || 'PENANG'})</div>
-                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
-                    ${item.depDate || '24/09/2026'} • ${item.noOfDays || 1} Days
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.14); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-plane-departure"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.transport || 'AIR ASIA'} (${item.origin || 'KL'} → ${item.dest || 'PENANG'})</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                      ${item.depDate || '24/09/2026'} • ${item.noOfDays || 1} Days
+                    </div>
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); cursor: pointer; font-size: 15px;" onclick="openEntryForm('edit', ${idx})" title="Edit Item"></i>
-                  <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})" title="Delete Item"></i>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
                 </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Origin:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.origin || 'KUALA LUMPUR'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Destination:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dest || 'PENANG'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Departure:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.depDate || '24/09/2026'} ${item.depTime || '14:51'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Arrival:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.arrDate || '24/09/2026'} ${item.arrTime || '15:51'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">No Of Days:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.noOfDays || 1}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'HQ Digitalization'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Transport:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.transport || 'AIR ASIA'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Justification:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.justification || '-'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Pref. Transport:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.prefTransport || 'FLIGHT'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Transport No:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.transportNo || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Need Accommodation?:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.hasAcc ? 'Yes' : 'No'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Need Allowance?:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.hasAllow ? 'Yes' : 'No'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Accommodation Details:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.accDetails || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Booking Type:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.bookingType || 'COMPANY BOOKED'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Class:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.class || 'ECONOMY'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Est. Distance:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.estDist || 0}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Est. Cost:</span>
+                    <div style="font-weight: 800; color: #10b981; margin-top: 2px;">${item.estCost ? 'RM ' + item.estCost : 'N/A'}</div>
+                  </div>
+                </div>
+                ${item.attachments && item.attachments.length > 0 ? `
+                <div style="margin-top: 12px;">
+                  <span style="color: var(--text-muted); font-weight: 600;">Attachments:</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                    ${item.attachments.map(att => `
+                      <span style="background: rgba(124, 58, 237, 0.1); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.2); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-paperclip"></i> ${att}
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
               </div>
             </div>
           `;
         } else if (catKey === 'accomodation') {
           listHtml += `
-            <div style="transition: all 0.25s ease; ${borderStyle}">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div onclick="openEntryForm('edit', ${idx})" style="cursor: pointer; flex: 1;">
-                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.hotelName || 'Preferred Hotel'}</div>
-                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
-                    Check-in: ${item.checkInDate || '25/09/2026'} • Check-out: ${item.checkOutDate || '25/09/2026'} ${item.amount ? '• RM ' + item.amount : ''}
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-hotel"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.hotelName || 'Preferred Hotel'}</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                      Check-in: ${item.checkInDate || '25/09/2026'} • Check-out: ${item.checkOutDate || '25/09/2026'}
+                    </div>
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); cursor: pointer; font-size: 15px;" onclick="openEntryForm('edit', ${idx})" title="Edit Item"></i>
-                  <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})" title="Delete Item"></i>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
                 </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Preferred Hotel:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.hotelName || 'Preferred Hotel'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Check In Date:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.checkInDate || '25/09/2026'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Check Out Date:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.checkOutDate || '25/09/2026'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Rate:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.rate ? 'RM ' + item.rate : 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Amount:</span>
+                    <div style="font-weight: 800; color: #10b981; margin-top: 2px;">${item.amount ? 'RM ' + item.amount : 'N/A'}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Remarks:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.remarks || 'N/A'}</div>
+                  </div>
+                </div>
+                ${item.attachments && item.attachments.length > 0 ? `
+                <div style="margin-top: 12px;">
+                  <span style="color: var(--text-muted); font-weight: 600;">Attachments:</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                    ${item.attachments.map(att => `
+                      <span style="background: rgba(124, 58, 237, 0.1); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.2); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-paperclip"></i> ${att}
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
               </div>
             </div>
           `;
@@ -1097,6 +1291,20 @@
       listHtml += '</div>';
 
       container.innerHTML = listHtml;
+    }
+
+    function toggleItemCard(cardId) {
+      const cardEl = document.getElementById(cardId);
+      if (!cardEl) return;
+      const bodyEl = cardEl.querySelector('.item-details-body');
+      const iconEl = cardEl.querySelector('.toggle-icon');
+      if (bodyEl) {
+        const isHidden = bodyEl.style.display === 'none' || !bodyEl.style.display;
+        bodyEl.style.display = isHidden ? 'block' : 'none';
+        if (iconEl) {
+          iconEl.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+      }
     }
 
     function deleteSubItem(idx) {
@@ -1141,9 +1349,19 @@
 
       const isEdit = formData.editingIndex >= 0;
       const btnLabel = isEdit ? 'Save Changes' : 'Add';
-
+      
+      let item = {};
+      if (isEdit) {
+        if (catKey === 'task') item = formData.requestDetails.taskItems[editIdx] || {};
+        else if (catKey === 'traveling') item = formData.requestDetails.travelingItems[editIdx] || {};
+        else if (catKey === 'accomodation') item = formData.requestDetails.accomodationItems[editIdx] || {};
+        
+        formData.subAttachments = [...(item.attachments || [])];
+      } else {
+        formData.subAttachments = [];
+      }
+      
       if (catKey === 'task') {
-        const item = isEdit ? (formData.requestDetails.taskItems[formData.editingIndex] || {}) : {};
         const titleText = isEdit ? 'EDIT TASK DETAILS' : 'TASK DETAILS';
         container.innerHTML = `
           <div class="form-card">
@@ -1212,7 +1430,6 @@
           </div>
         `;
       } else if (catKey === 'traveling') {
-        const item = isEdit ? (formData.requestDetails.travelingItems[formData.editingIndex] || {}) : {};
         const titleText = isEdit ? 'EDIT TRAVEL DETAILS' : 'TRAVEL DETAILS';
         container.innerHTML = `
           <div class="form-card">
@@ -1372,7 +1589,6 @@
           </div>
         `;
       } else if (catKey === 'accomodation') {
-        const item = isEdit ? (formData.requestDetails.accomodationItems[formData.editingIndex] || {}) : {};
         const titleText = isEdit ? 'EDIT ACCOMODATION DETAILS' : 'ACCOMODATION DETAILS';
         container.innerHTML = `
           <div class="form-card">
@@ -1446,6 +1662,13 @@
       }
 
       switchView('view-4-entry', `${isEdit ? 'Edit' : 'Configure'} ${getCategoryTitle(catKey)}`);
+      
+      // Render existing chips if any
+      if (formData.subAttachments.length > 0) {
+        setTimeout(() => {
+          renderFileChips('subChipsList', formData.subAttachments, 'sub');
+        }, 50);
+      }
     }
 
     function saveSubItem() {
@@ -1468,7 +1691,8 @@
           startDate: startDate || '24/09/2026',
           endDate: endDate || '24/09/2026',
           startTime: startTime || '08:00',
-          endTime: endTime || '10:00'
+          endTime: endTime || '10:00',
+          attachments: [...formData.subAttachments]
         };
 
         if (isEdit) {
@@ -1516,7 +1740,8 @@
           bookingType: bookingType,
           class: trvClass,
           estDist: estDist,
-          estCost: estCost
+          estCost: estCost,
+          attachments: [...formData.subAttachments]
         };
 
         if (isEdit) {
@@ -1540,7 +1765,8 @@
           checkOutDate: checkOut,
           remarks: remarks,
           rate: rate,
-          amount: amount
+          amount: amount,
+          attachments: [...formData.subAttachments]
         };
 
         if (isEdit) {
@@ -1551,6 +1777,7 @@
       }
 
       formData.editingIndex = -1;
+      formData.subAttachments = []; // reset after save
       updateSubtitles();
       openCategoryItems(catKey);
       showToast(isEdit ? '✏️ Item updated successfully!' : '✅ Item added successfully!');

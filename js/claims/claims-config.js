@@ -77,8 +77,12 @@ window.INDIVIDUAL_TRAVEL_DATA = {
   selectedDayLabel: 'Monday, 28 September 2026',
   trips: [
     {
-      destination: 'Kuala Lumpur ➔ Penang',
+      route: 'Kuala Lumpur ➔ Penang',
+      destination: 'Penang Branch',
+      dateToDate: '28 Sep 2026 – 30 Sep 2026',
       dates: '28–30 Sep 2026 • 3 days',
+      duration: '3 days',
+      reason: 'Official Outstation Travel',
       purpose: 'Client visit',
       status: 'Approved'
     }

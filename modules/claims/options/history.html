@@ -167,7 +167,7 @@
       background: var(--bg-card);
       border-top-left-radius: 28px;
       border-top-right-radius: 28px;
-      padding: 22px 18px 30px;
+      padding: 22px 18px 100px;
       overflow-y: auto;
       transform: translateY(100%);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -592,26 +592,62 @@
         }
 
         let detailsBlock = '';
+        const statusRow = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-muted); font-weight: 600;">Status :</span>
+            <span class="status-pill ${item.status}">${item.statusText}</span>
+          </div>
+        `;
+
         if (activeTabKey === 'ot') {
           const timeDisplay = item.otTime || item.time || '18:00 - 00:00';
           const hoursDisplay = `${item.quantity || item.hours || '6.0'} Hours`;
           detailsBlock = `
             <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: var(--text-muted); font-weight: 600;">Date :</span>
-                <span style="color: var(--text-primary); font-weight: 700;">${datesDisplay}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Time :</span>
                 <span style="color: var(--text-primary); font-weight: 700;">${timeDisplay}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Hours :</span>
-                <span style="font-size: 15px; font-weight: 900; color: var(--purple-primary);">${hoursDisplay}</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">${hoursDisplay}</span>
               </div>
+              ${statusRow}
             </div>
           `;
-        } else {
+        } else if (activeTabKey === 'travel' || activeTabKey === 'entertainment') {
+          detailsBlock = `
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Period :</span>
+                <span style="color: var(--text-primary); font-weight: 700; font-family: monospace, sans-serif;">${periodDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Date Claim :</span>
+                <span style="color: var(--text-primary); font-weight: 700;">${datesDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Claim Amount :</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+              </div>
+              ${statusRow}
+            </div>
+          `;
+        } else if (activeTabKey === 'advance') {
+          detailsBlock = `
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Date Claim :</span>
+                <span style="color: var(--text-primary); font-weight: 700;">${datesDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted); font-weight: 600;">Claim Amount :</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+              </div>
+              ${statusRow}
+            </div>
+          `;
+        } else if (activeTabKey === 'expense' || activeTabKey === 'benefit' || activeTabKey === 'medical') {
           detailsBlock = `
             <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -622,25 +658,23 @@
                 <span style="color: var(--text-muted); font-weight: 600;">Claim Dates :</span>
                 <span style="color: var(--text-primary); font-weight: 700;">${datesDisplay}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Amount :</span>
-                <span style="font-size: 15.5px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
               </div>
+              ${statusRow}
             </div>
           `;
         }
 
         card.innerHTML = `
           <div style="width: 100%;">
-            <!-- Top Row: Title, Status Badge & Chevron -->
+            <!-- Top Row: Title & Chevron -->
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
               <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1;">
                 ${item.title}
               </h4>
-              <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                <span class="status-pill ${item.status}">${item.statusText}</span>
-                <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.7;"></i>
-              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.7;"></i>
             </div>
             ${detailsBlock}
           </div>
@@ -669,18 +703,23 @@
         };
 
         card.innerHTML = `
-          <div style="font-size: 13px; font-weight: 800; color: ${isActive ? 'var(--purple-primary)' : 'var(--text-primary)'};">${cat.name}</div>
+          <div style="font-size: 22px; margin-bottom: 6px;">${cat.icon}</div>
+          <div style="font-size: 12.5px; font-weight: 800; color: ${isActive ? 'var(--purple-primary)' : 'var(--text-primary)'};">${cat.name}</div>
           <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 4px;">${itemsCount} Items</span>
         `;
         container.appendChild(card);
       });
 
-      modal.classList.add('active');
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('active'), 10);
     }
 
     function closeTabGridModal() {
       const modal = document.getElementById('gridModalOverlay');
-      if (modal) modal.classList.remove('active');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+      }
     }
 
     // Modal 2: Open Claim Details Modal (Exact replica of User Screenshots 1 & 2)

@@ -296,7 +296,7 @@
     const SUMMARY_CATEGORIES = [
       {
         id: 'PHARMACY', title: 'PHARMACY', icon: '💊', period: '202605',
-        currentAmount: 489.80, ytdAmount: 1129.90,
+        currentAmount: 489.80, lastAmount: 450.00, averageAmount: 225.98, ytdAmount: 1129.90,
         records: [
           {
             dateRange: '01/05/2026 - 09/05/2026', period: '202605', expense: 'PHARMACY',
@@ -317,7 +317,7 @@
       },
       {
         id: 'MOBILE_PHONE', title: 'MOBILE PHONE', icon: '📱', period: '202605',
-        currentAmount: 120.00, ytdAmount: 600.00,
+        currentAmount: 120.00, lastAmount: 120.00, averageAmount: 120.00, ytdAmount: 600.00,
         records: [
           {
             dateRange: '01/05/2026 - 01/05/2026', period: '202605', expense: 'MOBILE PHONE',
@@ -328,7 +328,7 @@
       },
       {
         id: 'CAR_MAINTENANCE', title: 'CAR MAINTENANCE', icon: '🚗', period: '202605',
-        currentAmount: 350.00, ytdAmount: 850.00,
+        currentAmount: 350.00, lastAmount: 200.00, averageAmount: 170.00, ytdAmount: 850.00,
         records: [
           {
             dateRange: '10/05/2026 - 20/05/2026', period: '202605', expense: 'CAR MAINTENANCE',
@@ -339,7 +339,7 @@
       },
       {
         id: 'CLIENT_ENTERTAINMENT', title: 'CLIENT ENTERTAINMENT', icon: '🍽️', period: '202605',
-        currentAmount: 490.60, ytdAmount: 1420.00,
+        currentAmount: 490.60, lastAmount: 650.00, averageAmount: 284.00, ytdAmount: 1420.00,
         records: [
           {
             dateRange: '12/05/2026 - 18/05/2026', period: '202605', expense: 'CLIENT ENTERTAINMENT',
@@ -390,6 +390,16 @@
 
     function applyFilters() {
       const includePending = document.getElementById('includePendingSelect').value === 'yes';
+      
+      let targetStatus = null;
+      if (window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        targetStatus = hashParams.get('status');
+      } else if (window.location.search) {
+        const urlParams = new URLSearchParams(window.location.search);
+        targetStatus = urlParams.get('status');
+      }
+
       const container = document.getElementById('summaryCardsContainer');
       container.innerHTML = '';
 
@@ -411,7 +421,12 @@
       let totalAmt = 0;
 
       SUMMARY_CATEGORIES.forEach(cat => {
-        const validRecords = cat.records.filter(r => includePending || (r.status !== 'pending' && r.status !== 'submitted'));
+        const validRecords = cat.records.filter(r => {
+          if (targetStatus && targetStatus !== 'all') {
+            return r.status.toLowerCase() === targetStatus.toLowerCase();
+          }
+          return includePending || (r.status !== 'pending' && r.status !== 'submitted');
+        });
         let catCurrentAmount = validRecords.reduce((sum, r) => sum + r.amount, 0);
 
         if (validRecords.length > 0) {
@@ -421,21 +436,51 @@
 
           const card = document.createElement('div');
           card.className = 'history-card-item';
-          card.onclick = () => openDetailsModal(cat.id);
+          card.onclick = () => openDetailsModal(cat.id, targetStatus);
+
+          let variance = 0;
+          if (cat.lastAmount > 0) {
+            variance = ((catCurrentAmount - cat.lastAmount) / cat.lastAmount) * 100;
+          }
+          let varianceColor = 'var(--text-primary)';
+          let varianceSign = '';
+          if (variance > 0) {
+            varianceColor = '#ef4444';
+            varianceSign = '+';
+          } else if (variance < 0) {
+            varianceColor = '#10b981';
+            varianceSign = '-';
+          } else {
+            varianceColor = 'var(--text-muted)';
+            varianceSign = '';
+          }
+          let varianceDisplay = variance === 0 ? '-' : `${varianceSign}${Math.abs(variance).toFixed(1)}%`;
 
           card.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
               <div class="history-time-row">${cat.icon} ${cat.title}</div>
               <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 13px;"></i>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Current Amount</span>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Current Amount</span>
                 <span style="font-size: 14px; font-weight: 800; color: var(--text-primary);">RM ${catCurrentAmount.toFixed(2)}</span>
               </div>
-              <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">YTD Total</span>
-                <span style="font-size: 14px; font-weight: 800; color: var(--text-primary);">RM ${cat.ytdAmount.toFixed(2)}</span>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Last Amount</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">RM ${cat.lastAmount.toFixed(2)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Variance</span>
+                <span style="font-size: 13px; font-weight: 800; color: ${varianceColor};">${varianceDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">YTD Amount</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">RM ${cat.ytdAmount.toFixed(2)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Average Amount</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">RM ${cat.averageAmount.toFixed(2)}</span>
               </div>
             </div>
           `;
@@ -443,7 +488,12 @@
         }
       });
 
-      document.getElementById('claimSummaryFilterText').innerHTML = `Period: ${displayPeriodLabel} &bull; ${includePending ? 'Include Pending' : 'Approved Only'}`;
+      let statusFilterText = includePending ? 'Include Pending' : 'Approved Only';
+      if (targetStatus && targetStatus !== 'all') {
+        statusFilterText = `Status: ${targetStatus.charAt(0).toUpperCase() + targetStatus.slice(1)}`;
+      }
+
+      document.getElementById('claimSummaryFilterText').innerHTML = `Period: ${displayPeriodLabel} &bull; ${statusFilterText}`;
       if (document.getElementById('totalCategoriesCountText')) {
         document.getElementById('totalCategoriesCountText').textContent = totalCat;
       }
@@ -451,18 +501,28 @@
       document.getElementById('totalAmountText').textContent = `RM ${totalAmt.toFixed(2)}`;
     }
 
-    function openDetailsModal(catId) {
+    function openDetailsModal(catId, targetStatus) {
       const cat = SUMMARY_CATEGORIES.find(c => c.id === catId);
       if (!cat) return;
 
+      const includePending = document.getElementById('includePendingSelect').value === 'yes';
+      const recordsToDisplay = cat.records.filter(r => {
+        if (targetStatus && targetStatus !== 'all') {
+          return r.status.toLowerCase() === targetStatus.toLowerCase();
+        }
+        return includePending || (r.status !== 'pending' && r.status !== 'submitted');
+      });
+
+      const modalAmt = recordsToDisplay.reduce((sum, r) => sum + r.amount, 0);
+
       document.getElementById('modalCategoryTitle').textContent = `${cat.icon} ${cat.title}`;
-      document.getElementById('modalCurrentAmt').textContent = `RM ${cat.currentAmount.toFixed(2)}`;
+      document.getElementById('modalCurrentAmt').textContent = `RM ${modalAmt.toFixed(2)}`;
       document.getElementById('modalYtdAmt').textContent = `RM ${cat.ytdAmount.toFixed(2)}`;
       
       const recordsContainer = document.getElementById('modalRecordsListContainer');
       recordsContainer.innerHTML = '';
       
-      cat.records.forEach(r => {
+      recordsToDisplay.forEach(r => {
         const recItem = document.createElement('div');
         recItem.className = 'history-card-item';
         recItem.style.marginBottom = '0';

@@ -1268,3 +1268,128 @@ class PolicyDetailSheet extends HTMLElement {
 }
 customElements.define('policy-detail-sheet', PolicyDetailSheet);
 
+// 19. Pending Approval Card Component
+class PendingApprovalCard extends HTMLElement {
+  connectedCallback() {
+    this.render();
+  }
+
+  setData(item) {
+    this.setAttribute('user-name', item.userName || '');
+    this.setAttribute('emp-id', item.empNo || '');
+    this.setAttribute('dept', item.dept || '');
+    this.setAttribute('doc-status', item.status || 'Submitted');
+    this.setAttribute('date', item.date || '');
+    this.setAttribute('claim-type', item.optionName || 'Claim');
+    this.setAttribute('category', item.subCatName || '');
+    this.setAttribute('receipt', item.receipt || '');
+    this.setAttribute('amount', typeof item.amount === 'number' ? `RM ${item.amount.toFixed(2)}` : (item.amount || ''));
+    this.setAttribute('title', item.title || '');
+    this.setAttribute('item-id', item.id || '');
+    this.render();
+  }
+
+  render() {
+    const userName = this.getAttribute('user-name') || 'Employee Name';
+    const rawEmpId = this.getAttribute('emp-id') || '000000';
+    const empId = rawEmpId.startsWith('#') ? rawEmpId : `#${rawEmpId}`;
+    const dept = this.getAttribute('dept') || 'Department';
+    const docStatus = this.getAttribute('doc-status') || 'Submitted';
+    const date = this.getAttribute('date') || 'DD/MM/YYYY';
+    const claimType = this.getAttribute('claim-type') || 'Claim';
+    const category = this.getAttribute('category') || 'General';
+    const receipt = this.getAttribute('receipt') || 'N/A';
+    const rawAmount = this.getAttribute('amount') || 'RM 0.00';
+    const amount = rawAmount.startsWith('RM') ? rawAmount : `RM ${parseFloat(rawAmount || 0).toFixed(2)}`;
+    const title = this.getAttribute('title') || this.getAttribute('description') || '';
+    const itemId = this.getAttribute('item-id') || '';
+
+    const badgeBg = 'rgba(59, 130, 246, 0.12)';
+    const badgeBorder = '1px solid rgba(59, 130, 246, 0.3)';
+    const badgeColor = '#3b82f6';
+    const icon = '<i class="fa-solid fa-paper-plane"></i>';
+
+    this.innerHTML = `
+      <div class="approval-request-card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left; margin-bottom: 14px;">
+        <!-- 1. Executive Purple Header Banner (Identical to Attendance) -->
+        <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" class="approval-card-checkbox" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
+            </div>
+            <div>
+              <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${userName}</div>
+              <!-- AGENTS.md Employee ID Presentation Standard: directly BELOW name, leading #, subtle muted typography -->
+              <div style="font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">${empId}</div>
+              <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.85);">${dept}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+              <i class="fa-solid fa-ellipsis-vertical" style="font-size: 13px;"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Card Content Body (Identical layout to Attendance) -->
+        <div style="padding: 14px;">
+          <!-- Document Status Badge & Date -->
+          <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; border: ${badgeBorder}; color: ${badgeColor}; font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">
+              <span>${icon}</span>
+              <span>${docStatus}</span>
+            </div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">
+              <i class="fa-regular fa-calendar" style="color: var(--purple-primary);"></i> ${date}
+            </div>
+          </div>
+
+          <!-- Type & Category 2-Column Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Type</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${claimType}</div>
+            </div>
+            <div>
+              <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Category</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${category}</div>
+            </div>
+          </div>
+
+          <!-- Receipt & Amount Highlights Box (Attendance Shift/Clocking Box style) -->
+          <div style="background: var(--bg-input); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11.5px; align-items: center;">
+              <span style="color: var(--text-muted); font-weight: 700;">Receipt / Merchant:</span>
+              <strong style="color: var(--text-primary); font-family: monospace, sans-serif; font-size: 12px; font-weight: 700;">${receipt}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 11.5px; border-top: 1px dashed var(--border-subtle); padding-top: 6px; align-items: center;">
+              <span style="color: var(--text-muted); font-weight: 700;">Claim Amount:</span>
+              <strong style="color: var(--purple-primary); font-family: monospace, sans-serif; font-size: 14px; font-weight: 900;">${amount}</strong>
+            </div>
+          </div>
+
+          <!-- Description / Title Box (Attendance Remarks style) -->
+          ${title ? `
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Description / Title</div>
+            <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
+              ${title}
+            </div>
+          </div>` : ''}
+
+          <!-- Bottom Action Buttons Grid (Approve & Reject) -->
+          <div class="pending-action-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button type="button" class="action-btn-approve" onclick="window.ClaimsEngine ? window.ClaimsEngine.actionTeamClaim(${itemId}, 'approve', '${userName.replace(/'/g, "\\'")}', '${amount}') : null">
+              <i class="fa-solid fa-check" style="font-size: 11.5px;"></i> Approve
+            </button>
+            <button type="button" class="action-btn-reject" onclick="window.ClaimsEngine ? window.ClaimsEngine.actionTeamClaim(${itemId}, 'reject', '${userName.replace(/'/g, "\\'")}', '${amount}') : null">
+              <i class="fa-solid fa-xmark" style="font-size: 11.5px;"></i> Reject
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+customElements.define('pending-approval-card', PendingApprovalCard);
+

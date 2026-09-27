@@ -990,34 +990,57 @@
                     <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desc || 'No description'}</div>
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.amt || 0).toFixed(2)}</div>
-                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
-                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
                 </div>
               </div>
 
               <!-- Expandable Detailed View -->
               <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px; margin-bottom: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
                   <div>
                     <span style="color: var(--text-muted); font-weight: 600;">Expense Category:</span>
-                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'CLIENT ENTERTAINMENT'}</div>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'DINING & FOOD'}</div>
                   </div>
                   <div>
-                    <span style="color: var(--text-muted); font-weight: 600;">Receipt Ref:</span>
-                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.ref || 'REC-88412'}</div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expense Date:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.date || '24/09/2026'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'Project Alpha'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Receipt / Ref No:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.ref || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Entertained Person / Org:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.entertainedPerson || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Place Entertained:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.placeEntertained || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Original Amount:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.amt || 0} ${item.currency || 'MYR'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Forex Rate:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.forexRate || 1}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Claim Amount (RM):</span>
+                    <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
                   </div>
                   <div style="grid-column: span 2;">
                     <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
-                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'Client Business Lunch Meeting'}</div>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'N/A'}</div>
                   </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
-                  <button type="button" class="btn-step-back" style="padding: 6px 14px; font-size: 11.5px; border-radius: 10px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>Edit Details</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -1035,30 +1058,36 @@
                     <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#${item.empNo}</div>
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
-                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})"></i>
-                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Employee"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Employee"></i>
                 </div>
               </div>
 
               <!-- Expandable Detailed View -->
               <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px; margin-bottom: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Employee Name:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.name}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Employee ID:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">#${item.empNo}</div>
+                  </div>
                   <div>
                     <span style="color: var(--text-muted); font-weight: 600;">Position / Title:</span>
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.pos || 'Staff'}</div>
                   </div>
                   <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Company:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.comp || 'Company'}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
                     <span style="color: var(--text-muted); font-weight: 600;">Department:</span>
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dept || 'Engineering'}</div>
                   </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
-                  <button type="button" class="btn-step-back" style="padding: 6px 14px; font-size: 11.5px; border-radius: 10px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>Edit Details</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -1076,16 +1105,24 @@
                     <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desig ? item.desig + ' • ' : ''}${item.comp}</div>
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
-                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})"></i>
-                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Guest"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Guest"></i>
                 </div>
               </div>
 
               <!-- Expandable Detailed View -->
               <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px; margin-bottom: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Guest Name:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.name}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Designation / Title:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desig || 'N/A'}</div>
+                  </div>
                   <div>
                     <span style="color: var(--text-muted); font-weight: 600;">Organization / Company:</span>
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.comp || 'Acme Corp'}</div>
@@ -1094,12 +1131,10 @@
                     <span style="color: var(--text-muted); font-weight: 600;">Relationship:</span>
                     <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">${item.rel || 'Client'}</div>
                   </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
-                  <button type="button" class="btn-step-back" style="padding: 6px 14px; font-size: 11.5px; border-radius: 10px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>Edit Details</span>
-                  </button>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Detail / Remarks:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.detail || 'N/A'}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1335,11 +1370,19 @@
       const editIdx = formData.editingIndex;
 
       if (catKey === 'details') {
-        const type = document.getElementById('expenseTypeSelect').value;
-        const amt = parseFloat(document.getElementById('detailLocalAmount').value) || 0;
-        const desc = document.getElementById('detailDescription').value || type;
+        const type = document.getElementById('expenseTypeSelect')?.value || 'DINING & FOOD';
+        const date = document.getElementById('detailExpenseDate')?.value || '24/09/2026';
+        const project = document.getElementById('detailProjectSelect')?.value || 'Project Alpha';
         const ref = document.getElementById('detailReceiptNo')?.value || '';
-        const newItem = { type, amt, desc, ref };
+        const desc = document.getElementById('detailDescription')?.value || type;
+        const entertainedPerson = document.getElementById('detailEntertainedPerson')?.value || '';
+        const placeEntertained = document.getElementById('detailPlaceEntertained')?.value || '';
+        const amt = parseFloat(document.getElementById('detailAmountInput')?.value || 0);
+        const currency = document.getElementById('detailCurrencyInput')?.value || 'RINGGIT MALAYSIA';
+        const forexRate = parseFloat(document.getElementById('detailForexRate')?.value || 1);
+        const localAmount = parseFloat(document.getElementById('detailLocalAmount')?.value || amt);
+
+        const newItem = { type, date, project, ref, desc, entertainedPerson, placeEntertained, amt, currency, forexRate, localAmount };
         if (typeof editIdx === 'number' && editIdx >= 0) {
           formData.claimDetails.addedDetails[editIdx] = newItem;
         } else {

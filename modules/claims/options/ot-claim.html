@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
   <style>
+
     * {
       margin: 0;
       padding: 0;
@@ -48,7 +49,7 @@
     .main-content {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 16px 90px;
+      padding: 16px 16px 100px;
       position: relative;
       z-index: 10;
       scrollbar-width: none;
@@ -65,62 +66,329 @@
       z-index: 20;
     }
 
+    .view-container {
+      display: none;
+      width: 100%;
+    }
+    .view-container.active {
+      display: block;
+    }
+
     .form-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 24px;
-      padding: 20px;
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
       box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .category-card:hover {
+      border-color: var(--purple-primary);
+      transform: translateY(-1px);
+    }
+
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .section-title-accent {
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .section-title-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-group {
       margin-bottom: 16px;
     }
 
     .field-label {
       display: block;
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--text-muted);
       margin-bottom: 6px;
     }
-    .field-label span.req {
+    .field-label .req {
       color: #ef4444;
+      margin-left: 2px;
     }
 
-    .form-input-ctrl {
+    .form-ctrl {
       width: 100%;
       background: var(--bg-input);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 12px 14px;
       font-size: 13.5px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-primary);
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
     }
-    .form-input-ctrl:focus {
+    .form-ctrl:focus {
       border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 0.9;
+      background: rgba(255, 255, 255, 0.03);
     }
 
-    .attach-btn-pill {
-      flex: 1;
-      display: flex;
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .dark-balance-pill {
+      background: #4b5563;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 4px 16px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    .btn-step-back {
+      padding: 11px 22px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 12px 14px;
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      color: var(--text-primary);
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background-color 0.2s, transform 0.15s;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
     }
-    .attach-btn-pill:active {
-      transform: scale(0.97);
+    .btn-step-back:active {
+      transform: scale(0.96);
     }
 
+    .btn-submit-primary {
+      padding: 11px 26px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-submit-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-draft-bright {
+      padding: 11px 24px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-draft-bright:active {
+      transform: scale(0.96);
+    }
+
+    .btn-add-purple {
+      padding: 9px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .validation-err-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-top: 5px;
+      display: block;
+    }
+
+    /* Top Claim Stepper Progress Indicator Standard */
+    .claim-stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .stepper-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stepper-line-bg {
+      position: absolute;
+      top: 15px;
+      left: 16.66%;
+      right: 16.66%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      z-index: 1;
+    }
+    .stepper-line-fill {
+      position: absolute;
+      top: 15px;
+      left: 16.66%;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
+    }
+    .stepper-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      z-index: 3;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+    }
+    .stepper-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #171529;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .stepper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    /* Completed State: Green Outline & Text on Opaque Dark Background */
+    .stepper-item.completed .stepper-circle {
+      border-color: #10b981;
+      background: #171529;
+      color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+    .stepper-item.completed .stepper-label {
+      color: #34d399;
+    }
+    /* Active State: Vibrant Purple Filled Circle */
+    .stepper-item.active .stepper-circle {
+      border-color: #a855f7;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
+    }
+    .stepper-item.active .stepper-label {
+      color: #ffffff;
+      font-weight: 900;
+    }
+  
 
     /* Custom Checkbox Toggle for Cross Day */
     .cross-day-toggle {
@@ -156,6 +424,13 @@
       background: #ffffff;
     }
 
+    .item-details-body {
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.15);
+      display: none;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    
     .item-chip-row {
       background: var(--bg-input);
       border: 1px solid var(--border-subtle);
@@ -166,93 +441,232 @@
       align-items: center;
       justify-content: space-between;
     }
-  </style>
+
+</style>
 </head>
+
 <body>
 
   <preview-top-bar active-page="claims"></preview-top-bar>
 
   <div class="phone-container">
     
-    <!-- Top Header -->
+    <!-- Top Navigation Header -->
     <div class="cal-top-header">
-      <phone-status-bar time="23:59" style="color: #ffffff;"></phone-status-bar>
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="../index.html" class="me-back-btn" aria-label="Back" title="Back"
+          <button type="button" onclick="handleHeaderBack()" class="me-back-btn" aria-label="Back" title="Back"
             style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; text-decoration: none;">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-          </a>
-          <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">OT Claim</h1>
+          </button>
+          <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">OT Claim</h1>
         </div>
       </div>
     </div>
 
+    <!-- Main Content Container -->
     <div class="main-content">
       
-      <!-- FORM CARD CONTAINER (MATCHING BENEFIT & MEDICAL CLAIM) -->
-      <div class="form-card">
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: OT Details) -->
+      <div class="claim-stepper-card">
+        <div class="stepper-track-container">
+          <div class="stepper-line-bg" style="left: 25%; right: 25%;"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%; left: 25%;"></div>
+          
+          <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
+            <div class="stepper-circle">1</div>
+            <span class="stepper-label">General</span>
+          </div>
+          <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
+            <div class="stepper-circle">2</div>
+            <span class="stepper-label">OT Details</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ========================================================= -->
+      <!-- VIEW 1: MAIN FORM VIEW -->
+      <!-- ========================================================= -->
+      <div class="view-container active" id="view-1-main">
         
-        <!-- CLAIM PERIOD ROW -->
-        <div style="margin-bottom: 18px;">
-          <label class="field-label">Claim Period: <span class="req">*</span></label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <select class="form-input-ctrl">
-              <option value="2026" selected>2026</option>
-              <option value="2025">2025</option>
-            </select>
-            <select class="form-input-ctrl">
-              <option value="September" selected>September</option>
-              <option value="August">August</option>
-              <option value="July">July</option>
-              <option value="June">June</option>
-            </select>
+        <!-- MAIN APPLICATION INFO CARD -->
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">APPLICATION DETAILS</span>
+          </div>
+
+          <!-- Claim Period : -->
+          <div class="field-group">
+            <label class="field-label">Claim Period : <span class="req">*</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+              <div class="select-wrapper">
+                <select id="v1ClaimYear" class="form-ctrl">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <select id="v1ClaimMonth" class="form-ctrl">
+                  <option value="September" selected>September</option>
+                  <option value="August">August</option>
+                  <option value="July">July</option>
+                  <option value="June">June</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- SUBTLE SECTION DIVIDER -->
-        <div style="display: flex; align-items: center; gap: 8px; margin: 20px 0 16px; padding-top: 16px; border-top: 1px dashed var(--border-subtle);">
-          <div style="width: 3px; height: 14px; background: var(--purple-primary); border-radius: 4px;"></div>
-          <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px;">OT Entry Details</span>
+        <!-- AGGREGATED SUMMARY ROW (Level 1 Total Claim & Drill-down Entry) -->
+        <div class="category-summary-row" onclick="switchView('view-3-list', 'OT Details')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL OT HOURS</div>
+              <div id="v1TotalClaimDisplay" style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">0.0 hrs</div>
+              <div id="v1ItemsCountSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">0 claim items added</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
+            <span>Details</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- ATTACHMENTS CARD -->
+        <div class="form-card">
+          <label class="field-label" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Upload Main Attachments</label>
           
+          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                <i class="fa-solid fa-file-arrow-up"></i>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                <i class="fa-solid fa-camera"></i>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+            </div>
+          </div>
+
+          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+          <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="submitOTClaim()">
+            <span>Submit</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 3: ITEM LIST VIEW (OT Details) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-3-list">
+        
+        <!-- Unified Card for Header and Items -->
+        <div class="form-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 16px;">
+          
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-clock"></i>
+              </div>
+              <div>
+                <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">OT Details</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 entries recorded</span>
+              </div>
+            </div>
+            <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+              <i class="fa-solid fa-plus"></i>
+              <span>Add Item</span>
+            </button>
+          </div>
+
+          <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+          <div id="v3ItemsContainer" style="padding: 16px;">
+            <!-- Populated by JS -->
+          </div>
+          
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'OT Claim')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Application</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="submitOTClaim()">
+            <span>Submit</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-4-entry">
+        
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text" id="entryFormTitle">Add OT Entry</span>
+          </div>
+
           <!-- 1. Date -->
-          <div>
+          <div class="field-group">
             <label class="field-label">Date: <span class="req">*</span></label>
-            <input type="text" id="otDateInput" class="form-input-ctrl" value="22/09/2026" />
+            <input type="text" id="otDateInput" class="form-ctrl" value="" placeholder="DD/MM/YYYY" />
           </div>
 
           <!-- 2. OT Type -->
-          <div>
+          <div class="field-group">
             <label class="field-label">OT Type: <span class="req">*</span></label>
-            <select id="otCodeSelect" class="form-input-ctrl">
-              <option value="" selected>- Select OT Code -</option>
-              <option value="OT 1.5x (Normal Working Day)">OT 1.5x (Normal Working Day)</option>
-              <option value="OT 2.0x (Rest Day / Sunday)">OT 2.0x (Rest Day / Sunday)</option>
-              <option value="OT 3.0x (Public Holiday)">OT 3.0x (Public Holiday)</option>
-            </select>
+            <div class="select-wrapper">
+              <select id="otCodeSelect" class="form-ctrl">
+                <option value="" selected>- Select OT Code -</option>
+                <option value="OT 1.5x (Normal Working Day)">OT 1.5x (Normal Working Day)</option>
+                <option value="OT 2.0x (Rest Day / Sunday)">OT 2.0x (Rest Day / Sunday)</option>
+                <option value="OT 3.0x (Public Holiday)">OT 3.0x (Public Holiday)</option>
+              </select>
+            </div>
           </div>
 
           <!-- 3. Start Time & End Time -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
               <label class="field-label">Start Time: <span class="req">*</span></label>
-              <input type="text" id="startTimeInput" class="form-input-ctrl" value="23:53" oninput="calculateOTHours()" />
+              <input type="text" id="startTimeInput" class="form-ctrl" value="" placeholder="HH:MM" oninput="calculateOTHours()" />
             </div>
             <div>
               <label class="field-label">End Time: <span class="req">*</span></label>
-              <input type="text" id="endTimeInput" class="form-input-ctrl" value="23:53" oninput="calculateOTHours()" />
+              <input type="text" id="endTimeInput" class="form-ctrl" value="" placeholder="HH:MM" oninput="calculateOTHours()" />
             </div>
           </div>
 
           <!-- 4. OT Hours & Cross Day? -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end;">
+          <div class="field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end;">
             <div>
               <label class="field-label">OT Hours:</label>
-              <input type="text" id="otHoursInput" class="form-input-ctrl" value="0" readonly style="opacity: 0.9;" />
+              <input type="text" id="otHoursInput" class="form-ctrl" value="0.0" readonly />
             </div>
             <div>
               <label class="field-label">Cross Day?</label>
@@ -264,20 +678,20 @@
           </div>
 
           <!-- 5. Break Hours & Break Minutes -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
+          <div class="field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="select-wrapper">
               <label class="field-label">Break Hours: <span class="req">*</span></label>
-              <select id="breakHoursSelect" class="form-input-ctrl" onchange="calculateOTHours()">
-                <option value="" selected>- Select Hour -</option>
+              <select id="breakHoursSelect" class="form-ctrl" onchange="calculateOTHours()">
+                <option value="" selected>- Hour -</option>
                 <option value="0">0 Hour</option>
                 <option value="1">1 Hour</option>
                 <option value="2">2 Hours</option>
               </select>
             </div>
-            <div>
+            <div class="select-wrapper">
               <label class="field-label">Break Minutes: <span class="req">*</span></label>
-              <select id="breakMinutesSelect" class="form-input-ctrl" onchange="calculateOTHours()">
-                <option value="" selected>- Select Minute -</option>
+              <select id="breakMinutesSelect" class="form-ctrl" onchange="calculateOTHours()">
+                <option value="" selected>- Minute -</option>
                 <option value="0">0 Minute</option>
                 <option value="15">15 Minutes</option>
                 <option value="30">30 Minutes</option>
@@ -287,38 +701,42 @@
           </div>
 
           <!-- 6. Project -->
-          <div>
+          <div class="field-group">
             <label class="field-label">Project:</label>
-            <select id="projectSelect" class="form-input-ctrl">
-              <option value="" selected>- Select Project -</option>
-              <option value="Project Alpha (HCM Rebrand)">Project Alpha (HCM Rebrand)</option>
-              <option value="Internal System Maintenance">Internal System Maintenance</option>
-              <option value="Client Portal Upgrade">Client Portal Upgrade</option>
-            </select>
+            <div class="select-wrapper">
+              <select id="projectSelect" class="form-ctrl">
+                <option value="" selected>- Select Project -</option>
+                <option value="Project Alpha (HCM Rebrand)">Project Alpha (HCM Rebrand)</option>
+                <option value="Internal System Maintenance">Internal System Maintenance</option>
+                <option value="Client Portal Upgrade">Client Portal Upgrade</option>
+              </select>
+            </div>
           </div>
 
           <!-- 7. Reason -->
-          <div>
+          <div class="field-group">
             <label class="field-label">Reason: <span class="req">*</span></label>
-            <select id="otReasonSelect" class="form-input-ctrl">
-              <option value="" selected>- Select OT Reason -</option>
-              <option value="Urgent System Deployment">Urgent System Deployment</option>
-              <option value="Peak Period Processing">Peak Period Processing</option>
-              <option value="Emergency After-Hours Support">Emergency After-Hours Support</option>
-              <option value="Project Deadline Sprint">Project Deadline Sprint</option>
-            </select>
+            <div class="select-wrapper">
+              <select id="otReasonSelect" class="form-ctrl">
+                <option value="" selected>- Select OT Reason -</option>
+                <option value="Urgent System Deployment">Urgent System Deployment</option>
+                <option value="Peak Period Processing">Peak Period Processing</option>
+                <option value="Emergency After-Hours Support">Emergency After-Hours Support</option>
+                <option value="Project Deadline Sprint">Project Deadline Sprint</option>
+              </select>
+            </div>
           </div>
 
-          <!-- 8. Meal Allowance Amount & Meal Allowance Select -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <!-- 8. Meal Allowance Amount & Select -->
+          <div class="field-group" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px;">
             <div>
-              <label class="field-label">Meal Amount (RM):</label>
-              <input type="number" id="mealAmountInput" class="form-input-ctrl" value="0.00" step="0.01" />
+              <label class="field-label">Meal (RM):</label>
+              <input type="number" id="mealAmountInput" class="form-ctrl" value="0.00" step="0.01" />
             </div>
-            <div>
+            <div class="select-wrapper">
               <label class="field-label">Meal Allowance:</label>
-              <select id="mealAllowanceSelect" class="form-input-ctrl" onchange="handleMealSelectChange(this.value)">
-                <option value="" selected>- Select Meal Allowance -</option>
+              <select id="mealAllowanceSelect" class="form-ctrl" onchange="handleMealSelectChange(this.value)">
+                <option value="" selected>- Select -</option>
                 <option value="Standard OT Meal (RM 20.00)" data-amount="20">Standard OT Meal (RM 20.00)</option>
                 <option value="Late Night Shift Meal (RM 35.00)" data-amount="35">Late Night Shift Meal (RM 35.00)</option>
               </select>
@@ -326,11 +744,11 @@
           </div>
 
           <!-- 9. Transport & Distance -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
+          <div class="field-group" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px;">
+            <div class="select-wrapper">
               <label class="field-label">Transport:</label>
-              <select id="transportSelect" class="form-input-ctrl">
-                <option value="" selected>- Select Transport -</option>
+              <select id="transportSelect" class="form-ctrl">
+                <option value="" selected>- Select -</option>
                 <option value="Own Vehicle">Own Vehicle</option>
                 <option value="Grab / E-Hailing">Grab / E-Hailing</option>
                 <option value="Public Transport">Public Transport</option>
@@ -338,82 +756,42 @@
             </div>
             <div>
               <label class="field-label">Distance (km):</label>
-              <input type="number" id="distanceInput" class="form-input-ctrl" value="0" />
+              <input type="number" id="distanceInput" class="form-ctrl" value="0" />
             </div>
           </div>
 
           <!-- 10. Way -->
-          <div>
+          <div class="field-group">
             <label class="field-label">Way:</label>
-            <select id="waySelect" class="form-input-ctrl">
-              <option value="" selected>- Select Way -</option>
-              <option value="One-Way">One-Way</option>
-              <option value="Round-Trip">Round-Trip</option>
-            </select>
+            <div class="select-wrapper">
+              <select id="waySelect" class="form-ctrl">
+                <option value="" selected>- Select Way -</option>
+                <option value="One-Way">One-Way</option>
+                <option value="Round-Trip">Round-Trip</option>
+              </select>
+            </div>
           </div>
 
-          <!-- 11. Mileage / OT Remarks -->
-          <div>
+          <!-- 11. Remarks -->
+          <div class="field-group">
             <label class="field-label">Mileage Amount Remarks:</label>
-            <textarea id="otRemarksInput" rows="3" class="form-input-ctrl" placeholder="Enter remarks or mileage details..." style="font-family: inherit; resize: vertical;"></textarea>
+            <textarea id="otRemarksInput" rows="3" class="form-ctrl" placeholder="Enter remarks or mileage details..." style="font-family: inherit; resize: vertical;"></textarea>
           </div>
-
-          <!-- 12. Upload Attachments (Matching User Screenshot Layout & Icons Exactly) -->
-          <div style="margin-top: 6px;">
-            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
-            
-            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 12px 0 6px;">
-              <!-- Select File(s) Circle Button -->
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload()">
-                <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
-                  <i class="fa-solid fa-file-arrow-up"></i>
-                </div>
-                <span style="font-size: 13px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
-              </div>
-
-              <!-- Take a Picture Circle Button -->
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload()">
-                <div style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
-                  <i class="fa-solid fa-camera"></i>
-                </div>
-                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
-              </div>
-            </div>
-
-            <!-- Attached Files Chips Container -->
-            <div id="otChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
-          </div>
-
-          <!-- Add Button (Standard Full-Width Pill Style matching Medical Claim) -->
-          <div style="margin-top: 6px;">
-            <button type="button" onclick="addOTEntry()" style="width: 100%; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 14px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-              <i class="fa-solid fa-plus"></i>
-              <span>Add OT Entry</span>
-            </button>
-          </div>
-
-          <!-- Added OT Entries Container -->
-          <div style="margin-top: 14px;">
-            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Added OT Entries:</div>
-            <div id="addedOTEntriesContainer">
-              <div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 8px 0; text-align: center; background: var(--bg-input); border-radius: 12px; border: 1px dashed var(--border-subtle);">No OT entries added yet. Fill in above and click "Add OT Entry".</div>
-            </div>
-          </div>
-
+          
         </div>
 
-      </div>
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-3-list', 'OT Details')">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        </div>
 
-      <!-- BOTTOM ACTION FOOTER (MATCHING USER SCREENSHOT: DRAFT & SUBMIT PAPER PLANE BUTTONS) -->
-      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-bottom: 24px;">
-        <button type="button" onclick="saveDraft()" style="padding: 10px 22px; border-radius: 20px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-          <i class="fa-solid fa-floppy-disk" style="font-size: 13px;"></i>
-          <span>Draft</span>
-        </button>
-        <button type="button" onclick="submitOTClaim()" style="padding: 10px 24px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45); display: flex; align-items: center; gap: 8px; transition: transform 0.15s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-          <span>Submit</span>
-          <i class="fa-solid fa-paper-plane" style="font-size: 13px;"></i>
-        </button>
       </div>
 
     </div>
@@ -426,7 +804,76 @@
   
   <script>
     let isCrossDay = false;
-    const addedOTEntries = [];
+    let editingItemIndex = -1;
+    const formData = {
+      applicationInfo: {
+        claimYear: '2026',
+        claimMonth: 'September'
+      },
+      otEntries: [],
+      currentView: 'view-1-main',
+      uploadTarget: 'main'
+    };
+
+    function updateStepperUI(stepNum) {
+      const lineFill = document.getElementById('stepperLineFill');
+      if (lineFill) {
+        lineFill.style.width = stepNum === 1 ? '0%' : '50%';
+      }
+
+      for (let i = 1; i <= 2; i++) {
+        const node = document.getElementById(`stepNode-${i}`);
+        if (!node) continue;
+        node.classList.remove('active', 'completed');
+        const circle = node.querySelector('.stepper-circle');
+        if (circle) circle.textContent = i;
+        if (i < stepNum) {
+          node.classList.add('completed');
+        } else if (i === stepNum) {
+          node.classList.add('active');
+        }
+      }
+    }
+
+    function navigateToStep(stepNum) {
+      if (stepNum === 1) {
+        switchView('view-1-main', 'OT Claim');
+      } else if (stepNum === 2) {
+        switchView('view-3-list', 'OT Details');
+      }
+    }
+
+    function switchView(viewId, headerTitle) {
+      formData.currentView = viewId;
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById(viewId);
+      if (targetView) targetView.classList.add('active');
+
+      const titleTextEl = document.getElementById('headerTitleText');
+      if (titleTextEl && headerTitle) {
+        titleTextEl.innerText = headerTitle;
+      }
+
+      if (viewId === 'view-1-main') {
+        updateStepperUI(1);
+      } else {
+        updateStepperUI(2);
+      }
+
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    function handleHeaderBack() {
+      if (formData.currentView === 'view-4-entry') {
+        switchView('view-3-list', 'OT Details');
+      } else if (formData.currentView === 'view-3-list') {
+        switchView('view-1-main', 'OT Claim');
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
 
     function toggleCrossDay() {
       isCrossDay = !isCrossDay;
@@ -446,7 +893,7 @@
       } else if (val.includes('35')) {
         amountInput.value = '35.00';
       } else {
-        amountInput.value = '0';
+        amountInput.value = '0.00';
       }
     }
 
@@ -477,7 +924,8 @@
       document.getElementById('otHoursInput').value = hrs;
     }
 
-    function triggerFileUpload() {
+    function triggerFileUpload(target) {
+      formData.uploadTarget = target;
       const input = document.getElementById('hiddenOTFileInput');
       if (input) input.click();
     }
@@ -485,58 +933,224 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      const container = document.getElementById('otChipsList');
+      const container = document.getElementById(formData.uploadTarget === 'main' ? 'mainChipsList' : 'subChipsList');
       if (container) {
         const chip = document.createElement('div');
-        chip.style.cssText = 'background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;';
+        chip.className = 'file-chip';
         chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
         container.appendChild(chip);
       }
     }
 
-    function addOTEntry() {
-      const otType = document.getElementById('otCodeSelect').value || 'OT 1.5x';
-      const otDate = document.getElementById('otDateInput').value || '22/09/2026';
-      const hours = document.getElementById('otHoursInput').value || '0';
-      const reason = document.getElementById('otReasonSelect').value || 'General OT';
-
-      addedOTEntries.push({ type: otType, date: otDate, hours: hours, reason: reason });
-      renderOTEntries();
-
-      if (typeof showToast === 'function') {
-        showToast(`✅ OT Entry [${otType}] added successfully!`);
+    function openEntryForm(action, index = -1) {
+      if (action === 'add') {
+        editingItemIndex = -1;
+        document.getElementById('entryFormTitle').innerText = 'Add OT Entry';
+        
+        // Reset fields
+        document.getElementById('otDateInput').value = '';
+        document.getElementById('otCodeSelect').value = '';
+        document.getElementById('startTimeInput').value = '';
+        document.getElementById('endTimeInput').value = '';
+        document.getElementById('otHoursInput').value = '0.0';
+        document.getElementById('breakHoursSelect').value = '';
+        document.getElementById('breakMinutesSelect').value = '';
+        document.getElementById('projectSelect').value = '';
+        document.getElementById('otReasonSelect').value = '';
+        document.getElementById('mealAmountInput').value = '0.00';
+        document.getElementById('mealAllowanceSelect').value = '';
+        document.getElementById('transportSelect').value = '';
+        document.getElementById('distanceInput').value = '0';
+        document.getElementById('waySelect').value = '';
+        document.getElementById('otRemarksInput').value = '';
+        
+        isCrossDay = false;
+        document.getElementById('crossDayCircle').classList.remove('checked');
+      } else {
+        editingItemIndex = index;
+        document.getElementById('entryFormTitle').innerText = 'Edit OT Entry';
+        
+        const item = formData.otEntries[index];
+        document.getElementById('otDateInput').value = item.date;
+        document.getElementById('otCodeSelect').value = item.type;
+        document.getElementById('startTimeInput').value = item.start;
+        document.getElementById('endTimeInput').value = item.end;
+        document.getElementById('otHoursInput').value = item.hours;
+        document.getElementById('breakHoursSelect').value = item.breakHrs;
+        document.getElementById('breakMinutesSelect').value = item.breakMins;
+        document.getElementById('projectSelect').value = item.project;
+        document.getElementById('otReasonSelect').value = item.reason;
+        document.getElementById('mealAmountInput').value = item.mealAmount;
+        document.getElementById('mealAllowanceSelect').value = item.mealAllowance;
+        document.getElementById('transportSelect').value = item.transport;
+        document.getElementById('distanceInput').value = item.distance;
+        document.getElementById('waySelect').value = item.way;
+        document.getElementById('otRemarksInput').value = item.remarks;
+        
+        isCrossDay = item.isCrossDay;
+        if (isCrossDay) {
+          document.getElementById('crossDayCircle').classList.add('checked');
+        } else {
+          document.getElementById('crossDayCircle').classList.remove('checked');
+        }
       }
+      
+      switchView('view-4-entry', 'OT Details');
+    }
+
+    function saveSubItem() {
+      const entry = {
+        date: document.getElementById('otDateInput').value || '22/09/2026',
+        type: document.getElementById('otCodeSelect').value || 'OT 1.5x (Normal Working Day)',
+        start: document.getElementById('startTimeInput').value || '18:00',
+        end: document.getElementById('endTimeInput').value || '20:00',
+        hours: document.getElementById('otHoursInput').value || '2.0',
+        breakHrs: document.getElementById('breakHoursSelect').value,
+        breakMins: document.getElementById('breakMinutesSelect').value,
+        project: document.getElementById('projectSelect').value,
+        reason: document.getElementById('otReasonSelect').value || 'Urgent Deployment',
+        mealAmount: document.getElementById('mealAmountInput').value,
+        mealAllowance: document.getElementById('mealAllowanceSelect').value,
+        transport: document.getElementById('transportSelect').value,
+        distance: document.getElementById('distanceInput').value,
+        way: document.getElementById('waySelect').value,
+        remarks: document.getElementById('otRemarksInput').value,
+        isCrossDay: isCrossDay
+      };
+      
+      if (editingItemIndex > -1) {
+        formData.otEntries[editingItemIndex] = entry;
+        if (typeof showToast === 'function') showToast('✅ OT entry updated successfully!');
+      } else {
+        formData.otEntries.push(entry);
+        if (typeof showToast === 'function') showToast('✅ OT entry added successfully!');
+      }
+      
+      renderOTEntries();
+      switchView('view-3-list', 'OT Details');
+    }
+    
+    function deleteSubItem(idx, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        formData.otEntries.splice(idx, 1);
+        renderOTEntries();
+    }
+    
+    function toggleItemCard(idx) {
+        const bodyEl = document.getElementById(`ot-item-body-${idx}`);
+        const arrowEl = document.getElementById(`ot-item-arrow-${idx}`);
+        if (bodyEl.style.display === 'block') {
+            bodyEl.style.display = 'none';
+            if (arrowEl) arrowEl.style.transform = 'rotate(0deg)';
+        } else {
+            bodyEl.style.display = 'block';
+            if (arrowEl) arrowEl.style.transform = 'rotate(180deg)';
+        }
     }
 
     function renderOTEntries() {
-      const container = document.getElementById('addedOTEntriesContainer');
-      if (addedOTEntries.length === 0) {
-        container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 6px 0;">No OT entries added yet. Fill in above and click "Add".</div>`;
+      const container = document.getElementById('v3ItemsContainer');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const summaryTotal = document.getElementById('v1TotalClaimDisplay');
+      const summaryCount = document.getElementById('v1ItemsCountSubtitle');
+      
+      countText.innerText = `${formData.otEntries.length} entries recorded`;
+      summaryCount.innerText = `${formData.otEntries.length} entries added`;
+      
+      let totalHrs = 0;
+      formData.otEntries.forEach(i => totalHrs += parseFloat(i.hours || 0));
+      summaryTotal.innerText = `${totalHrs.toFixed(1)} hrs`;
+      
+      if (formData.otEntries.length === 0) {
+        container.innerHTML = `<div style="text-align: center; padding: 30px 20px; background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px dashed rgba(255, 255, 255, 0.1);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 12px;">
+            <i class="fa-solid fa-clock"></i>
+          </div>
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">No entries yet</div>
+          <div style="font-size: 12px; font-weight: 500; color: var(--text-muted); max-width: 200px; margin: 0 auto;">Click 'Add Item' to record your overtime details.</div>
+        </div>`;
         return;
       }
 
       let html = '';
-      addedOTEntries.forEach((item, idx) => {
+      formData.otEntries.forEach((item, idx) => {
         html += `
-          <div class="item-chip-row">
-            <div>
-              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${item.type}</div>
-              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${item.date} &bull; ${item.reason}</div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-sm);">
+            
+            <!-- HEADER (Clickable to Expand) -->
+            <div style="padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard(${idx})">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                <div style="width: 38px; height: 38px; border-radius: 12px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                  <i class="fa-solid fa-clock"></i>
+                </div>
+                <div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">${item.date}</div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">${item.start} - ${item.end}</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">
+                  ${item.hours} hrs
+                </div>
+                <i class="fa-solid fa-chevron-down" id="ot-item-arrow-${idx}" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard(${idx})"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx}, event)" title="Delete Item"></i>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="font-size: 13.5px; font-weight: 800; color: var(--purple-primary);">${item.hours} hrs</div>
-              <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 14px;" onclick="removeOTEntry(${idx})"></i>
+
+            <!-- EXPANDABLE BODY -->
+            <div id="ot-item-body-${idx}" class="item-details-body">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 14px;">
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">OT Type:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.type || '-'}</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Reason:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.reason || '-'}</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Break Duration:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.breakHrs || '0'} hrs ${item.breakMins || '0'} mins</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Cross Day:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.isCrossDay ? 'Yes' : 'No'}</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Project:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.project || '-'}</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Meal Allowance:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.mealAllowance || '-'}</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Meal Amount:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">RM ${item.mealAmount || '0.00'}</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Transport:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.transport || '-'} (${item.distance || '0'} km)</span>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Way:</span>
+                  <span style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary);">${item.way || '-'}</span>
+                </div>
+              </div>
+              <div>
+                <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remarks:</span>
+                <span style="display: block; font-size: 13px; font-weight: 600; color: var(--text-primary);">${item.remarks || '-'}</span>
+              </div>
             </div>
+            
           </div>
         `;
       });
 
       container.innerHTML = html;
-    }
-
-    function removeOTEntry(idx) {
-      addedOTEntries.splice(idx, 1);
-      renderOTEntries();
     }
 
     function saveDraft() {
@@ -555,6 +1169,10 @@
       }
       window.location.href = '../index.html';
     }
+    
+    // Initial Render
+    renderOTEntries();
   </script>
 </body>
 </html>
+

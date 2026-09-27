@@ -236,19 +236,54 @@
     if (!detailBox) return;
 
     if (day >= 28 && day <= 30) {
+      const trip = window.INDIVIDUAL_TRAVEL_DATA?.trips?.[0] || {
+        route: 'Kuala Lumpur ➔ Penang',
+        destination: 'Penang Branch',
+        dateToDate: '28 Sep 2026 – 30 Sep 2026',
+        dates: '28–30 Sep 2026 • 3 days',
+        reason: 'Official Outstation Travel',
+        purpose: 'Client visit',
+        status: 'Approved'
+      };
+
       detailBox.innerHTML = `
         <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
           Monday, 28 September 2026
         </div>
-        <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
-          <div>
-            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Kuala Lumpur ➔ Penang</div>
-            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 3px;">28–30 Sep 2026 • 3 days</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">Client visit</div>
+        <div style="background: var(--bg-input); border-radius: 18px; padding: 14px 16px; border: 1px solid var(--border-subtle);">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                <i class="fa-solid fa-plane-departure"></i>
+              </div>
+              <div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${trip.route || 'Kuala Lumpur ➔ Penang'}</div>
+                <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">${trip.dates || '28–30 Sep 2026 • 3 days'}</div>
+              </div>
+            </div>
+            <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+              ${trip.status || 'Approved'}
+            </span>
           </div>
-          <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
-            Approved
-          </span>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 12px; border-top: 1px dashed var(--border-subtle); font-size: 11.5px;">
+            <div>
+              <span style="color: var(--text-muted); font-weight: 600;">Destination:</span>
+              <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${trip.destination || 'Penang Branch'}</div>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); font-weight: 600;">Date to Date:</span>
+              <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${trip.dateToDate || '28 Sep 2026 – 30 Sep 2026'}</div>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); font-weight: 600;">Reason:</span>
+              <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${trip.reason || 'Official Outstation Travel'}</div>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); font-weight: 600;">Purpose:</span>
+              <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">${trip.purpose || 'Client visit'}</div>
+            </div>
+          </div>
         </div>
       `;
     } else if (day === 24) {
@@ -589,6 +624,57 @@
 
   /**
    * ==========================================
+   * PENDING APPROVALS DEDICATED VIEW
+   * ==========================================
+   */
+  let currentPendingTab = 'all';
+
+  function showTeamPendingApprovals() {
+    const mainEl = document.getElementById('teamMainDashboard');
+    const secEl = document.getElementById('teamPendingApprovalSection');
+    const titleEl = document.getElementById('globalTopTitle');
+    const subtitleEl = document.getElementById('headerSubtitleText');
+    const switcherEl = document.getElementById('mainScopeSwitcher');
+    
+    if (mainEl) mainEl.style.display = 'none';
+    if (secEl) secEl.style.display = 'block';
+    
+    if (titleEl) titleEl.innerHTML = 'Pending Approval';
+    if (subtitleEl) subtitleEl.style.display = 'none';
+    if (switcherEl) switcherEl.style.display = 'none';
+    
+    // Scroll to top
+    const contentArea = document.querySelector('.main-content');
+    if (contentArea) contentArea.scrollTop = 0;
+  }
+
+  function hideTeamPendingApprovals() {
+    const mainEl = document.getElementById('teamMainDashboard');
+    const secEl = document.getElementById('teamPendingApprovalSection');
+    const titleEl = document.getElementById('globalTopTitle');
+    const subtitleEl = document.getElementById('headerSubtitleText');
+    const switcherEl = document.getElementById('mainScopeSwitcher');
+    
+    if (mainEl) mainEl.style.display = 'block';
+    if (secEl) secEl.style.display = 'none';
+    
+    if (titleEl) titleEl.innerHTML = 'Claims &amp; Expenses';
+    if (subtitleEl) subtitleEl.style.display = 'block';
+    if (switcherEl) switcherEl.style.display = 'flex';
+  }
+
+  function switchPendingTab(tabName, btnElement) {
+    currentPendingTab = tabName;
+    if (btnElement) {
+      const pills = btnElement.parentElement.querySelectorAll('.filter-pill');
+      pills.forEach(p => p.classList.remove('active'));
+      btnElement.classList.add('active');
+    }
+    renderTeamQueue();
+  }
+
+  /**
+   * ==========================================
    * TEAM APPROVALS QUEUE (TEAM DASHBOARD)
    * ==========================================
    */
@@ -596,6 +682,7 @@
     const container = document.getElementById('teamApprovalsQueue');
     const countVal = document.getElementById('teamPendingCountVal');
     const totalVal = document.getElementById('teamPendingTotalVal');
+    const badgeCount = document.getElementById('teamPendingCountBadge');
     if (!container) return;
 
     container.innerHTML = '';
@@ -605,49 +692,41 @@
     if (countVal) countVal.textContent = `${pendingCount} Requests`;
     if (totalVal) totalVal.textContent = `Total: RM ${totalAmt.toFixed(2)}`;
 
-    if (pendingCount === 0) {
+    let filteredQueue = teamQueue;
+    if (currentPendingTab !== 'all') {
+      filteredQueue = teamQueue.filter(item => item.optionName === currentPendingTab);
+    }
+
+    if (badgeCount) badgeCount.textContent = filteredQueue.length;
+
+    if (filteredQueue.length === 0) {
       container.innerHTML = `
         <div style="text-align: center; padding: 30px 10px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-subtle);">
           <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
-          <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">All Team Claims Approved!</div>
-          <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">No pending team claim requests requiring action.</div>
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">No Pending Requests</div>
+          <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">There are no requests requiring action for this category.</div>
         </div>
       `;
       return;
     }
 
-    teamQueue.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'team-approval-card';
+    filteredQueue.forEach(item => {
+      const card = document.createElement('pending-approval-card');
       card.id = `team-card-${item.id}`;
-
+      
       const empIdFormatted = `#${(item.empNo || '004177').replace(/^#/, '')}`;
 
-      card.innerHTML = `
-        <div class="team-user-row" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <div class="team-user-avatar" style="width: 42px; height: 42px; border-radius: 12px; background: ${item.avatarBg}; color: ${item.avatarColor}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">${item.avatar}</div>
-          <div>
-            <div class="team-user-name" style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${item.userName}</div>
-            <!-- AGENTS.md Employee ID Presentation Standard: Directly below name, leading # -->
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">${empIdFormatted}</div>
-            <div class="team-user-dept" style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${item.dept}</div>
-          </div>
-        </div>
-        <div class="team-claim-details" style="background: var(--bg-input); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${item.title}</div>
-              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 3px;"><i class="fa-solid fa-receipt" style="margin-right: 4px; color: #7c3aed;"></i>${item.optionName} • ${item.subCatName} • ${item.date}</div>
-              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px;"><i class="fa-solid fa-store" style="margin-right: 4px; color: #10b981;"></i>${item.receipt}</div>
-            </div>
-            <div style="font-size: 15px; font-weight: 900; color: var(--purple-primary); text-align: right;">RM ${item.amount.toFixed(2)}</div>
-          </div>
-        </div>
-        <div class="team-action-buttons" style="display: flex; gap: 8px;">
-          <button class="btn-approve" style="flex: 1; padding: 10px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'approve', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✔ Approve</button>
-          <button class="btn-reject" style="flex: 1; padding: 10px; border-radius: 12px; background: transparent; border: 1px solid #ef4444; color: #ef4444; font-size: 12.5px; font-weight: 800; cursor: pointer;" onclick="window.ClaimsEngine.actionTeamClaim(${item.id}, 'reject', '${item.userName}', 'RM ${item.amount.toFixed(2)}')">✕ Reject</button>
-        </div>
-      `;
+      card.setAttribute('user-name', item.userName);
+      card.setAttribute('emp-id', empIdFormatted);
+      card.setAttribute('dept', item.dept);
+      card.setAttribute('doc-status', 'Submitted');
+      card.setAttribute('date', item.date);
+      card.setAttribute('claim-type', item.optionName);
+      card.setAttribute('category', item.subCatName);
+      card.setAttribute('receipt', item.receipt);
+      card.setAttribute('amount', `RM ${item.amount.toFixed(2)}`);
+      card.setAttribute('title', item.title);
+      card.setAttribute('item-id', item.id);
 
       container.appendChild(card);
     });
@@ -662,6 +741,11 @@
     } else {
       showToast(`✕ Rejected ${userName}'s claim of ${amount}`);
     }
+  }
+
+  function toggleSelectAllTeamClaims(checked) {
+    const checkboxes = document.querySelectorAll("#teamApprovalsQueue .approval-card-checkbox");
+    checkboxes.forEach(cb => cb.checked = checked);
   }
 
   function approveAllTeamClaims() {
@@ -703,7 +787,12 @@
   }
 
   function handleGlobalBack() {
-    window.history.back();
+    const secEl = document.getElementById('teamPendingApprovalSection');
+    if (secEl && secEl.style.display === 'block') {
+      hideTeamPendingApprovals();
+    } else {
+      window.history.back();
+    }
   }
 
   // Global Engine Export
@@ -716,10 +805,15 @@
     selectTeamCalendarDay,
     renderMySubmissions,
     filterMySubmissions,
+    renderTeamQueue,
     actionTeamClaim,
     approveAllTeamClaims,
+    toggleSelectAllTeamClaims,
     openAllClaimOptionsModal,
     closeAllClaimOptionsModal,
+    showTeamPendingApprovals,
+    hideTeamPendingApprovals,
+    switchPendingTab,
     handleGlobalBack
   };
 
