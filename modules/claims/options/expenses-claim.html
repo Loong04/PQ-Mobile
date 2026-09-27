@@ -678,6 +678,8 @@
       }
     }
 
+    let editingItemIndex = -1;
+
     function handleHeaderBack() {
       window.location.href = '../index.html';
     }
@@ -706,8 +708,8 @@
         return;
       }
 
-      itemsList.push({
-        id: Date.now().toString(),
+      const itemData = {
+        id: editingItemIndex >= 0 ? itemsList[editingItemIndex].id : Date.now().toString(),
         txDate,
         receiptNo,
         description: description || expenseCode,
@@ -716,15 +718,51 @@
         currency,
         forexRate,
         localAmount: localAmount > 0 ? localAmount : amount
-      });
+      };
+
+      if (editingItemIndex >= 0) {
+        itemsList[editingItemIndex] = itemData;
+        editingItemIndex = -1;
+        const addBtn = document.getElementById('btnAddClaimItem');
+        if (addBtn) addBtn.innerText = 'Add to Claim';
+        showToast('✏️ Claim item updated');
+      } else {
+        itemsList.push(itemData);
+        showToast('✅ Claim item added');
+      }
 
       renderItemsTable();
       updateClaimTotal();
       clearItemForm();
-      showToast('✅ Claim item added');
+    }
+
+    function editClaimItem(idx) {
+      editingItemIndex = idx;
+      const item = itemsList[idx];
+      if (!item) return;
+
+      if (document.getElementById('itemTxDate')) document.getElementById('itemTxDate').value = item.txDate || '25/09/2026';
+      if (document.getElementById('itemReceiptNo')) document.getElementById('itemReceiptNo').value = item.receiptNo || '';
+      if (document.getElementById('itemDescription')) document.getElementById('itemDescription').value = item.description || '';
+      if (document.getElementById('itemExpenseCode')) document.getElementById('itemExpenseCode').value = item.expenseCode || 'GENERAL EXPENSE';
+      if (document.getElementById('itemAmount')) document.getElementById('itemAmount').value = item.amount ? item.amount.toFixed(2) : '0.00';
+      if (document.getElementById('itemCurrency')) document.getElementById('itemCurrency').value = item.currency || 'RINGGIT MALAYSIA';
+      if (document.getElementById('itemForexRate')) document.getElementById('itemForexRate').value = item.forexRate ? item.forexRate.toFixed(3) : '1.000';
+      if (document.getElementById('itemLocalAmount')) document.getElementById('itemLocalAmount').value = item.localAmount ? item.localAmount.toFixed(2) : '0.00';
+
+      const addBtn = document.getElementById('btnAddClaimItem');
+      if (addBtn) addBtn.innerText = 'Save Changes';
+
+      const formContainer = document.querySelector('.form-card');
+      if (formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('✏️ Editing item: ' + item.description);
     }
 
     function clearItemForm() {
+      editingItemIndex = -1;
+      const addBtn = document.getElementById('btnAddClaimItem');
+      if (addBtn) addBtn.innerText = 'Add to Claim';
+
       if (document.getElementById('itemReceiptNo')) document.getElementById('itemReceiptNo').value = '';
       if (document.getElementById('itemDescription')) document.getElementById('itemDescription').value = '';
       if (document.getElementById('itemExpenseCode')) document.getElementById('itemExpenseCode').value = '';
@@ -752,7 +790,7 @@
       container.innerHTML = itemsList.map((item, idx) => `
         <div style="padding: 12px 16px; display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; border-bottom: 1px solid var(--border-subtle); font-size: 13px;">
           <div>
-            <div style="font-weight: 700; color: var(--text-primary);">${item.description}</div>
+            <div style="font-weight: 700; color: var(--text-primary); cursor: pointer;" onclick="editClaimItem(${idx})">${item.description}</div>
             <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
               ${item.expenseCode}${item.receiptNo ? ' • #' + item.receiptNo : ''}
             </div>
@@ -760,7 +798,10 @@
           <div style="text-align: right; font-weight: 800; color: var(--text-primary);">
             ${item.localAmount ? item.localAmount.toFixed(2) : item.amount.toFixed(2)}
           </div>
-          <div style="text-align: right;">
+          <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end;">
+            <button type="button" onclick="editClaimItem(${idx})" aria-label="Edit item" style="background: rgba(124, 58, 237, 0.14); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-right: 6px;">
+              <i class="fa-solid fa-pen-to-square" style="font-size: 12px;"></i>
+            </button>
             <button type="button" onclick="deleteClaimItem(${idx})" aria-label="Delete item" style="background: rgba(239, 68, 68, 0.12); border: none; color: #ef4444; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
               <i class="fa-solid fa-trash-can" style="font-size: 12px;"></i>
             </button>

@@ -582,22 +582,31 @@
       <!-- ========================================================= -->
       <div class="view-container" id="view-3-list">
         
-        <!-- Category Summary Title Header -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
-              <i class="fa-solid fa-list-check"></i>
+        <!-- Unified Card for Header and Items -->
+        <div class="form-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 16px;">
+          
+          <!-- Category Summary Title Header (Now integrated) -->
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Expense</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
+              </div>
             </div>
-            <div>
-              <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Expense</h2>
-              <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
-            </div>
+            <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+              <i class="fa-solid fa-plus"></i>
+              <span>Add Item</span>
+            </button>
           </div>
-        </div>
 
-        <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
-        <div id="v3ItemsContainer">
-          <!-- Populated by JS -->
+          <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+          <div id="v3ItemsContainer" style="padding: 16px;">
+            <!-- Populated by JS -->
+          </div>
+          
         </div>
 
         <!-- BOTTOM ACTION BUTTONS -->
@@ -667,7 +676,8 @@
       },
       activeCategory: '',
       currentView: 'view-1-main',
-      uploadTarget: 'main'
+      uploadTarget: 'main',
+      editingIndex: -1
     };
 
     function updateStepperUI(stepNum) {
@@ -754,27 +764,24 @@
 
       if (items.length === 0) {
         container.innerHTML = `
-          <div style="background: var(--bg-card); border: 1.5px dashed var(--border-subtle); border-radius: 22px; padding: 36px 20px; text-align: center; margin-bottom: 16px;">
-            <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 12px;">
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
               <i class="fa-solid fa-folder-open"></i>
             </div>
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">Click below to add a new advance expense item</div>
-            <button type="button" class="btn-add-purple" onclick="openEntryForm()">
-              <i class="fa-solid fa-plus"></i>
-              <span>Add Advance Item</span>
-            </button>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Click "+ Add Item" above to add a new advance expense item</div>
           </div>
         `;
         return;
       }
 
-      let html = '';
+      let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
       items.forEach((item, idx) => {
+        const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
         html += `
-          <div class="form-card" style="margin-bottom: 10px;">
+          <div style="transition: all 0.25s ease; ${borderStyle}">
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div>
+              <div onclick="openEntryForm('edit', ${idx})" style="cursor: pointer; flex: 1;">
                 <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type}</div>
                 <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
                   ${item.desc} • ${item.currency} (${item.forexRate})
@@ -782,21 +789,14 @@
               </div>
               <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${item.localAmount.toFixed(2)}</div>
-                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); cursor: pointer; font-size: 15px;" onclick="openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; cursor: pointer; font-size: 15px;" onclick="deleteSubItem(${idx})" title="Delete Item"></i>
               </div>
             </div>
           </div>
         `;
       });
-
-      html += `
-        <div style="text-align: center; margin-top: 14px; margin-bottom: 6px;">
-          <button type="button" class="btn-submit-primary" style="padding: 9px 22px; font-size: 13px;" onclick="openEntryForm('add')">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add Item</span>
-          </button>
-        </div>
-      `;
+      html += '</div>';
 
       container.innerHTML = html;
     }
@@ -808,31 +808,42 @@
       if (typeof showToast === 'function') showToast('🗑️ Advance item removed!');
     }
 
-    function openEntryForm() {
+    function openEntryForm(mode = 'add', editIdx = -1) {
       formData.activeCategory = 'advance';
       const container = document.getElementById('v4SubFormContainer');
+
+      if (mode === 'edit' && editIdx >= 0) {
+        formData.editingIndex = editIdx;
+      } else {
+        formData.editingIndex = -1;
+      }
+
+      const isEdit = formData.editingIndex >= 0;
+      const item = isEdit ? (formData.claimDetails.addedDetails[formData.editingIndex] || {}) : {};
+      const titleText = isEdit ? 'EDIT ADVANCE EXPENSE DETAILS' : 'ADD ADVANCE EXPENSE DETAILS';
+      const btnText = isEdit ? 'Save Changes' : 'Save Item';
 
       container.innerHTML = `
         <div class="form-card">
           <div class="section-header-bar no-top-border">
             <span class="section-title-accent"></span>
-            <span class="section-title-text">ADD ADVANCE EXPENSE DETAILS</span>
+            <span class="section-title-text">${titleText}</span>
           </div>
 
           <div class="field-group">
             <label class="field-label">Expense : <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="expenseTypeSelect" class="form-ctrl">
-                <option value="TRAVEL EXPENSE" selected>TRAVEL EXPENSE</option>
-                <option value="MEAL ALLOWANCE">MEAL ALLOWANCE</option>
-                <option value="ACCOMMODATION">ACCOMMODATION</option>
+                <option value="TRAVEL EXPENSE" ${item.type === 'TRAVEL EXPENSE' || !item.type ? 'selected' : ''}>TRAVEL EXPENSE</option>
+                <option value="MEAL ALLOWANCE" ${item.type === 'MEAL ALLOWANCE' ? 'selected' : ''}>MEAL ALLOWANCE</option>
+                <option value="ACCOMMODATION" ${item.type === 'ACCOMMODATION' ? 'selected' : ''}>ACCOMMODATION</option>
               </select>
             </div>
           </div>
 
           <div class="field-group">
             <label class="field-label">Description :</label>
-            <input type="text" id="expenseDescription" class="form-ctrl" value="Travel & Hotel deposit advance" placeholder="Enter expense description..." />
+            <input type="text" id="expenseDescription" class="form-ctrl" value="${item.desc !== undefined ? item.desc : 'Travel & Hotel deposit advance'}" placeholder="Enter expense description..." />
           </div>
 
           <div class="field-group">
@@ -840,8 +851,8 @@
             <div class="select-wrapper">
               <select id="expenseProjectSelect" class="form-ctrl">
                 <option value="">- Select Project -</option>
-                <option value="PROJ-01" selected>Project Alpha</option>
-                <option value="PROJ-02">Enterprise Migration</option>
+                <option value="PROJ-01" ${item.project === 'PROJ-01' || !item.project ? 'selected' : ''}>Project Alpha</option>
+                <option value="PROJ-02" ${item.project === 'PROJ-02' ? 'selected' : ''}>Enterprise Migration</option>
               </select>
             </div>
           </div>
@@ -849,15 +860,15 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
             <div>
               <label class="field-label">Amount :</label>
-              <input type="number" id="expenseAmount" class="form-ctrl" value="1500000" step="1" oninput="calcSubLocalAmount()" />
+              <input type="number" id="expenseAmount" class="form-ctrl" value="${item.amt !== undefined ? item.amt : 1500000}" step="1" oninput="calcSubLocalAmount()" />
             </div>
             <div>
               <label class="field-label">Claim Currency : <span class="req">*</span></label>
               <div class="select-wrapper">
                 <select id="expenseCurrency" class="form-ctrl" onchange="calcSubLocalAmount()">
-                  <option value="IDR" selected>INDONESIAN RUPIAH</option>
-                  <option value="MYR">RINGGIT MALAYSIA</option>
-                  <option value="USD">US DOLLAR</option>
+                  <option value="IDR" ${item.currency === 'IDR' || !item.currency ? 'selected' : ''}>INDONESIAN RUPIAH</option>
+                  <option value="MYR" ${item.currency === 'MYR' ? 'selected' : ''}>RINGGIT MALAYSIA</option>
+                  <option value="USD" ${item.currency === 'USD' ? 'selected' : ''}>US DOLLAR</option>
                 </select>
               </div>
             </div>
@@ -866,11 +877,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
             <div>
               <label class="field-label">Forex Rate :</label>
-              <input type="number" id="expenseForex" class="form-ctrl" value="0.0003" step="0.0001" oninput="calcSubLocalAmount()" />
+              <input type="number" id="expenseForex" class="form-ctrl" value="${item.forexRate !== undefined ? item.forexRate : 0.0003}" step="0.0001" oninput="calcSubLocalAmount()" />
             </div>
             <div>
               <label class="field-label">Local Amount (RM):</label>
-              <input type="number" id="expenseLocalAmount" class="form-ctrl" value="450.00" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              <input type="number" id="expenseLocalAmount" class="form-ctrl" value="${item.localAmount !== undefined ? item.localAmount.toFixed(2) : '450.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
             </div>
           </div>
 
@@ -897,7 +908,7 @@
         </div>
       `;
 
-      switchView('view-4-entry', 'Add Advance Expense Details');
+      switchView('view-4-entry', titleText);
     }
 
     function calcSubLocalAmount() {
@@ -917,12 +928,20 @@
       const forexRate = parseFloat(document.getElementById('expenseForex').value) || 1;
       const localAmount = parseFloat(document.getElementById('expenseLocalAmount').value) || 0;
 
-      formData.claimDetails.addedDetails.push({ type, desc, project, amt, currency, forexRate, localAmount });
+      const isEdit = formData.editingIndex >= 0;
+      const itemObj = { type, desc, project, amt, currency, forexRate, localAmount };
 
+      if (isEdit) {
+        formData.claimDetails.addedDetails[formData.editingIndex] = itemObj;
+      } else {
+        formData.claimDetails.addedDetails.push(itemObj);
+      }
+
+      formData.editingIndex = -1;
       recalcAllTotals();
       openCategoryItems('advance');
 
-      if (typeof showToast === 'function') showToast('✅ Advance item saved!');
+      if (typeof showToast === 'function') showToast(isEdit ? '✏️ Advance item updated!' : '✅ Advance item saved!');
     }
 
     function recalcAllTotals() {

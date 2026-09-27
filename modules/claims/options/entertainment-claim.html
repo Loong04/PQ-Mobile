@@ -722,22 +722,31 @@
       <!-- ========================================================= -->
       <div class="view-container" id="view-3-list">
         
-        <!-- Category Summary Title Header -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
-              <i class="fa-solid fa-list-check"></i>
+        <!-- Unified Card for Header and Items -->
+        <div class="form-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 16px;">
+          
+          <!-- Category Summary Title Header (Now integrated) -->
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Detail</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
+              </div>
             </div>
-            <div>
-              <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Detail</h2>
-              <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
-            </div>
+            <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+              <i class="fa-solid fa-plus"></i>
+              <span>Add Item</span>
+            </button>
           </div>
-        </div>
 
-        <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
-        <div id="v3ItemsContainer">
-          <!-- Populated by JS -->
+          <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+          <div id="v3ItemsContainer" style="padding: 16px;">
+            <!-- Populated by JS -->
+          </div>
+          
         </div>
 
         <!-- BOTTOM ACTION BUTTONS -->
@@ -953,27 +962,24 @@
 
       if (items.length === 0) {
         container.innerHTML = `
-          <div style="background: var(--bg-card); border: 1.5px dashed var(--border-subtle); border-radius: 22px; padding: 36px 20px; text-align: center; margin-bottom: 16px;">
-            <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 12px;">
-              <i class="fa-solid fa-folder-open"></i>
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              ${iconHtml}
             </div>
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
-            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">Click below to add a new record to ${catName}</div>
-            <button type="button" class="btn-add-purple" onclick="openEntryForm('add')">
-              <i class="fa-solid fa-plus"></i>
-              <span>Add to ${catName}</span>
-            </button>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Click "+ Add Item" above to add a new record to ${catName}</div>
           </div>
         `;
         return;
       }
 
-      let html = '';
+      let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
       items.forEach((item, idx) => {
         const cardId = `entCard_${catKey}_${idx}`;
+        const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
         if (catKey === 'details') {
           html += `
-            <div class="form-card" id="${cardId}" style="margin-bottom: 12px; transition: all 0.25s ease;">
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
               <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
@@ -1018,7 +1024,7 @@
           `;
         } else if (catKey === 'employees') {
           html += `
-            <div class="form-card" id="${cardId}" style="margin-bottom: 12px; transition: all 0.25s ease;">
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
               <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.14); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
@@ -1031,6 +1037,7 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})"></i>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
                 </div>
               </div>
@@ -1047,12 +1054,18 @@
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dept || 'Engineering'}</div>
                   </div>
                 </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+                  <button type="button" class="btn-step-back" style="padding: 6px 14px; font-size: 11.5px; border-radius: 10px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Edit Details</span>
+                  </button>
+                </div>
               </div>
             </div>
           `;
         } else if (catKey === 'guests') {
           html += `
-            <div class="form-card" id="${cardId}" style="margin-bottom: 12px; transition: all 0.25s ease;">
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
               <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
@@ -1065,6 +1078,7 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 12px; transition: transform 0.25s ease;"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})"></i>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})"></i>
                 </div>
               </div>
@@ -1081,20 +1095,18 @@
                     <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">${item.rel || 'Client'}</div>
                   </div>
                 </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+                  <button type="button" class="btn-step-back" style="padding: 6px 14px; font-size: 11.5px; border-radius: 10px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Edit Details</span>
+                  </button>
+                </div>
               </div>
             </div>
           `;
         }
       });
-
-      html += `
-        <div style="text-align: center; margin-top: 14px; margin-bottom: 6px;">
-          <button type="button" class="btn-submit-primary" style="padding: 9px 22px; font-size: 13px;" onclick="openEntryForm('add')">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add Item</span>
-          </button>
-        </div>
-      `;
+      html += '</div>';
 
       container.innerHTML = html;
     }
@@ -1110,28 +1122,29 @@
       if (typeof showToast === 'function') showToast('🗑️ Record removed!');
     }
 
-        function openEntryForm(mode, index = -1) {
+    function openEntryForm(mode = 'add', index = -1) {
       formData.editingIndex = index;
       const catKey = formData.activeCategory;
       const container = document.getElementById('v4SubFormContainer');
 
       if (catKey === 'details') {
+        const item = (index >= 0 && formData.claimDetails.addedDetails[index]) ? formData.claimDetails.addedDetails[index] : null;
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">CLAIM DETAILS</span>
+              <span class="section-title-text">${item ? 'EDIT CLAIM DETAILS' : 'CLAIM DETAILS'}</span>
             </div>
 
             <div class="field-group">
               <label class="field-label">Expense :</label>
               <div class="select-wrapper">
                 <select id="expenseTypeSelect" class="form-ctrl">
-                  <option value="" selected>Select Expense</option>
-                  <option value="DINING & FOOD">DINING &amp; FOOD</option>
-                  <option value="BEVERAGES">BEVERAGES</option>
-                  <option value="ENTERTAINMENT TICKET">ENTERTAINMENT TICKET</option>
-                  <option value="CORPORATE GIFT">CORPORATE GIFT</option>
+                  <option value="" ${!item ? 'selected' : ''}>Select Expense</option>
+                  <option value="DINING & FOOD" ${item && item.type === 'DINING & FOOD' ? 'selected' : ''}>DINING &amp; FOOD</option>
+                  <option value="BEVERAGES" ${item && item.type === 'BEVERAGES' ? 'selected' : ''}>BEVERAGES</option>
+                  <option value="ENTERTAINMENT TICKET" ${item && item.type === 'ENTERTAINMENT TICKET' ? 'selected' : ''}>ENTERTAINMENT TICKET</option>
+                  <option value="CORPORATE GIFT" ${item && item.type === 'CORPORATE GIFT' ? 'selected' : ''}>CORPORATE GIFT</option>
                 </select>
               </div>
             </div>
@@ -1154,12 +1167,12 @@
 
             <div class="field-group">
               <label class="field-label">Receipt # :</label>
-              <input type="text" id="detailReceiptNo" class="form-ctrl" placeholder="" />
+              <input type="text" id="detailReceiptNo" class="form-ctrl" value="${item ? (item.ref || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Description :</label>
-              <input type="text" id="detailDescription" class="form-ctrl" placeholder="" />
+              <input type="text" id="detailDescription" class="form-ctrl" value="${item ? (item.desc || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
@@ -1174,7 +1187,7 @@
 
             <div class="field-group">
               <label class="field-label">Amount :</label>
-              <input type="number" id="detailAmountInput" class="form-ctrl" value="0" step="0.01" oninput="calcSubLocalAmount()" />
+              <input type="number" id="detailAmountInput" class="form-ctrl" value="${item ? item.amt : '0'}" step="0.01" oninput="calcSubLocalAmount()" />
             </div>
 
             <div class="field-group">
@@ -1189,7 +1202,7 @@
 
             <div class="field-group">
               <label class="field-label">Local Amount :</label>
-              <input type="text" id="detailLocalAmount" class="form-ctrl" value="0.00" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? item.amt.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
             </div>
 
             <!-- Upload Attachments -->
@@ -1215,87 +1228,89 @@
           </div>
         `;
       } else if (catKey === 'employees') {
+        const item = (index >= 0 && formData.claimDetails.addedEmployees[index]) ? formData.claimDetails.addedEmployees[index] : null;
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">INTERNAL ATTENDEE</span>
+              <span class="section-title-text">${item ? 'EDIT INTERNAL ATTENDEE' : 'INTERNAL ATTENDEE'}</span>
             </div>
 
             <div class="field-group">
               <label class="field-label">Employee :</label>
               <div class="select-wrapper">
                 <select id="employeeSelect" class="form-ctrl" onchange="handleEmployeeSelect(this.value)">
-                  <option value="" selected>- Select employee -</option>
-                  <option value="EBB01">Sarah Chen (#EBB01)</option>
-                  <option value="004177">Marcus Tan (#004177)</option>
-                  <option value="0000101">Aisha Omar (#0000101)</option>
-                  <option value="000582">Daniel Lee (#000582)</option>
+                  <option value="" ${!item ? 'selected' : ''}>- Select employee -</option>
+                  <option value="EBB01" ${item && item.empNo === 'EBB01' ? 'selected' : ''}>Sarah Chen (#EBB01)</option>
+                  <option value="004177" ${item && item.empNo === '004177' ? 'selected' : ''}>Marcus Tan (#004177)</option>
+                  <option value="0000101" ${item && item.empNo === '0000101' ? 'selected' : ''}>Aisha Omar (#0000101)</option>
+                  <option value="000582" ${item && item.empNo === '000582' ? 'selected' : ''}>Daniel Lee (#000582)</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
               <label class="field-label">Position :</label>
-              <input type="text" id="employeePosition" class="form-ctrl" placeholder="" />
+              <input type="text" id="employeePosition" class="form-ctrl" value="${item ? (item.pos || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Company:</label>
-              <input type="text" id="employeeCompany" class="form-ctrl" placeholder="" />
+              <input type="text" id="employeeCompany" class="form-ctrl" value="${item ? (item.comp || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Department:</label>
-              <input type="text" id="employeeDepartment" class="form-ctrl" placeholder="" />
+              <input type="text" id="employeeDepartment" class="form-ctrl" value="${item ? (item.dept || '') : ''}" placeholder="" />
             </div>
           </div>
         `;
       } else if (catKey === 'guests') {
+        const item = (index >= 0 && formData.claimDetails.addedGuests[index]) ? formData.claimDetails.addedGuests[index] : null;
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">EXTERNAL ATTENDEE</span>
+              <span class="section-title-text">${item ? 'EDIT EXTERNAL ATTENDEE' : 'EXTERNAL ATTENDEE'}</span>
             </div>
 
             <div class="field-group">
               <label class="field-label">Attendee :</label>
-              <input type="text" id="guestNameInput" class="form-ctrl" placeholder="" />
+              <input type="text" id="guestNameInput" class="form-ctrl" value="${item ? (item.name || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Company :</label>
-              <input type="text" id="guestCompanyInput" class="form-ctrl" placeholder="" />
+              <input type="text" id="guestCompanyInput" class="form-ctrl" value="${item ? (item.comp || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Designation :</label>
-              <input type="text" id="guestDesignationInput" class="form-ctrl" placeholder="" />
+              <input type="text" id="guestDesignationInput" class="form-ctrl" value="${item ? (item.desig || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Relationship :</label>
               <div class="select-wrapper">
                 <select id="guestRelationshipSelect" class="form-ctrl">
-                  <option value="" selected>- Select Relationship -</option>
-                  <option value="Client">Client / Customer</option>
-                  <option value="Prospect">Prospect Lead</option>
-                  <option value="Vendor">Vendor / Supplier</option>
-                  <option value="Partner">Business Partner</option>
+                  <option value="" ${!item ? 'selected' : ''}>- Select Relationship -</option>
+                  <option value="Client" ${item && item.rel === 'Client' ? 'selected' : ''}>Client / Customer</option>
+                  <option value="Prospect" ${item && item.rel === 'Prospect' ? 'selected' : ''}>Prospect Lead</option>
+                  <option value="Vendor" ${item && item.rel === 'Vendor' ? 'selected' : ''}>Vendor / Supplier</option>
+                  <option value="Partner" ${item && item.rel === 'Partner' ? 'selected' : ''}>Business Partner</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
               <label class="field-label">Detail :</label>
-              <input type="text" id="guestDetailInput" class="form-ctrl" placeholder="" />
+              <input type="text" id="guestDetailInput" class="form-ctrl" value="${item ? (item.detail || '') : ''}" placeholder="" />
             </div>
           </div>
         `;
       }
 
-      switchView('view-4-entry', `Add ${getCategoryTitle(catKey)}`);
+      switchView('view-4-entry', mode === 'edit' ? `Edit ${getCategoryTitle(catKey)}` : `Add ${getCategoryTitle(catKey)}`);
     }
 
     function handleEmployeeSelect(val) {
@@ -1317,24 +1332,48 @@
 
     function saveSubItem() {
       const catKey = formData.activeCategory;
+      const editIdx = formData.editingIndex;
 
       if (catKey === 'details') {
         const type = document.getElementById('expenseTypeSelect').value;
         const amt = parseFloat(document.getElementById('detailLocalAmount').value) || 0;
         const desc = document.getElementById('detailDescription').value || type;
-        formData.claimDetails.addedDetails.push({ type, amt, desc });
+        const ref = document.getElementById('detailReceiptNo')?.value || '';
+        const newItem = { type, amt, desc, ref };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.claimDetails.addedDetails[editIdx] = newItem;
+        } else {
+          formData.claimDetails.addedDetails.push(newItem);
+        }
       } else if (catKey === 'employees') {
         const val = document.getElementById('employeeSelect').value;
-        const emp = mockEmployees[val] || { name: 'Employee', empNo: 'EMP', pos: 'Staff', dept: 'General' };
-        formData.claimDetails.addedEmployees.push(emp);
+        const emp = mockEmployees[val] || {
+          name: document.getElementById('employeeSelect')?.options[document.getElementById('employeeSelect')?.selectedIndex]?.text.split(' (')[0] || 'Employee',
+          empNo: val || 'EMP',
+          pos: document.getElementById('employeePosition')?.value || 'Staff',
+          dept: document.getElementById('employeeDepartment')?.value || 'General',
+          comp: document.getElementById('employeeCompany')?.value || 'Company'
+        };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.claimDetails.addedEmployees[editIdx] = emp;
+        } else {
+          formData.claimDetails.addedEmployees.push(emp);
+        }
       } else if (catKey === 'guests') {
         const name = document.getElementById('guestNameInput').value;
         const comp = document.getElementById('guestCompanyInput').value;
         const desig = document.getElementById('guestDesignationInput').value;
         const rel = document.getElementById('guestRelationshipSelect').value;
-        formData.claimDetails.addedGuests.push({ name, comp, desig, rel });
+        const detail = document.getElementById('guestDetailInput')?.value || '';
+        const newItem = { name, comp, desig, rel, detail };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.claimDetails.addedGuests[editIdx] = newItem;
+        } else {
+          formData.claimDetails.addedGuests.push(newItem);
+        }
       }
 
+      formData.editingIndex = -1;
       recalcAllTotals();
       openCategoryItems(catKey);
 
