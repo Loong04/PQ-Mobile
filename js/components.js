@@ -1382,7 +1382,7 @@ class PendingApprovalCard extends HTMLElement {
       <div class="approval-request-card" data-item-id="${itemId}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left; margin-bottom: 14px;">
         <!-- 1. Executive Purple Header Banner (Identical to Attendance) -->
         <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
-          <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer;" onclick="if (!event.target.closest('.approval-card-checkbox')) { window.ClaimsEngine && window.ClaimsEngine.triggerClaimViewDetails ? window.ClaimsEngine.triggerClaimViewDetails('${itemId}') : null; }">
             <div style="display: flex; align-items: center;">
               <input type="checkbox" class="approval-card-checkbox" style="width: 20px; height: 20px; accent-color: #ffffff; cursor: pointer; border-radius: 6px;">
             </div>
@@ -1401,7 +1401,7 @@ class PendingApprovalCard extends HTMLElement {
         </div>
 
         <!-- 2. Card Content Body -->
-        <div style="padding: 14px;">
+        <div style="padding: 14px; cursor: pointer;" onclick="if (!event.target.closest('.action-btn-approve, .action-btn-reject, .approval-card-checkbox, .three-dots-btn')) { window.ClaimsEngine && window.ClaimsEngine.triggerClaimViewDetails ? window.ClaimsEngine.triggerClaimViewDetails('${itemId}') : null; }">
           <!-- Status Badge & Submit Date Row -->
           <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; border: ${badgeBorder}; color: ${badgeColor}; font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">

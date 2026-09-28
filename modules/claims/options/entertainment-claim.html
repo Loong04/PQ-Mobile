@@ -292,6 +292,67 @@
       font-weight: 700;
       margin-top: 6px;
     }
+
+    .claim-data-list {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+    }
+    .claim-data-row {
+      display: grid;
+      grid-template-columns: minmax(112px, 42%) minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+    .claim-data-row:last-child { border-bottom: none; }
+    .claim-data-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .claim-data-value {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .claim-data-value.amount { color: var(--purple-primary); }
+
+    .custom-toggle {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .custom-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .custom-toggle .slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 24px;
+      transition: background 0.2s ease;
+    }
+    .custom-toggle .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .custom-toggle input:checked + .slider { background: #22c55e; }
+    .custom-toggle input:checked + .slider::before { transform: translateX(20px); }
     /* Top Claim Stepper Progress Indicator Standard */
     .claim-stepper-card {
       background: var(--bg-card);
@@ -445,7 +506,7 @@
 
                     <!-- Claim Period : -->
           <div class="field-group">
-            <label class="field-label">Claim Period :</label>
+            <label class="field-label">Claim Period</label>
             <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
               <div class="select-wrapper">
                 <select id="v1ClaimPeriodYear" class="form-ctrl">
@@ -465,7 +526,7 @@
 
           <!-- Travelling & Mileage Claim # : -->
           <div class="field-group">
-            <label class="field-label">Travelling &amp; Mileage Claim # :</label>
+            <label class="field-label">Travelling &amp; Mileage Claim #</label>
             <div class="select-wrapper">
               <select id="travelClaimNoSelect" class="form-ctrl">
                 <option value="" selected>- Select -</option>
@@ -477,7 +538,7 @@
 
           <!-- Benefit Type : -->
           <div class="field-group">
-            <label class="field-label">Benefit Type :</label>
+            <label class="field-label">Benefit Type</label>
             <div class="select-wrapper">
               <select id="benefitTypeSelect" class="form-ctrl">
                 <option value="" selected>Select Benefit</option>
@@ -490,7 +551,7 @@
 
           <!-- Claim Date : -->
           <div class="field-group">
-            <label class="field-label">Claim Date :</label>
+            <label class="field-label">Claim Date</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <input type="text" id="claimStartDate" class="form-ctrl" value="24/09/2026" />
               <input type="text" id="claimEndDate" class="form-ctrl" value="24/09/2026" />
@@ -499,13 +560,13 @@
 
           <!-- Cost Centre : -->
           <div class="field-group">
-            <label class="field-label">Cost Centre :</label>
+            <label class="field-label">Cost Centre</label>
             <input type="text" id="costCentreInput" class="form-ctrl" value="MANAGEMENT" />
           </div>
 
           <!-- Project : -->
           <div class="field-group">
-            <label class="field-label">Project :</label>
+            <label class="field-label">Project</label>
             <div class="select-wrapper">
               <select id="projectSelect" class="form-ctrl">
                 <option value="" selected>- Select Project -</option>
@@ -517,73 +578,92 @@
 
           <!-- Entertained Person/Org : -->
           <div class="field-group">
-            <label class="field-label">Entertained Person/Org :</label>
+            <label class="field-label">Entertained Person/Org</label>
             <input type="text" id="entertainedPersonInput" class="form-ctrl" placeholder="" />
           </div>
 
           <!-- Place Entertained : -->
           <div class="field-group">
-            <label class="field-label">Place Entertained :</label>
+            <label class="field-label">Place Entertained</label>
             <input type="text" id="placeEntertainedInput" class="form-ctrl" placeholder="" />
           </div>
 
           <!-- Purpose : -->
           <div class="field-group">
-            <label class="field-label">Purpose :</label>
+            <label class="field-label">Purpose</label>
             <input type="text" id="purposeInput" class="form-ctrl" placeholder="" />
           </div>
 
           <!-- Currency : -->
           <div class="field-group">
-            <label class="field-label">Currency :</label>
+            <label class="field-label">Currency</label>
             <input type="text" id="currencyInput" class="form-ctrl" value="RINGGIT MALAYSIA" readonly />
           </div>
 
           <!-- Summary Stat Rows -->
           <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">Total Amount :</span>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">Total Amount</span>
               <span id="summaryTotalAmount" style="font-size: 13.5px; font-weight: 800; color: #ffffff;">0.00</span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">No of Internal Attendees :</span>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">No of Internal Attendees</span>
               <span id="summaryInternalPax" style="font-size: 13.5px; font-weight: 800; color: #ffffff;">0</span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">No of External Attendees :</span>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">No of External Attendees</span>
               <span id="summaryExternalPax" style="font-size: 13.5px; font-weight: 800; color: #ffffff;">0</span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">Avg Per Pax :</span>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">Avg Per Pax</span>
               <span id="summaryAvgPax" style="font-size: 13.5px; font-weight: 800; color: #ffffff;">0.00</span>
             </div>
           </div>
 
           <!-- Board Approve : -->
           <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
-            <label class="field-label" style="margin-bottom: 0;">Board Approve :</label>
-            <input type="checkbox" id="boardApproveCheck" style="width: 20px; height: 20px; accent-color: var(--purple-primary); cursor: pointer;" />
+            <label class="field-label" style="margin-bottom: 0;">Board Approve</label>
+            <label class="custom-toggle"><input type="checkbox" id="boardApproveCheck" /><span class="slider"></span></label>
           </div>
 
           <!-- Declaration For: -->
           <div style="margin-top: 10px; margin-bottom: 12px;">
-            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Declaration For:</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Declaration For</div>
             <div style="display: flex; flex-direction: column; gap: 8px; padding-left: 4px;">
               <div style="display: flex; align-items: center; justify-content: space-between;">
-                <label class="field-label" style="margin-bottom: 0;">Gift/Ent :</label>
-                <input type="checkbox" id="giftEntCheck" style="width: 20px; height: 20px; accent-color: var(--purple-primary); cursor: pointer;" />
+                <label class="field-label" style="margin-bottom: 0;">Gift/Ent</label>
+                <label class="custom-toggle"><input type="checkbox" id="giftEntCheck" /><span class="slider"></span></label>
               </div>
               <div style="display: flex; align-items: center; justify-content: space-between;">
-                <label class="field-label" style="margin-bottom: 0;">Trv/Hosp :</label>
-                <input type="checkbox" id="trvHospCheck" style="width: 20px; height: 20px; accent-color: var(--purple-primary); cursor: pointer;" />
+                <label class="field-label" style="margin-bottom: 0;">Trv/Hosp</label>
+                <label class="custom-toggle"><input type="checkbox" id="trvHospCheck" /><span class="slider"></span></label>
               </div>
             </div>
           </div>
 
           <!-- Remarks : -->
           <div class="field-group" style="margin-bottom: 0;">
-            <label class="field-label">Remarks :</label>
+            <label class="field-label">Remarks</label>
             <input type="text" id="v1Remarks" class="form-ctrl" placeholder="" />
+          </div>
+
+          <div style="margin-top: 18px;">
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">Upload Attachments</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+              </div>
+            </div>
+            <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
           </div>
         </div>
 
@@ -639,7 +719,6 @@
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Detail</div>
-              <div id="catDetailsSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 items added (Dining, Gifts, Beverages)</div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
@@ -656,7 +735,6 @@
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Employees</div>
-              <div id="catEmployeesSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 employees recorded</div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
@@ -672,8 +750,7 @@
               <i class="fa-solid fa-user-tie"></i>
             </div>
             <div>
-              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Guest</div>
-              <div id="catGuestsSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 guests recorded</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Guests</div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
@@ -712,7 +789,6 @@
               </div>
               <div>
                 <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Detail</h2>
-                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
               </div>
             </div>
             <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
@@ -793,20 +869,20 @@
         endDate: '23/09/2026',
         costCentre: 'MANAGEMENT',
         project: '',
-        entertainedPerson: 'Acme Corp / Mr. Alex Tan',
-        placeEntertained: 'Nobu Kuala Lumpur',
+        entertainedPerson: '',
+        placeEntertained: '',
         currency: 'MYR'
       },
       claimDetails: {
-        addedDetails: [
-          { type: 'DINING & FOOD', date: '23/09/2026', project: 'HQ Digitalization', ref: 'RCP-NOBU-881', entertainedPerson: 'Acme Corp / Mr. Alex Tan', placeEntertained: 'Nobu Kuala Lumpur', amt: 480.00, currency: 'MYR', forexRate: 1.000, localAmount: 480.00, desc: 'Dinner meeting with key client stakeholders', attachments: ['nobu-receipt-signed.pdf'] }
-        ],
+        addedDetails: [],
         addedEmployees: [],
         addedGuests: []
       },
       activeCategory: '',
       currentView: 'view-1-main',
-      uploadTarget: 'main'
+      uploadTarget: 'main',
+      subAttachments: [],
+      mainAttachments: []
     };
 
     function updateStepper(stepNum) {
@@ -847,6 +923,13 @@
       }
     }
 
+    function getSavedProgressStep() {
+      if (formData.claimDetails.addedGuests.length) return 4;
+      if (formData.claimDetails.addedEmployees.length) return 3;
+      if (formData.claimDetails.addedDetails.length) return 2;
+      return 1;
+    }
+
     function switchView(viewId, headerTitle) {
       formData.currentView = viewId;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
@@ -859,8 +942,8 @@
       }
 
       // Sync stepper node status
-      if (viewId === 'view-1-main') {
-        updateStepper(1);
+      if (viewId === 'view-1-main' || viewId === 'view-2-categories') {
+        updateStepper(getSavedProgressStep());
       } else if (formData.activeCategory === 'details') {
         updateStepper(2);
       } else if (formData.activeCategory === 'employees') {
@@ -891,7 +974,7 @@
     function getCategoryTitle(catKey) {
       if (catKey === 'details') return 'Detail';
       if (catKey === 'employees') return 'Employees';
-      if (catKey === 'guests') return 'Guest';
+      if (catKey === 'guests') return 'Guests';
       return 'Claim Details';
     }
 
@@ -915,7 +998,7 @@
       }
     }
 
-    function renderView3List() {
+    function renderLegacyView3List() {
       const catKey = formData.activeCategory;
       const iconBox = document.getElementById('v3CategoryIconBox');
       const titleText = document.getElementById('v3CategoryTitleText');
@@ -1139,6 +1222,110 @@
       container.innerHTML = html;
     }
 
+    function renderDetailRows(rows, attachments = null) {
+      const detailRows = rows.map(([label, value, isAmount = false]) => `
+        <div class="claim-data-row">
+          <span class="claim-data-label">${label}</span>
+          <span class="claim-data-value${isAmount ? ' amount' : ''}">${value ?? '-'}</span>
+        </div>
+      `).join('');
+      if (attachments === null) return `<div class="claim-data-list">${detailRows}</div>`;
+      const filenames = attachments.length ? attachments : ['xxxx.jpg'];
+      return `<div class="claim-data-list">${detailRows}
+        <div class="claim-data-row">
+          <span class="claim-data-label">Attachment</span>
+          <span class="claim-data-value">${filenames.map(name => `<span class="file-chip"><i class="fa-solid fa-paperclip"></i> ${name}</span>`).join('')}</span>
+        </div>
+      </div>`;
+    }
+
+    function renderView3List() {
+      const catKey = formData.activeCategory;
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const container = document.getElementById('v3ItemsContainer');
+      const config = {
+        details: { items: formData.claimDetails.addedDetails, icon: 'fa-receipt', color: 'var(--purple-primary)', bg: 'rgba(124, 58, 237, 0.14)' },
+        employees: { items: formData.claimDetails.addedEmployees, icon: 'fa-user', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.14)' },
+        guests: { items: formData.claimDetails.addedGuests, icon: 'fa-user-tie', color: '#10b981', bg: 'rgba(16, 185, 129, 0.14)' }
+      }[catKey];
+      if (!config || !container) return;
+
+      const items = config.items || [];
+      if (iconBox) iconBox.innerHTML = `<i class="fa-solid ${config.icon}"></i>`;
+      if (titleText) titleText.innerText = getCategoryTitle(catKey);
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              <i class="fa-solid ${config.icon}"></i>
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Click "+ Add Item" above to add your first record</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 16px;">${items.map((item, idx) => {
+        const cardId = `entCard_${catKey}_${idx}`;
+        let title = '';
+        let amount = '';
+        let rows = [];
+        let attachments = null;
+        if (catKey === 'details') {
+          title = item.type || 'Entertainment Detail';
+          amount = `RM ${(item.localAmount ?? item.amt ?? 0).toFixed(2)}`;
+          rows = [
+            ['Expense', item.type], ['Date', item.date], ['Project', item.project],
+            ['Receipt #', item.ref || '-'], ['Description', item.desc || '-'],
+            ['Entertained Person/Org', item.entertainedPerson || '-'],
+            ['Place Entertained', item.placeEntertained || '-'],
+            ['Amount', `RM ${(item.amt || 0).toFixed(2)}`, true],
+            ['Foreign Currency', item.currency || 'RINGGIT MALAYSIA'],
+            ['Forex Rate', item.forexRate ?? 1],
+            ['Local Amount', `RM ${(item.localAmount ?? item.amt ?? 0).toFixed(2)}`, true]
+          ];
+          attachments = item.attachments || [];
+        } else if (catKey === 'employees') {
+          title = item.name || 'Employee';
+          rows = [
+            ['Employee', item.name || '-'],
+            ['Position', item.pos || '-'], ['Company', item.comp || '-'], ['Department', item.dept || '-']
+          ];
+        } else {
+          title = item.name || 'Guest';
+          rows = [
+            ['Attendee', item.name || '-'], ['Company', item.comp || '-'],
+            ['Designation', item.desig || '-'], ['Relationship', item.rel || '-'],
+            ['Detail', item.detail || '-']
+          ];
+        }
+        return `
+          <div id="${cardId}" style="transition: all 0.25s ease; ${idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;'}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: ${config.bg}; color: ${config.color}; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid ${config.icon}"></i>
+                </div>
+                <div style="min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere;">${title}</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                ${amount ? `<span style="font-size: 13px; font-weight: 800; color: var(--purple-primary);">${amount}</span>` : ''}
+                <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete"></i>
+              </div>
+            </div>
+            <div class="item-details-body" style="display: none; padding-top: 10px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+              ${renderDetailRows(rows, attachments)}
+            </div>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
     function deleteSubItem(idx) {
       const catKey = formData.activeCategory;
       if (catKey === 'details') formData.claimDetails.addedDetails.splice(idx, 1);
@@ -1157,6 +1344,7 @@
 
       if (catKey === 'details') {
         const item = (index >= 0 && formData.claimDetails.addedDetails[index]) ? formData.claimDetails.addedDetails[index] : null;
+        formData.subAttachments = item && item.attachments ? [...item.attachments] : [];
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
@@ -1165,7 +1353,7 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Expense :</label>
+              <label class="field-label">Expense</label>
               <div class="select-wrapper">
                 <select id="expenseTypeSelect" class="form-ctrl">
                   <option value="" ${!item ? 'selected' : ''}>Select Expense</option>
@@ -1178,64 +1366,64 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Date :</label>
-              <input type="text" id="detailExpenseDate" class="form-ctrl" value="24/09/2026" />
+              <label class="field-label">Date</label>
+              <input type="text" id="detailExpenseDate" class="form-ctrl" value="${item ? (item.date || '24/09/2026') : '24/09/2026'}" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Project :</label>
+              <label class="field-label">Project</label>
               <div class="select-wrapper">
                 <select id="detailProjectSelect" class="form-ctrl">
-                  <option value="" selected>- Select Project -</option>
-                  <option value="PROJ-01">Project Alpha</option>
-                  <option value="PROJ-02">Enterprise Migration</option>
+                  <option value="" ${!item || !item.project ? 'selected' : ''}>- Select Project -</option>
+                  <option value="Project Alpha" ${item && item.project === 'Project Alpha' ? 'selected' : ''}>Project Alpha</option>
+                  <option value="Enterprise Migration" ${item && item.project === 'Enterprise Migration' ? 'selected' : ''}>Enterprise Migration</option>
                 </select>
               </div>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Receipt # :</label>
+              <label class="field-label">Receipt #</label>
               <input type="text" id="detailReceiptNo" class="form-ctrl" value="${item ? (item.ref || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Description :</label>
+              <label class="field-label">Description</label>
               <input type="text" id="detailDescription" class="form-ctrl" value="${item ? (item.desc || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Entertained Person/Org :</label>
-              <input type="text" id="detailEntertainedPerson" class="form-ctrl" placeholder="" />
+              <label class="field-label">Entertained Person/Org</label>
+              <input type="text" id="detailEntertainedPerson" class="form-ctrl" value="${item ? (item.entertainedPerson || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Place Entertained :</label>
-              <input type="text" id="detailPlaceEntertained" class="form-ctrl" placeholder="" />
+              <label class="field-label">Place Entertained</label>
+              <input type="text" id="detailPlaceEntertained" class="form-ctrl" value="${item ? (item.placeEntertained || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Amount :</label>
+              <label class="field-label">Amount</label>
               <input type="number" id="detailAmountInput" class="form-ctrl" value="${item ? item.amt : '0'}" step="0.01" oninput="calcSubLocalAmount()" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Foreign Currency :</label>
-              <input type="text" id="detailCurrencyInput" class="form-ctrl" value="RINGGIT MALAYSIA" readonly />
+              <label class="field-label">Foreign Currency</label>
+              <input type="text" id="detailCurrencyInput" class="form-ctrl" value="${item ? (item.currency || 'RINGGIT MALAYSIA') : 'RINGGIT MALAYSIA'}" readonly />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Forex Rate :</label>
-              <input type="number" id="detailForexRate" class="form-ctrl" value="1" step="0.01" oninput="calcSubLocalAmount()" />
+              <label class="field-label">Forex Rate</label>
+              <input type="number" id="detailForexRate" class="form-ctrl" value="${item ? (item.forexRate ?? 1) : 1}" step="0.01" oninput="calcSubLocalAmount()" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Local Amount :</label>
+              <label class="field-label">Local Amount</label>
               <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? item.amt.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
             </div>
 
             <!-- Upload Attachments -->
             <div style="margin-top: 14px;">
-              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments:</label>
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
               <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -1257,6 +1445,7 @@
         `;
       } else if (catKey === 'employees') {
         const item = (index >= 0 && formData.claimDetails.addedEmployees[index]) ? formData.claimDetails.addedEmployees[index] : null;
+        formData.subAttachments = [];
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
@@ -1265,7 +1454,7 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Employee :</label>
+              <label class="field-label">Employee</label>
               <div class="select-wrapper">
                 <select id="employeeSelect" class="form-ctrl" onchange="handleEmployeeSelect(this.value)">
                   <option value="" ${!item ? 'selected' : ''}>- Select employee -</option>
@@ -1278,23 +1467,24 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Position :</label>
+              <label class="field-label">Position</label>
               <input type="text" id="employeePosition" class="form-ctrl" value="${item ? (item.pos || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Company:</label>
+              <label class="field-label">Company</label>
               <input type="text" id="employeeCompany" class="form-ctrl" value="${item ? (item.comp || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Department:</label>
+              <label class="field-label">Department</label>
               <input type="text" id="employeeDepartment" class="form-ctrl" value="${item ? (item.dept || '') : ''}" placeholder="" />
             </div>
           </div>
         `;
       } else if (catKey === 'guests') {
         const item = (index >= 0 && formData.claimDetails.addedGuests[index]) ? formData.claimDetails.addedGuests[index] : null;
+        formData.subAttachments = [];
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
@@ -1303,22 +1493,22 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Attendee :</label>
+              <label class="field-label">Attendee</label>
               <input type="text" id="guestNameInput" class="form-ctrl" value="${item ? (item.name || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Company :</label>
+              <label class="field-label">Company</label>
               <input type="text" id="guestCompanyInput" class="form-ctrl" value="${item ? (item.comp || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Designation :</label>
+              <label class="field-label">Designation</label>
               <input type="text" id="guestDesignationInput" class="form-ctrl" value="${item ? (item.desig || '') : ''}" placeholder="" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Relationship :</label>
+              <label class="field-label">Relationship</label>
               <div class="select-wrapper">
                 <select id="guestRelationshipSelect" class="form-ctrl">
                   <option value="" ${!item ? 'selected' : ''}>- Select Relationship -</option>
@@ -1331,13 +1521,14 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Detail :</label>
+              <label class="field-label">Detail</label>
               <input type="text" id="guestDetailInput" class="form-ctrl" value="${item ? (item.detail || '') : ''}" placeholder="" />
             </div>
           </div>
         `;
       }
 
+      renderSubChips();
       switchView('view-4-entry', mode === 'edit' ? `Edit ${getCategoryTitle(catKey)}` : `Add ${getCategoryTitle(catKey)}`);
     }
 
@@ -1363,11 +1554,11 @@
       const editIdx = formData.editingIndex;
 
       if (catKey === 'details') {
-        const type = document.getElementById('expenseTypeSelect')?.value || 'DINING & FOOD';
+        const type = document.getElementById('expenseTypeSelect')?.value || '';
         const date = document.getElementById('detailExpenseDate')?.value || '24/09/2026';
-        const project = document.getElementById('detailProjectSelect')?.value || 'Project Alpha';
+        const project = document.getElementById('detailProjectSelect')?.value || '';
         const ref = document.getElementById('detailReceiptNo')?.value || '';
-        const desc = document.getElementById('detailDescription')?.value || type;
+        const desc = document.getElementById('detailDescription')?.value || '';
         const entertainedPerson = document.getElementById('detailEntertainedPerson')?.value || '';
         const placeEntertained = document.getElementById('detailPlaceEntertained')?.value || '';
         const amt = parseFloat(document.getElementById('detailAmountInput')?.value || 0);
@@ -1375,7 +1566,7 @@
         const forexRate = parseFloat(document.getElementById('detailForexRate')?.value || 1);
         const localAmount = parseFloat(document.getElementById('detailLocalAmount')?.value || amt);
 
-        const newItem = { type, date, project, ref, desc, entertainedPerson, placeEntertained, amt, currency, forexRate, localAmount };
+        const newItem = { type, date, project, ref, desc, entertainedPerson, placeEntertained, amt, currency, forexRate, localAmount, attachments: [...formData.subAttachments] };
         if (typeof editIdx === 'number' && editIdx >= 0) {
           formData.claimDetails.addedDetails[editIdx] = newItem;
         } else {
@@ -1459,14 +1650,48 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      const containerId = `${formData.uploadTarget}ChipsList`;
-      const container = document.getElementById(containerId);
-      if (container) {
-        const chip = document.createElement('div');
-        chip.className = 'file-chip';
-        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="this.parentElement.remove()"></i>`;
-        container.appendChild(chip);
+      if (formData.uploadTarget === 'sub') {
+        formData.subAttachments.push(file.name);
+        renderSubChips();
+      } else if (formData.uploadTarget === 'main') {
+        formData.mainAttachments.push(file.name);
+        renderMainChips();
       }
+      input.value = '';
+    }
+
+    function removeSubAttachment(index) {
+      formData.subAttachments.splice(index, 1);
+      renderSubChips();
+    }
+
+    function renderSubChips() {
+      const container = document.getElementById('subChipsList');
+      if (!container) return;
+      container.innerHTML = formData.subAttachments.map((name, index) => `
+        <span class="file-chip">
+          <i class="fa-solid fa-paperclip"></i>
+          ${name}
+          <i class="fa-solid fa-xmark" style="cursor: pointer; margin-left: 4px;" onclick="removeSubAttachment(${index})"></i>
+        </span>
+      `).join('');
+    }
+
+    function removeMainAttachment(index) {
+      formData.mainAttachments.splice(index, 1);
+      renderMainChips();
+    }
+
+    function renderMainChips() {
+      const container = document.getElementById('mainChipsList');
+      if (!container) return;
+      container.innerHTML = formData.mainAttachments.map((name, index) => `
+        <span class="file-chip">
+          <i class="fa-solid fa-paperclip"></i>
+          ${name}
+          <i class="fa-solid fa-xmark" style="cursor: pointer; margin-left: 4px;" onclick="removeMainAttachment(${index})"></i>
+        </span>
+      `).join('');
     }
 
     function saveEntertainmentDraft() {

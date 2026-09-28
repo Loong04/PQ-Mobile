@@ -280,6 +280,32 @@
       margin-top: 6px;
     }
 
+    .claim-data-list {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+    }
+    .claim-data-row {
+      display: grid;
+      grid-template-columns: minmax(112px, 42%) minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+    .claim-data-row:last-child { border-bottom: none; }
+    .claim-data-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .claim-data-value {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .claim-data-value.amount { color: var(--purple-primary); }
+
     /* Top Claim Stepper Progress Indicator Standard */
     .claim-stepper-card {
       background: var(--bg-card);
@@ -426,7 +452,7 @@
 
           <!-- Claim Period : -->
           <div class="field-group">
-            <label class="field-label">Claim Period :</label>
+            <label class="field-label">Claim Period</label>
             <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
               <div class="select-wrapper">
                 <select id="claimPeriodYear" class="form-ctrl">
@@ -446,7 +472,7 @@
 
           <!-- Claim Date : -->
           <div class="field-group">
-            <label class="field-label">Claim Date : <span class="req">*</span></label>
+            <label class="field-label">Claim Date <span class="req">*</span></label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <input type="text" id="claimStartDate" class="form-ctrl" value="23/09/2026" />
               <input type="text" id="claimEndDate" class="form-ctrl" value="23/09/2026" />
@@ -455,7 +481,7 @@
 
           <!-- Cost Centre : -->
           <div class="field-group">
-            <label class="field-label">Cost Centre : <span class="req">*</span></label>
+            <label class="field-label">Cost Centre <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="costCentreSelect" class="form-ctrl">
                 <option value="MANAGEMENT" selected>MANAGEMENT</option>
@@ -466,7 +492,7 @@
 
           <!-- Project : -->
           <div class="field-group">
-            <label class="field-label">Project :</label>
+            <label class="field-label">Project</label>
             <div class="select-wrapper">
               <select id="projectSelect" class="form-ctrl">
                 <option value="">- Select Project -</option>
@@ -478,7 +504,7 @@
 
           <!-- Claim Type : -->
           <div class="field-group">
-            <label class="field-label">Claim Type : <span class="req">*</span></label>
+            <label class="field-label">Claim Type <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="claimTypeSelect" class="form-ctrl">
                 <option value="OVERSEAS TRAVEL ADVANCE" selected>OVERSEAS TRAVEL ADVANCE</option>
@@ -489,7 +515,7 @@
 
           <!-- Benefit Type : -->
           <div class="field-group">
-            <label class="field-label">Benefit Type : <span class="req">*</span></label>
+            <label class="field-label">Benefit Type <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="benefitTypeSelect" class="form-ctrl">
                 <option value="ADVANCE" selected>ADVANCE</option>
@@ -499,13 +525,13 @@
 
           <!-- Purpose : -->
           <div class="field-group">
-            <label class="field-label">Purpose :</label>
-            <input type="text" id="purposeInput" class="form-ctrl" value="Overseas Client Workshop & Survey" placeholder="Enter purpose..." />
+            <label class="field-label">Purpose</label>
+            <input type="text" id="purposeInput" class="form-ctrl" value="" placeholder="Enter purpose..." />
           </div>
 
           <!-- Claim Currency : -->
           <div class="field-group">
-            <label class="field-label">Claim Currency :</label>
+            <label class="field-label">Claim Currency</label>
             <div class="select-wrapper">
               <select id="claimCurrencySelect" class="form-ctrl">
                 <option value="MYR" selected>RINGGIT MALAYSIA</option>
@@ -514,9 +540,16 @@
             </div>
           </div>
 
-          <!-- Remarks : -->
           <div class="field-group">
-            <label class="field-label">Remarks :</label>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+              <span class="field-label" style="margin-bottom: 0;">Claim Total</span>
+              <span id="advanceClaimTotalDisplay" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">0.00</span>
+            </div>
+          </div>
+
+          <!-- Remarks -->
+          <div class="field-group">
+            <label class="field-label">Remarks</label>
             <input type="text" id="remarksInput" class="form-ctrl" placeholder="Enter remarks..." />
           </div>
 
@@ -538,29 +571,6 @@
             <span>Details</span>
             <i class="fa-solid fa-chevron-right"></i>
           </div>
-        </div>
-
-        <!-- ATTACHMENTS CARD -->
-        <div class="form-card">
-          <label class="field-label" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Upload Main Attachments</label>
-          
-          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
-              <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
-                <i class="fa-solid fa-file-arrow-up"></i>
-              </div>
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
-            </div>
-
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
-              <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
-                <i class="fa-solid fa-camera"></i>
-              </div>
-              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
-            </div>
-          </div>
-
-          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
         </div>
 
         <!-- BOTTOM ACTION BUTTONS -->
@@ -592,8 +602,7 @@
                 <i class="fa-solid fa-list-check"></i>
               </div>
               <div>
-                <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Expense</h2>
-                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
+                <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Details</h2>
               </div>
             </div>
             <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
@@ -667,7 +676,7 @@
         project: '',
         claimType: 'OVERSEAS TRAVEL ADVANCE',
         benefitType: 'ADVANCE',
-        purpose: 'Overseas Client Workshop & Survey',
+        purpose: '',
         currency: 'MYR',
         remarks: ''
       },
@@ -676,8 +685,9 @@
       },
       activeCategory: '',
       currentView: 'view-1-main',
-      uploadTarget: 'main',
-      editingIndex: -1
+      uploadTarget: 'sub',
+      editingIndex: -1,
+      subAttachments: []
     };
 
     function updateStepperUI(stepNum) {
@@ -719,7 +729,9 @@
         titleTextEl.innerText = headerTitle;
       }
 
-      if (viewId === 'view-3-list' || viewId === 'view-4-entry' || formData.activeCategory === 'advance') {
+      if (viewId === 'view-3-list' || viewId === 'view-4-entry') {
+        updateStepperUI(2);
+      } else if (viewId === 'view-1-main' && formData.claimDetails.addedDetails.length) {
         updateStepperUI(2);
       } else {
         updateStepperUI(1);
@@ -741,7 +753,7 @@
     }
 
     function getCategoryTitle(catKey) {
-      return 'Expense';
+      return 'Details';
     }
 
     function openCategoryItems(categoryKey) {
@@ -750,7 +762,7 @@
       switchView('view-3-list', getCategoryTitle(categoryKey));
     }
 
-    function renderView3List() {
+    function renderLegacyView3List() {
       const iconBox = document.getElementById('v3CategoryIconBox');
       const titleText = document.getElementById('v3CategoryTitleText');
       const countText = document.getElementById('v3CategoryItemsCount');
@@ -759,7 +771,7 @@
       const items = formData.claimDetails.addedDetails;
 
       if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-receipt"></i>';
-      if (titleText) titleText.innerText = 'Expense';
+      if (titleText) titleText.innerText = 'Details';
       if (countText) countText.innerText = `${items.length} record(s)`;
 
       if (items.length === 0) {
@@ -855,6 +867,78 @@
       container.innerHTML = html;
     }
 
+    function renderDetailRows(item) {
+      const rows = [
+        ['Expense', item.type || '-'],
+        ['Description', item.desc || '-'],
+        ['Project', item.project || '-'],
+        ['Amount', item.amt ?? 0],
+        ['Claim Currency', item.currency || '-'],
+        ['Forex Rate', item.forexRate ?? 1],
+        ['Local Amount (RM)', `RM ${(item.localAmount ?? 0).toFixed(2)}`, true]
+      ];
+      const filenames = item.attachments && item.attachments.length ? item.attachments : ['xxxx.jpg'];
+      return `<div class="claim-data-list">
+        ${rows.map(([label, value, isAmount = false]) => `
+          <div class="claim-data-row">
+            <span class="claim-data-label">${label}</span>
+            <span class="claim-data-value${isAmount ? ' amount' : ''}">${value}</span>
+          </div>
+        `).join('')}
+        <div class="claim-data-row">
+          <span class="claim-data-label">Attachment</span>
+          <span class="claim-data-value">${filenames.map(name => `<span class="file-chip"><i class="fa-solid fa-paperclip"></i> ${name}</span>`).join('')}</span>
+        </div>
+      </div>`;
+    }
+
+    function renderView3List() {
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const container = document.getElementById('v3ItemsContainer');
+      const items = formData.claimDetails.addedDetails;
+
+      if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-receipt"></i>';
+      if (titleText) titleText.innerText = 'Details';
+      if (!container) return;
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Click "+ Add Item" above to add your first record</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 16px;">${items.map((item, idx) => {
+        const cardId = `advCard_${idx}`;
+        return `
+          <div id="${cardId}" style="transition: all 0.25s ease; ${idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;'}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere;">${item.type || 'Advance Detail'}</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <span style="font-size: 13px; font-weight: 800; color: var(--purple-primary);">RM ${(item.localAmount ?? 0).toFixed(2)}</span>
+                <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete"></i>
+              </div>
+            </div>
+            <div class="item-details-body" style="display: none; padding-top: 10px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+              ${renderDetailRows(item)}
+            </div>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
     function toggleItemCard(cardId) {
       const cardEl = document.getElementById(cardId);
       if (!cardEl) return;
@@ -902,7 +986,7 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Expense : <span class="req">*</span></label>
+            <label class="field-label">Expense <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="expenseTypeSelect" class="form-ctrl">
                 <option value="TRAVEL EXPENSE" ${item.type === 'TRAVEL EXPENSE' || !item.type ? 'selected' : ''}>TRAVEL EXPENSE</option>
@@ -913,32 +997,32 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Description :</label>
-            <input type="text" id="expenseDescription" class="form-ctrl" value="${item.desc !== undefined ? item.desc : 'Travel & Hotel deposit advance'}" placeholder="Enter expense description..." />
+            <label class="field-label">Description</label>
+            <input type="text" id="expenseDescription" class="form-ctrl" value="${item.desc !== undefined ? item.desc : ''}" placeholder="Enter expense description..." />
           </div>
 
           <div class="field-group">
-            <label class="field-label">Project : <span class="req">*</span></label>
+            <label class="field-label">Project <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="expenseProjectSelect" class="form-ctrl">
-                <option value="">- Select Project -</option>
-                <option value="PROJ-01" ${item.project === 'PROJ-01' || !item.project ? 'selected' : ''}>Project Alpha</option>
-                <option value="PROJ-02" ${item.project === 'PROJ-02' ? 'selected' : ''}>Enterprise Migration</option>
+                <option value="" ${!item.project ? 'selected' : ''}>- Select Project -</option>
+                <option value="Project Alpha" ${item.project === 'Project Alpha' ? 'selected' : ''}>Project Alpha</option>
+                <option value="Enterprise Migration" ${item.project === 'Enterprise Migration' ? 'selected' : ''}>Enterprise Migration</option>
               </select>
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
             <div>
-              <label class="field-label">Amount :</label>
-              <input type="number" id="expenseAmount" class="form-ctrl" value="${item.amt !== undefined ? item.amt : 1500000}" step="1" oninput="calcSubLocalAmount()" />
+              <label class="field-label">Amount</label>
+              <input type="number" id="expenseAmount" class="form-ctrl" value="${item.amt !== undefined ? item.amt : 0}" step="1" oninput="calcSubLocalAmount()" />
             </div>
             <div>
-              <label class="field-label">Claim Currency : <span class="req">*</span></label>
+              <label class="field-label">Claim Currency <span class="req">*</span></label>
               <div class="select-wrapper">
                 <select id="expenseCurrency" class="form-ctrl" onchange="calcSubLocalAmount()">
-                  <option value="IDR" ${item.currency === 'IDR' || !item.currency ? 'selected' : ''}>INDONESIAN RUPIAH</option>
-                  <option value="MYR" ${item.currency === 'MYR' ? 'selected' : ''}>RINGGIT MALAYSIA</option>
+                  <option value="IDR" ${item.currency === 'IDR' ? 'selected' : ''}>INDONESIAN RUPIAH</option>
+                  <option value="MYR" ${item.currency === 'MYR' || !item.currency ? 'selected' : ''}>RINGGIT MALAYSIA</option>
                   <option value="USD" ${item.currency === 'USD' ? 'selected' : ''}>US DOLLAR</option>
                 </select>
               </div>
@@ -947,12 +1031,12 @@
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
             <div>
-              <label class="field-label">Forex Rate :</label>
-              <input type="number" id="expenseForex" class="form-ctrl" value="${item.forexRate !== undefined ? item.forexRate : 0.0003}" step="0.0001" oninput="calcSubLocalAmount()" />
+              <label class="field-label">Forex Rate</label>
+              <input type="number" id="expenseForex" class="form-ctrl" value="${item.forexRate !== undefined ? item.forexRate : 1}" step="0.0001" oninput="calcSubLocalAmount()" />
             </div>
             <div>
-              <label class="field-label">Local Amount (RM):</label>
-              <input type="number" id="expenseLocalAmount" class="form-ctrl" value="${item.localAmount !== undefined ? item.localAmount.toFixed(2) : '450.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              <label class="field-label">Local Amount (RM)</label>
+              <input type="number" id="expenseLocalAmount" class="form-ctrl" value="${item.localAmount !== undefined ? item.localAmount.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
             </div>
           </div>
 
@@ -1030,8 +1114,10 @@
 
       // Update View 1
       const v1Total = document.getElementById('v1TotalClaimDisplay');
+      const generalTotal = document.getElementById('advanceClaimTotalDisplay');
       const v1Sub = document.getElementById('v1ItemsCountSubtitle');
       if (v1Total) v1Total.innerText = `RM ${grandTotal.toFixed(2)}`;
+      if (generalTotal) generalTotal.innerText = grandTotal.toFixed(2);
       if (v1Sub) v1Sub.innerText = `${formData.claimDetails.addedDetails.length} advance item(s) added`;
 
       // Update View 2
@@ -1050,9 +1136,9 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      if (!formData.subAttachments) formData.subAttachments = [];
       formData.subAttachments.push(file.name);
       renderSubChips();
+      input.value = '';
     }
 
     function removeSubAttachment(idx) {
