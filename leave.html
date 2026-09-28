@@ -82,6 +82,23 @@
         transform: translateX(20px);
       }
 
+      #viewApplyLeaveForm input[type="date"] {
+        color-scheme: dark;
+        min-width: 0;
+      }
+
+      [data-theme="light"] #viewApplyLeaveForm input[type="date"] {
+        color-scheme: light;
+      }
+
+      #viewApplyLeaveForm input:focus,
+      #viewApplyLeaveForm select:focus,
+      #viewApplyLeaveForm textarea:focus {
+        border-color: var(--purple-primary) !important;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+        outline: none;
+      }
+
       /* Custom Leave Module Component Styles */
       .view-mode-switcher {
         display: flex;
@@ -444,8 +461,8 @@
 
       .leave-list-item {
         background: var(--bg-card);
-        border-radius: 16px;
-        padding: 16px;
+        border-radius: 18px;
+        padding: 15px;
         box-shadow: var(--shadow-card);
         border: 1px solid var(--border-subtle);
         transition: transform 0.2s;
@@ -476,27 +493,65 @@
       }
 
       .item-name {
-        font-size: 15px;
-        font-weight: 700;
+        font-size: 14px;
+        font-weight: 800;
         color: var(--text-primary);
+        line-height: 1.25;
       }
 
       .item-avail {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-muted);
+        font-size: 11.5px;
+        font-weight: 800;
+        color: var(--secondary);
       }
 
       .btn-apply-sm {
         background: var(--purple-primary);
         color: #ffffff;
-        padding: 6px 14px;
-        border-radius: 20px;
+        min-height: 34px;
+        padding: 7px 13px;
+        border-radius: 12px;
         font-size: 12px;
-        font-weight: 700;
-        border: none;
+        font-weight: 800;
+        border: 1px solid transparent;
         cursor: pointer;
         transition: all 0.2s;
+      }
+
+      /* Keep Leave entitlement metrics aligned with Benefit entitlement cards. */
+      .leave-list-item > div[style*="grid-template-columns: repeat(4"] {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 0 !important;
+        margin-top: 12px !important;
+        padding: 9px 4px !important;
+        background: var(--bg-input) !important;
+        border: 1px solid var(--border-subtle);
+        border-radius: 13px !important;
+      }
+
+      .leave-list-item > div[style*="grid-template-columns: repeat(4"] > div {
+        min-width: 0;
+        padding: 0 4px;
+        text-align: center;
+      }
+
+      .leave-list-item > div[style*="grid-template-columns: repeat(4"] > div + div {
+        border-left: 1px solid var(--border-subtle);
+      }
+
+      .leave-list-item > div[style*="grid-template-columns: repeat(4"] > div > div:first-child {
+        font-size: 8.5px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.25px;
+        line-height: 1.2 !important;
+      }
+
+      .leave-list-item > div[style*="grid-template-columns: repeat(4"] > div > div:nth-child(2) {
+        margin-top: 3px;
+        font-size: 10.5px !important;
+        font-weight: 800 !important;
+        line-height: 1.25;
+        font-variant-numeric: tabular-nums;
       }
 
       .btn-apply-sm:active {
@@ -2890,23 +2945,19 @@
               </div>
 
               <!-- 3. Date Range Selector -->
-              <div>
-                <label
-                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Date</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <div style="position: relative;">
-                    <input type="text" id="mainFromDateInput" value="11/09/2026" onchange="updateFormDaysCount()"
-                      style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; padding-right: 36px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none;" />
-                    <span
-                      style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.6; font-size: 14px;">📅</span>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div style="position: relative; min-width: 0;">
+                    <label
+                      style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Start Date</label>
+                    <input type="date" id="mainFromDateInput" value="2026-09-11" onchange="syncMainLeaveDateRange('from')"
+                      style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none;" />
                   </div>
-                  <div style="position: relative;">
-                    <input type="text" id="mainToDateInput" value="11/09/2026" onchange="updateFormDaysCount()"
-                      style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; padding-right: 36px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none;" />
-                    <span
-                      style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.6; font-size: 14px;">📅</span>
+                  <div style="position: relative; min-width: 0;">
+                    <label
+                      style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">End Date</label>
+                    <input type="date" id="mainToDateInput" value="2026-09-11" min="2026-09-11" onchange="syncMainLeaveDateRange('to')"
+                      style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none;" />
                   </div>
-                </div>
               </div>
 
               <!-- 4. Duration Segment Switcher (Matching Screenshot 1 Pill Bar) -->
@@ -3080,19 +3131,6 @@
                   <span class="slider"
                     style="position: absolute; top:0; left:0; right:0; bottom:0; background-color: #cbd5e1; transition: .25s; border-radius: 24px;"></span>
                 </label>
-              </div>
-
-              <!-- Reliever Dropdown -->
-              <div>
-                <label
-                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Reliever</label>
-                <select id="mainFormRelieverSelect"
-                  style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none; cursor: pointer;">
-                  <option value="" selected>- Select Reliever -</option>
-                  <option value="alex">Alex Tan (Senior Developer)</option>
-                  <option value="sarah">Sarah Wong (Team Lead)</option>
-                  <option value="david">David Lee (Project Manager)</option>
-                </select>
               </div>
 
               <!-- Reliever Dropdown -->
@@ -8198,11 +8236,13 @@
       if (dateStr) {
         const parts = dateStr.split('-');
         if (parts.length === 3) {
-          const formatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
           const fromInp = document.getElementById('mainFromDateInput');
           const toInp = document.getElementById('mainToDateInput');
-          if (fromInp) fromInp.value = formatted;
-          if (toInp) toInp.value = formatted;
+          if (fromInp) fromInp.value = dateStr;
+          if (toInp) {
+            toInp.value = dateStr;
+            toInp.min = dateStr;
+          }
           if (typeof updateFormDaysCount === 'function') updateFormDaysCount();
         }
       }
@@ -11083,13 +11123,45 @@
       updateFormDaysCount();
     }
 
+    function syncMainLeaveDateRange(source) {
+      const fromInput = document.getElementById('mainFromDateInput');
+      const toInput = document.getElementById('mainToDateInput');
+      if (!fromInput || !toInput) return;
+
+      if (fromInput.value) {
+        toInput.min = fromInput.value;
+      }
+      if (fromInput.value && (!toInput.value || toInput.value < fromInput.value)) {
+        toInput.value = fromInput.value;
+      }
+      if (source === 'to' && fromInput.value && toInput.value < fromInput.value) {
+        toInput.value = fromInput.value;
+      }
+
+      updateFormDaysCount();
+    }
+
     function updateFormDaysCount() {
       const daysInput = document.getElementById('mainLeaveDaysInput');
       const totalBanner = document.getElementById('mainTotalDaysBanner');
+      const fromInput = document.getElementById('mainFromDateInput');
+      const toInput = document.getElementById('mainToDateInput');
       let val = 1;
+
       if (currentLeaveDurationMode === 'half1' || currentLeaveDurationMode === 'half2') {
+        if (fromInput && toInput && fromInput.value) {
+          toInput.value = fromInput.value;
+          toInput.min = fromInput.value;
+        }
         val = 0.5;
+      } else if (fromInput?.value && toInput?.value) {
+        const fromDate = new Date(`${fromInput.value}T00:00:00`);
+        const toDate = new Date(`${toInput.value}T00:00:00`);
+        if (!Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime())) {
+          val = Math.max(1, Math.round((toDate - fromDate) / 86400000) + 1);
+        }
       }
+
       if (daysInput) daysInput.value = val;
       if (totalBanner) {
         totalBanner.innerText = `Total: ${val} ${val === 1 ? 'Day' : 'Days'}`;

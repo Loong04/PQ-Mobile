@@ -391,14 +391,24 @@
   
 
     /* Leave-style Toggle Switch for Cross Day */
+    .toggle-option-card,
     .cross-day-switch-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 14px;
       background: var(--bg-input);
       border: 1px solid var(--border-subtle);
       padding: 10px 14px;
       border-radius: 14px;
+      min-height: 46px;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .toggle-option-label {
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
     }
     .custom-toggle {
       position: relative;
@@ -527,7 +537,7 @@
 
           <!-- Claim Period : -->
           <div class="field-group">
-            <label class="field-label">Claim Period : <span class="req">*</span></label>
+            <label class="field-label">Claim Period <span class="req">*</span></label>
             <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
               <div class="select-wrapper">
                 <select id="v1ClaimYear" class="form-ctrl">
@@ -600,18 +610,18 @@
         <div class="form-card">
           <div class="section-header-bar no-top-border">
             <span class="section-title-accent"></span>
-            <span class="section-title-text" id="entryFormTitle">Add OT Entry</span>
+            <span class="section-title-text" id="entryFormTitle">Add OT Details</span>
           </div>
 
           <!-- 1. Date -->
           <div class="field-group">
-            <label class="field-label">Date: <span class="req">*</span></label>
-            <input type="text" id="otDateInput" class="form-ctrl" value="" placeholder="DD/MM/YYYY" />
+            <label class="field-label">Date <span class="req">*</span></label>
+            <input type="date" id="otDateInput" class="form-ctrl" value="" />
           </div>
 
           <!-- 2. OT Type -->
           <div class="field-group">
-            <label class="field-label">OT Type: <span class="req">*</span></label>
+            <label class="field-label">OT Type <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="otCodeSelect" class="form-ctrl">
                 <option value="" selected>- Select OT Code -</option>
@@ -625,12 +635,12 @@
           <!-- 3. Start Time & End Time -->
           <div class="field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
-              <label class="field-label">Start Time: <span class="req">*</span></label>
-              <input type="text" id="startTimeInput" class="form-ctrl" value="" placeholder="HH:MM" oninput="calculateOTHours()" />
+              <label class="field-label">Start Time <span class="req">*</span></label>
+              <input type="time" id="startTimeInput" class="form-ctrl" value="" oninput="calculateOTHours()" />
             </div>
             <div>
-              <label class="field-label">End Time: <span class="req">*</span></label>
-              <input type="text" id="endTimeInput" class="form-ctrl" value="" placeholder="HH:MM" oninput="calculateOTHours()" />
+              <label class="field-label">End Time <span class="req">*</span></label>
+              <input type="time" id="endTimeInput" class="form-ctrl" value="" oninput="calculateOTHours()" />
             </div>
           </div>
 
@@ -642,8 +652,8 @@
 
           <!-- Cross Day Toggle -->
           <div class="field-group">
-            <div class="cross-day-switch-row">
-              <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Cross Day</span>
+            <div class="toggle-option-card cross-day-switch-row">
+              <span class="toggle-option-label">Cross Day</span>
               <label class="custom-toggle">
                 <input type="checkbox" id="crossDayToggle" onchange="toggleCrossDay(this.checked)" />
                 <span class="slider"></span>
@@ -654,7 +664,7 @@
           <!-- 5. Break Hours & Break Minutes -->
           <div class="field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="select-wrapper">
-              <label class="field-label">Break Hours: <span class="req">*</span></label>
+              <label class="field-label">Break Hours <span class="req">*</span></label>
               <select id="breakHoursSelect" class="form-ctrl" onchange="calculateOTHours()">
                 <option value="" selected>- Hour -</option>
                 <option value="0">0 Hour</option>
@@ -663,7 +673,7 @@
               </select>
             </div>
             <div class="select-wrapper">
-              <label class="field-label">Break Minutes: <span class="req">*</span></label>
+              <label class="field-label">Break Minutes <span class="req">*</span></label>
               <select id="breakMinutesSelect" class="form-ctrl" onchange="calculateOTHours()">
                 <option value="" selected>- Minute -</option>
                 <option value="0">0 Minute</option>
@@ -676,7 +686,7 @@
 
           <!-- 6. Project -->
           <div class="field-group">
-            <label class="field-label">Project:</label>
+            <label class="field-label">Project</label>
             <div class="select-wrapper">
               <select id="projectSelect" class="form-ctrl">
                 <option value="" selected>- Select Project -</option>
@@ -689,7 +699,7 @@
 
           <!-- 7. Reason -->
           <div class="field-group">
-            <label class="field-label">Reason: <span class="req">*</span></label>
+            <label class="field-label">Reason <span class="req">*</span></label>
             <div class="select-wrapper">
               <select id="otReasonSelect" class="form-ctrl">
                 <option value="" selected>- Select OT Reason -</option>
@@ -701,14 +711,16 @@
             </div>
           </div>
 
-          <!-- 8. Meal Allowance Amount & Select -->
-          <div class="field-group" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px;">
-            <div>
-              <label class="field-label">Meal Allowance Amount</label>
-              <input type="number" id="mealAmountInput" class="form-ctrl" value="0.00" step="0.01" />
-            </div>
+          <!-- 8. Meal Allowance Amount -->
+          <div class="field-group">
+            <label class="field-label">Meal Allowance Amount</label>
+            <input type="number" id="mealAmountInput" class="form-ctrl" value="0.00" step="0.01" />
+          </div>
+
+          <!-- 9. Meal Allowance -->
+          <div class="field-group">
             <div class="select-wrapper">
-              <label class="field-label">Meal Allowance:</label>
+              <label class="field-label">Meal Allowance</label>
               <select id="mealAllowanceSelect" class="form-ctrl" onchange="handleMealSelectChange(this.value)">
                 <option value="" selected>- Select -</option>
                 <option value="Standard OT Meal (RM 20.00)" data-amount="20">Standard OT Meal (RM 20.00)</option>
@@ -720,7 +732,7 @@
           <!-- 9. Transport & Distance -->
           <div class="field-group" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px;">
             <div class="select-wrapper">
-              <label class="field-label">Transport:</label>
+              <label class="field-label">Transport</label>
               <select id="transportSelect" class="form-ctrl">
                 <option value="" selected>- Select -</option>
                 <option value="Own Vehicle">Own Vehicle</option>
@@ -729,14 +741,14 @@
               </select>
             </div>
             <div>
-              <label class="field-label">Distance (km):</label>
+              <label class="field-label">Distance (km)</label>
               <input type="number" id="distanceInput" class="form-ctrl" value="0" />
             </div>
           </div>
 
           <!-- 10. Way -->
           <div class="field-group">
-            <label class="field-label">Way:</label>
+            <label class="field-label">Way</label>
             <div class="select-wrapper">
               <select id="waySelect" class="form-ctrl">
                 <option value="" selected>- Select Way -</option>
@@ -748,13 +760,13 @@
 
           <!-- 11. Remarks -->
           <div class="field-group">
-            <label class="field-label">Mileage Amount Remarks:</label>
+            <label class="field-label">Mileage Amount Remarks</label>
             <textarea id="otRemarksInput" rows="3" class="form-ctrl" placeholder="Enter remarks or mileage details..." style="font-family: inherit; resize: vertical;"></textarea>
           </div>
 
           <!-- 12. Upload Attachments -->
           <div style="margin-top: 14px;">
-            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments :</label>
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
             <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
               <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -936,10 +948,23 @@
       `).join('');
     }
 
+    function toDateInputValue(value) {
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    function toDisplayDate(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+    }
+
     function openEntryForm(action, index = -1) {
       if (action === 'add') {
         editingItemIndex = -1;
-        document.getElementById('entryFormTitle').innerText = 'Add OT Entry';
+        document.getElementById('entryFormTitle').innerText = 'Add OT Details';
         
         // Reset fields
         document.getElementById('otDateInput').value = '';
@@ -964,10 +989,10 @@
         renderSubChips();
       } else {
         editingItemIndex = index;
-        document.getElementById('entryFormTitle').innerText = 'Edit OT Entry';
+        document.getElementById('entryFormTitle').innerText = 'Edit OT Details';
         
         const item = formData.otEntries[index];
-        document.getElementById('otDateInput').value = item.date;
+        document.getElementById('otDateInput').value = toDateInputValue(item.date);
         document.getElementById('otCodeSelect').value = item.type;
         document.getElementById('startTimeInput').value = item.start;
         document.getElementById('endTimeInput').value = item.end;
@@ -989,12 +1014,12 @@
         renderSubChips();
       }
       
-      switchView('view-4-entry', 'OT Details');
+      switchView('view-4-entry', `${action === 'edit' ? 'Edit' : 'Add'} OT Details`);
     }
 
     function saveSubItem() {
       const entry = {
-        date: document.getElementById('otDateInput').value || '22/09/2026',
+        date: toDisplayDate(document.getElementById('otDateInput').value) || '22/09/2026',
         type: document.getElementById('otCodeSelect').value || 'OT 1.5x (Normal Working Day)',
         start: document.getElementById('startTimeInput').value || '18:00',
         end: document.getElementById('endTimeInput').value || '20:00',

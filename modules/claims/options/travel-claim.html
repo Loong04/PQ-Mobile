@@ -525,8 +525,8 @@
           <div class="field-group">
             <label class="field-label">Claim Date</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <input type="text" id="v1ClaimStartDate" class="form-ctrl" value="23/09/2026" />
-              <input type="text" id="v1ClaimEndDate" class="form-ctrl" value="23/09/2026" />
+              <input type="date" id="v1ClaimStartDate" class="form-ctrl" value="2026-09-23" />
+              <input type="date" id="v1ClaimEndDate" class="form-ctrl" value="2026-09-23" />
             </div>
           </div>
 
@@ -805,6 +805,19 @@
       uploadTarget: 'main'
     };
 
+    function toDateInputValue(value) {
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    function toDisplayDate(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+    }
+
     function updateStepper(stepNum) {
       const steps = document.querySelectorAll('.stepper-item');
       const lineFill = document.getElementById('stepperLineFill');
@@ -978,7 +991,7 @@
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
                   <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                   <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
@@ -1026,7 +1039,7 @@
                   </div>
                   <div>
                     <span style="color: var(--text-muted); font-weight: 600;">Claim Amount:</span>
-                    <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">RM ${(item.amount || 0).toFixed(2)}</div>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.amount || 0).toFixed(2)}</div>
                   </div>
                   <div style="grid-column: span 2;">
                     <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
@@ -1064,7 +1077,7 @@
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="font-size: 15px; font-weight: 800; color: #3b82f6;">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
                   <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                   <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
@@ -1116,7 +1129,7 @@
                   </div>
                   <div>
                     <span style="color: var(--text-muted); font-weight: 600;">Claim Amount:</span>
-                    <div style="font-weight: 800; color: #3b82f6; margin-top: 2px;">RM ${(item.amount || 0).toFixed(2)}</div>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.amount || 0).toFixed(2)}</div>
                   </div>
                   <div style="grid-column: span 2;">
                     <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
@@ -1154,7 +1167,7 @@
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="font-size: 15px; font-weight: 800; color: #10b981;">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
                   <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                   <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
@@ -1169,11 +1182,11 @@
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'General Expense'}</div>
                   </div>
                   <div>
-                    <span style="color: var(--text-muted); font-weight: 600;">Expense From:</span>
+                    <span style="color: var(--text-muted); font-weight: 600;">Start Date &amp; Time:</span>
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dateFrom || '24/09/2026'} ${item.timeFrom || '10:56'}</div>
                   </div>
                   <div>
-                    <span style="color: var(--text-muted); font-weight: 600;">Expense To:</span>
+                    <span style="color: var(--text-muted); font-weight: 600;">End Date &amp; Time:</span>
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dateTo || '24/09/2026'} ${item.timeTo || '12:56'}</div>
                   </div>
                   <div>
@@ -1202,7 +1215,7 @@
                   </div>
                   <div>
                     <span style="color: var(--text-muted); font-weight: 600;">Claim Amount (RM):</span>
-                    <div style="font-weight: 800; color: #10b981; margin-top: 2px;">RM ${(item.localAmount || item.amount || 0).toFixed(2)}</div>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.localAmount || item.amount || 0).toFixed(2)}</div>
                   </div>
                   <div style="grid-column: span 2;">
                     <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
@@ -1235,7 +1248,7 @@
       const detailRows = rows.map(([label, value, isAmount = false]) => `
         <div class="claim-data-row">
           <span class="claim-data-label">${label}</span>
-          <span class="claim-data-value${isAmount ? ' amount' : ''}">${value ?? '-'}</span>
+          <span class="claim-data-value${isAmount && !String(label).startsWith('Local Amount') ? ' amount' : ''}">${value ?? '-'}</span>
         </div>
       `).join('');
       const filenames = attachments && attachments.length ? attachments : ['xxxx.jpg'];
@@ -1306,8 +1319,8 @@
           title = item.type || item.expense || 'Expense';
           rows = [
             ['Expense', item.type || item.expense],
-            ['Expense From', `${item.dateFrom || '-'} ${item.timeFrom || ''}`.trim()],
-            ['Expense To', `${item.dateTo || '-'} ${item.timeTo || ''}`.trim()],
+            ['Start Date & Time', `${item.dateFrom || '-'} ${item.timeFrom || ''}`.trim()],
+            ['End Date & Time', `${item.dateTo || '-'} ${item.timeTo || ''}`.trim()],
             ['Project', item.project], ['Receipt #', item.receiptNo || '-'], ['Description', item.desc || '-'],
             ['Company Name', item.companyName || item.company || '-'], ['Business RN', item.businessRN || '-'],
             ['Amount', `RM ${(item.amount || 0).toFixed(2)}`, true],
@@ -1369,7 +1382,7 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">${item ? 'EDIT MILEAGE DETAILS' : 'MILEAGE DETAILS'}</span>
+              <span class="section-title-text">${item ? 'EDIT MILEAGE DETAILS' : 'ADD MILEAGE DETAILS'}</span>
             </div>
 
             <div class="field-group">
@@ -1397,16 +1410,16 @@
             <div class="field-group">
               <label class="field-label">Departure</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="mDepDate" class="form-ctrl" value="${item ? (item.depDate || '23/09/2026') : '23/09/2026'}" />
-                <input type="text" id="mDepTime" class="form-ctrl" value="${item ? (item.depTime || '13:07') : '13:07'}" />
+                <input type="date" id="mDepDate" class="form-ctrl" value="${toDateInputValue(item ? item.depDate : '23/09/2026')}" />
+                <input type="time" id="mDepTime" class="form-ctrl" value="${item ? (item.depTime || '13:07') : '13:07'}" />
               </div>
             </div>
 
             <div class="field-group">
               <label class="field-label">Arrival</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="mArrDate" class="form-ctrl" value="${item ? (item.arrDate || '23/09/2026') : '23/09/2026'}" />
-                <input type="text" id="mArrTime" class="form-ctrl" value="${item ? (item.arrTime || '15:07') : '15:07'}" />
+                <input type="date" id="mArrDate" class="form-ctrl" value="${toDateInputValue(item ? item.arrDate : '23/09/2026')}" />
+                <input type="time" id="mArrTime" class="form-ctrl" value="${item ? (item.arrTime || '15:07') : '15:07'}" />
               </div>
             </div>
 
@@ -1492,7 +1505,7 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">${item ? 'EDIT TRAVEL DETAILS' : 'TRAVEL DETAILS'}</span>
+              <span class="section-title-text">${item ? 'EDIT TRAVEL DETAILS' : 'ADD TRAVEL DETAILS'}</span>
             </div>
 
             <div class="field-group">
@@ -1518,16 +1531,16 @@
             <div class="field-group">
               <label class="field-label">Departure</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="tDepDate" class="form-ctrl" value="${item ? (item.depDate || '23/09/2026') : '23/09/2026'}" />
-                <input type="text" id="tDepTime" class="form-ctrl" value="${item ? (item.depTime || '13:07') : '13:07'}" />
+                <input type="date" id="tDepDate" class="form-ctrl" value="${toDateInputValue(item ? item.depDate : '23/09/2026')}" />
+                <input type="time" id="tDepTime" class="form-ctrl" value="${item ? (item.depTime || '13:07') : '13:07'}" />
               </div>
             </div>
 
             <div class="field-group">
               <label class="field-label">Arrival</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="tArrDate" class="form-ctrl" value="${item ? (item.arrDate || '23/09/2026') : '23/09/2026'}" />
-                <input type="text" id="tArrTime" class="form-ctrl" value="${item ? (item.arrTime || '15:07') : '15:07'}" />
+                <input type="date" id="tArrDate" class="form-ctrl" value="${toDateInputValue(item ? item.arrDate : '23/09/2026')}" />
+                <input type="time" id="tArrTime" class="form-ctrl" value="${item ? (item.arrTime || '15:07') : '15:07'}" />
               </div>
             </div>
 
@@ -1620,7 +1633,7 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">${item ? 'EDIT EXPENSE DETAILS' : 'EXPENSE DETAILS'}</span>
+              <span class="section-title-text">${item ? 'EDIT EXPENSE DETAILS' : 'ADD EXPENSE DETAILS'}</span>
             </div>
 
             <div class="field-group">
@@ -1638,18 +1651,18 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Expense From</label>
+              <label class="field-label">Start Date &amp; Time</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="eDateFrom" class="form-ctrl" value="${item ? (item.dateFrom || '24/09/2026') : '24/09/2026'}" />
-                <input type="text" id="eTimeFrom" class="form-ctrl" value="${item ? (item.timeFrom || '10:56') : '10:56'}" />
+                <input type="date" id="eDateFrom" class="form-ctrl" value="${toDateInputValue(item ? item.dateFrom : '24/09/2026')}" />
+                <input type="time" id="eTimeFrom" class="form-ctrl" value="${item ? (item.timeFrom || '10:56') : '10:56'}" />
               </div>
             </div>
 
             <div class="field-group">
-              <label class="field-label">Expense To</label>
+              <label class="field-label">End Date &amp; Time</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="eDateTo" class="form-ctrl" value="${item ? (item.dateTo || '24/09/2026') : '24/09/2026'}" />
-                <input type="text" id="eTimeTo" class="form-ctrl" value="${item ? (item.timeTo || '12:56') : '12:56'}" />
+                <input type="date" id="eDateTo" class="form-ctrl" value="${toDateInputValue(item ? item.dateTo : '24/09/2026')}" />
+                <input type="time" id="eTimeTo" class="form-ctrl" value="${item ? (item.timeTo || '12:56') : '12:56'}" />
               </div>
             </div>
 
@@ -1701,7 +1714,7 @@
 
             <div class="field-group">
               <label class="field-label">Local Amount</label>
-              <input type="text" id="eLocalAmount" class="form-ctrl" value="${amtVal}" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              <input type="text" id="eLocalAmount" class="form-ctrl" value="${amtVal}" readonly style="font-weight: 800;" />
             </div>
 
             <div style="margin-top: 14px;">
@@ -1728,7 +1741,7 @@
 
       formData.subAttachments = (item && item.attachments) ? [...item.attachments] : [];
       renderSubChips();
-      switchView('view-4-entry', `Configure ${getCategoryTitle(catKey)}`);
+      switchView('view-4-entry', `${mode === 'edit' ? 'Edit' : 'Add'} ${getCategoryTitle(catKey)}`);
     }
 
     function calcSubExpenseLocal() {
@@ -1761,9 +1774,9 @@
       if (catKey === 'mileage') {
         const orig = document.getElementById('mOriginSelect')?.value || 'Kuala Lumpur HQ';
         const dest = document.getElementById('mDestSelect')?.value || 'Penang Branch';
-        const depDate = document.getElementById('mDepDate')?.value || '23/09/2026';
+        const depDate = toDisplayDate(document.getElementById('mDepDate')?.value) || '23/09/2026';
         const depTime = document.getElementById('mDepTime')?.value || '13:07';
-        const arrDate = document.getElementById('mArrDate')?.value || '23/09/2026';
+        const arrDate = toDisplayDate(document.getElementById('mArrDate')?.value) || '23/09/2026';
         const arrTime = document.getElementById('mArrTime')?.value || '15:07';
         const mIn = parseFloat(document.getElementById('mMeterIn')?.value || 0);
         const mOut = parseFloat(document.getElementById('mMeterOut')?.value || 0);
@@ -1782,9 +1795,9 @@
       } else if (catKey === 'travel') {
         const orig = document.getElementById('tOriginSelect')?.value || 'Kuala Lumpur HQ';
         const dest = document.getElementById('tDestSelect')?.value || 'Penang Branch';
-        const depDate = document.getElementById('tDepDate')?.value || '23/09/2026';
+        const depDate = toDisplayDate(document.getElementById('tDepDate')?.value) || '23/09/2026';
         const depTime = document.getElementById('tDepTime')?.value || '13:07';
-        const arrDate = document.getElementById('tArrDate')?.value || '23/09/2026';
+        const arrDate = toDisplayDate(document.getElementById('tArrDate')?.value) || '23/09/2026';
         const arrTime = document.getElementById('tArrTime')?.value || '15:07';
         const transport = document.getElementById('tTransportSelect')?.value || 'Flight';
         const way = document.getElementById('tWaySelect')?.value || 'Return';
@@ -1802,9 +1815,9 @@
 
       } else if (catKey === 'expense') {
         const type = document.getElementById('eTypeSelect')?.value || '';
-        const dateFrom = document.getElementById('eDateFrom')?.value || '24/09/2026';
+        const dateFrom = toDisplayDate(document.getElementById('eDateFrom')?.value) || '24/09/2026';
         const timeFrom = document.getElementById('eTimeFrom')?.value || '10:56';
-        const dateTo = document.getElementById('eDateTo')?.value || '24/09/2026';
+        const dateTo = toDisplayDate(document.getElementById('eDateTo')?.value) || '24/09/2026';
         const timeTo = document.getElementById('eTimeTo')?.value || '12:56';
         const project = document.getElementById('eProjectSelect')?.value || '';
         const receiptNo = document.getElementById('eReceiptNo')?.value || '';

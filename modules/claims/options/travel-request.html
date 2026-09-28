@@ -238,6 +238,26 @@
       transform: translateX(20px);
     }
 
+    .toggle-option-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 46px;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .toggle-option-label {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
     /* Action Buttons Matching PeopleHCM Purple Design System */
     .btn-draft-bright {
       padding: 11px 24px;
@@ -519,8 +539,8 @@
           <div class="field-group">
             <label class="field-label">Travel Date</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <input type="text" id="v1StartDate" class="form-ctrl" value="24/09/2026" />
-              <input type="text" id="v1EndDate" class="form-ctrl" value="24/09/2026" />
+              <input type="date" id="v1StartDate" class="form-ctrl" value="2026-09-24" />
+              <input type="date" id="v1EndDate" class="form-ctrl" value="2026-09-24" />
             </div>
           </div>
 
@@ -626,14 +646,14 @@
           </div>
 
           <!-- Accomodation? : -->
-          <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
-            <label class="field-label" style="margin-bottom: 0;">Accommodation?</label>
+          <div class="field-group toggle-option-card">
+            <label class="toggle-option-label">Accommodation</label>
             <div class="radio-circle-opt leave-toggle" id="v1Accomodation" onclick="toggleRadioCircle('v1Accomodation')" role="switch" aria-checked="false"></div>
           </div>
 
           <!-- Flight? : -->
-          <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
-            <label class="field-label" style="margin-bottom: 0;">Flight?</label>
+          <div class="field-group toggle-option-card">
+            <label class="toggle-option-label">Flight</label>
             <div class="radio-circle-opt leave-toggle" id="v1Flight" onclick="toggleRadioCircle('v1Flight')" role="switch" aria-checked="false"></div>
           </div>
 
@@ -874,6 +894,19 @@
       subAttachments: [],
       editingIndex: -1
     };
+
+    function toDateInputValue(value) {
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    function toDisplayDate(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+    }
 
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
@@ -1523,7 +1556,7 @@
       }
       
       if (catKey === 'task') {
-        const titleText = isEdit ? 'EDIT TASK DETAILS' : 'TASK DETAILS';
+        const titleText = isEdit ? 'EDIT TASK DETAILS' : 'ADD TASK DETAILS';
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
@@ -1548,22 +1581,22 @@
 
             <div class="field-group">
               <label class="field-label">Start Date</label>
-              <input type="text" id="entryTaskStartDate" class="form-ctrl" value="${item.startDate || ''}" />
+              <input type="date" id="entryTaskStartDate" class="form-ctrl" value="${toDateInputValue(item.startDate)}" />
             </div>
 
             <div class="field-group">
               <label class="field-label">End Date</label>
-              <input type="text" id="entryTaskEndDate" class="form-ctrl" value="${item.endDate || ''}" />
+              <input type="date" id="entryTaskEndDate" class="form-ctrl" value="${toDateInputValue(item.endDate)}" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Est. Start Time</label>
-              <input type="text" id="entryTaskStartTime" class="form-ctrl" value="${item.startTime || ''}" />
+              <input type="time" id="entryTaskStartTime" class="form-ctrl" value="${item.startTime || ''}" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Est. End Time</label>
-              <input type="text" id="entryTaskEndTime" class="form-ctrl" value="${item.endTime || ''}" />
+              <input type="time" id="entryTaskEndTime" class="form-ctrl" value="${item.endTime || ''}" />
             </div>
 
             <div style="margin-top: 18px;">
@@ -1591,7 +1624,7 @@
           </div>
         `;
       } else if (catKey === 'traveling') {
-        const titleText = isEdit ? 'EDIT TRAVEL DETAILS' : 'TRAVEL DETAILS';
+        const titleText = isEdit ? 'EDIT TRAVEL DETAILS' : 'ADD TRAVEL DETAILS';
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
@@ -1624,16 +1657,16 @@
             <div class="field-group">
               <label class="field-label">Departure</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="entryTrvDepDate" class="form-ctrl" value="${item.depDate || ''}" />
-                <input type="text" id="entryTrvDepTime" class="form-ctrl" value="${item.depTime || ''}" />
+                <input type="date" id="entryTrvDepDate" class="form-ctrl" value="${toDateInputValue(item.depDate)}" />
+                <input type="time" id="entryTrvDepTime" class="form-ctrl" value="${item.depTime || ''}" />
               </div>
             </div>
 
             <div class="field-group">
               <label class="field-label">Arrival</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
-                <input type="text" id="entryTrvArrDate" class="form-ctrl" value="${item.arrDate || ''}" />
-                <input type="text" id="entryTrvArrTime" class="form-ctrl" value="${item.arrTime || ''}" />
+                <input type="date" id="entryTrvArrDate" class="form-ctrl" value="${toDateInputValue(item.arrDate)}" />
+                <input type="time" id="entryTrvArrTime" class="form-ctrl" value="${item.arrTime || ''}" />
               </div>
             </div>
 
@@ -1678,13 +1711,13 @@
               <input type="text" id="entryTrvTransportNo" class="form-ctrl" value="${item.transportNo || ''}" placeholder="" />
             </div>
 
-            <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
-              <label class="field-label" style="margin-bottom: 0;">Need Accommodation?</label>
+            <div class="field-group toggle-option-card">
+              <label class="toggle-option-label">Need Accommodation</label>
               <div class="radio-circle-opt leave-toggle ${item.hasAcc ? 'checked' : ''}" id="entryRadioAcc" onclick="toggleInlineSwitch(this)" role="switch" aria-checked="${item.hasAcc ? 'true' : 'false'}"></div>
             </div>
 
-            <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
-              <label class="field-label" style="margin-bottom: 0;">Need Allowance?</label>
+            <div class="field-group toggle-option-card">
+              <label class="toggle-option-label">Need Allowance</label>
               <div class="radio-circle-opt leave-toggle ${item.hasAllow ? 'checked' : ''}" id="entryRadioAllow" onclick="toggleInlineSwitch(this)" role="switch" aria-checked="${item.hasAllow ? 'true' : 'false'}"></div>
             </div>
 
@@ -1750,7 +1783,7 @@
           </div>
         `;
       } else if (catKey === 'accomodation') {
-        const titleText = isEdit ? 'EDIT ACCOMODATION DETAILS' : 'ACCOMODATION DETAILS';
+        const titleText = isEdit ? 'EDIT ACCOMODATION DETAILS' : 'ADD ACCOMODATION DETAILS';
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
@@ -1773,12 +1806,12 @@
 
             <div class="field-group">
               <label class="field-label">Check In Date</label>
-              <input type="text" id="entryAccCheckInDate" class="form-ctrl" value="${item.checkInDate || ''}" />
+              <input type="date" id="entryAccCheckInDate" class="form-ctrl" value="${toDateInputValue(item.checkInDate)}" />
             </div>
 
             <div class="field-group">
               <label class="field-label">Check Out Date</label>
-              <input type="text" id="entryAccCheckOutDate" class="form-ctrl" value="${item.checkOutDate || ''}" />
+              <input type="date" id="entryAccCheckOutDate" class="form-ctrl" value="${toDateInputValue(item.checkOutDate)}" />
             </div>
 
             <div class="field-group">
@@ -1822,7 +1855,7 @@
         `;
       }
 
-      switchView('view-4-entry', `${isEdit ? 'Edit' : 'Configure'} ${getCategoryTitle(catKey)}`);
+      switchView('view-4-entry', `${isEdit ? 'Edit' : 'Add'} ${getCategoryTitle(catKey)}`);
       
       // Render existing chips if any
       if (formData.subAttachments.length > 0) {
@@ -1840,8 +1873,8 @@
         const taskName = document.getElementById('entryTaskName') ? document.getElementById('entryTaskName').value : '';
         const purpose = document.getElementById('entryTaskPurpose') ? document.getElementById('entryTaskPurpose').value : '';
         const location = document.getElementById('entryTaskLocation') ? document.getElementById('entryTaskLocation').value : '';
-        const startDate = document.getElementById('entryTaskStartDate') ? document.getElementById('entryTaskStartDate').value : '';
-        const endDate = document.getElementById('entryTaskEndDate') ? document.getElementById('entryTaskEndDate').value : '';
+        const startDate = document.getElementById('entryTaskStartDate') ? toDisplayDate(document.getElementById('entryTaskStartDate').value) : '';
+        const endDate = document.getElementById('entryTaskEndDate') ? toDisplayDate(document.getElementById('entryTaskEndDate').value) : '';
         const startTime = document.getElementById('entryTaskStartTime') ? document.getElementById('entryTaskStartTime').value : '';
         const endTime = document.getElementById('entryTaskEndTime') ? document.getElementById('entryTaskEndTime').value : '';
 
@@ -1865,9 +1898,9 @@
         const transport = document.getElementById('entryTrvTransport') ? document.getElementById('entryTrvTransport').value : '';
         const origin = document.getElementById('entryTrvOrigin') ? document.getElementById('entryTrvOrigin').value : '';
         const dest = document.getElementById('entryTrvDest') ? document.getElementById('entryTrvDest').value : '';
-        const depDate = document.getElementById('entryTrvDepDate') ? document.getElementById('entryTrvDepDate').value : '';
+        const depDate = document.getElementById('entryTrvDepDate') ? toDisplayDate(document.getElementById('entryTrvDepDate').value) : '';
         const depTime = document.getElementById('entryTrvDepTime') ? document.getElementById('entryTrvDepTime').value : '';
-        const arrDate = document.getElementById('entryTrvArrDate') ? document.getElementById('entryTrvArrDate').value : '';
+        const arrDate = document.getElementById('entryTrvArrDate') ? toDisplayDate(document.getElementById('entryTrvArrDate').value) : '';
         const arrTime = document.getElementById('entryTrvArrTime') ? document.getElementById('entryTrvArrTime').value : '';
         const noOfDays = document.getElementById('entryTrvDays') ? document.getElementById('entryTrvDays').value : '';
         const project = document.getElementById('entryTrvProject') ? document.getElementById('entryTrvProject').value : '';
@@ -1914,8 +1947,8 @@
         const hotelSelect = document.getElementById('entryAccHotelSelect') ? document.getElementById('entryAccHotelSelect').value : '';
         const hotelCustom = document.getElementById('entryAccHotelCustom') ? document.getElementById('entryAccHotelCustom').value : '';
         const hotelName = hotelSelect || hotelCustom || '';
-        const checkIn = document.getElementById('entryAccCheckInDate') ? document.getElementById('entryAccCheckInDate').value : '';
-        const checkOut = document.getElementById('entryAccCheckOutDate') ? document.getElementById('entryAccCheckOutDate').value : '';
+        const checkIn = document.getElementById('entryAccCheckInDate') ? toDisplayDate(document.getElementById('entryAccCheckInDate').value) : '';
+        const checkOut = document.getElementById('entryAccCheckOutDate') ? toDisplayDate(document.getElementById('entryAccCheckOutDate').value) : '';
         const remarks = document.getElementById('entryAccRemarks') ? document.getElementById('entryAccRemarks').value : '';
         const rate = document.getElementById('entryAccRate') ? document.getElementById('entryAccRate').value : '';
         const amount = document.getElementById('entryAccAmount') ? document.getElementById('entryAccAmount').value : '';

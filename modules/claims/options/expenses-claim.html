@@ -439,15 +439,15 @@
             </div>
           </div>
 
-          <!-- Date From & Date To -->
+          <!-- Start Date & End Date -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
             <div>
-              <label class="field-label">Date From</label>
-              <input type="text" id="claimDateFrom" class="form-ctrl" value="25/09/2026" />
+              <label class="field-label">Start Date</label>
+              <input type="date" id="claimDateFrom" class="form-ctrl" value="2026-09-25" />
             </div>
             <div>
-              <label class="field-label">Date To</label>
-              <input type="text" id="claimDateTo" class="form-ctrl" value="25/09/2026" />
+              <label class="field-label">End Date</label>
+              <input type="date" id="claimDateTo" class="form-ctrl" value="2026-09-25" />
             </div>
           </div>
 
@@ -651,6 +651,19 @@
       uploadTarget: 'sub'
     };
 
+    function toDateInputValue(value) {
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    function toDisplayDate(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+    }
+
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
       const toastText = document.getElementById('toastText');
@@ -778,7 +791,7 @@
               '</div>' +
             '</div>' +
             '<div style="display: flex; align-items: center; gap: 8px;">' +
-              '<div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ' + localAmtFormatted + '</div>' +
+              '<div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ' + localAmtFormatted + '</div>' +
               '<i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard(\'' + cardId + '\')"></i>' +
               '<i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm(\'edit\', ' + idx + ')" title="Edit Item"></i>' +
               '<i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(' + idx + ')" title="Delete Item"></i>' +
@@ -817,7 +830,7 @@
               '</div>' +
               '<div>' +
                 '<span style="color: var(--text-muted); font-weight: 600;">Local Amount:</span>' +
-                '<div style="font-weight: 800; color: #10b981; margin-top: 2px;">RM ' + localAmtFormatted + '</div>' +
+                '<div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ' + localAmtFormatted + '</div>' +
               '</div>' +
             '</div>' +
             attachHtml +
@@ -877,7 +890,7 @@
               '<div style="font-size:14px; font-weight:800; color:var(--text-primary); overflow-wrap:anywhere;">' + escapeHtml(item.expenseCode || 'Expense Detail') + '</div>' +
             '</div>' +
             '<div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">' +
-              '<div style="font-size:15px; font-weight:800; color:var(--purple-primary);">RM ' + localAmount + '</div>' +
+              '<div style="font-size:15px; font-weight:800; color:var(--text-primary);">RM ' + localAmount + '</div>' +
               '<i class="fa-solid fa-chevron-down toggle-icon" style="color:var(--text-muted); font-size:13px; padding:4px; transition:transform .25s ease;"></i>' +
               '<i class="fa-solid fa-pen-to-square" style="color:var(--purple-primary); font-size:14px; padding:4px; cursor:pointer;" onclick="event.stopPropagation(); openEntryForm(\'edit\', ' + idx + ')" title="Edit Item"></i>' +
               '<i class="fa-solid fa-trash-can" style="color:#ef4444; font-size:14px; padding:4px; cursor:pointer;" onclick="event.stopPropagation(); deleteSubItem(' + idx + ')" title="Delete Item"></i>' +
@@ -891,7 +904,7 @@
             detailRow('Amount', Number(item.amt || 0).toFixed(2)) +
             detailRow('Item Currency', escapeHtml(item.currency || '—')) +
             detailRow('Forex Rate', Number(item.forexRate || 0).toFixed(3)) +
-            detailRow('Local Amount', 'RM ' + localAmount, '#10b981') +
+            detailRow('Local Amount', 'RM ' + localAmount) +
             detailRow('Attachment', attachmentValue) +
           '</div>' +
         '</div>';
@@ -952,7 +965,7 @@
 
         '<div class="field-group">' +
           '<label class="field-label">Transaction Date</label>' +
-          '<input type="text" id="itemTxDate" class="form-ctrl" value="' + (item.txDate || '25/09/2026') + '" />' +
+          '<input type="date" id="itemTxDate" class="form-ctrl" value="' + toDateInputValue(item.txDate || '25/09/2026') + '" />' +
         '</div>' +
 
         '<div class="field-group">' +
@@ -1002,7 +1015,7 @@
           '</div>' +
           '<div>' +
             '<label class="field-label">Local Amount</label>' +
-            '<input type="text" id="itemLocalAmount" class="form-ctrl" value="' + (item.localAmount !== undefined ? item.localAmount.toFixed(2) : '0.00') + '" readonly style="color: var(--purple-primary); font-weight: 800;" />' +
+            '<input type="text" id="itemLocalAmount" class="form-ctrl" value="' + (item.localAmount !== undefined ? item.localAmount.toFixed(2) : '0.00') + '" readonly style="font-weight: 800;" />' +
           '</div>' +
         '</div>' +
 
@@ -1027,7 +1040,7 @@
 
       '</div>';
 
-      switchView('view-4-entry', titleText);
+      switchView('view-4-entry', isEdit ? 'Edit Details' : 'Add Details');
       renderSubChips();
     }
 
@@ -1040,7 +1053,7 @@
     }
 
     function saveSubItem() {
-      const txDate = document.getElementById('itemTxDate')?.value || '25/09/2026';
+      const txDate = toDisplayDate(document.getElementById('itemTxDate')?.value) || '25/09/2026';
       const receiptNo = document.getElementById('itemReceiptNo')?.value.trim() || '';
       const expenseCode = document.getElementById('itemExpenseCode')?.value || 'GENERAL EXPENSE';
       const desc = document.getElementById('itemDescription')?.value.trim() || '';

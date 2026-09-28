@@ -481,8 +481,8 @@
           <div class="field-group">
             <label class="field-label">Claim Date <span class="req">*</span></label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <input type="text" id="claimStartDate" class="form-ctrl" value="23/09/2026" />
-              <input type="text" id="claimEndDate" class="form-ctrl" value="23/09/2026" />
+              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-23" />
+              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-23" />
             </div>
           </div>
 
@@ -813,7 +813,7 @@
                 </div>
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.localAmount || 0).toFixed(2)}</div>
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.localAmount || 0).toFixed(2)}</div>
                 <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                 <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
                 <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
@@ -849,8 +849,8 @@
                   <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.forexRate || 1}</div>
                 </div>
                 <div>
-                  <span style="color: var(--text-muted); font-weight: 600;">Local Amount (RM):</span>
-                  <div style="font-weight: 800; color: #10b981; margin-top: 2px;">RM ${(item.localAmount || 0).toFixed(2)}</div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Local Amount (RM)</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.localAmount || 0).toFixed(2)}</div>
                 </div>
               </div>
               ${item.attachments && item.attachments.length > 0 ? `
@@ -889,7 +889,7 @@
         ${rows.map(([label, value, isAmount = false]) => `
           <div class="claim-data-row">
             <span class="claim-data-label">${label}</span>
-            <span class="claim-data-value${isAmount ? ' amount' : ''}">${value}</span>
+            <span class="claim-data-value${isAmount && !String(label).startsWith('Local Amount') ? ' amount' : ''}">${value}</span>
           </div>
         `).join('')}
         <div class="claim-data-row">
@@ -933,7 +933,7 @@
                 <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere;">${item.type || 'Advance Detail'}</div>
               </div>
               <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                <span style="font-size: 13px; font-weight: 800; color: var(--purple-primary);">RM ${(item.localAmount ?? 0).toFixed(2)}</span>
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">RM ${(item.localAmount ?? 0).toFixed(2)}</span>
                 <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                 <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit"></i>
                 <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete"></i>
@@ -1043,7 +1043,7 @@
             </div>
             <div>
               <label class="field-label">Local Amount (RM)</label>
-              <input type="number" id="expenseLocalAmount" class="form-ctrl" value="${item.localAmount !== undefined ? item.localAmount.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              <input type="number" id="expenseLocalAmount" class="form-ctrl" value="${item.localAmount !== undefined ? item.localAmount.toFixed(2) : '0.00'}" readonly style="font-weight: 800;" />
             </div>
           </div>
 
@@ -1070,7 +1070,7 @@
         </div>
       `;
 
-      switchView('view-4-entry', titleText);
+      switchView('view-4-entry', isEdit ? 'Edit Details' : 'Add Details');
       renderSubChips();
     }
 

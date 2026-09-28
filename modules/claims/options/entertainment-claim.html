@@ -379,6 +379,25 @@
     }
     .custom-toggle input:checked + .slider { background: #22c55e; }
     .custom-toggle input:checked + .slider::before { transform: translateX(20px); }
+    .toggle-option-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 46px;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .toggle-option-label {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
     /* Top Claim Stepper Progress Indicator Standard */
     .claim-stepper-card {
       background: var(--bg-card);
@@ -586,8 +605,8 @@
           <div class="field-group">
             <label class="field-label">Claim Date</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <input type="text" id="claimStartDate" class="form-ctrl" value="24/09/2026" />
-              <input type="text" id="claimEndDate" class="form-ctrl" value="24/09/2026" />
+              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-24" />
+              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-24" />
             </div>
           </div>
 
@@ -654,21 +673,21 @@
           </div>
 
           <!-- Board Approve : -->
-          <div class="field-group" style="display: flex; align-items: center; justify-content: space-between;">
-            <label class="field-label" style="margin-bottom: 0;">Board Approve</label>
+          <div class="field-group toggle-option-card">
+            <label class="toggle-option-label">Board Approve</label>
             <label class="custom-toggle"><input type="checkbox" id="boardApproveCheck" /><span class="slider"></span></label>
           </div>
 
           <!-- Declaration For: -->
           <div style="margin-top: 10px; margin-bottom: 12px;">
             <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Declaration For</div>
-            <div style="display: flex; flex-direction: column; gap: 8px; padding-left: 4px;">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <label class="field-label" style="margin-bottom: 0;">Gift/Ent</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="toggle-option-card">
+                <label class="toggle-option-label">Gift/Ent</label>
                 <label class="custom-toggle"><input type="checkbox" id="giftEntCheck" /><span class="slider"></span></label>
               </div>
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <label class="field-label" style="margin-bottom: 0;">Trv/Hosp</label>
+              <div class="toggle-option-card">
+                <label class="toggle-option-label">Trv/Hosp</label>
                 <label class="custom-toggle"><input type="checkbox" id="trvHospCheck" /><span class="slider"></span></label>
               </div>
             </div>
@@ -918,6 +937,19 @@
       mainAttachments: []
     };
 
+    function toDateInputValue(value) {
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    function toDisplayDate(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+    }
+
     function updateStepper(stepNum) {
       const steps = document.querySelectorAll('.stepper-item');
       const lineFill = document.getElementById('stepperLineFill');
@@ -1088,7 +1120,7 @@
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
                   <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                   <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
                   <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
@@ -1132,7 +1164,7 @@
                   </div>
                   <div>
                     <span style="color: var(--text-muted); font-weight: 600;">Claim Amount (RM):</span>
-                    <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
                   </div>
                   <div style="grid-column: span 2;">
                     <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
@@ -1259,7 +1291,7 @@
       const detailRows = rows.map(([label, value, isAmount = false]) => `
         <div class="claim-data-row">
           <span class="claim-data-label">${label}</span>
-          <span class="claim-data-value${isAmount ? ' amount' : ''}">${value ?? '-'}</span>
+        <span class="claim-data-value${isAmount && !String(label).startsWith('Local Amount') ? ' amount' : ''}">${value ?? '-'}</span>
         </div>
       `).join('');
       if (attachments === null) return `<div class="claim-data-list">${detailRows}</div>`;
@@ -1346,7 +1378,7 @@
                 </div>
               </div>
               <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                ${amount ? `<span style="font-size: 13px; font-weight: 800; color: var(--purple-primary);">${amount}</span>` : ''}
+                ${amount ? `<span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${amount}</span>` : ''}
                 <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                 <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit"></i>
                 <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete"></i>
@@ -1382,7 +1414,7 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">${item ? 'EDIT CLAIM DETAILS' : 'CLAIM DETAILS'}</span>
+              <span class="section-title-text">${item ? 'EDIT CLAIM DETAILS' : 'ADD CLAIM DETAILS'}</span>
             </div>
 
             <div class="field-group">
@@ -1400,7 +1432,7 @@
 
             <div class="field-group">
               <label class="field-label">Date</label>
-              <input type="text" id="detailExpenseDate" class="form-ctrl" value="${item ? (item.date || '24/09/2026') : '24/09/2026'}" />
+              <input type="date" id="detailExpenseDate" class="form-ctrl" value="${toDateInputValue(item ? item.date : '24/09/2026')}" />
             </div>
 
             <div class="field-group">
@@ -1451,7 +1483,7 @@
 
             <div class="field-group">
               <label class="field-label">Local Amount</label>
-              <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? item.amt.toFixed(2) : '0.00'}" readonly style="color: var(--purple-primary); font-weight: 800;" />
+              <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? item.amt.toFixed(2) : '0.00'}" readonly style="font-weight: 800;" />
             </div>
 
             <!-- Upload Attachments -->
@@ -1483,7 +1515,7 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">${item ? 'EDIT INTERNAL ATTENDEE' : 'INTERNAL ATTENDEE'}</span>
+              <span class="section-title-text">${item ? 'EDIT EMPLOYEE' : 'ADD EMPLOYEE'}</span>
             </div>
 
             <div class="field-group">
@@ -1522,7 +1554,7 @@
           <div class="form-card">
             <div class="section-header-bar no-top-border">
               <span class="section-title-accent"></span>
-              <span class="section-title-text">${item ? 'EDIT EXTERNAL ATTENDEE' : 'EXTERNAL ATTENDEE'}</span>
+              <span class="section-title-text">${item ? 'EDIT GUEST' : 'ADD GUEST'}</span>
             </div>
 
             <div class="field-group">
@@ -1588,7 +1620,7 @@
 
       if (catKey === 'details') {
         const type = document.getElementById('expenseTypeSelect')?.value || '';
-        const date = document.getElementById('detailExpenseDate')?.value || '24/09/2026';
+        const date = toDisplayDate(document.getElementById('detailExpenseDate')?.value) || '24/09/2026';
         const project = document.getElementById('detailProjectSelect')?.value || '';
         const ref = document.getElementById('detailReceiptNo')?.value || '';
         const desc = document.getElementById('detailDescription')?.value || '';
