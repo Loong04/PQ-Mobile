@@ -683,6 +683,7 @@
     const countVal = document.getElementById('teamPendingCountVal');
     const totalVal = document.getElementById('teamPendingTotalVal');
     const badgeCount = document.getElementById('teamPendingCountBadge');
+    const dashCount = document.getElementById('teamDashboardPendingCount');
     if (!container) return;
 
     container.innerHTML = '';
@@ -691,10 +692,17 @@
 
     if (countVal) countVal.textContent = `${pendingCount} Requests`;
     if (totalVal) totalVal.textContent = `Total: RM ${totalAmt.toFixed(2)}`;
+    if (dashCount) dashCount.textContent = pendingCount;
 
     let filteredQueue = teamQueue;
     if (currentPendingTab !== 'all') {
-      filteredQueue = teamQueue.filter(item => item.optionName === currentPendingTab);
+      filteredQueue = teamQueue.filter(item => {
+        if (item.optionName === currentPendingTab) return true;
+        const norm = str => (str || '').toLowerCase().replace(/claim/g, '').replace(/s\b/g, '').trim();
+        const tabNorm = norm(currentPendingTab);
+        const itemNorm = norm(item.optionName);
+        return tabNorm && itemNorm && (itemNorm === tabNorm || itemNorm.includes(tabNorm) || tabNorm.includes(itemNorm));
+      });
     }
 
     if (badgeCount) badgeCount.textContent = filteredQueue.length;
@@ -716,13 +724,9 @@
       
       const empIdFormatted = `#${(item.empNo || '004177').replace(/^#+/, '')}`;
       const claimType = item.optionName || 'Benefit Claim';
-      let typeTitle = 'Claim Type';
-      if (claimType.includes('Benefit')) typeTitle = 'Benefit Type';
-      else if (claimType.includes('Medical')) typeTitle = 'Medical Type';
-      else if (claimType.includes('OT')) typeTitle = 'OT Type';
-      else if (claimType.includes('Travel')) typeTitle = 'Travel Type';
+      const typeTitle = 'Benefit Type';
 
-      const categoryVal = item.benefitType || item.medicalType || item.subCatName || item.category || 'General';
+      const categoryVal = item.benefitType || item.advanceType || item.expenseType || item.medicalType || item.otType || item.travelType || item.subCatName || item.category || 'General';
       const claimDateVal = item.claimDate || item.date || '12 Sep 2026';
       const submitDateVal = item.submitDate || item.date || '13 Sep 2026';
       const amountStr = typeof item.amount === 'number' ? `RM ${item.amount.toFixed(2)}` : (item.amount || 'RM 0.00');
@@ -738,11 +742,12 @@
       card.setAttribute('doc-status', item.docStatus || 'Submitted');
       card.setAttribute('claim-type', claimType);
       card.setAttribute('type-label', typeTitle);
+      card.setAttribute('benefit-type', categoryVal);
       card.setAttribute('category', categoryVal);
       card.setAttribute('claim-date', claimDateVal);
       card.setAttribute('submit-date', submitDateVal);
-      card.setAttribute('date', submitDateVal);
-      card.setAttribute('period', item.period || '2026-09');
+      const isBenefitOrMed = claimType.toLowerCase().includes('benefit') || claimType.toLowerCase().includes('medical');
+      card.setAttribute('period', isBenefitOrMed ? '' : (item.period || '2026-09'));
       card.setAttribute('amount', amountStr);
       card.setAttribute('hours', hoursStr);
       card.setAttribute('amount-hour', amountHourVal);
@@ -875,25 +880,28 @@
 
     const headerTitle = document.getElementById('claimDetailHeaderTitle');
     if (headerTitle) {
-      headerTitle.textContent = `${data.optionName || 'Benefit Claim'} Approval`;
+      const optTitle = (data.optionName || 'Benefit Claim').replace(/\s*Approval$/i, '');
+      headerTitle.textContent = `${optTitle} Approval`;
     }
 
     const isMedical = (data.optionName || '').includes('Medical');
     const isBenefit = (data.optionName || '').includes('Benefit');
+    const isAdvance = (data.optionName || '').toLowerCase().includes('advance');
+    const isExpense = (data.optionName || '').toLowerCase().includes('expense');
+    const isOT = (data.optionName || '').includes('OT');
+    const isTravel = (data.optionName || '').includes('Travel');
+    const isEntertainment = (data.optionName || '').includes('Entertainment');
 
     const rowTypeCategory = document.getElementById('claimRowTypeCategory');
     const typeHeaderLabel = document.getElementById('claimFieldTypeHeaderLabel');
     if (rowTypeCategory) {
-      if (isBenefit) {
-        rowTypeCategory.style.display = '';
-        if (typeHeaderLabel) typeHeaderLabel.textContent = 'Benefit Type:';
-      } else if (isMedical) {
-        rowTypeCategory.style.display = '';
-        if (typeHeaderLabel) typeHeaderLabel.textContent = 'Medical Type:';
-      } else {
-        // Other claims do not show Benefit/Medical Type row
-        rowTypeCategory.style.display = 'none';
-      }
+      rowTypeCategory.style.display = '';
+      if (typeHeaderLabel) typeHeaderLabel.textContent = 'Benefit Type:';
+    }
+
+    const rowPeriod = document.getElementById('claimRowPeriod');
+    if (rowPeriod) {
+      rowPeriod.style.display = (isBenefit || isMedical) ? 'none' : '';
     }
 
     setVal('claimFieldDocRef', 'CLM-' + String(data.id || '01').padStart(4, '0') + '-202609');
@@ -901,7 +909,7 @@
     setVal('claimFieldEmpId', '#' + String(data.empNo || 'EBB01').replace(/^#+/, ''));
     setVal('claimFieldDept', data.dept);
     setVal('claimFieldClaimType', data.optionName || 'Benefit Claim');
-    setVal('claimFieldCategory', data.benefitType || data.medicalType || data.subCatName || 'General');
+    setVal('claimFieldCategory', data.benefitType || data.advanceType || data.expenseType || data.medicalType || data.otType || data.travelType || data.subCatName || data.category || 'General');
     setVal('claimFieldClaimDate', data.claimDate || '12 Sep 2026');
     setVal('claimFieldSubmitDate', data.submitDate || data.date || '13 Sep 2026');
     setVal('claimFieldPeriod', data.period || '2026-09');

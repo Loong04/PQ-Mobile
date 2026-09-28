@@ -30,25 +30,31 @@ const APP_ROUTES = {
 
   // V1 Quick Actions
   'apply_leave': 'modules/leave/index.html',
-  'payslip': 'payslip.html',
+  'payslip': 'modules/payroll/index.html',
+  'payroll': 'modules/payroll/index.html',
   'claim': 'modules/claims/index.html',
   'more': () => getCurrentTheme() === 'light' ? 'applight.html' : 'appdark.html',
 
   // V2 6 Primary Shortcuts
   'attendance': 'modules/attendance/index.html',
-  'payslip': 'payslip.html',
+  'payslip': 'modules/payroll/index.html',
+  'payroll': 'modules/payroll/index.html',
   'claim': 'modules/claims/index.html',
   'benefits': '#benefits-portal',
   'documents': '#company-documents',
   'overtime': '#overtime-form',
   'shiftswap': '#shift-swap',
-  'taxform': '#tax-ea-form',
+  'taxform': 'modules/payroll/options/ea-form.html',
 
   // Explore PeopleHCM Modules
   'time_attendance': 'modules/attendance/index.html',
   'leave_holidays': 'modules/leave/index.html',
   'claims_expenses': 'modules/claims/index.html',
-  'payroll_compensation': 'payslip.html',
+  'payroll': 'modules/payroll/index.html',
+  'payroll_compensation': 'modules/payroll/index.html',
+  'payslip_detail': 'modules/payroll/options/payslip.html',
+  'ea_form': 'modules/payroll/options/ea-form.html',
+  'tax_relief': 'modules/payroll/options/tax-relief.html',
   'performance_goals': '#performance-goals',
   'learning_dev': '#learning-development',
   'people_documents': 'team.html',
