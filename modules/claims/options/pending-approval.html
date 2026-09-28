@@ -102,6 +102,12 @@
     }
 
     /* Pending action buttons (Exact Attendance Design) */
+    .pending-action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
     .action-btn-approve {
       padding: 9.5px 2px;
       border-radius: 12px;
@@ -117,8 +123,33 @@
       gap: 4px;
       box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
       transition: all 0.2s ease;
+      font-family: inherit;
     }
     .action-btn-approve:active { transform: scale(0.95); }
+
+    .action-btn-resubmit {
+      padding: 9.5px 2px;
+      border-radius: 12px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #2563eb;
+      font-weight: 800;
+      font-size: 11.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    html[data-theme="dark"] .action-btn-resubmit,
+    [data-theme="dark"] .action-btn-resubmit {
+      background: rgba(59, 130, 246, 0.18);
+      border-color: rgba(96, 165, 250, 0.35);
+      color: #93c5fd;
+    }
+    .action-btn-resubmit:active { transform: scale(0.95); }
 
     .action-btn-reject {
       padding: 9.5px 2px;
@@ -134,14 +165,15 @@
       justify-content: center;
       gap: 4px;
       transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    html[data-theme="dark"] .action-btn-reject,
+    [data-theme="dark"] .action-btn-reject {
+      background: rgba(244, 63, 94, 0.18);
+      border-color: rgba(251, 113, 133, 0.35);
+      color: #fca5a5;
     }
     .action-btn-reject:active { transform: scale(0.95); }
-
-    .pending-action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
     .approval-card-checkbox {
       appearance: none;
       width: 20px;
@@ -238,6 +270,41 @@
     }
     .med-subtab-btn.active .tab-indicator {
       display: block !important;
+    }
+
+    /* 100% Opaque Detail Screen Overlay (No Bleed-Through) */
+    #claimDetailsModalOverlay {
+      background: #0b0f19 !important;
+    }
+    #claimDetailsDynamicBody {
+      background: #0b0f19 !important;
+    }
+    #claimDetailTopHeader {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%) !important;
+      border-bottom-left-radius: 22px !important;
+      border-bottom-right-radius: 22px !important;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28) !important;
+    }
+    [data-theme="light"] #claimDetailsModalOverlay {
+      background: #ffffff !important;
+    }
+    [data-theme="light"] #claimDetailsDynamicBody {
+      background: #ffffff !important;
+    }
+    [data-theme="light"] #claimDetailTopHeader {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%) !important;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28) !important;
+    }
+    [data-theme="light"] .detail-mock-input {
+      background: #ffffff !important;
+      border: 1px solid #d1d5db !important;
+      color: #111827 !important;
+    }
+    [data-theme="light"] .detail-field-label {
+      color: #4b5563 !important;
+    }
+    [data-theme="light"] .detail-field-value {
+      color: #111827 !important;
     }
   </style>
 </head>
@@ -353,14 +420,14 @@
     <!-- 2. CLAIM VIEW DETAILS SCREEN OVERLAY (EXACTLY MATCHING SCREENSHOTS) -->
     <div id="claimDetailsModalOverlay" style="position: absolute; inset: 0; z-index: 1000; display: none; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(16px); border-radius: 44px; overflow: hidden; background: var(--bg-card);">
       
-      <!-- Top Header Bar (Purple, matching screenshots) -->
-      <div class="cal-top-header" id="claimDetailTopHeader" style="background: linear-gradient(135deg, #4c1d95 0%, #3b0764 100%); color: #ffffff; padding: 0 16px 14px; flex-shrink: 0; z-index: 10; box-shadow: 0 4px 14px rgba(76, 29, 149, 0.35);">
-        <phone-status-bar time="16:04" style="color: #ffffff;"></phone-status-bar>
+      <!-- Top Header Bar (Purple PeopleHCM standard header, matching application design) -->
+      <div class="cal-top-header" id="claimDetailTopHeader" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); color: #ffffff; padding: 0 0 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); flex-shrink: 0; z-index: 10;">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px; padding: 0 16px;">
           <button class="me-back-btn" id="claimDetailBackBtn" onclick="window.ClaimsEngine.closeClaimDetailsModal()" aria-label="Back" title="Back"
-            style="background: transparent; border: none; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; font-size: 18px;">
-            <i class="fa-solid fa-chevron-left"></i>
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </button>
           
           <div style="text-align: center; flex: 1; padding: 0 8px;">
@@ -368,8 +435,8 @@
           </div>
           
           <button type="button" onclick="window.ClaimsEngine.openDetailMoreMenu()" aria-label="More" title="More"
-            style="background: transparent; border: none; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; font-size: 16px;">
-            <i class="fa-solid fa-ellipsis-vertical"></i>
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+            <i class="fa-solid fa-ellipsis-vertical" style="font-size: 16px;"></i>
           </button>
         </div>
       </div>

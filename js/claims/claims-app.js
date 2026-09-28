@@ -766,6 +766,8 @@
 
     if (action === 'approve') {
       showToast(`✔ Approved ${userName}'s claim of ${amount}`);
+    } else if (action === 'resubmit') {
+      showToast(`ℹ Sent back ${userName}'s claim for resubmission`);
     } else {
       showToast(`✕ Rejected ${userName}'s claim of ${amount}`);
     }
@@ -903,10 +905,16 @@
           <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">Approve</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">Resubmit</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">Reject</button>
+        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px;">
+          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
+            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
+          </button>
+          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
+          </button>
+          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
+            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
+          </button>
         </div>
       </div>
     `;
@@ -978,10 +986,16 @@
             <textarea id="claimDetailApproverComments" class="detail-mock-input" style="height: 64px; padding: 8px 10px; resize: none;"></textarea>
           </div>
 
-          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
-            <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">Approve</button>
-            <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">Resubmit</button>
-            <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">Reject</button>
+          <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px;">
+            <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
+              <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
+            </button>
+            <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
+              <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
+            </button>
+            <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
+              <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
+            </button>
           </div>
         </div>
       `;
@@ -1079,10 +1093,16 @@
           <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">Approve</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">Resubmit</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">Reject</button>
+        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
+          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
+            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
+          </button>
+          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
+          </button>
+          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
+            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
+          </button>
         </div>
       </div>
     `;
@@ -1122,10 +1142,16 @@
           <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">Approve</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">Resubmit</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">Reject</button>
+        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
+          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
+            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
+          </button>
+          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
+          </button>
+          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
+            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
+          </button>
         </div>
       </div>
     `;
@@ -1162,10 +1188,16 @@
           <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">Approve</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">Resubmit</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">Reject</button>
+        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
+          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
+            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
+          </button>
+          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
+          </button>
+          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
+            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
+          </button>
         </div>
       </div>
     `;
@@ -1201,10 +1233,16 @@
           <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">Approve</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">Resubmit</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">Reject</button>
+        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
+          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
+            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
+          </button>
+          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
+          </button>
+          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
+            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
+          </button>
         </div>
       </div>
     `;
@@ -1240,10 +1278,16 @@
           <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">Approve</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">Resubmit</button>
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">Reject</button>
+        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
+          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
+            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
+          </button>
+          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
+          </button>
+          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
+            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
+          </button>
         </div>
       </div>
     `;
@@ -1485,6 +1529,9 @@
     closeClaimThreeDotsMenu,
     triggerClaimViewDetails,
     closeClaimDetailsModal,
+    switchMedSubTab,
+    actionTeamClaimFromModal,
+    openDetailMoreMenu,
     triggerClaimViewWorkflow,
     closeClaimWorkflowModal,
     handleGlobalBack

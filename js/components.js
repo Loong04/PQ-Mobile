@@ -1424,10 +1424,13 @@ class PendingApprovalCard extends HTMLElement {
             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Receipt: <strong style="color: var(--text-primary); font-weight: 600;">${receipt}</strong></span>
           </div>` : ''}
 
-          <!-- Bottom Action Buttons Grid (Approve & Reject) -->
-          <div class="pending-action-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <!-- Bottom Action Buttons Grid (Approve, Resubmit, Reject) matching Attendance -->
+          <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
             <button type="button" class="action-btn-approve" onclick="window.ClaimsEngine ? window.ClaimsEngine.actionTeamClaim(${itemId}, 'approve', '${userName.replace(/'/g, "\\'")}', '${amount}') : null">
               <i class="fa-solid fa-check" style="font-size: 11.5px;"></i> Approve
+            </button>
+            <button type="button" class="action-btn-resubmit" onclick="window.ClaimsEngine ? window.ClaimsEngine.actionTeamClaim(${itemId}, 'resubmit', '${userName.replace(/'/g, "\\'")}', '${amount}') : null">
+              <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Resubmit
             </button>
             <button type="button" class="action-btn-reject" onclick="window.ClaimsEngine ? window.ClaimsEngine.actionTeamClaim(${itemId}, 'reject', '${userName.replace(/'/g, "\\'")}', '${amount}') : null">
               <i class="fa-solid fa-xmark" style="font-size: 11.5px;"></i> Reject

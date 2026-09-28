@@ -417,24 +417,6 @@
       line-height: 1.35;
       overflow-wrap: anywhere;
     }
-    .medical-filter-sheet {
-      position: absolute;
-      inset: 0;
-      z-index: 1000;
-      display: none;
-      align-items: flex-end;
-      background: rgba(6, 7, 14, 0.68);
-      backdrop-filter: blur(4px);
-    }
-    .medical-filter-sheet.is-open { display: flex; }
-    .medical-filter-panel {
-      width: 100%;
-      padding: 20px 18px 30px;
-      border-top-left-radius: 26px;
-      border-top-right-radius: 26px;
-      background: var(--bg-card);
-      box-shadow: var(--shadow-sheet);
-    }
   </style>
 </head>
 <body>
@@ -794,35 +776,40 @@
     <!-- Hidden File Input -->
     <input type="file" id="hiddenMedicalFileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelected(this)">
 
-    <div id="medicalYearFilter" class="medical-filter-sheet" onclick="if(event.target===this) closeMedicalYearFilter()">
-      <div class="medical-filter-panel">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-          <h2 style="margin: 0; color: var(--text-primary); font-size: 17px; font-weight: 800;">Filter Medical Claims</h2>
-          <button type="button" class="claim-icon-button" onclick="closeMedicalYearFilter()" aria-label="Close filter">
-            <i class="fa-solid fa-xmark"></i>
+    <div id="medicalYearFilter" class="claim-filter-sheet" onclick="if(event.target===this) closeMedicalYearFilter()">
+      <div class="claim-filter-panel" onclick="event.stopPropagation()">
+        <div class="claim-filter-handle"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title">Filter</h2>
+          <button type="button" class="claim-filter-reset" onclick="resetMedicalYearFilter()">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Reset</span>
           </button>
         </div>
-        <div class="claim-form-stack">
-          <div class="claim-field">
-            <label class="claim-field-label">Entitlement Year</label>
-            <select id="medicalYearFilterSelect" class="claim-control">
-              <option value="2026" selected>2026</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-            </select>
+        <div class="claim-filter-fields">
+          <div>
+            <label class="claim-filter-label">Medical Type</label>
+            <div class="claim-filter-select-wrap">
+              <select id="medicalTypeFilterSelect" class="claim-filter-select">
+                <option value="ALL" selected>:: View All Medical Types</option>
+                <option value="MEDICAL CLAIMS">Medical Claims</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+            </div>
           </div>
-          <div class="claim-field">
-            <label class="claim-field-label">Medical Type</label>
-            <select id="medicalTypeFilterSelect" class="claim-control">
-              <option value="ALL" selected>All Medical Types</option>
-              <option value="MEDICAL CLAIMS">Medical Claims</option>
-            </select>
+          <div>
+            <label class="claim-filter-label">Entitlement Year</label>
+            <div class="claim-filter-select-wrap">
+              <select id="medicalYearFilterSelect" class="claim-filter-select">
+                <option value="2026" selected>2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+            </div>
           </div>
         </div>
-        <div class="claim-action-bar" style="padding: 16px 0 0;">
-          <button type="button" class="claim-button claim-button-secondary" onclick="closeMedicalYearFilter()">Cancel</button>
-          <button type="button" class="claim-button claim-button-primary" onclick="applyMedicalYearFilter()">Apply Filter</button>
-        </div>
+        <button type="button" class="claim-filter-apply" onclick="applyMedicalYearFilter()">Apply Filter</button>
       </div>
     </div>
 
@@ -951,6 +938,13 @@
 
     function closeMedicalYearFilter() {
       document.getElementById('medicalYearFilter').classList.remove('is-open');
+    }
+
+    function resetMedicalYearFilter() {
+      const year = document.getElementById('medicalYearFilterSelect');
+      const type = document.getElementById('medicalTypeFilterSelect');
+      if (year) year.value = '2026';
+      if (type) type.value = 'ALL';
     }
 
     function applyMedicalYearFilter() {
