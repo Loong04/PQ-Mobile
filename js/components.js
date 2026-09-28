@@ -1278,12 +1278,35 @@ class PendingApprovalCard extends HTMLElement {
     this.setAttribute('user-name', item.userName || '');
     this.setAttribute('emp-id', item.empNo || '');
     this.setAttribute('dept', item.dept || '');
-    this.setAttribute('doc-status', item.status || 'Submitted');
-    this.setAttribute('date', item.date || '');
-    this.setAttribute('claim-type', item.optionName || 'Claim');
-    this.setAttribute('category', item.subCatName || '');
+    this.setAttribute('doc-status', item.docStatus || item.status || 'Submitted');
+    this.setAttribute('claim-date', item.claimDate || item.date || '');
+    this.setAttribute('submit-date', item.submitDate || item.date || '');
+    this.setAttribute('date', item.submitDate || item.date || '');
+    this.setAttribute('claim-type', item.optionName || 'Benefit Claim');
+
+    let typeLabel = 'Claim Type';
+    const opt = (item.optionName || '').toLowerCase();
+    if (opt.includes('benefit')) typeLabel = 'Benefit Type';
+    else if (opt.includes('medical')) typeLabel = 'Medical Type';
+    else if (opt.includes('ot') || opt.includes('overtime')) typeLabel = 'OT Type';
+    else if (opt.includes('travel')) typeLabel = 'Travel Type';
+    this.setAttribute('type-label', typeLabel);
+
+    this.setAttribute('category', item.benefitType || item.medicalType || item.subCatName || item.category || 'General');
+    this.setAttribute('period', item.period || '2026-09');
+    
+    const rawAmt = typeof item.amount === 'number' ? `RM ${item.amount.toFixed(2)}` : (item.amount || 'RM 0.00');
+    this.setAttribute('amount', rawAmt);
+    this.setAttribute('hours', item.hours || '');
+
+    let amtHour = rawAmt;
+    if (item.hours && item.hours !== '0' && item.hours !== '0.0 hrs' && item.hours !== '-') {
+      amtHour = `${rawAmt} / ${item.hours}`;
+    }
+    this.setAttribute('amount-hour', amtHour);
+
     this.setAttribute('receipt', item.receipt || '');
-    this.setAttribute('amount', typeof item.amount === 'number' ? `RM ${item.amount.toFixed(2)}` : (item.amount || ''));
+    this.setAttribute('purpose', item.purpose || item.title || '');
     this.setAttribute('title', item.title || '');
     this.setAttribute('item-id', item.id || '');
     this.render();
@@ -1295,13 +1318,41 @@ class PendingApprovalCard extends HTMLElement {
     const empId = rawEmpId.startsWith('#') ? rawEmpId : `#${rawEmpId}`;
     const dept = this.getAttribute('dept') || 'Department';
     const docStatus = this.getAttribute('doc-status') || 'Submitted';
-    const date = this.getAttribute('date') || 'DD/MM/YYYY';
-    const claimType = this.getAttribute('claim-type') || 'Claim';
+    const claimDate = this.getAttribute('claim-date') || this.getAttribute('date') || 'DD/MM/YYYY';
+    const submitDate = this.getAttribute('submit-date') || this.getAttribute('date') || 'DD/MM/YYYY';
+    const period = this.getAttribute('period') || '2026-09';
+    const claimType = this.getAttribute('claim-type') || 'Benefit Claim';
     const category = this.getAttribute('category') || 'General';
-    const receipt = this.getAttribute('receipt') || 'N/A';
+    const receipt = this.getAttribute('receipt') || '';
     const rawAmount = this.getAttribute('amount') || 'RM 0.00';
     const amount = rawAmount.startsWith('RM') ? rawAmount : `RM ${parseFloat(rawAmount || 0).toFixed(2)}`;
-    const title = this.getAttribute('title') || this.getAttribute('description') || '';
+    const hours = this.getAttribute('hours') || '';
+
+    let amountHourDisplay = this.getAttribute('amount-hour');
+    if (!amountHourDisplay) {
+      if (hours && hours !== '0' && hours !== '0.0 hrs' && hours !== '0.00' && hours !== '-') {
+        amountHourDisplay = `${amount} / ${hours}`;
+      } else {
+        amountHourDisplay = amount;
+      }
+    }
+
+    const isBenefit = claimType.toLowerCase().includes('benefit');
+    const isMedical = claimType.toLowerCase().includes('medical');
+    const isBenefitOrMedical = isBenefit || isMedical;
+
+    let typeTitle = this.getAttribute('type-label');
+    if (!typeTitle) {
+      if (isBenefit) {
+        typeTitle = 'Benefit Type';
+      } else if (isMedical) {
+        typeTitle = 'Medical Type';
+      } else {
+        typeTitle = 'Claim Type';
+      }
+    }
+
+    const purpose = this.getAttribute('purpose') || this.getAttribute('title') || this.getAttribute('description') || 'General claim reimbursement request';
     const itemId = this.getAttribute('item-id') || '';
 
     const badgeBg = 'rgba(59, 130, 246, 0.12)';
@@ -1309,8 +1360,61 @@ class PendingApprovalCard extends HTMLElement {
     const badgeColor = '#3b82f6';
     const icon = '<i class="fa-solid fa-paper-plane"></i>';
 
+    // Tailored layout for Benefit/Medical Claim vs Other Claims
+    let middleContentHtml = '';
+
+    if (isBenefitOrMedical) {
+      // 1. Benefit & Medical Claim: includes benefit type / medical type & claim date & period & amount/hour
+      middleContentHtml = `
+        <!-- 2-Column Grid: Benefit / Medical Type & Claim Date -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 10px 12px;">
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">${typeTitle}</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); line-height: 1.3;">${category || 'General'}</div>
+          </div>
+          <div>
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Claim Date</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--purple-primary); line-height: 1.3; font-family: monospace, sans-serif;">
+              <i class="fa-regular fa-calendar" style="font-size: 11px; margin-right: 3px;"></i>${claimDate}
+            </div>
+          </div>
+        </div>
+
+        <!-- Period & Amount / Hour Structured Box -->
+        <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
+          ${period ? `
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; align-items: center;">
+            <span style="color: var(--text-muted); font-weight: 700;">Period:</span>
+            <strong style="color: var(--text-primary); font-family: monospace, sans-serif; font-size: 12px; font-weight: 800;">${period}</strong>
+          </div>` : ''}
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; ${period ? 'border-top: 1px dashed var(--border-subtle); padding-top: 6px;' : ''} align-items: center;">
+            <span style="color: var(--text-muted); font-weight: 700;">Amount / Hour:</span>
+            <strong style="color: var(--purple-primary); font-family: monospace, sans-serif; font-size: 14.5px; font-weight: 900;">${amountHourDisplay}</strong>
+          </div>
+        </div>
+      `;
+    } else {
+      // 2. Other Claims (OT, Travel, Entertainment, Advance, Expense, etc.):
+      // Only displays: employee name, id, claim date, amount/hour, status, submit date
+      middleContentHtml = `
+        <!-- Structured Box for Other Claims (Claim Date, Amount / Hour) -->
+        <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; align-items: center;">
+            <span style="color: var(--text-muted); font-weight: 700;">Claim Date:</span>
+            <strong style="color: var(--purple-primary); font-family: monospace, sans-serif; font-size: 12.5px; font-weight: 800;">
+              <i class="fa-regular fa-calendar" style="font-size: 11px; margin-right: 3px;"></i>${claimDate}
+            </strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; border-top: 1px dashed var(--border-subtle); padding-top: 6px; align-items: center;">
+            <span style="color: var(--text-muted); font-weight: 700;">Amount / Hour:</span>
+            <strong style="color: var(--purple-primary); font-family: monospace, sans-serif; font-size: 14.5px; font-weight: 900;">${amountHourDisplay}</strong>
+          </div>
+        </div>
+      `;
+    }
+
     this.innerHTML = `
-      <div class="approval-request-card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left; margin-bottom: 14px;">
+      <div class="approval-request-card" data-item-id="${itemId}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); transition: all 0.2s ease; text-align: left; margin-bottom: 14px;">
         <!-- 1. Executive Purple Header Banner (Identical to Attendance) -->
         <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; color: #ffffff;">
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -1320,62 +1424,48 @@ class PendingApprovalCard extends HTMLElement {
             <div>
               <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${userName}</div>
               <!-- AGENTS.md Employee ID Presentation Standard: directly BELOW name, leading #, subtle muted typography -->
-              <div style="font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">${empId}</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">${empId}</div>
               <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.85);">${dept}</div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
-            <button type="button" title="Options" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
+            <button type="button" class="three-dots-btn" onclick="window.ClaimsEngine && window.ClaimsEngine.openClaimThreeDotsMenu ? window.ClaimsEngine.openClaimThreeDotsMenu(this, '${itemId}') : null" title="Options" style="width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);">
               <i class="fa-solid fa-ellipsis-vertical" style="font-size: 13px;"></i>
             </button>
           </div>
         </div>
 
-        <!-- 2. Card Content Body (Identical layout to Attendance) -->
+        <!-- 2. Card Content Body -->
         <div style="padding: 14px;">
-          <!-- Document Status Badge & Date -->
+          <!-- Status Badge & Submit Date Row -->
           <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; border: ${badgeBorder}; color: ${badgeColor}; font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">
               <span>${icon}</span>
               <span>${docStatus}</span>
             </div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">
-              <i class="fa-regular fa-calendar" style="color: var(--purple-primary);"></i> ${date}
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+              <i class="fa-regular fa-calendar-check" style="color: var(--purple-primary);"></i>
+              <span>Submit Date: <strong style="color: var(--text-primary); font-family: monospace, sans-serif;">${submitDate}</strong></span>
             </div>
           </div>
 
-          <!-- Type & Category 2-Column Grid -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-            <div>
-              <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Type</div>
-              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${claimType}</div>
-            </div>
-            <div>
-              <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Category</div>
-              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${category}</div>
-            </div>
-          </div>
+          <!-- Dynamic Middle Content (Benefit/Medical Grid vs Other Claims Box) -->
+          ${middleContentHtml}
 
-          <!-- Receipt & Amount Highlights Box (Attendance Shift/Clocking Box style) -->
-          <div style="background: var(--bg-input); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
-            <div style="display: flex; justify-content: space-between; font-size: 11.5px; align-items: center;">
-              <span style="color: var(--text-muted); font-weight: 700;">Receipt / Merchant:</span>
-              <strong style="color: var(--text-primary); font-family: monospace, sans-serif; font-size: 12px; font-weight: 700;">${receipt}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 11.5px; border-top: 1px dashed var(--border-subtle); padding-top: 6px; align-items: center;">
-              <span style="color: var(--text-muted); font-weight: 700;">Claim Amount:</span>
-              <strong style="color: var(--purple-primary); font-family: monospace, sans-serif; font-size: 14px; font-weight: 900;">${amount}</strong>
-            </div>
-          </div>
-
-          <!-- Description / Title Box (Attendance Remarks style) -->
-          ${title ? `
-          <div style="margin-bottom: 14px;">
-            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Description / Title</div>
-            <div style="background: var(--bg-input); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; color: var(--text-primary); opacity: 0.9; border: 1px solid var(--border-subtle);">
-              ${title}
-            </div>
+          <!-- Receipt Reference (if present) -->
+          ${receipt ? `
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); margin-bottom: 10px; padding: 0 2px;">
+            <i class="fa-solid fa-receipt" style="color: #10b981;"></i>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Receipt: <strong style="color: var(--text-primary); font-weight: 600;">${receipt}</strong></span>
           </div>` : ''}
+
+          <!-- Purpose Box -->
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Purpose</div>
+            <div style="background: var(--bg-input); border-radius: 10px; padding: 9px 12px; font-size: 12px; color: var(--text-primary); opacity: 0.95; border: 1px solid var(--border-subtle); line-height: 1.4;">
+              ${purpose}
+            </div>
+          </div>
 
           <!-- Bottom Action Buttons Grid (Approve & Reject) -->
           <div class="pending-action-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">

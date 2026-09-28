@@ -538,28 +538,6 @@
           </div>
         </div>
 
-        <!-- ATTACHMENTS CARD -->
-        <div class="form-card">
-          <label class="field-label" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Upload Main Attachments</label>
-          
-          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
-              <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
-                <i class="fa-solid fa-file-arrow-up"></i>
-              </div>
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
-            </div>
-
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
-              <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
-                <i class="fa-solid fa-camera"></i>
-              </div>
-              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
-            </div>
-          </div>
-
-          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
-        </div>
 
         <!-- BOTTOM ACTION BUTTONS -->
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
@@ -777,6 +755,26 @@
             <label class="field-label">Mileage Amount Remarks:</label>
             <textarea id="otRemarksInput" rows="3" class="form-ctrl" placeholder="Enter remarks or mileage details..." style="font-family: inherit; resize: vertical;"></textarea>
           </div>
+
+          <!-- 12. Upload Attachments -->
+          <div style="margin-top: 14px;">
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments :</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+              </div>
+            </div>
+            <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+          </div>
           
         </div>
 
@@ -810,9 +808,29 @@
         claimYear: '2026',
         claimMonth: 'September'
       },
-      otEntries: [],
+      otEntries: [
+        {
+          date: '22/09/2026',
+          type: 'OT 1.5x (Normal Working Day)',
+          start: '18:00',
+          end: '21:30',
+          hours: '3.5',
+          breakHrs: '0',
+          breakMins: '0',
+          project: 'Mobile HCM App',
+          reason: 'Urgent Deployment',
+          mealAmount: '20.00',
+          mealAllowance: 'Dinner (RM20)',
+          transport: 'Grab',
+          distance: '15',
+          way: 'One-Way',
+          remarks: 'Post-deployment verification & live patch support',
+          isCrossDay: false,
+          attachments: ['ot-timesheet-signed.pdf']
+        }
+      ],
       currentView: 'view-1-main',
-      uploadTarget: 'main'
+      subAttachments: []
     };
 
     function updateStepperUI(stepNum) {
@@ -933,13 +951,33 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      const container = document.getElementById(formData.uploadTarget === 'main' ? 'mainChipsList' : 'subChipsList');
-      if (container) {
-        const chip = document.createElement('div');
-        chip.className = 'file-chip';
-        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
-        container.appendChild(chip);
+      if (!formData.subAttachments) formData.subAttachments = [];
+      formData.subAttachments.push(file.name);
+      renderSubChips();
+      if (typeof showToast === 'function') showToast(`📎 Attachment added: ${file.name}`);
+      input.value = '';
+    }
+
+    function removeSubAttachment(idx) {
+      if (!formData.subAttachments) return;
+      formData.subAttachments.splice(idx, 1);
+      renderSubChips();
+    }
+
+    function renderSubChips() {
+      const container = document.getElementById('subChipsList');
+      if (!container) return;
+      if (!formData.subAttachments || formData.subAttachments.length === 0) {
+        container.innerHTML = '';
+        return;
       }
+      container.innerHTML = formData.subAttachments.map((att, idx) => `
+        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+          <i class="fa-solid fa-paperclip"></i>
+          <span>${att}</span>
+          <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="removeSubAttachment(${idx})"></i>
+        </div>
+      `).join('');
     }
 
     function openEntryForm(action, index = -1) {
@@ -966,6 +1004,8 @@
         
         isCrossDay = false;
         document.getElementById('crossDayCircle').classList.remove('checked');
+        formData.subAttachments = [];
+        renderSubChips();
       } else {
         editingItemIndex = index;
         document.getElementById('entryFormTitle').innerText = 'Edit OT Entry';
@@ -993,6 +1033,8 @@
         } else {
           document.getElementById('crossDayCircle').classList.remove('checked');
         }
+        formData.subAttachments = item.attachments ? [...item.attachments] : [];
+        renderSubChips();
       }
       
       switchView('view-4-entry', 'OT Details');
@@ -1015,7 +1057,8 @@
         distance: document.getElementById('distanceInput').value,
         way: document.getElementById('waySelect').value,
         remarks: document.getElementById('otRemarksInput').value,
-        isCrossDay: isCrossDay
+        isCrossDay: isCrossDay,
+        attachments: [...(formData.subAttachments || [])]
       };
       
       if (editingItemIndex > -1) {
@@ -1144,6 +1187,18 @@
                 <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remarks:</span>
                 <span style="display: block; font-size: 13px; font-weight: 600; color: var(--text-primary);">${item.remarks || '-'}</span>
               </div>
+              ${item.attachments && item.attachments.length > 0 ? `
+              <div style="margin-top: 12px; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
+                <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Attachments:</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  ${item.attachments.map(att => `
+                    <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                      <i class="fa-solid fa-paperclip"></i> ${att}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              ` : ''}
             </div>
             
           </div>

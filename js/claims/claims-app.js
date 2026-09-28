@@ -714,18 +714,41 @@
       const card = document.createElement('pending-approval-card');
       card.id = `team-card-${item.id}`;
       
-      const empIdFormatted = `#${(item.empNo || '004177').replace(/^#/, '')}`;
+      const empIdFormatted = `#${(item.empNo || '004177').replace(/^#+/, '')}`;
+      const claimType = item.optionName || 'Benefit Claim';
+      let typeTitle = 'Claim Type';
+      if (claimType.includes('Benefit')) typeTitle = 'Benefit Type';
+      else if (claimType.includes('Medical')) typeTitle = 'Medical Type';
+      else if (claimType.includes('OT')) typeTitle = 'OT Type';
+      else if (claimType.includes('Travel')) typeTitle = 'Travel Type';
+
+      const categoryVal = item.benefitType || item.medicalType || item.subCatName || item.category || 'General';
+      const claimDateVal = item.claimDate || item.date || '12 Sep 2026';
+      const submitDateVal = item.submitDate || item.date || '13 Sep 2026';
+      const amountStr = typeof item.amount === 'number' ? `RM ${item.amount.toFixed(2)}` : (item.amount || 'RM 0.00');
+      const hoursStr = item.hours || '';
+      let amountHourVal = amountStr;
+      if (hoursStr && hoursStr !== '0' && hoursStr !== '0.0 hrs' && hoursStr !== '-') {
+        amountHourVal = `${amountStr} / ${hoursStr}`;
+      }
 
       card.setAttribute('user-name', item.userName);
       card.setAttribute('emp-id', empIdFormatted);
       card.setAttribute('dept', item.dept);
-      card.setAttribute('doc-status', 'Submitted');
-      card.setAttribute('date', item.date);
-      card.setAttribute('claim-type', item.optionName);
-      card.setAttribute('category', item.subCatName);
-      card.setAttribute('receipt', item.receipt);
-      card.setAttribute('amount', `RM ${item.amount.toFixed(2)}`);
-      card.setAttribute('title', item.title);
+      card.setAttribute('doc-status', item.docStatus || 'Submitted');
+      card.setAttribute('claim-type', claimType);
+      card.setAttribute('type-label', typeTitle);
+      card.setAttribute('category', categoryVal);
+      card.setAttribute('claim-date', claimDateVal);
+      card.setAttribute('submit-date', submitDateVal);
+      card.setAttribute('date', submitDateVal);
+      card.setAttribute('period', item.period || '2026-09');
+      card.setAttribute('amount', amountStr);
+      card.setAttribute('hours', hoursStr);
+      card.setAttribute('amount-hour', amountHourVal);
+      card.setAttribute('receipt', item.receipt || '');
+      card.setAttribute('purpose', item.purpose || item.title || '');
+      card.setAttribute('title', item.title || '');
       card.setAttribute('item-id', item.id);
 
       container.appendChild(card);
@@ -752,6 +775,195 @@
     teamQueue = [];
     renderTeamQueue();
     showToast('🎉 Approved all pending team claims!');
+  }
+
+  let currentSelectedClaimData = null;
+
+  function openClaimThreeDotsMenu(btn, itemId) {
+    let item = teamQueue.find(q => String(q.id) === String(itemId));
+    const card = btn ? btn.closest('pending-approval-card, .approval-request-card') : null;
+    
+    if (!item && card) {
+      const claimType = card.getAttribute('claim-type') || 'Benefit Claim';
+      const hoursVal = card.getAttribute('hours') || '';
+      const amountVal = card.getAttribute('amount') || 'RM 250.00';
+      const amountHourVal = card.getAttribute('amount-hour') || amountVal;
+
+      item = {
+        id: itemId || card.getAttribute('item-id') || 1,
+        userName: card.getAttribute('user-name') || 'Sarah Chen',
+        empNo: (card.getAttribute('emp-id') || '#EBB01').replace(/^#+/, ''),
+        dept: card.getAttribute('dept') || 'Marketing Lead • Digital Team',
+        optionName: claimType,
+        subCatName: card.getAttribute('category') || 'General',
+        benefitType: card.getAttribute('category') || 'Optical & Wellness',
+        medicalType: card.getAttribute('category') || 'General Consultation',
+        period: card.getAttribute('period') || '2026-09',
+        claimDate: card.getAttribute('claim-date') || '12 Sep 2026',
+        submitDate: card.getAttribute('submit-date') || card.getAttribute('date') || '13 Sep 2026',
+        date: card.getAttribute('submit-date') || card.getAttribute('date') || '13 Sep 2026',
+        amount: amountVal,
+        hours: hoursVal,
+        amountHour: amountHourVal,
+        purpose: card.getAttribute('purpose') || card.getAttribute('title') || 'General claim reimbursement request',
+        receipt: card.getAttribute('receipt') || 'Official Receipt',
+        docStatus: card.getAttribute('doc-status') || 'Submitted',
+        status: card.getAttribute('doc-status') || 'Submitted'
+      };
+    } else if (item) {
+      const amountStr = typeof item.amount === 'number' ? `RM ${item.amount.toFixed(2)}` : (item.amount || 'RM 0.00');
+      const hoursStr = item.hours || '';
+      let amtHour = amountStr;
+      if (hoursStr && hoursStr !== '0' && hoursStr !== '0.0 hrs' && hoursStr !== '-') {
+        amtHour = `${amountStr} / ${hoursStr}`;
+      }
+      item = {
+        ...item,
+        amount: amountStr,
+        hours: hoursStr,
+        amountHour: amtHour,
+        claimDate: item.claimDate || item.date || '12 Sep 2026',
+        submitDate: item.submitDate || item.date || '13 Sep 2026',
+        period: item.period || '2026-09',
+        purpose: item.purpose || item.title || 'General claim request',
+        docStatus: item.docStatus || 'Submitted',
+        status: item.docStatus || 'Submitted'
+      };
+    }
+
+    currentSelectedClaimData = item;
+
+    const titleEl = document.getElementById('claimThreeDotsName');
+    if (titleEl && item) {
+      titleEl.textContent = `${item.userName} - Claim Options`;
+    }
+
+    const overlay = document.getElementById('claimThreeDotsMenuOverlay');
+    if (overlay) {
+      overlay.style.display = 'flex';
+      overlay.style.pointerEvents = 'auto';
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      const sheet = overlay.querySelector('.indicators-sheet');
+      if (sheet) sheet.style.transform = 'translateY(0)';
+    }
+  }
+
+  function closeClaimThreeDotsMenu(event) {
+    if (event && event.target && event.target.id !== 'claimThreeDotsMenuOverlay' && !event.target.classList.contains('sheet-close-btn') && !event.target.closest('.sheet-close-btn')) {
+      return;
+    }
+    const overlay = document.getElementById('claimThreeDotsMenuOverlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      const sheet = overlay.querySelector('.indicators-sheet');
+      if (sheet) sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => { overlay.style.display = 'none'; }, 250);
+    }
+  }
+
+  function triggerClaimViewDetails() {
+    closeClaimThreeDotsMenu();
+    if (!currentSelectedClaimData) return;
+
+    const data = currentSelectedClaimData;
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = (val !== undefined && val !== null && val !== '') ? val : '-';
+    };
+
+    const headerTitle = document.getElementById('claimDetailHeaderTitle');
+    if (headerTitle) {
+      headerTitle.textContent = `${data.optionName || 'Benefit Claim'} Approval`;
+    }
+
+    const isMedical = (data.optionName || '').includes('Medical');
+    const isBenefit = (data.optionName || '').includes('Benefit');
+
+    const rowTypeCategory = document.getElementById('claimRowTypeCategory');
+    const typeHeaderLabel = document.getElementById('claimFieldTypeHeaderLabel');
+    if (rowTypeCategory) {
+      if (isBenefit) {
+        rowTypeCategory.style.display = '';
+        if (typeHeaderLabel) typeHeaderLabel.textContent = 'Benefit Type:';
+      } else if (isMedical) {
+        rowTypeCategory.style.display = '';
+        if (typeHeaderLabel) typeHeaderLabel.textContent = 'Medical Type:';
+      } else {
+        // Other claims do not show Benefit/Medical Type row
+        rowTypeCategory.style.display = 'none';
+      }
+    }
+
+    setVal('claimFieldDocRef', 'CLM-' + String(data.id || '01').padStart(4, '0') + '-202609');
+    setVal('claimFieldEmpName', data.userName);
+    setVal('claimFieldEmpId', '#' + String(data.empNo || 'EBB01').replace(/^#+/, ''));
+    setVal('claimFieldDept', data.dept);
+    setVal('claimFieldClaimType', data.optionName || 'Benefit Claim');
+    setVal('claimFieldCategory', data.benefitType || data.medicalType || data.subCatName || 'General');
+    setVal('claimFieldClaimDate', data.claimDate || '12 Sep 2026');
+    setVal('claimFieldSubmitDate', data.submitDate || data.date || '13 Sep 2026');
+    setVal('claimFieldPeriod', data.period || '2026-09');
+    setVal('claimFieldAmountHour', data.amountHour || data.amount || 'RM 0.00');
+    setVal('claimFieldReceipt', data.receipt || 'Official Receipt');
+    setVal('claimFieldPurpose', data.purpose || data.title);
+    setVal('claimFieldStatus', 'Submitted (Pending Approval)');
+
+    setTimeout(() => {
+      const modal = document.getElementById('claimDetailsModalOverlay');
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.style.pointerEvents = 'auto';
+        void modal.offsetWidth;
+        modal.style.opacity = '1';
+        const card = modal.querySelector('.details-popout-card');
+        if (card) card.style.transform = 'scale(1)';
+      }
+    }, 200);
+  }
+
+  function closeClaimDetailsModal(event) {
+    if (event && event.target && event.target.id !== 'claimDetailsModalOverlay' && !event.target.classList.contains('sheet-close-btn') && !event.target.closest('.sheet-close-btn')) {
+      return;
+    }
+    const modal = document.getElementById('claimDetailsModalOverlay');
+    if (modal) {
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
+      const card = modal.querySelector('.details-popout-card');
+      if (card) card.style.transform = 'scale(0.94)';
+      setTimeout(() => { modal.style.display = 'none'; }, 250);
+    }
+  }
+
+  function triggerClaimViewWorkflow() {
+    closeClaimThreeDotsMenu();
+    setTimeout(() => {
+      const overlay = document.getElementById('claimWorkflowModalOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        overlay.style.pointerEvents = 'auto';
+        void overlay.offsetWidth;
+        overlay.style.opacity = '1';
+        const sheet = overlay.querySelector('.indicators-sheet');
+        if (sheet) sheet.style.transform = 'translateY(0)';
+      }
+    }, 200);
+  }
+
+  function closeClaimWorkflowModal(event) {
+    if (event && event.target && event.target.id !== 'claimWorkflowModalOverlay' && !event.target.classList.contains('sheet-close-btn') && !event.target.closest('.sheet-close-btn')) {
+      return;
+    }
+    const overlay = document.getElementById('claimWorkflowModalOverlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      const sheet = overlay.querySelector('.indicators-sheet');
+      if (sheet) sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => { overlay.style.display = 'none'; }, 250);
+    }
   }
 
   /**
@@ -814,6 +1026,12 @@
     showTeamPendingApprovals,
     hideTeamPendingApprovals,
     switchPendingTab,
+    openClaimThreeDotsMenu,
+    closeClaimThreeDotsMenu,
+    triggerClaimViewDetails,
+    closeClaimDetailsModal,
+    triggerClaimViewWorkflow,
+    closeClaimWorkflowModal,
     handleGlobalBack
   };
 

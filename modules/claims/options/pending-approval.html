@@ -231,6 +231,202 @@
       <div id="teamApprovalsQueue"></div>
     </div>
 
+    <!-- 1. CLAIM THREE DOTS MENU MODAL (INSIDE PHONE CONTAINER) -->
+    <div class="indicators-overlay" id="claimThreeDotsMenuOverlay" onclick="window.ClaimsEngine.closeClaimThreeDotsMenu(event)" style="position: absolute; inset: 0; z-index: 999; display: none; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px);">
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="width: 100%; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 20px 18px 24px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div class="sheet-handle" style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 2px; margin: 0 auto 14px; opacity: 0.8;"></div>
+        <div class="sheet-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div class="sheet-title">
+            <h3 id="claimThreeDotsName" style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0;">Claim Request Options</h3>
+            <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Select an action for this claim request</p>
+          </div>
+          <button class="sheet-close-btn" onclick="window.ClaimsEngine.closeClaimThreeDotsMenu()" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Option 1: View Details -->
+          <button type="button" onclick="window.ClaimsEngine.triggerClaimViewDetails()" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-regular fa-file-lines"></i>
+              </div>
+              <div style="text-align: left;">
+                <div>View Details</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">See full claim request details, receipts & remarks</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted);"></i>
+          </button>
+
+          <!-- Option 2: View Workflow -->
+          <button type="button" onclick="window.ClaimsEngine.triggerClaimViewWorkflow()" style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-card); transition: all 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-diagram-project"></i>
+              </div>
+              <div style="text-align: left;">
+                <div>View Workflow</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Track multi-tier approval status</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted);"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. CLAIM VIEW DETAILS MODAL (POP OUT - MATCHING ATTENDANCE DESIGN) -->
+    <div class="indicators-overlay" id="claimDetailsModalOverlay" onclick="window.ClaimsEngine.closeClaimDetailsModal(event)" style="position: absolute; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 44px; overflow: hidden; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); padding: 16px;">
+      <div class="details-popout-card" onclick="event.stopPropagation()" style="width: 92%; max-width: 380px; height: 82%; max-height: 85%; background: var(--bg-card); display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4); border: 1px solid var(--border-subtle); transform: scale(0.94); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+        
+        <!-- Purple Top Header Bar -->
+        <div style="background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); color: #ffffff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 4px 14px rgba(76, 29, 149, 0.35); z-index: 10;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 id="claimDetailHeaderTitle" style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.2px;">Benefit Claim Approval</h2>
+          </div>
+          <button type="button" onclick="window.ClaimsEngine.closeClaimDetailsModal(event)" class="sheet-close-btn" title="Close" style="background: rgba(255, 255, 255, 0.2); border: none; color: #ffffff; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Scrollable Details Content List as Table matching Attendance -->
+        <div style="flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none;">
+          
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05); flex-shrink: 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+              <tbody>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Document Ref:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 800; font-family: monospace; letter-spacing: 0.3px;" id="claimFieldDocRef">CLM-0001-202609</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Employee Name:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 800;" id="claimFieldEmpName">Sarah Chen</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Employee ID:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700; font-family: monospace;" id="claimFieldEmpId">#EBB01</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Department:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700;" id="claimFieldDept">Marketing Lead • Digital Team</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Claim Type:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 800;" id="claimFieldClaimType">Benefit Claim</td>
+                </tr>
+                <tr id="claimRowTypeCategory">
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;" id="claimFieldTypeHeaderLabel">Benefit / Medical Type:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700;" id="claimFieldCategory">Optical & Wellness</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Claim Date:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 800; font-family: monospace;" id="claimFieldClaimDate">12 Sep 2026</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Submit Date:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700; font-family: monospace;" id="claimFieldSubmitDate">13 Sep 2026</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Period:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 800; font-family: monospace;" id="claimFieldPeriod">2026-09</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Amount / Hour:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--purple-primary); width: 58%; font-weight: 900; font-size: 13.5px;" id="claimFieldAmountHour">RM 250.00</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Receipt / Invoice:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700;" id="claimFieldReceipt">Focus Point Receipt #FP-8891</td>
+                </tr>
+                <tr>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Status:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: #3b82f6; width: 58%; font-weight: 800;" id="claimFieldStatus">Submitted (Pending Approval)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Purpose Box in Modal -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 12px 14px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Purpose / Reason</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-primary); line-height: 1.45;" id="claimFieldPurpose">
+              Annual optical prescription & medical wellness checkup
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Close Button -->
+        <div style="padding: 12px 16px; border-top: 1px solid var(--border-subtle); background: var(--bg-card); display: flex; gap: 8px;">
+          <button type="button" onclick="window.ClaimsEngine.closeClaimDetailsModal(event)" class="sheet-close-btn" style="flex: 1; padding: 11px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-weight: 800; font-size: 13px; cursor: pointer;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. CLAIM WORKFLOW MODAL (INSIDE PHONE CONTAINER - MATCHING ATTENDANCE DESIGN) -->
+    <div class="indicators-overlay" id="claimWorkflowModalOverlay" onclick="window.ClaimsEngine.closeClaimWorkflowModal(event)" style="position: absolute; inset: 0; z-index: 999; display: none; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px);">
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="width: 100%; max-height: 85%; overflow-y: auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 20px 18px 24px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div class="sheet-handle" style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 2px; margin: 0 auto 14px; opacity: 0.8;"></div>
+        
+        <!-- Header -->
+        <div class="sheet-header" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(99, 102, 241, 0.2) 100%); display: flex; align-items: center; justify-content: center; font-size: 15px; border: 1px solid rgba(124, 58, 237, 0.35); color: var(--purple-primary);">
+              <i class="fa-solid fa-diagram-project"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 17.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Claim Approval Workflow</h3>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Multi-Tier Approval Audit Trail</div>
+            </div>
+          </div>
+          <button class="sheet-close-btn" onclick="window.ClaimsEngine.closeClaimWorkflowModal()" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Level 1 Step -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px; box-shadow: var(--shadow-card);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Level 1: Line Manager Approval</span>
+              <span style="font-size: 10.5px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 10px;">Active Step</span>
+            </div>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">Assigned Approvers Pool: Sarah Jenkins, Farhan Rahmat, Line Manager</div>
+            <button type="button" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; border: none; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-shield-halved"></i> Assign Backup Approver
+            </button>
+          </div>
+
+          <!-- Level 2 Step -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px; box-shadow: var(--shadow-card);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Level 2: Finance & Accounting Head</span>
+              <span style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); background: var(--bg-input); padding: 2px 8px; border-radius: 10px;">Pending Level 1</span>
+            </div>
+            <div style="font-size: 11.5px; color: var(--text-muted);">Assigned: Marcus Vance (Finance Controller)</div>
+          </div>
+
+          <!-- Audit Log Trail -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px; box-shadow: var(--shadow-card);">
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Audit History Trail</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11.5px;">
+              <div style="display: flex; justify-content: space-between; color: var(--text-primary);">
+                <span><i class="fa-solid fa-file-pen" style="color: var(--purple-primary); margin-right: 6px;"></i>Claim Request Submitted by Staff</span>
+                <span style="color: var(--text-muted);">13/09/2026 10:20</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; color: var(--text-primary);">
+                <span><i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>Entitlement & Policy Quota Validated</span>
+                <span style="color: var(--text-muted);">13/09/2026 10:21</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Close Workflow Button -->
+          <button type="button" onclick="window.ClaimsEngine.closeClaimWorkflowModal()" style="width: 100%; padding: 13px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; font-weight: 800; font-size: 13.5px; border: none; cursor: pointer; margin-top: 4px; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);">
+            Close Workflow
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- TOAST NOTIFICATION -->
     <div id="toastNotification" class="toast-box" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: #0f172a; color: #ffffff; padding: 10px 18px; border-radius: 20px; font-size: 12.5px; font-weight: 700; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); z-index: 200; opacity: 0; pointer-events: none; transition: all 0.25s ease; white-space: nowrap;">
        <span id="toastText">Action completed successfully</span>
