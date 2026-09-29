@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
   <style>
     * {
       margin: 0;
@@ -81,29 +82,127 @@
       cursor: pointer;
     }
 
-    /* History Cards matching clocking-history.html design specification */
+    .history-filter-period-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 10px;
+    }
+
+    /* Claim History Cards matching the Leave History card system */
     .history-card-item {
-      background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(52,211,153,0.03) 100%);
-      border: 1px solid rgba(16,185,129,0.3);
-      border-radius: 18px;
-      padding: 16px;
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 5px solid #64748b;
+      border-radius: 20px;
+      padding: 16px 18px;
       margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(16,185,129,0.05);
+      display: block;
+      box-shadow: var(--shadow-sm);
       text-decoration: none;
-      transition: transform 0.2s;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       cursor: pointer;
     }
-    html[data-theme="dark"] .history-card-item,
-    [data-theme="dark"] .history-card-item {
-      background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(52,211,153,0.05) 100%);
-      border-color: rgba(16,185,129,0.2);
-    }
+    .history-card-item:hover { box-shadow: var(--shadow-card); }
     .history-card-item:active {
       transform: scale(0.985);
     }
+    .history-card-item:focus-visible {
+      outline: 3px solid rgba(124, 58, 237, 0.24);
+      outline-offset: 2px;
+    }
+    .history-card-item[data-status="approved"] {
+      border-left-color: #10b981;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.06) 100%);
+    }
+    .history-card-item[data-status="submitted"] {
+      border-left-color: #f59e0b;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(245, 158, 11, 0.06) 100%);
+    }
+    .history-card-item[data-status="draft"] {
+      border-left-color: #7c3aed;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, 0.06) 100%);
+    }
+
+    .history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .history-card-heading {
+      min-width: 0;
+      flex: 1;
+    }
+    .history-card-title-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      min-width: 0;
+    }
+    .history-card-type-icon {
+      color: #38bdf8;
+      font-size: 12px;
+      line-height: 1.5;
+      flex: 0 0 auto;
+    }
+    .history-card-title {
+      min-width: 0;
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 14.5px;
+      font-weight: 800;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .history-card-ref {
+      margin-top: 3px;
+      color: var(--purple-text);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .history-card-details {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--bg-input);
+    }
+    .history-card-details > div {
+      margin-top: 0 !important;
+    }
+    .history-card-item[data-status="approved"] .history-card-details {
+      background: rgba(16, 185, 129, 0.05);
+      border-color: rgba(16, 185, 129, 0.18);
+    }
+    .history-card-item[data-status="submitted"] .history-card-details {
+      background: rgba(245, 158, 11, 0.05);
+      border-color: rgba(245, 158, 11, 0.18);
+    }
+    .history-card-item[data-status="draft"] .history-card-details {
+      background: rgba(124, 58, 237, 0.05);
+      border-color: rgba(124, 58, 237, 0.18);
+    }
+    .history-card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .history-cancel-btn {
+      padding: 8px 16px;
+      border: 1px solid #fda4af;
+      border-radius: 20px;
+      background: #fff1f2;
+      color: #e11d48;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .history-cancel-btn:hover { background: #ffe4e6; }
+    .history-cancel-btn:active { transform: scale(0.96); }
 
     .history-date-badge {
       width: 52px;
@@ -130,18 +229,19 @@
     .history-date-year { font-size: 10px; font-weight: 700; line-height: 1; opacity: 0.9; }
 
     .status-pill {
-      font-size: 10.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      font-size: 11px;
       font-weight: 800;
-      padding: 3px 9px;
+      padding: 5px 10px;
       border-radius: 10px;
       white-space: nowrap;
     }
-    .status-pill.submitted { background: rgba(59, 130, 246, 0.16); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
-    .status-pill.pending { background: rgba(245, 158, 11, 0.16); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-pill.submitted { background: rgba(245, 158, 11, 0.16); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
     .status-pill.approved { background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .status-pill.rejected { background: rgba(239, 68, 68, 0.16); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .status-pill.draft,
-    .status-pill.cancelled { background: rgba(148, 163, 184, 0.16); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .status-pill.draft { background: rgba(124, 58, 237, 0.16); color: var(--purple-text); border: 1px solid rgba(124, 58, 237, 0.3); }
 
     /* Bottom Sheet Drawer Modal */
     .modal-overlay {
@@ -253,7 +353,7 @@
       </div>
 
       <!-- ENTERPRISE FILTER BANNER -->
-      <div class="enterprise-toast-bar" onclick="openDateFilterModal()">
+      <div class="claim-filter-bar" onclick="openDateFilterModal()">
         <div>
           <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
             CURRENT FILTER
@@ -305,41 +405,42 @@
       </div>
     </div>
 
-    <!-- MODAL 3: START DATE, END DATE & BENEFIT TYPE FILTER MODAL -->
-    <div id="filterModalOverlay" class="modal-overlay" onclick="if(event.target===this) closeDateFilterModal()">
-      <div class="modal-sheet">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
-          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Filter Claim History</h3>
-          <button type="button" onclick="closeDateFilterModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;">
-            <i class="fa-solid fa-xmark"></i>
+    <!-- MODAL 3: PERIOD & TYPE FILTER MODAL -->
+    <div id="filterModalOverlay" class="claim-filter-sheet" onclick="if(event.target===this) closeDateFilterModal()">
+      <div class="claim-filter-panel" onclick="event.stopPropagation()">
+        <div class="claim-filter-handle"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title">Filter</h2>
+          <button type="button" class="claim-filter-reset" onclick="resetHistoryFilter()">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Reset</span>
           </button>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="claim-filter-fields">
           <div>
-            <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Start Date:</label>
-            <input type="date" id="filterStartDateInput" class="form-input-ctrl" value="2026-01-01"
-              style="width: 100%; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700;">
+            <label class="claim-filter-label">Start Period</label>
+            <div class="history-filter-period-grid">
+              <div class="claim-filter-select-wrap"><select id="filterStartYearInput" class="claim-filter-select" aria-label="Start period year"></select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i></div>
+              <div class="claim-filter-select-wrap"><select id="filterStartMonthInput" class="claim-filter-select" aria-label="Start period month"></select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i></div>
+            </div>
           </div>
 
           <div>
-            <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">End Date:</label>
-            <input type="date" id="filterEndDateInput" class="form-input-ctrl" value="2026-12-31"
-              style="width: 100%; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700;">
+            <label class="claim-filter-label">End Period</label>
+            <div class="history-filter-period-grid">
+              <div class="claim-filter-select-wrap"><select id="filterEndYearInput" class="claim-filter-select" aria-label="End period year"></select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i></div>
+              <div class="claim-filter-select-wrap"><select id="filterEndMonthInput" class="claim-filter-select" aria-label="End period month"></select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i></div>
+            </div>
           </div>
 
-          <div>
-            <label id="filterBenefitTypeLabel" style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Benefit Type:</label>
-            <select id="filterBenefitTypeSelect" class="form-input-ctrl" style="width: 100%; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700;">
-              <!-- Populated dynamically -->
-            </select>
+          <div id="filterTypeField">
+            <label id="filterBenefitTypeLabel" class="claim-filter-label">Benefit Type</label>
+            <div class="claim-filter-select-wrap"><select id="filterBenefitTypeSelect" class="claim-filter-select"></select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i></div>
           </div>
 
-          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
-            <button type="button" onclick="closeDateFilterModal()" style="padding: 10px 20px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; cursor: pointer;">Cancel</button>
-            <button type="button" onclick="applyFilters()" style="padding: 10px 24px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">Apply Filter</button>
-          </div>
         </div>
+        <button type="button" class="claim-filter-apply" onclick="applyFilters()">Apply Filter</button>
       </div>
     </div>
 
@@ -348,9 +449,19 @@
 
   <script>
     let activeTabKey = 'benefit';
-    let activeStartDate = '2026-01-01';
-    let activeEndDate = '2026-12-31';
+    let activeStartPeriod = '202601';
+    let activeEndPeriod = '202612';
     let activeBenefitType = 'all';
+
+    const FILTER_YEARS = Array.from({ length: 11 }, (_, index) => String(2016 + index));
+    const FILTER_MONTHS = [
+      { value: '01', text: 'January' }, { value: '02', text: 'February' },
+      { value: '03', text: 'March' }, { value: '04', text: 'April' },
+      { value: '05', text: 'May' }, { value: '06', text: 'June' },
+      { value: '07', text: 'July' }, { value: '08', text: 'August' },
+      { value: '09', text: 'September' }, { value: '10', text: 'October' },
+      { value: '11', text: 'November' }, { value: '12', text: 'December' }
+    ];
 
     // 7 Tab Metadata Schema
     const CATEGORIES = [
@@ -359,8 +470,8 @@
       { id: 'ot', name: 'OT', title: 'Overtime (OT) Claims History', icon: '⏰' },
       { id: 'travel', name: 'Travel', title: 'Travel & Mileage Claims History', icon: '🚗' },
       { id: 'entertainment', name: 'Entertainment', title: 'Entertainment Claims History', icon: '🍽️' },
-      { id: 'advance', name: 'Advance', title: 'Advance Claims History', icon: '💵' },
-      { id: 'expense', name: 'Expense', title: 'Expenses Claims History', icon: '🧾' }
+      { id: 'advance', name: 'Advance', title: 'Advance Request Listing', icon: '💵' },
+      { id: 'expense', name: 'Expense', title: 'Expense Claims', icon: '🧾' }
     ];
 
     const BENEFIT_TYPES_MAP = {
@@ -394,7 +505,7 @@
         { value: 'STEAKHOUSE DINNER', text: 'Steakhouse Dinner' }
       ],
       advance: [
-        { value: 'all', text: 'All Advance Types' },
+        { value: 'all', text: 'All Benefit Types' },
         { value: 'OVERSEAS TRAVEL ADVANCE', text: 'Overseas Travel Advance' },
         { value: 'EQUIPMENT ADVANCE', text: 'Equipment Advance' }
       ],
@@ -409,7 +520,7 @@
     const HISTORY_DATA = {
       benefit: [
         { id: 'CBF000000000220', title: 'CAR MAINTENANCE', subtype: 'Car Maintenance Allowance', date: '09 SEP 2026', isoDate: '2026-09-09', day: '09', month: 'SEP', dayName: 'WED', merchant: 'Teo Seng Car Workshop', amount: '12.00', quantity: '5.00', claimPeriod: '202609', dateFrom: '9 Sep 2026', dateTo: '9 Sep 2026', benefitYear: '2026', receiptNo: '5555555', otherRef: '', purpose: 'Test', remark: '', cancellationRemark: '', attachments: '1000037307.jpg', currency: 'USD', status: 'submitted', statusText: 'Submitted', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
-        { id: 'CBF000000000219', title: 'PERSONAL ALLOWANCE', subtype: 'Personal Wellness Allowance', date: '08 SEP 2026', isoDate: '2026-09-08', day: '08', month: 'SEP', dayName: 'TUE', merchant: 'Fitness First Club', amount: '530.00', quantity: '1.00', claimPeriod: '202609', dateFrom: '8 Sep 2026', dateTo: '8 Sep 2026', benefitYear: '2026', receiptNo: '9910231', otherRef: '', purpose: 'Gym Membership', remark: '', cancellationRemark: '', attachments: 'Fitness_Receipt.jpg', currency: 'MYR', status: 'pending', statusText: 'Pending Approval', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
+        { id: 'CBF000000000219', title: 'PERSONAL ALLOWANCE', subtype: 'Personal Wellness Allowance', date: '08 SEP 2026', isoDate: '2026-09-08', day: '08', month: 'SEP', dayName: 'TUE', merchant: 'Fitness First Club', amount: '530.00', quantity: '1.00', claimPeriod: '202609', dateFrom: '8 Sep 2026', dateTo: '8 Sep 2026', benefitYear: '2026', receiptNo: '9910231', otherRef: '', purpose: 'Gym Membership', remark: '', cancellationRemark: '', attachments: 'Fitness_Receipt.jpg', currency: 'MYR', status: 'draft', statusText: 'Draft', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
         { id: 'CBF000000000215', title: 'MOBILE PHONE', subtype: 'Monthly Mobile Telco Bill', date: '01 SEP 2026', isoDate: '2026-09-01', day: '01', month: 'SEP', dayName: 'TUE', merchant: 'Maxis Mobile MY', amount: '120.00', quantity: '1.00', claimPeriod: '202609', dateFrom: '1 Sep 2026', dateTo: '1 Sep 2026', benefitYear: '2026', receiptNo: '8839101', otherRef: '', purpose: 'Telco Allowance', remark: '', cancellationRemark: '', attachments: 'Maxis_Bill.pdf', currency: 'MYR', status: 'approved', statusText: 'Approved', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
         { id: 'CBF000000000210', title: 'OPTICAL & DENTAL', subtype: 'Optical Prescription Glasses', date: '25 AUG 2026', isoDate: '2026-08-25', day: '25', month: 'AUG', dayName: 'TUE', merchant: 'Owndays Optical Store', amount: '250.00', quantity: '1.00', claimPeriod: '202608', dateFrom: '25 Aug 2026', dateTo: '25 Aug 2026', benefitYear: '2026', receiptNo: '7748191', otherRef: '', purpose: 'Prescription Glasses', remark: '', cancellationRemark: '', attachments: 'Owndays_Receipt.jpg', currency: 'MYR', status: 'approved', statusText: 'Approved', empName: 'Farhan binti rahmat', empNo: 'EBB12' }
       ],
@@ -500,14 +611,152 @@
       ]
     };
 
+    // UI-only detail data mirrors each listing's form structure.
+    Object.assign(HISTORY_DATA.expense[0], {
+      benefitType: 'GENERAL EXPENSE',
+      totalAmount: '120.00',
+      project: 'Project Alpha',
+      costCenter: '900000',
+      description: 'Client pitch deck booklet printing',
+      claimDetails: {
+        transactionDate: '11 Sep 2026',
+        receiptNo: 'RCP-55019',
+        expense: 'OFFICE SUPPLIES',
+        amount: '120.00',
+        currency: 'MYR',
+        forexRate: '1.00',
+        claimAmount: '120.00',
+        description: 'Client pitch deck booklet printing',
+        attachments: 'Print_Invoice.pdf',
+        uploadFiles: 'Print_Invoice.pdf'
+      }
+    });
+
+    Object.assign(HISTORY_DATA.advance[0], {
+      costCenter: '110200',
+      claimType: 'Travelling',
+      benefitType: 'TRAVEL',
+      project: 'Project Alpha',
+      forexRate: '1.00',
+      approvedAmount: '1500.00',
+      description: 'Singapore Expo travel allowance',
+      claimDetails: {
+        expense: 'DAILY TRAVEL ALLOWANCE',
+        project: 'Project Alpha',
+        description: 'Singapore Expo travel allowance',
+        currency: 'MYR',
+        forexRate: '1.00',
+        claimAmount: '1500.00',
+        localAmount: '1500.00',
+        attachments: 'Approval_Letter.pdf',
+        uploadFiles: 'Approval_Letter.pdf'
+      }
+    });
+
+    Object.assign(HISTORY_DATA.entertainment[0], {
+      travelMileageClaimNo: 'TM-2026-0102',
+      benefitType: 'ENTERTAINMENT',
+      project: 'Project Alpha',
+      costCenter: '900000',
+      entertainedPerson: 'Prospective Client Team',
+      placeEntertained: 'Naughty Nuri’s Pavilion',
+      totalAmount: '220.00',
+      internalAttendees: '2',
+      externalAttendees: '3',
+      averagePerPax: '44.00',
+      boardApprove: 'No',
+      giftDeclaration: 'No',
+      travelHospitalityDeclaration: 'No',
+      declaration: 'Business entertainment declaration',
+      agree: 'Yes',
+      description: 'Client partnership lunch',
+      claimDetails: {
+        date: '18 Sep 2026',
+        expense: 'ENTERTAINMENT',
+        receiptNo: 'INV-99012',
+        description: 'Client partnership lunch',
+        project: 'Project Alpha',
+        entertainedPerson: 'Prospective Client Team',
+        placeEntertained: 'Naughty Nuri’s Pavilion',
+        localAmount: '220.00',
+        currency: 'MYR',
+        forexRate: '1.00',
+        amount: '220.00',
+        attachments: 'Dining_Receipt.jpg',
+        uploadFiles: 'Dining_Receipt.jpg'
+      }
+    });
+
+    Object.assign(HISTORY_DATA.travel[0], {
+      historyDetailType: 'mileage',
+      travelRequestNo: 'CTR-2026-0102',
+      benefitType: 'PETROL ALLOWANCE',
+      costCenter: 'MANAGEMENT',
+      chargeTo: 'KLCC PROJECT',
+      claimTotal: '336.00',
+      travels: 'No travels',
+      expenses: 'No expenses',
+      mileageDetails: {
+        origin: 'Kuala Lumpur HQ',
+        destination: 'Penang Branch',
+        departDate: '10 Sep 2026',
+        departTime: '08:30',
+        arrivalDate: '10 Sep 2026',
+        arrivalTime: '14:30',
+        distance: '420.00',
+        amount: '336.00',
+        vehicle: 'Personal Car (VAA 1234)',
+        description: 'Client site audit',
+        attachments: 'Toll_Receipt.pdf',
+        uploadFiles: 'Toll_Receipt.pdf'
+      }
+    });
+
+    Object.assign(HISTORY_DATA.ot[0], {
+      otType: '1.5 OT',
+      startTime: '18:00',
+      endTime: '00:00',
+      crossDay: 'Yes',
+      breakHours: '0',
+      breakMinutes: '30',
+      project: 'Project Alpha',
+      reason: 'Peak sprint system deployment',
+      mealAllowance: 'Yes',
+      mealAllowanceAmount: '15.00',
+      transport: 'Personal Car',
+      distance: '18.00 KM',
+      way: 'Return',
+      uploadFiles: 'OT_Timesheet.pdf'
+    });
+
+    function getHistoryStatus(item) {
+      const allowedStatuses = {
+        approved: 'Approved',
+        submitted: 'Submitted',
+        draft: 'Draft'
+      };
+      const key = allowedStatuses[item.status] ? item.status : 'submitted';
+      return { key, text: allowedStatuses[key] };
+    }
+
     function updateFilterDropdownOptions() {
       const select = document.getElementById('filterBenefitTypeSelect');
       const label = document.getElementById('filterBenefitTypeLabel');
+      const typeField = document.getElementById('filterTypeField');
       if (!select) return;
 
       const types = BENEFIT_TYPES_MAP[activeTabKey] || BENEFIT_TYPES_MAP.benefit;
       const catMeta = CATEGORIES.find(c => c.id === activeTabKey) || CATEGORIES[0];
-      if (label) label.textContent = `${catMeta.name} Type:`;
+      const typeLabels = {
+        benefit: 'Benefit Type',
+        medical: 'Medical Type',
+        travel: 'Travel & Mileage Type',
+        entertainment: 'Entertainment Type',
+        advance: 'Benefit Type',
+        expense: 'Expense Type'
+      };
+      if (label) label.textContent = typeLabels[activeTabKey] || `${catMeta.name} Type`;
+      if (typeField) typeField.style.display = activeTabKey === 'ot' ? 'none' : '';
 
       select.innerHTML = '';
       types.forEach(t => {
@@ -517,6 +766,23 @@
         if (t.value === activeBenefitType) opt.selected = true;
         select.appendChild(opt);
       });
+
+      const setOptions = (element, options, selectedValue) => {
+        if (!element) return;
+        element.innerHTML = options.map(option => {
+          const value = typeof option === 'string' ? option : option.value;
+          const text = typeof option === 'string' ? option : option.text;
+          return `<option value="${value}" ${value === selectedValue ? 'selected' : ''}>${text}</option>`;
+        }).join('');
+      };
+      const startYear = activeStartPeriod.slice(0, 4);
+      const startMonth = activeStartPeriod.slice(4, 6);
+      const endYear = activeEndPeriod.slice(0, 4);
+      const endMonth = activeEndPeriod.slice(4, 6);
+      setOptions(document.getElementById('filterStartYearInput'), FILTER_YEARS, startYear);
+      setOptions(document.getElementById('filterStartMonthInput'), FILTER_MONTHS, startMonth);
+      setOptions(document.getElementById('filterEndYearInput'), FILTER_YEARS, endYear);
+      setOptions(document.getElementById('filterEndMonthInput'), FILTER_MONTHS, endMonth);
     }
 
     function switchClaimTab(tabKey) {
@@ -550,14 +816,18 @@
 
       // 1. Filter by Benefit Type
       if (activeBenefitType !== 'all') {
-        items = items.filter(i => i.title === activeBenefitType || i.title.toUpperCase().includes(activeBenefitType.toUpperCase()));
+        const selectedType = activeBenefitType.toUpperCase();
+        items = items.filter(i => [i.title, i.subtype, i.benefitType]
+          .filter(Boolean)
+          .some(value => value.toUpperCase().includes(selectedType)));
       }
 
-      // 2. Filter by Start Date & End Date
-      if (activeStartDate && activeEndDate) {
+      // 2. Filter by selected claim periods, not individual receipt dates.
+      if (activeStartPeriod && activeEndPeriod) {
         items = items.filter(i => {
-          if (!i.isoDate) return true;
-          return i.isoDate >= activeStartDate && i.isoDate <= activeEndDate;
+          const recordPeriod = String(i.claimPeriod || (i.isoDate || '').slice(0, 7).replace('-', ''));
+          if (!recordPeriod) return true;
+          return recordPeriod >= activeStartPeriod && recordPeriod <= activeEndPeriod;
         });
       }
 
@@ -576,9 +846,20 @@
       }
 
       items.forEach(item => {
-        const card = document.createElement('div');
+        const displayStatus = getHistoryStatus(item);
+        const card = document.createElement('article');
         card.className = 'history-card-item';
+        card.dataset.status = displayStatus.key;
+        card.setAttribute('role', 'button');
+        card.tabIndex = 0;
         card.onclick = () => openClaimDetailsModal(item);
+        card.onkeydown = event => {
+          if (event.target.closest('button')) return;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openClaimDetailsModal(item);
+          }
+        };
 
         const periodDisplay = item.claimPeriod
           ? (item.claimPeriod.length === 6 ? `${item.claimPeriod.substring(0,4)}-${item.claimPeriod.substring(4)}` : item.claimPeriod)
@@ -592,12 +873,7 @@
         }
 
         let detailsBlock = '';
-        const statusRow = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="color: var(--text-muted); font-weight: 600;">Status :</span>
-            <span class="status-pill ${item.status}">${item.statusText}</span>
-          </div>
-        `;
+        const statusRow = '';
 
         if (activeTabKey === 'ot') {
           const timeDisplay = item.otTime || item.time || '18:00 - 00:00';
@@ -610,7 +886,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Hours :</span>
-                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">${hoursDisplay}</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--text-primary);">${hoursDisplay}</span>
               </div>
               ${statusRow}
             </div>
@@ -628,7 +904,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Claim Amount :</span>
-                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--text-primary);">RM ${item.amount}</span>
               </div>
               ${statusRow}
             </div>
@@ -642,7 +918,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Claim Amount :</span>
-                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--text-primary);">RM ${item.amount}</span>
               </div>
               ${statusRow}
             </div>
@@ -660,28 +936,71 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 600;">Amount :</span>
-                <span style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${item.amount}</span>
+                <span style="font-size: 14px; font-weight: 900; color: var(--text-primary);">RM ${item.amount}</span>
               </div>
               ${statusRow}
             </div>
           `;
         }
 
-        card.innerHTML = `
-          <div style="width: 100%;">
-            <!-- Top Row: Title & Chevron -->
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
-              <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1;">
-                ${item.title}
-              </h4>
-              <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.7;"></i>
+        const categoryIconMap = {
+          benefit: 'fa-gift',
+          medical: 'fa-kit-medical',
+          ot: 'fa-clock',
+          travel: 'fa-route',
+          entertainment: 'fa-utensils',
+          advance: 'fa-hand-holding-dollar',
+          expense: 'fa-receipt'
+        };
+        const statusIconMap = {
+          approved: 'fa-square-check',
+          submitted: 'fa-paper-plane',
+          draft: 'fa-floppy-disk'
+        };
+        const categoryIcon = categoryIconMap[activeTabKey] || 'fa-file-invoice';
+        const statusIcon = statusIconMap[displayStatus.key];
+        const canCancel = ['submitted', 'approved', 'draft'].includes(displayStatus.key);
+        const actionLabel = displayStatus.key === 'draft' ? 'Discard' : 'Cancel';
+        const actionHtml = canCancel
+          ? `<div class="history-card-actions">
+              <button type="button" class="history-cancel-btn" onclick="handleHistoryCancel(event, '${item.id}')">${actionLabel}</button>
             </div>
-            ${detailsBlock}
+          `
+          : '';
+
+        const cardTitle = activeTabKey === 'ot'
+          ? `${periodDisplay} · ${datesDisplay}`
+          : (activeTabKey === 'advance' || activeTabKey === 'expense')
+            ? (item.purpose || 'No Purpose')
+            : item.title;
+
+        card.innerHTML = `
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <span class="history-card-type-icon"><i class="fa-solid ${categoryIcon}"></i></span>
+                <h4 class="history-card-title">${cardTitle}</h4>
+              </div>
+              <div class="history-card-ref">Ref: ${item.id}</div>
+            </div>
+            <span class="status-pill ${displayStatus.key}">
+              <i class="fa-solid ${statusIcon}"></i>
+              ${displayStatus.text}
+            </span>
           </div>
+          <div class="history-card-details">${detailsBlock}</div>
+          ${actionHtml}
         `;
 
         container.appendChild(card);
       });
+    }
+
+    function handleHistoryCancel(event, itemId) {
+      event.stopPropagation();
+      if (typeof showToast === 'function') {
+        showToast(`Cancel selected for ${itemId}`);
+      }
     }
 
     // Modal 1: Open 7-Category Quick Grid Sheet (Matching Screenshot 2)
@@ -729,10 +1048,65 @@
       if (!modal || !container) return;
 
       const isMedical = activeTabKey === 'medical' || item.benefitType === 'MEDICAL CLAIMS' || (item.id && item.id.startsWith('CMD')) || item.title === 'Medical Listing';
+      const isTravelRequest = activeTabKey === 'travel' && item.historyDetailType === 'travel-request';
+      const detailStatus = getHistoryStatus(item);
 
       let headerTitle = item.title ? item.title.toUpperCase() : 'CLAIM DETAILS';
       if (isMedical) {
         headerTitle = 'Medical Listing';
+      } else if (activeTabKey === 'expense') {
+        headerTitle = 'Expense Claims';
+      } else if (activeTabKey === 'advance') {
+        headerTitle = 'Advance Request Listing';
+      } else if (activeTabKey === 'entertainment') {
+        headerTitle = 'Entertainment Claim Listing';
+      } else if (activeTabKey === 'ot') {
+        const displayOtValue = value => (
+          value === undefined || value === null || value === ''
+            ? '<span style="color: var(--text-muted);">—</span>'
+            : value
+        );
+        const renderOtRows = rows => rows.map(([label, value]) => `
+          <tr>
+            <td style="padding: 7px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 700; color: var(--text-muted); width: 42%; background: var(--bg-input); vertical-align: top;">${label}</td>
+            <td style="padding: 7px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 600; color: var(--text-primary); background: var(--bg-card); vertical-align: top; overflow-wrap: anywhere;">${displayOtValue(value)}</td>
+          </tr>
+        `).join('');
+        const attachmentValue = item.attachments
+          ? `<span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-primary);"><i class="fa-solid fa-paperclip" style="color: var(--purple-primary);"></i>${item.attachments}</span>`
+          : 'No attachments';
+        bodyHtml = `
+          <table style="width: 100%; border-collapse: collapse; font-family: inherit; font-size: 11.5px;">
+            <tbody>
+              ${renderOtRows([
+                ['Reference #', item.id],
+                ['Status', detailStatus.text],
+                ['Period', item.claimPeriod],
+                ['Date', item.dateFrom || item.date],
+                ['OT Type', item.otType || item.title],
+                ['Start Time', item.startTime],
+                ['End Time', item.endTime],
+                ['Cross Day?', item.crossDay],
+                ['Break Hours', item.breakHours],
+                ['Break Minutes', item.breakMinutes],
+                ['Project', item.project],
+                ['Reason', item.reason || item.purpose],
+                ['Meal Allowance', item.mealAllowance],
+                ['Meal Allowance Amount', item.mealAllowanceAmount],
+                ['Transport', item.transport],
+                ['Distance', item.distance],
+                ['Way', item.way],
+                ['Remarks', item.remark],
+                ['Attachments', attachmentValue],
+                ['Upload Files', item.uploadFiles || attachmentValue]
+              ])}
+            </tbody>
+          </table>
+        `;
+      } else if (activeTabKey === 'travel') {
+        headerTitle = isTravelRequest ? 'Travel Request History' : 'Travelling Mileage Listing';
+      } else if (activeTabKey === 'ot') {
+        headerTitle = 'OT Claim History';
       }
 
       let bodyHtml = '';
@@ -785,7 +1159,7 @@
           <table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 11.5px;">
             <tbody>
               ${renderRow('Reference #', item.id || 'CMD000000000276')}
-              ${renderRow('Status', item.statusText || 'Submitted')}
+              ${renderRow('Status', detailStatus.text)}
               ${renderRow('Benefit Year', item.benefitYear || '2026')}
               ${renderRow('Claim Period', item.claimPeriod || '202601')}
               ${renderRow('Benefit Type', item.benefitType || 'MEDICAL CLAIMS')}
@@ -821,6 +1195,265 @@
             </table>
           </div>
         `;
+      } else if (activeTabKey === 'travel') {
+        const displayTravelValue = value => (
+          value === undefined || value === null || value === ''
+            ? '<span style="color: var(--text-muted);">—</span>'
+            : value
+        );
+        const renderTravelRows = rows => rows.map(([label, value]) => `
+          <tr>
+            <td style="padding: 7px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 700; color: var(--text-muted); width: 42%; background: var(--bg-input); vertical-align: top;">${label}</td>
+            <td style="padding: 7px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 600; color: var(--text-primary); background: var(--bg-card); vertical-align: top; overflow-wrap: anywhere;">${displayTravelValue(value)}</td>
+          </tr>
+        `).join('');
+        const travelTable = rows => `<table style="width: 100%; border-collapse: collapse; font-family: inherit; font-size: 11.5px;"><tbody>${renderTravelRows(rows)}</tbody></table>`;
+        const travelSection = (title, rows) => `
+          <div style="margin: 14px 0 7px; font-size: 12px; font-weight: 800; color: var(--text-secondary);">${title}</div>
+          <div style="border: 1px solid var(--border-subtle); border-left: 3px solid var(--purple-primary); border-radius: 10px; overflow: hidden; background: var(--bg-card);">${travelTable(rows)}</div>
+        `;
+        const travelDetail = item.travelDetails || {};
+        const attachmentValue = item.attachments
+          ? `<span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-primary);"><i class="fa-solid fa-paperclip" style="color: var(--purple-primary);"></i>${item.attachments}</span>`
+          : 'No attachments';
+
+        if (isTravelRequest) {
+          const task = item.taskDetails || {};
+          bodyHtml = `
+            ${travelTable([
+              ['Reference #', item.id],
+              ['Status', detailStatus.text],
+              ['Emp #', item.empNo ? `#${item.empNo}` : '—'],
+              ['Name', item.empName],
+              ['Travel Period', item.claimPeriod],
+              ['Date From', item.dateFrom || item.date],
+              ['Date To', item.dateTo || item.date],
+              ['Training Reference #', item.trainingReference],
+              ['Destination', item.destination],
+              ['Benefit', item.benefitType],
+              ['Purpose', item.purpose],
+              ['Car Type', item.carType],
+              ['Charge To', item.chargeTo],
+              ['Transport Type', item.transportType],
+              ['Travel Type', item.travelType],
+              ['Accommodation', item.accommodation],
+              ['Flight?', item.flight],
+              ['Remark', item.remark],
+              ['Passenger Details', item.passengerDetails || 'No passenger details']
+            ])}
+            ${travelSection('Task Details', [
+              ['Task', task.task],
+              ['Purpose', task.purpose],
+              ['Location', task.location],
+              ['Start Date', task.startDate],
+              ['End Date', task.endDate],
+              ['Est. Start Time', task.startTime],
+              ['Est. End Time', task.endTime],
+              ['Attachments', task.attachments || attachmentValue],
+              ['Upload Files', task.uploadFiles || attachmentValue]
+            ])}
+            ${travelSection('Travel Details', [
+              ['Origin', travelDetail.origin],
+              ['Destination', travelDetail.destination],
+              ['Depart Date', travelDetail.departDate],
+              ['Depart Time', travelDetail.departTime],
+              ['Arrival Date', travelDetail.arrivalDate],
+              ['Arrival Time', travelDetail.arrivalTime],
+              ['No. Days', travelDetail.days],
+              ['Project', travelDetail.project],
+              ['Transport', travelDetail.transport],
+              ['Justification', travelDetail.justification],
+              ['Preferred Transport Type', travelDetail.preferredTransportType],
+              ['Transport No.', travelDetail.transportNo],
+              ['Need Accommodation', travelDetail.needAccommodation],
+              ['Need Allowance', travelDetail.needAllowance],
+              ['Accommodation Detail', travelDetail.accommodationDetail],
+              ['Booking Type', travelDetail.bookingType],
+              ['Class', travelDetail.travelClass],
+              ['Distance (KM)', travelDetail.distance],
+              ['Amount', travelDetail.amount],
+              ['Attachments', travelDetail.attachments || attachmentValue],
+              ['Upload Files', travelDetail.uploadFiles || attachmentValue]
+            ])}
+            <div style="margin-top: 12px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">${item.accommodationDetails || 'No accommodation details'}</div>
+          `;
+        } else {
+          const mileage = item.mileageDetails || {};
+          bodyHtml = `
+            ${travelTable([
+              ['Reference #', item.id],
+              ['Status', detailStatus.text],
+              ['Emp #', item.empNo ? `#${item.empNo}` : '—'],
+              ['Name', item.empName],
+              ['Travel Request #', item.travelRequestNo],
+              ['Claim Period', item.claimPeriod],
+              ['Benefit Type', item.benefitType],
+              ['Date From', item.dateFrom || item.date],
+              ['Date To', item.dateTo || item.date],
+              ['Cost Center', item.costCenter],
+              ['Charge To', item.chargeTo],
+              ['Purpose', item.purpose],
+              ['Claim Currency', item.currency],
+              ['Claim Total', item.claimTotal || item.amount],
+              ['Remark', item.remark]
+            ])}
+            ${travelSection('Mileages', [
+              ['Origin', mileage.origin],
+              ['Destination', mileage.destination],
+              ['Depart Date', mileage.departDate],
+              ['Depart Time', mileage.departTime],
+              ['Arrival Date', mileage.arrivalDate],
+              ['Arrival Time', mileage.arrivalTime],
+              ['Distance (KM)', mileage.distance],
+              ['Amount', mileage.amount || item.amount],
+              ['Vehicle', mileage.vehicle],
+              ['Description', mileage.description],
+              ['Attachments', mileage.attachments || attachmentValue],
+              ['Upload Files', mileage.uploadFiles || attachmentValue]
+            ])}
+            <div style="margin-top: 12px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">${item.travels || 'No travels'}</div>
+            <div style="margin-top: 8px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">${item.expenses || 'No expenses'}</div>
+            ${travelSection('Attachments', [['Attachments', attachmentValue]])}
+          `;
+        }
+      } else if (['expense', 'advance', 'entertainment'].includes(activeTabKey)) {
+        const displayValue = value => (
+          value === undefined || value === null || value === ''
+            ? '<span style="color: var(--text-muted);">—</span>'
+            : value
+        );
+        const renderDetailRows = rows => rows.map(([label, value]) => `
+          <tr>
+            <td style="padding: 7px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 700; color: var(--text-muted); width: 42%; background: var(--bg-input); vertical-align: top;">${label}</td>
+            <td style="padding: 7px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 600; color: var(--text-primary); background: var(--bg-card); vertical-align: top; overflow-wrap: anywhere;">${displayValue(value)}</td>
+          </tr>
+        `).join('');
+        const detailTable = rows => `
+          <table style="width: 100%; border-collapse: collapse; font-family: inherit; font-size: 11.5px;">
+            <tbody>${renderDetailRows(rows)}</tbody>
+          </table>
+        `;
+        const detailSection = (title, rows) => `
+          <div style="margin: 14px 0 7px; font-size: 12px; font-weight: 800; color: var(--text-secondary);">${title}</div>
+          <div style="border: 1px solid var(--border-subtle); border-left: 3px solid var(--purple-primary); border-radius: 10px; overflow: hidden; background: var(--bg-card);">
+            ${detailTable(rows)}
+          </div>
+        `;
+        const detail = item.claimDetails || {};
+        const attachmentValue = item.attachments
+          ? `<span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-primary);"><i class="fa-solid fa-paperclip" style="color: var(--purple-primary);"></i>${item.attachments}</span>`
+          : 'No attachments';
+
+        if (activeTabKey === 'expense') {
+          bodyHtml = `
+            ${detailTable([
+              ['Reference #', item.id],
+              ['Benefit Year', item.benefitYear],
+              ['Claim Period', item.claimPeriod],
+              ['Benefit Type', item.benefitType],
+              ['Date From', item.dateFrom || item.date],
+              ['Date To', item.dateTo || item.date],
+              ['Currency', item.currency],
+              ['Total Amount', item.totalAmount || item.amount],
+              ['Project', item.project],
+              ['Cost Center', item.costCenter],
+              ['Purpose', item.purpose],
+              ['Status', detailStatus.text],
+              ['Remark', item.remark]
+            ])}
+            ${detailSection('Claim Details', [
+              ['Transaction Date', detail.transactionDate || item.dateFrom || item.date],
+              ['Receipt No.', detail.receiptNo || item.receiptNo],
+              ['Expense', detail.expense || item.expense || item.title],
+              ['Amount', detail.amount || item.amount],
+              ['Currency', detail.currency || item.currency],
+              ['Forex Rate', detail.forexRate || item.forexRate || '1.00'],
+              ['Claim Amount', detail.claimAmount || item.amount],
+              ['Description', detail.description || item.description],
+              ['Attachments', detail.attachments || attachmentValue],
+              ['Upload Files', detail.uploadFiles || attachmentValue]
+            ])}
+          `;
+        } else if (activeTabKey === 'advance') {
+          bodyHtml = `
+            ${detailTable([
+              ['Reference #', item.id],
+              ['Emp #', item.empNo ? `#${item.empNo}` : '—'],
+              ['Name', item.empName],
+              ['Status', detailStatus.text],
+              ['Period', item.claimPeriod],
+              ['Cost Center', item.costCenter],
+              ['Start Date', item.dateFrom || item.date],
+              ['End Date', item.dateTo || item.date],
+              ['Claim Type', item.claimType],
+              ['Benefit Type', item.benefitType],
+              ['Project', item.project],
+              ['Purpose', item.purpose],
+              ['Amount', item.amount],
+              ['Claim Currency', item.currency],
+              ['Forex Rate', item.forexRate || '1.00'],
+              ['Approved Amount', item.approvedAmount || item.amount],
+              ['Remarks', item.remark]
+            ])}
+            ${detailSection('Expense', [
+              ['Expense', detail.expense || item.expense],
+              ['Project', detail.project || item.project],
+              ['Description', detail.description || item.description],
+              ['Currency', detail.currency || item.currency],
+              ['Forex Rate', detail.forexRate || item.forexRate || '1.00'],
+              ['Claim Amount', detail.claimAmount || item.amount],
+              ['Local Amount', detail.localAmount || item.amount],
+              ['Attachments', detail.attachments || attachmentValue],
+              ['Upload Files', detail.uploadFiles || attachmentValue]
+            ])}
+          `;
+        } else {
+          bodyHtml = `
+            ${detailTable([
+              ['Reference #', item.id],
+              ['Status', detailStatus.text],
+              ['Emp #', item.empNo ? `#${item.empNo}` : '—'],
+              ['Name', item.empName],
+              ['Travel Mileage Claim #', item.travelMileageClaimNo],
+              ['Claim Period', item.claimPeriod],
+              ['Date From', item.dateFrom || item.date],
+              ['Date To', item.dateTo || item.date],
+              ['Benefit Type', item.benefitType],
+              ['Entitlement Year', item.benefitYear],
+              ['Project', item.project],
+              ['Cost Centre', item.costCenter],
+              ['Entertained Person/Org', item.entertainedPerson],
+              ['Place Entertained', item.placeEntertained],
+              ['Purpose', item.purpose],
+              ['Total Amount', item.totalAmount || item.amount],
+              ['No. Internal Attendee', item.internalAttendees || '0'],
+              ['No. External Attendee', item.externalAttendees || '0'],
+              ['Avg Per Pax', item.averagePerPax || '0.00'],
+              ['Board Approve', item.boardApprove || 'No'],
+              ['Gift/Ent Declaration', item.giftDeclaration || 'No'],
+              ['Trv/Hosp. Declaration', item.travelHospitalityDeclaration || 'No'],
+              ['Remarks', item.remark],
+              ['Declaration', item.declaration],
+              ['Agree', item.agree || 'No'],
+              ['Attachments', attachmentValue]
+            ])}
+            ${detailSection('Claim Details', [
+              ['Date', detail.date || item.dateFrom || item.date],
+              ['Expense', detail.expense || item.expense || 'ENTERTAINMENT'],
+              ['Receipt No.', detail.receiptNo || item.receiptNo],
+              ['Description', detail.description || item.description],
+              ['Project', detail.project || item.project],
+              ['Entertained Person/Org', detail.entertainedPerson || item.entertainedPerson],
+              ['Place Entertained', detail.placeEntertained || item.placeEntertained],
+              ['Local Amount', detail.localAmount || item.amount],
+              ['Currency', detail.currency || item.currency],
+              ['Forex Rate', detail.forexRate || item.forexRate || '1.00'],
+              ['Amount', detail.amount || item.amount],
+              ['Attachments', detail.attachments || attachmentValue],
+              ['Upload Files', detail.uploadFiles || attachmentValue]
+            ])}
+          `;
+        }
       } else {
         // Benefit Claim & General Claim Details Layout (Matching Screenshot 1)
         const renderCellVal = (val, isGrayBarIfEmpty = false) => {
@@ -858,7 +1491,7 @@
               ${renderRow('Reference #', item.id || 'CBF000000000220')}
               ${renderRow('Emp#', item.empNo ? `#${item.empNo}` : '#EBB12')}
               ${renderRow('Name', item.empName || 'Farhan binti rahmat')}
-              ${renderRow('Status', item.statusText || 'Submitted')}
+              ${renderRow('Status', detailStatus.text)}
               ${renderRow('Currency', item.currency || 'USD')}
               ${renderRow('Amount', item.amount || '12.00')}
               ${renderRow('Quantity', item.quantity || '5.00')}
@@ -912,14 +1545,23 @@
       if (modal) modal.classList.remove('active');
     }
 
+    function resetHistoryFilter() {
+      activeStartPeriod = '202601';
+      activeEndPeriod = '202612';
+      activeBenefitType = 'all';
+      updateFilterDropdownOptions();
+    }
+
     function applyFilters() {
-      const startEl = document.getElementById('filterStartDateInput');
-      const endEl = document.getElementById('filterEndDateInput');
+      const startYearEl = document.getElementById('filterStartYearInput');
+      const startMonthEl = document.getElementById('filterStartMonthInput');
+      const endYearEl = document.getElementById('filterEndYearInput');
+      const endMonthEl = document.getElementById('filterEndMonthInput');
       const typeEl = document.getElementById('filterBenefitTypeSelect');
 
-      if (startEl && startEl.value) activeStartDate = startEl.value;
-      if (endEl && endEl.value) activeEndDate = endEl.value;
-      if (typeEl) activeBenefitType = typeEl.value;
+      if (startYearEl && startMonthEl) activeStartPeriod = `${startYearEl.value}${startMonthEl.value}`;
+      if (endYearEl && endMonthEl) activeEndPeriod = `${endYearEl.value}${endMonthEl.value}`;
+      if (typeEl && activeTabKey !== 'ot') activeBenefitType = typeEl.value;
 
       updateFilterBannerDisplay();
       renderClaimHistoryList();
@@ -929,6 +1571,19 @@
     function updateFilterBannerDisplay() {
       const display = document.getElementById('currentFilterTextDisplay');
       if (!display) return;
+
+      const formatDisplayPeriod = (period) => {
+        const year = period.slice(0, 4);
+        const month = FILTER_MONTHS.find(item => item.value === period.slice(4, 6));
+        return month ? `${month.text} ${year}` : period;
+      };
+      const filterTypes = BENEFIT_TYPES_MAP[activeTabKey] || [];
+      const selectedFilterType = filterTypes.find(t => t.value === activeBenefitType);
+      const summaryTypeStr = activeTabKey === 'ot' ? '' : (selectedFilterType ? selectedFilterType.text : 'All Types');
+      display.textContent = [`${formatDisplayPeriod(activeStartPeriod)} - ${formatDisplayPeriod(activeEndPeriod)}`, summaryTypeStr]
+        .filter(Boolean)
+        .join(' | ');
+      return;
 
       const formatDisplayDate = (iso) => {
         if (!iso) return '';
