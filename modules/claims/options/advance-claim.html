@@ -280,6 +280,69 @@
       margin-top: 6px;
     }
 
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
     .claim-data-list {
       display: flex;
       flex-direction: column;
@@ -477,15 +540,12 @@
             </div>
           </div>
 
-          <!-- Start Date & End Date : -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
-            <div>
-              <label class="field-label">Start Date <span class="req">*</span></label>
-              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-23" />
-            </div>
-            <div>
-              <label class="field-label">End Date <span class="req">*</span></label>
-              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-23" />
+          <!-- Claim Date -->
+          <div class="field-group">
+            <label class="field-label">Claim Date <span class="req">*</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-23" aria-label="Claim date from" />
+              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-23" aria-label="Claim date to" />
             </div>
           </div>
 
@@ -613,6 +673,9 @@
               </div>
               <div>
                 <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Details</h2>
+                <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                  Total Amount: <span id="v3TotalAmountDisplay" style="color: var(--text-primary); font-weight: 800;">RM 0.00</span>
+                </div>
               </div>
             </div>
             <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
@@ -904,11 +967,14 @@
     function renderView3List() {
       const iconBox = document.getElementById('v3CategoryIconBox');
       const titleText = document.getElementById('v3CategoryTitleText');
+      const totalAmountText = document.getElementById('v3TotalAmountDisplay');
       const container = document.getElementById('v3ItemsContainer');
       const items = formData.claimDetails.addedDetails;
+      const totalAmount = items.reduce((sum, item) => sum + (Number(item.localAmount) || 0), 0);
 
       if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-receipt"></i>';
       if (titleText) titleText.innerText = 'Details';
+      if (totalAmountText) totalAmountText.innerText = `RM ${totalAmount.toFixed(2)}`;
       if (!container) return;
 
       if (!items.length) {
@@ -1066,7 +1132,7 @@
                 <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
               </div>
             </div>
-            <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+            <div id="subChipsList" class="attachment-upload-list"></div>
           </div>
 
         </div>
@@ -1125,9 +1191,11 @@
       const v1Total = document.getElementById('v1TotalClaimDisplay');
       const generalTotal = document.getElementById('advanceClaimTotalDisplay');
       const v1Sub = document.getElementById('v1ItemsCountSubtitle');
+      const v3Total = document.getElementById('v3TotalAmountDisplay');
       if (v1Total) v1Total.innerText = `RM ${grandTotal.toFixed(2)}`;
       if (generalTotal) generalTotal.innerText = grandTotal.toFixed(2);
       if (v1Sub) v1Sub.innerText = `${formData.claimDetails.addedDetails.length} advance item(s) added`;
+      if (v3Total) v3Total.innerText = `RM ${grandTotal.toFixed(2)}`;
 
       // Update View 2
       const catAdvAmt = document.getElementById('catAdvanceAmount');
@@ -1163,13 +1231,30 @@
         container.innerHTML = '';
         return;
       }
-      container.innerHTML = formData.subAttachments.map((att, idx) => `
-        <div class="file-chip">
-          <i class="fa-solid fa-paperclip"></i>
-          <span>${att}</span>
-          <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="removeSubAttachment(${idx})"></i>
-        </div>
-      `).join('');
+      const rows = formData.subAttachments.map((att, idx) => {
+        const row = document.createElement('div');
+        row.className = 'attachment-upload-item';
+
+        const icon = document.createElement('span');
+        icon.className = 'attachment-upload-icon';
+        icon.innerHTML = '<i class="fa-solid fa-paperclip"></i>';
+
+        const name = document.createElement('span');
+        name.className = 'attachment-upload-name';
+        name.textContent = att;
+        name.title = att;
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'attachment-upload-remove';
+        removeButton.setAttribute('aria-label', 'Remove ' + att);
+        removeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeButton.addEventListener('click', () => removeSubAttachment(idx));
+
+        row.append(icon, name, removeButton);
+        return row;
+      });
+      container.replaceChildren(...rows);
     }
 
     function saveAdvanceDraft() {

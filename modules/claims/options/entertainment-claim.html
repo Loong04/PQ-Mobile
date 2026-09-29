@@ -319,6 +319,69 @@
       margin-top: 6px;
     }
 
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
     .claim-data-list {
       display: flex;
       flex-direction: column;
@@ -601,15 +664,12 @@
             </div>
           </div>
 
-          <!-- Start Date & End Date : -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
-            <div>
-              <label class="field-label">Start Date</label>
-              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-24" />
-            </div>
-            <div>
-              <label class="field-label">End Date</label>
-              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-24" />
+          <!-- Claim Date -->
+          <div class="field-group">
+            <label class="field-label">Claim Date</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-24" aria-label="Claim date from" />
+              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-24" aria-label="Claim date to" />
             </div>
           </div>
 
@@ -658,7 +718,13 @@
           <!-- Currency : -->
           <div class="field-group">
             <label class="field-label">Currency</label>
-            <input type="text" id="currencyInput" class="form-ctrl" value="RINGGIT MALAYSIA" readonly />
+            <div class="select-wrapper">
+              <select id="currencyInput" class="form-ctrl">
+                <option value="RINGGIT MALAYSIA" selected>RINGGIT MALAYSIA</option>
+                <option value="US DOLLAR">US DOLLAR</option>
+                <option value="SINGAPORE DOLLAR">SINGAPORE DOLLAR</option>
+              </select>
+            </div>
           </div>
 
           <!-- Summary Stat Rows -->
@@ -721,10 +787,10 @@
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
                   <i class="fa-solid fa-camera"></i>
                 </div>
-                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
               </div>
             </div>
-            <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+            <div id="mainChipsList" class="attachment-upload-list"></div>
           </div>
         </div>
 
@@ -752,7 +818,7 @@
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
           <button type="button" class="btn-draft-bright" onclick="saveEntertainmentDraft()">
             <i class="fa-solid fa-floppy-disk"></i>
-            <span>Draft</span>
+            <span>Save Draft</span>
           </button>
           <button type="button" class="btn-submit-primary" onclick="openCategoryItems('details')">
             <span>Next</span>
@@ -850,6 +916,7 @@
               </div>
               <div>
                 <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Detail</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Amount: RM 0.00</span>
               </div>
             </div>
             <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
@@ -1339,6 +1406,7 @@
       const catKey = formData.activeCategory;
       const iconBox = document.getElementById('v3CategoryIconBox');
       const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
       const container = document.getElementById('v3ItemsContainer');
       const config = {
         details: { items: formData.claimDetails.addedDetails, icon: 'fa-receipt', color: 'var(--purple-primary)', bg: 'rgba(124, 58, 237, 0.14)' },
@@ -1350,6 +1418,14 @@
       const items = config.items || [];
       if (iconBox) iconBox.innerHTML = `<i class="fa-solid ${config.icon}"></i>`;
       if (titleText) titleText.innerText = getCategoryTitle(catKey);
+      if (countText) {
+        if (catKey === 'details') {
+          const totalAmount = items.reduce((sum, item) => sum + (Number(item.localAmount ?? item.amt) || 0), 0);
+          countText.textContent = `Total Amount: RM ${totalAmount.toFixed(2)}`;
+        } else {
+          countText.textContent = `Total Pax: ${items.length}`;
+        }
+      }
 
       if (!items.length) {
         container.innerHTML = `
@@ -1504,7 +1580,13 @@
 
             <div class="field-group">
               <label class="field-label">Foreign Currency</label>
-              <input type="text" id="detailCurrencyInput" class="form-ctrl" value="${item ? (item.currency || 'RINGGIT MALAYSIA') : 'RINGGIT MALAYSIA'}" readonly />
+              <div class="select-wrapper">
+                <select id="detailCurrencyInput" class="form-ctrl" onchange="calcSubLocalAmount()">
+                  <option value="RINGGIT MALAYSIA" ${!item || item.currency === 'RINGGIT MALAYSIA' || item.currency === 'MYR' ? 'selected' : ''}>RINGGIT MALAYSIA</option>
+                  <option value="US DOLLAR" ${item && item.currency === 'US DOLLAR' ? 'selected' : ''}>US DOLLAR</option>
+                  <option value="SINGAPORE DOLLAR" ${item && item.currency === 'SINGAPORE DOLLAR' ? 'selected' : ''}>SINGAPORE DOLLAR</option>
+                </select>
+              </div>
             </div>
 
             <div class="field-group">
@@ -1514,7 +1596,7 @@
 
             <div class="field-group">
               <label class="field-label">Local Amount</label>
-              <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? item.amt.toFixed(2) : '0.00'}" readonly style="font-weight: 800;" />
+              <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? Number(item.localAmount ?? item.amt ?? 0).toFixed(2) : '0.00'}" readonly style="font-weight: 800;" />
             </div>
 
             <!-- Upload Attachment -->
@@ -1531,10 +1613,10 @@
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
                     <i class="fa-solid fa-camera"></i>
                   </div>
-                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
                 </div>
               </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
             </div>
 
           </div>
@@ -1704,7 +1786,9 @@
     }
 
     function recalcAllTotals() {
-      const totalAmt = formData.claimDetails.addedDetails.reduce((sum, i) => sum + i.amt, 0);
+      const totalAmt = formData.claimDetails.addedDetails.reduce((sum, item) => {
+        return sum + (Number(item.localAmount ?? item.amt) || 0);
+      }, 0);
       const intPax = formData.claimDetails.addedEmployees.length;
       const extPax = formData.claimDetails.addedGuests.length;
       const totalPax = intPax + extPax;
@@ -1716,6 +1800,7 @@
       if (v1Total) v1Total.innerText = `RM ${totalAmt.toFixed(2)}`;
       if (v1Sub) v1Sub.innerText = `${formData.claimDetails.addedDetails.length} item(s) • ${totalPax} Pax`;
 
+      document.getElementById('summaryTotalAmount').innerText = totalAmt.toFixed(2);
       document.getElementById('summaryInternalPax').innerText = intPax;
       document.getElementById('summaryExternalPax').innerText = extPax;
       document.getElementById('summaryAvgPax').innerText = avgPax.toFixed(2);
@@ -1765,11 +1850,13 @@
       const container = document.getElementById('subChipsList');
       if (!container) return;
       container.innerHTML = formData.subAttachments.map((name, index) => `
-        <span class="file-chip">
-          <i class="fa-solid fa-paperclip"></i>
-          ${name}
-          <i class="fa-solid fa-xmark" style="cursor: pointer; margin-left: 4px;" onclick="removeSubAttachment(${index})"></i>
-        </span>
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${name}">${name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="removeSubAttachment(${index})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       `).join('');
     }
 
@@ -1782,11 +1869,13 @@
       const container = document.getElementById('mainChipsList');
       if (!container) return;
       container.innerHTML = formData.mainAttachments.map((name, index) => `
-        <span class="file-chip">
-          <i class="fa-solid fa-paperclip"></i>
-          ${name}
-          <i class="fa-solid fa-xmark" style="cursor: pointer; margin-left: 4px;" onclick="removeMainAttachment(${index})"></i>
-        </span>
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${name}">${name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="removeMainAttachment(${index})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       `).join('');
     }
 

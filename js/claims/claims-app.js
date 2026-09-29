@@ -872,426 +872,223 @@
 
   let activeMedSubTab = 'general';
 
-  function renderBenefitClaimDetail(d) {
-    const amountFormatted = typeof d.amount === 'number' ? (d.amount < 0 ? d.amount.toFixed(2) : d.amount.toFixed(2)) : (d.amount || '-5.00');
-    const empIdFormatted = d.empNo ? (d.empNo.startsWith('#') ? d.empNo : '#' + d.empNo) : '#EBB12';
+  function makeTableRow(label, valueHtml, isLast = false) {
     return `
-      <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
-        <div class="detail-field-row"><div class="detail-field-label">Document Reference:</div><div class="detail-field-value">${d.docRef || 'CBF000000000025'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Document Status:</div><div class="detail-field-value">${d.docStatus || 'Submitted'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Employee:</div><div class="detail-field-value">${empIdFormatted.replace(/^#/, '')} - ${d.userName || 'Farhan binti rahmat'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Entitlement Year:</div><div class="detail-field-value">${d.entitlementYear || '2019'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Benefit Type:</div><div class="detail-field-value">${d.benefitType || 'PERSONAL ALLOWANCE'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Period:</div><div class="detail-field-value">${d.period || '201902'}</div></div>
-
-        <div style="border-top: 1px solid var(--border-subtle); margin: 6px 0 10px;"></div>
-
-        <div class="detail-field-row"><div class="detail-field-label">From:</div><div class="detail-field-value">${d.fromDate || d.claimDate || '4 Sep 2019'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">To:</div><div class="detail-field-value">${d.toDate || d.claimDate || '4 Sep 2019'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Purpose:</div><div class="detail-field-value">${d.purpose || 'Purpose'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Receipt#:</div><div class="detail-field-value">${d.receiptNo || 'Receipt'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Other Ref.:</div><div class="detail-field-value">${d.otherRef || 'Reference'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Currency:</div><div class="detail-field-value">${d.currency || 'INDONESIAN RUPIAH'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Amount:</div><div class="detail-field-value">${amountFormatted}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Quantity:</div><div class="detail-field-value">${d.claimQuantity !== undefined ? d.claimQuantity : '0'}</div></div>
-
-        <div style="margin-top: 4px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Remarks:</div>
-          <div style="color: var(--text-primary); font-weight: 600; line-height: 1.4;">${d.remarks || 'Remarks |undefined|undefined'}</div>
-        </div>
-
-        <div style="margin-top: 20px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Approver Action Comments:</div>
-          <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
-        </div>
-
-        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px;">
-          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
-            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
-          </button>
-          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
-          </button>
-          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
-            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
-          </button>
-        </div>
-      </div>
+      <tr>
+        <td style="padding: 10px 14px; ${isLast ? 'border-bottom: none;' : 'border-bottom: 1px solid var(--border-subtle);'} border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%; vertical-align: top;">${label}</td>
+        <td style="padding: 10px 14px; ${isLast ? 'border-bottom: none;' : 'border-bottom: 1px solid var(--border-subtle);'} color: var(--text-primary); width: 62%; font-weight: 600; line-height: 1.45;">${valueHtml}</td>
+      </tr>
     `;
   }
 
-  function renderMedicalClaimDetail(d, subTab = 'general') {
-    const empIdFormatted = d.empNo ? (d.empNo.startsWith('#') ? d.empNo : '#' + d.empNo) : '#EBB05';
-    if (subTab === 'general') {
-      return `
-        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
-          <div class="detail-field-row"><div class="detail-field-label">Document Reference:</div><div class="detail-field-value">${d.docRef || 'CMD000000000133'}</div></div>
-          <div class="detail-field-row"><div class="detail-field-label">Document Status:</div><div class="detail-field-value">${d.docStatus || 'Final Approval'}</div></div>
-          <div class="detail-field-row"><div class="detail-field-label">Employee:</div><div class="detail-field-value">${empIdFormatted.replace(/^#/, '')} - ${d.userName || 'Low chin hao'}</div></div>
+  function renderUnifiedClaimDetail(d) {
+    if (!d) return '';
 
-          <div class="detail-field-row">
-            <div class="detail-field-label">Benefit Year :</div>
-            <div class="detail-field-value"><div class="detail-mock-input">${d.benefitYear || '2016'}</div></div>
-          </div>
+    const claimType = d.optionName || 'Benefit Claim';
+    const optLower = claimType.toLowerCase();
 
-          <div class="detail-field-row">
-            <div class="detail-field-label">Benefit Type :</div>
-            <div class="detail-field-value"><div class="detail-mock-input">${d.benefitType || 'Select Benefit'}</div></div>
-          </div>
+    // Format amount (support numbers and strings)
+    let amountFormatted = 'RM 0.00';
+    if (typeof d.amount === 'number') {
+      amountFormatted = `RM ${Math.abs(d.amount).toFixed(2)}`;
+    } else if (d.amount) {
+      const cleanAmt = String(d.amount).replace(/^-/, '');
+      amountFormatted = cleanAmt.startsWith('RM') ? cleanAmt : `RM ${cleanAmt}`;
+    }
 
-          <div class="detail-field-row">
-            <div class="detail-field-label">Entitled Balance:</div>
-            <div class="detail-field-value">
-              <span style="background: #475569; color: #ffffff; font-size: 12px; font-weight: 800; padding: 3px 14px; border-radius: 12px; display: inline-block;">${d.entitledBalance || '0.00'}</span>
-            </div>
-          </div>
+    // Format employee ID and details (conforming to AGENTS.md Employee ID presentation standard)
+    const rawEmp = (d.empNo || '004177').replace(/^#+/, '');
+    const empNo = rawEmp;
+    const deptClean = d.dept || 'Operations • Quality Assurance';
+    const docRef = d.docRef || (optLower.includes('medical') ? 'CMD000000000133' : optLower.includes('ot') ? 'BXT000000000283' : 'CBF000000000025');
+    const docStatus = d.docStatus || 'Submitted';
+    const receiptFile = d.receipt || (d.receiptNo ? `Receipt #${d.receiptNo}` : 'supporting_receipt_docs.pdf');
 
-          <div class="detail-field-row">
-            <div class="detail-field-label">Usable Balance:</div>
-            <div class="detail-field-value">
-              <span style="background: #475569; color: #ffffff; font-size: 12px; font-weight: 800; padding: 3px 14px; border-radius: 12px; display: inline-block;">${d.usableBalance || '0.00'}</span>
-            </div>
-          </div>
+    // Section 1: Specific Claim Rows based on Claim Type
+    let specificRowsHtml = '';
 
-          <div class="detail-field-row">
-            <div class="detail-field-label">Claim Period :</div>
-            <div class="detail-field-value" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <div class="detail-mock-input">${d.claimPeriodStart || '201601'}</div>
-              <div class="detail-mock-input">${d.claimPeriodEnd || '201601'}</div>
-            </div>
-          </div>
-
-          <div class="detail-field-row">
-            <div class="detail-field-label">Receipt Date :</div>
-            <div class="detail-field-value" style="width: 58%;"><div class="detail-mock-input">${d.receiptDate || '09/03/2016'}</div></div>
-          </div>
-
-          <div class="detail-field-row">
-            <div class="detail-field-label">Receipt No. :</div>
-            <div class="detail-field-value"><div class="detail-mock-input">${d.receiptNo || ''}</div></div>
-          </div>
-
-          <div class="detail-field-row">
-            <div class="detail-field-label">Claim Total (RM):</div>
-            <div class="detail-field-value" style="font-weight: 800; font-size: 14px;">${d.claimTotal || (typeof d.amount === 'number' ? d.amount.toFixed(2) : d.amount) || '100.00'}</div>
-          </div>
-
-          <div class="detail-field-row">
-            <div class="detail-field-label">Remark :</div>
-            <div class="detail-field-value"><div class="detail-mock-input">${d.remarks || ''}</div></div>
-          </div>
-
-          <div style="margin-top: 10px;">
-            <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Approver Action Comments:</div>
-            <textarea id="claimDetailApproverComments" class="detail-mock-input" style="height: 64px; padding: 8px 10px; resize: none;"></textarea>
-          </div>
-
-          <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px;">
-            <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
-              <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
-            </button>
-            <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
-              <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
-            </button>
-            <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
-              <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
-            </button>
-          </div>
-        </div>
+    if (optLower.includes('medical')) {
+      specificRowsHtml = `
+        ${makeTableRow('Medical Type', `<span style="font-weight: 800; color: var(--purple-primary);">${d.subCatName || d.medicalType || 'General Consultation'}</span>`)}
+        ${makeTableRow('Benefit Year', d.benefitYear || '2026')}
+        ${makeTableRow('Patient Type', d.patientType || 'Employee')}
+        ${makeTableRow('Patient Name', `<strong style="color: var(--text-primary);">${d.patientName || d.userName || 'Employee'}</strong>`)}
+        ${makeTableRow('Treatment Type', d.treatmentType || 'Out Patient')}
+        ${makeTableRow('Clinic / Hospital', `<strong style="color: var(--text-primary);">${d.clinicName || 'Qualitas Health Clinic KLCC'}</strong> ${d.clinicLocation ? `<div style="font-size: 11px; color: var(--text-muted);">${d.clinicLocation}</div>` : ''}`)}
+        ${makeTableRow('Sickness Type', d.sicknessType || 'Acute Upper Respiratory Infection')}
+        ${makeTableRow('Entitled Balance', `<span style="font-weight: 800; font-family: monospace;">RM ${d.entitledBalance || '800.00'}</span>`)}
+        ${makeTableRow('Usable Balance', `<span style="font-weight: 800; color: #10b981; font-family: monospace;">RM ${d.usableBalance || '665.00'}</span>`)}
+        ${makeTableRow('Receipt Date', d.receiptDate || d.claimDate || '07/09/2026')}
+        ${makeTableRow('Receipt No.', `<span style="font-family: monospace; font-weight: 800;">${d.receiptNo || 'QC-5510'}</span>`)}
+        ${makeTableRow('Expense Detail', d.detailExpenses || 'CONSULTATION & MEDICATION')}
+        ${makeTableRow('Claim Amount', `<span style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); font-family: monospace;">${amountFormatted}</span>`)}
+        ${makeTableRow('Currency', d.currency || d.detailCurrency || 'RINGGIT MALAYSIA')}
+        ${makeTableRow('Remarks', d.remarks || d.purpose || 'Doctor consultation and prescribed medicine', true)}
       `;
-    } else if (subTab === 'medical') {
-      return `
-        <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
-          <div>
-            <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Patient's Type :</div>
-            <div class="detail-mock-input">${d.patientType || 'Employee'}</div>
-          </div>
-
-          <div>
-            <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Patient's Name :</div>
-            <div class="detail-mock-input">${d.patientName || ''}</div>
-            <div style="color: #ef4444; font-size: 12px; font-weight: 600; margin-top: 4px;">Please Select Patient Name</div>
-          </div>
-
-          <div>
-            <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Treatment Type :</div>
-            <div class="detail-mock-input">${d.treatmentType || 'Out Patient'}</div>
-          </div>
-
-          <div>
-            <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Clinic / Hospital :</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <div class="detail-mock-input" style="font-size: 12px;">${d.clinicLocation || '- Select Location -'}</div>
-              <div class="detail-mock-input" style="font-size: 12px;">${d.clinicName || '- Select Clinic /Hospital -'}</div>
-            </div>
-          </div>
-
-          <div>
-            <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Sickness Type :</div>
-            <div class="detail-mock-input">${d.sicknessType || '- Select Sickness -'}</div>
-          </div>
-        </div>
+    } else if (optLower.includes('ot') || optLower.includes('overtime')) {
+      const otHours = d.hours || (d.otHours ? `${d.otHours} hrs` : '5.0 hrs');
+      specificRowsHtml = `
+        ${makeTableRow('OT Type', `<span style="font-weight: 800; color: #f59e0b;">${d.otType || d.subCatName || '1.5 OT'}</span>`)}
+        ${makeTableRow('OT Date', d.otDate || d.claimDate || '15/04/2024')}
+        ${makeTableRow('Shift', d.shift || '8.00AM - 5.30PM')}
+        ${makeTableRow('OT Time Window', `<span style="font-family: monospace; font-weight: 800;">${d.startTime || '18:57:00'}</span> to <span style="font-family: monospace; font-weight: 800;">${d.endTime || '23:57:00'}</span>`)}
+        ${makeTableRow('OT Hours', `<span style="font-size: 13.5px; font-weight: 800; color: var(--purple-primary);">${otHours}</span>`)}
+        ${makeTableRow('Break Hours', d.breakHours || '1.0 hr')}
+        ${makeTableRow('Cross Day', d.crossDay || 'False')}
+        ${makeTableRow('Reason', d.reason || d.purpose || 'OTHERS')}
+        ${makeTableRow('Meal Allowance', (d.mealAllowance && d.mealAllowance !== '- Select Meal Allowance -') ? `${d.mealAllowance} ${d.mealAllowanceAmount && d.mealAllowanceAmount !== '0' ? '(RM ' + d.mealAllowanceAmount + ')' : ''}` : 'None')}
+        ${makeTableRow('Transport', (d.transport && d.transport !== '- Select Transport -') ? `${d.transport} ${d.distance && d.distance !== '0' ? '• ' + d.distance + ' km' : ''}` : 'Personal Transport')}
+        ${makeTableRow('Total Amount', `<span style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); font-family: monospace;">${amountFormatted}</span>`)}
+        ${makeTableRow('Remarks', d.remarks || 'Production maintenance & ad-hoc shift coverage', true)}
       `;
-    } else if (subTab === 'details') {
-      return `
-        <div style="display: flex; flex-direction: column; font-size: 13px;">
-          <div style="background: #4ade80; color: #14532d; font-weight: 800; font-size: 15px; padding: 10px 14px; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-            Details
-          </div>
-          <div style="border: 1.5px solid var(--border-subtle); border-top: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 16px 14px; display: flex; flex-direction: column; gap: 12px; background: var(--bg-card);">
-            <div class="detail-field-row" style="margin-bottom: 8px;"><div class="detail-field-label">Receipt No. :</div><div class="detail-field-value">${d.receiptNo || ''}</div></div>
-            <div class="detail-field-row" style="margin-bottom: 8px;"><div class="detail-field-label">Expenses :</div><div class="detail-field-value">${d.detailExpenses || 'CONSULTATION'}</div></div>
-            <div class="detail-field-row" style="margin-bottom: 8px;"><div class="detail-field-label">Amount :</div><div class="detail-field-value">${d.detailAmount || '0.00'}</div></div>
-            <div class="detail-field-row" style="margin-bottom: 8px;"><div class="detail-field-label">Currency :</div><div class="detail-field-value">${d.detailCurrency || 'RINGGIT MALAYSIA'}</div></div>
-            <div class="detail-field-row" style="margin-bottom: 8px;"><div class="detail-field-label">Forex Rate :</div><div class="detail-field-value">${d.detailForexRate || '1.0000'}</div></div>
-            <div class="detail-field-row" style="margin-bottom: 8px;"><div class="detail-field-label">Local Amount :</div><div class="detail-field-value" style="font-weight: 800;">${d.detailLocalAmount || (typeof d.amount === 'number' ? d.amount.toFixed(2) : d.amount) || '100.00'}</div></div>
-          </div>
-        </div>
+    } else if (optLower.includes('travel')) {
+      specificRowsHtml = `
+        ${makeTableRow('Travel Type', `<span style="font-weight: 800; color: var(--purple-primary);">${d.travelType || d.subCatName || 'Mileage Claim'}</span>`)}
+        ${makeTableRow('Travel Date', d.claimDate || '13 Sep 2026')}
+        ${makeTableRow('Destination', `<strong style="color: var(--text-primary);">${d.destination || 'Penang Logistics Hub & Northern Depot'}</strong>`)}
+        ${makeTableRow('Transport Mode', d.transportMode || 'Personal Vehicle (Sedan)')}
+        ${makeTableRow('Distance', `<span style="font-family: monospace; font-weight: 800;">${d.distance || '120 km'}</span>`)}
+        ${makeTableRow('Mileage Rate', d.mileageRate || 'RM 0.80 / km')}
+        ${makeTableRow('Mileage Amount', `RM ${d.mileageAmount || '96.00'}`)}
+        ${makeTableRow('Toll / Parking', `RM ${d.tollsParking || '24.00'}`)}
+        ${makeTableRow('Total Amount', `<span style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); font-family: monospace;">${amountFormatted}</span>`)}
+        ${makeTableRow('Receipt / Log', d.receipt || 'GPS Log & Toll Receipt')}
+        ${makeTableRow('Remarks', d.purpose || d.remarks || 'Site inspection and equipment servicing travel', true)}
+      `;
+    } else if (optLower.includes('entertainment')) {
+      specificRowsHtml = `
+        ${makeTableRow('Entertainment Type', `<span style="font-weight: 800; color: var(--purple-primary);">${d.subCatName || 'Client Lunch'}</span>`)}
+        ${makeTableRow('Event Date', d.claimDate || '09 Sep 2026')}
+        ${makeTableRow('Venue / Location', `<strong style="color: var(--text-primary);">${d.venue || 'Nobu Kuala Lumpur'}</strong>`)}
+        ${makeTableRow('Attendees / Client', d.clientAttendees || 'Mr. Robert Tan (CEO, Alpha Corp) + 2 pax')}
+        ${makeTableRow('Receipt No.', `<span style="font-family: monospace; font-weight: 800;">${d.receipt || 'Nobu Invoice #1029'}</span>`)}
+        ${makeTableRow('Currency', d.currency || 'RINGGIT MALAYSIA')}
+        ${makeTableRow('Total Amount', `<span style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); font-family: monospace;">${amountFormatted}</span>`)}
+        ${makeTableRow('Purpose', d.purpose || 'Quarterly review lunch with key enterprise stakeholders')}
+        ${makeTableRow('Remarks', d.remarks || 'Annual enterprise SLA renewal discussion', true)}
+      `;
+    } else if (optLower.includes('advance')) {
+      specificRowsHtml = `
+        ${makeTableRow('Advance Type', `<span style="font-weight: 800; color: var(--purple-primary);">${d.advanceType || 'Overseas Travel Advance'}</span>`)}
+        ${makeTableRow('Required Date', `<strong style="color: #f59e0b;">${d.requiredDate || '24 Sep 2026'}</strong>`)}
+        ${makeTableRow('Settlement Date', `<strong style="color: var(--text-primary);">${d.settlementDate || '15 Oct 2026'}</strong>`)}
+        ${makeTableRow('Other Reference', `<span style="font-family: monospace; font-weight: 800;">${d.otherRef || 'ADV-2026-0902'}</span>`)}
+        ${makeTableRow('Currency', d.currency || 'RINGGIT MALAYSIA')}
+        ${makeTableRow('Requested Amount', `<span style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); font-family: monospace;">${amountFormatted}</span>`)}
+        ${makeTableRow('Purpose / Reason', d.purpose || 'Tokyo Design Summit 2026 travel advance')}
+        ${makeTableRow('Remarks', d.remarks || 'Advance requisition for flight and lodging booking', true)}
+      `;
+    } else if (optLower.includes('expense')) {
+      specificRowsHtml = `
+        ${makeTableRow('Expense Category', `<span style="font-weight: 800; color: var(--purple-primary);">${d.expenseType || 'Subscriptions & Software'}</span>`)}
+        ${makeTableRow('Expense Date', d.claimDate || '20 Sep 2026')}
+        ${makeTableRow('Merchant / Supplier', `<strong style="color: var(--text-primary);">${d.merchant || 'Digital Tools SaaS Inc.'}</strong>`)}
+        ${makeTableRow('Receipt No.', `<span style="font-family: monospace; font-weight: 800;">${d.receiptNo || 'INV-29014'}</span>`)}
+        ${makeTableRow('Tax Invoice', d.taxInvoice || 'Yes (SST 6%)')}
+        ${makeTableRow('Currency', d.currency || 'RINGGIT MALAYSIA')}
+        ${makeTableRow('Total Amount', `<span style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); font-family: monospace;">${amountFormatted}</span>`)}
+        ${makeTableRow('Purpose', d.purpose || 'Cloud development tools and sandbox subscriptions')}
+        ${makeTableRow('Remarks', d.remarks || 'Standard department subscription reimbursement', true)}
+      `;
+    } else {
+      // Default: Benefit Claim
+      specificRowsHtml = `
+        ${makeTableRow('Benefit Type', `<span style="font-weight: 800; color: var(--purple-primary);">${d.subCatName || d.benefitType || 'PERSONAL ALLOWANCE'}</span>`)}
+        ${makeTableRow('Entitlement Year', d.entitlementYear || '2026')}
+        ${makeTableRow('Claim Period', `<span style="font-family: monospace; font-weight: 800;">${d.period || '202609'}</span>`)}
+        ${makeTableRow('Date Period', d.fromDate ? `${d.fromDate} <span style="color: var(--text-muted); margin: 0 4px;">to</span> ${d.toDate}` : (d.claimDate || '12 Sep 2026'))}
+        ${makeTableRow('Claim Quantity', `${d.claimQuantity !== undefined ? d.claimQuantity : '1'} Unit`)}
+        ${makeTableRow('Receipt No.', `<span style="font-family: monospace; font-weight: 800;">${d.receiptNo || d.receipt || 'FP-8891'}</span>`)}
+        ${makeTableRow('Other Reference', d.otherRef || '-')}
+        ${makeTableRow('Currency', d.currency || 'RINGGIT MALAYSIA')}
+        ${makeTableRow('Claim Amount', `<span style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); font-family: monospace;">${amountFormatted}</span>`)}
+        ${makeTableRow('Remarks', d.remarks || d.purpose || 'General benefit claim reimbursement', true)}
       `;
     }
-  }
 
-  function renderOTClaimDetail(d) {
-    const empIdFormatted = d.empNo ? (d.empNo.startsWith('#') ? d.empNo : '#' + d.empNo) : '#EBB12';
     return `
-      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
-        <div class="detail-field-row"><div class="detail-field-label">Document #:</div><div class="detail-field-value">${d.docRef || 'BXT000000000283'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Status:</div><div class="detail-field-value">${d.docStatus || 'Submitted'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Employee:</div><div class="detail-field-value">${empIdFormatted.replace(/^#/, '')} - ${d.userName || 'Farhan binti rahmat'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Period :</div><div class="detail-field-value">${d.period || '2024'}</div></div>
+      <!-- SECTION 1: CLAIM APPLICATION DETAILS -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); flex-shrink: 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+          <tbody>
+            ${makeTableRow('Document Reference', `<span style="font-family: monospace; letter-spacing: 0.3px; font-weight: 800; color: var(--text-primary);">${docRef}</span>`)}
+            ${makeTableRow('Document Status', `<span style="font-size: 10.5px; font-weight: 800; color: #7c3aed; background: rgba(124, 58, 237, 0.12); padding: 3px 9px; border-radius: 6px; border: 1px solid rgba(124, 58, 237, 0.25);">${docStatus}</span>`)}
+            ${makeTableRow('Claim Type', `<span style="color: var(--purple-primary); font-weight: 800; font-size: 12.5px;">${claimType.toUpperCase()}</span>`)}
+            ${specificRowsHtml}
+          </tbody>
+        </table>
+      </div>
 
-        <div style="border-top: 1px solid var(--border-subtle); margin: 4px 0 8px;"></div>
+      <!-- SECTION 2: EMPLOYEE & AUDIT RECORD -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); flex-shrink: 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+          <tbody>
+            <tr>
+              <td style="padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%; vertical-align: top;">Employee</td>
+              <td style="padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%;">
+                <div style="font-weight: 800; font-size: 13.5px; color: var(--text-primary);">${d.userName || 'Employee'}</div>
+                <!-- AGENTS.md Employee ID Presentation Standard: directly BELOW name, leading #, subtle muted typography -->
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px; margin-bottom: 2px;">#${empNo}</div>
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">${deptClean}</div>
+              </td>
+            </tr>
+            ${makeTableRow('Department', deptClean)}
+            ${makeTableRow('Submitter', d.userName || 'Employee')}
+            ${makeTableRow('Submit Date', `<span style="font-family: monospace; font-weight: 700;">${d.submitDate || d.claimDate || '13 Sep 2026'}</span>`)}
+            <tr>
+              <td style="padding: 10px 14px; border-bottom: none; border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%; vertical-align: top;">Approval Stage</td>
+              <td style="padding: 10px 14px; border-bottom: none; color: var(--text-primary); width: 62%;">
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <span style="font-size: 11px; font-weight: 800; color: #7c3aed; background: rgba(124, 58, 237, 0.12); padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(124, 58, 237, 0.25);">Level 1 of 2</span>
+                  <span style="font-size: 10.5px; font-weight: 700; color: #059669; background: rgba(16, 185, 129, 0.12); padding: 2px 7px; border-radius: 6px;">● Pending Your Action</span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                  Role: <strong style="color: var(--text-primary);">Line Manager Approval</strong>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <div class="detail-field-row"><div class="detail-field-label">Date*</div><div class="detail-field-value">${d.otDate || d.claimDate || '15/04/2024'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">OT Type*</div><div class="detail-field-value">${d.otType || '1.5 OT'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Start Time*</div><div class="detail-field-value">${d.startTime || '18:57:00'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">End Time*</div><div class="detail-field-value">${d.endTime || '23:57:00'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">OT Hours</div><div class="detail-field-value">${d.otHours !== undefined ? d.otHours : '0'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Cross Day?</div><div class="detail-field-value">${d.crossDay || 'False'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Break Hours*</div><div class="detail-field-value">${d.breakHours || '1 Hour'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Break Minutes*</div><div class="detail-field-value">${d.breakMinutes || '- Select Minute -'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Project</div><div class="detail-field-value">${d.project || '- Select Project -'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Reason*</div><div class="detail-field-value">${d.reason || d.purpose || 'OTHERS'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Meal Allowance Amount</div><div class="detail-field-value">${d.mealAllowanceAmount !== undefined ? d.mealAllowanceAmount : '0'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Meal Allowance</div><div class="detail-field-value">${d.mealAllowance || '- Select Meal Allowance -'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Transport</div><div class="detail-field-value">${d.transport || '- Select Transport -'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Distance</div><div class="detail-field-value">${d.distance !== undefined ? d.distance : '0'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Way</div><div class="detail-field-value">${d.way || '- Select Way -'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Mileage Amount</div><div class="detail-field-value">${d.mileageAmount !== undefined ? d.mileageAmount : '0'}</div></div>
-
-        <div style="margin-top: 4px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Remarks</div>
-          <div class="detail-mock-input" style="height: 48px; display: flex; align-items: center;">${d.remarks || 'check again for now'}</div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-          <button type="button" class="detail-action-btn-purple" onclick="window.ClaimsEngine.closeClaimDetailsModal()">Cancel</button>
-        </div>
-
-        <div style="margin-top: 14px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Approver Action Comments:</div>
-          <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
-        </div>
-
-        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
-          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
-            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
-          </button>
-          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
-          </button>
-          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
-            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
-          </button>
-        </div>
+      <!-- SECTION 3: VERIFICATION & APPROVER ACTION -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); flex-shrink: 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+          <tbody>
+            <tr>
+              <td style="padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%; vertical-align: middle;">Supporting Doc</td>
+              <td style="padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 62%;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+                    <i class="fa-solid fa-paperclip" style="color: var(--purple-primary); font-size: 13px;"></i>
+                    <span style="font-size: 11.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;">${receiptFile}</span>
+                  </div>
+                  <button type="button" onclick="if (typeof window.ClaimsEngine.showToast === 'function') window.ClaimsEngine.showToast('Opening receipt preview: ${receiptFile.replace(/'/g, "\\'")}', 'info')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); padding: 4px 9px; border-radius: 7px; font-size: 10.5px; font-weight: 800; cursor: pointer; flex-shrink: 0;">
+                    View ↗
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; border-bottom: none; border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 38%; vertical-align: middle;">Comments</td>
+              <td style="padding: 8px 12px; border-bottom: none; width: 62%;">
+                <input type="text" id="claimDetailApproverComments" placeholder="Add approver action comments (optional)..." style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-input); color: var(--text-primary); font-size: 12px; font-weight: 500; outline: none; box-sizing: border-box;">
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     `;
   }
 
-  function renderTravelClaimDetail(d) {
-    const amtFormatted = typeof d.amount === 'number' ? `RM ${d.amount.toFixed(2)}` : (d.amount || 'RM 96.00');
-    const empIdFormatted = d.empNo ? (d.empNo.startsWith('#') ? d.empNo : '#' + d.empNo) : '#000582';
-    return `
-      <div style="display: flex; flex-direction: column; gap: 13px; font-size: 13px;">
-        <div class="detail-field-row"><div class="detail-field-label">Document Reference:</div><div class="detail-field-value">${d.docRef || 'CTR000000000088'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Document Status:</div><div class="detail-field-value">${d.docStatus || 'Submitted'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Employee:</div><div class="detail-field-value">${empIdFormatted.replace(/^#/, '')} - ${d.userName || 'Daniel Lee'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Period:</div><div class="detail-field-value">${d.period || '202609'}</div></div>
-
-        <div style="border-top: 1px solid var(--border-subtle); margin: 6px 0 10px;"></div>
-
-        <div class="detail-field-row"><div class="detail-field-label">From Date:</div><div class="detail-field-value">${d.claimDate || '13 Sep 2026'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">To Date:</div><div class="detail-field-value">${d.claimDate || '13 Sep 2026'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Travel Type:</div><div class="detail-field-value">${d.travelType || d.benefitType || 'Mileage Claim'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Destination:</div><div class="detail-field-value">${d.destination || 'Penang Logistics Hub & Northern Depot'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Transport Mode:</div><div class="detail-field-value">${d.transportMode || 'Personal Vehicle (Sedan)'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Distance:</div><div class="detail-field-value">${d.distance || '120 km'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Mileage Rate:</div><div class="detail-field-value">${d.mileageRate || 'RM 0.80 / km'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Mileage Amount:</div><div class="detail-field-value">RM ${d.mileageAmount || '96.00'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Toll / Parking:</div><div class="detail-field-value">RM ${d.tollsParking || '24.00'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Total Amount:</div><div class="detail-field-value" style="font-weight: 800; color: var(--purple-primary);">${amtFormatted}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Receipt#:</div><div class="detail-field-value">${d.receipt || 'GPS Log & Toll Receipt'}</div></div>
-
-        <div style="margin-top: 4px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Remarks:</div>
-          <div style="color: var(--text-primary); font-weight: 600; line-height: 1.4;">${d.purpose || d.title || 'Site Inspection Travel'}</div>
-        </div>
-
-        <div style="margin-top: 18px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Approver Action Comments:</div>
-          <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
-        </div>
-
-        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
-          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
-            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
-          </button>
-          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
-          </button>
-          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
-            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderEntertainmentClaimDetail(d) {
-    const amtFormatted = typeof d.amount === 'number' ? `RM ${d.amount.toFixed(2)}` : (d.amount || 'RM 320.00');
-    const empIdFormatted = d.empNo ? (d.empNo.startsWith('#') ? d.empNo : '#' + d.empNo) : '#001290';
-    return `
-      <div style="display: flex; flex-direction: column; gap: 13px; font-size: 13px;">
-        <div class="detail-field-row"><div class="detail-field-label">Document Reference:</div><div class="detail-field-value">${d.docRef || 'CEN000000000042'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Document Status:</div><div class="detail-field-value">${d.docStatus || 'Submitted'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Employee:</div><div class="detail-field-value">${empIdFormatted.replace(/^#/, '')} - ${d.userName || 'Ahmad Razali'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Period:</div><div class="detail-field-value">${d.period || '202609'}</div></div>
-
-        <div style="border-top: 1px solid var(--border-subtle); margin: 6px 0 10px;"></div>
-
-        <div class="detail-field-row"><div class="detail-field-label">Date:</div><div class="detail-field-value">${d.claimDate || '09 Sep 2026'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Entertainment Type:</div><div class="detail-field-value">${d.subCatName || d.benefitType || 'Client Lunch'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Venue / Restaurant:</div><div class="detail-field-value">${d.venue || 'Nobu Kuala Lumpur'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Client / Attendees:</div><div class="detail-field-value">${d.clientAttendees || 'Mr. Robert Tan (CEO, Alpha Corp) + 2 pax'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Purpose:</div><div class="detail-field-value">${d.purpose || 'Quarterly review lunch with key enterprise stakeholders'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Receipt#:</div><div class="detail-field-value">${d.receipt || 'Nobu Invoice #1029'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Currency:</div><div class="detail-field-value">${d.currency || 'RINGGIT MALAYSIA'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Total Amount:</div><div class="detail-field-value" style="font-weight: 800; color: var(--purple-primary);">${amtFormatted}</div></div>
-
-        <div style="margin-top: 4px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Remarks:</div>
-          <div style="color: var(--text-primary); font-weight: 600; line-height: 1.4;">${d.remarks || 'Annual enterprise SLA renewal discussion'}</div>
-        </div>
-
-        <div style="margin-top: 18px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Approver Action Comments:</div>
-          <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
-        </div>
-
-        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
-          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
-            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
-          </button>
-          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
-          </button>
-          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
-            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderAdvanceClaimDetail(d) {
-    const amtFormatted = typeof d.amount === 'number' ? `RM ${d.amount.toFixed(2)}` : (d.amount || 'RM 1,500.00');
-    const empIdFormatted = d.empNo ? (d.empNo.startsWith('#') ? d.empNo : '#' + d.empNo) : '#0000101';
-    return `
-      <div style="display: flex; flex-direction: column; gap: 13px; font-size: 13px;">
-        <div class="detail-field-row"><div class="detail-field-label">Document Reference:</div><div class="detail-field-value">${d.docRef || 'CAD000000000019'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Document Status:</div><div class="detail-field-value">${d.docStatus || 'Submitted'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Employee:</div><div class="detail-field-value">${empIdFormatted.replace(/^#/, '')} - ${d.userName || 'Aisha Tan'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Period:</div><div class="detail-field-value">${d.period || '202609'}</div></div>
-
-        <div style="border-top: 1px solid var(--border-subtle); margin: 6px 0 10px;"></div>
-
-        <div class="detail-field-row"><div class="detail-field-label">Advance Type:</div><div class="detail-field-value">${d.advanceType || d.benefitType || 'Overseas Travel Advance'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Required Date:</div><div class="detail-field-value">${d.requiredDate || '24 Sep 2026'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Settlement Date:</div><div class="detail-field-value">${d.settlementDate || '15 Oct 2026'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Purpose / Reason:</div><div class="detail-field-value">${d.purpose || 'Tokyo Design Summit 2026 travel advance'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Other Ref.:</div><div class="detail-field-value">${d.otherRef || 'ADV-2026-0902'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Currency:</div><div class="detail-field-value">${d.currency || 'RINGGIT MALAYSIA'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Requested Amount:</div><div class="detail-field-value" style="font-weight: 800; color: var(--purple-primary);">${amtFormatted}</div></div>
-
-        <div style="margin-top: 4px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Remarks:</div>
-          <div style="color: var(--text-primary); font-weight: 600; line-height: 1.4;">${d.remarks || 'Advance requisition for flight and lodging booking'}</div>
-        </div>
-
-        <div style="margin-top: 18px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Approver Action Comments:</div>
-          <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
-        </div>
-
-        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
-          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
-            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
-          </button>
-          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
-          </button>
-          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
-            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderExpenseClaimDetail(d) {
-    const amtFormatted = typeof d.amount === 'number' ? `RM ${d.amount.toFixed(2)}` : (d.amount || 'RM 215.00');
-    const empIdFormatted = d.empNo ? (d.empNo.startsWith('#') ? d.empNo : '#' + d.empNo) : '#004177';
-    return `
-      <div style="display: flex; flex-direction: column; gap: 13px; font-size: 13px;">
-        <div class="detail-field-row"><div class="detail-field-label">Document Reference:</div><div class="detail-field-value">${d.docRef || 'CEX000000000057'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Document Status:</div><div class="detail-field-value">${d.docStatus || 'Submitted'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Employee:</div><div class="detail-field-value">${empIdFormatted.replace(/^#/, '')} - ${d.userName || 'Marcus Tan'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Claim Period:</div><div class="detail-field-value">${d.period || '202609'}</div></div>
-
-        <div style="border-top: 1px solid var(--border-subtle); margin: 6px 0 10px;"></div>
-
-        <div class="detail-field-row"><div class="detail-field-label">Expense Category:</div><div class="detail-field-value">${d.expenseType || d.benefitType || 'Subscriptions & Software'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Expense Date:</div><div class="detail-field-value">${d.claimDate || '20 Sep 2026'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Merchant / Supplier:</div><div class="detail-field-value">${d.merchant || 'Digital Tools SaaS Inc.'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Receipt#:</div><div class="detail-field-value">${d.receiptNo || 'INV-29014'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Tax Invoice:</div><div class="detail-field-value">${d.taxInvoice || 'Yes (SST 6%)'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Currency:</div><div class="detail-field-value">${d.currency || 'RINGGIT MALAYSIA'}</div></div>
-        <div class="detail-field-row"><div class="detail-field-label">Total Amount:</div><div class="detail-field-value" style="font-weight: 800; color: var(--purple-primary);">${amtFormatted}</div></div>
-
-        <div style="margin-top: 4px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Remarks:</div>
-          <div style="color: var(--text-primary); font-weight: 600; line-height: 1.4;">${d.purpose || 'Cloud development tools and sandbox subscriptions'}</div>
-        </div>
-
-        <div style="margin-top: 18px;">
-          <div style="font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Approver Action Comments:</div>
-          <input type="text" id="claimDetailApproverComments" class="detail-mock-input" placeholder="" style="height: 40px;">
-        </div>
-
-        <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
-          <button type="button" class="action-btn-approve" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'approve')">
-            <i class="fa-solid fa-check" style="font-size: 12px;"></i> Approve
-          </button>
-          <button type="button" class="action-btn-resubmit" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'resubmit')">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11.5px;"></i> Resubmit
-          </button>
-          <button type="button" class="action-btn-reject" style="padding: 10px 4px; font-size: 12px;" onclick="window.ClaimsEngine.actionTeamClaimFromModal(${d.id}, 'reject')">
-            <i class="fa-solid fa-xmark" style="font-size: 12px;"></i> Reject
-          </button>
-        </div>
-      </div>
-    `;
-  }
+  // Backward-compatibility aliases
+  function renderBenefitClaimDetail(d) { return renderUnifiedClaimDetail(d); }
+  function renderMedicalClaimDetail(d) { return renderUnifiedClaimDetail(d); }
+  function renderOTClaimDetail(d) { return renderUnifiedClaimDetail(d); }
+  function renderTravelClaimDetail(d) { return renderUnifiedClaimDetail(d); }
+  function renderEntertainmentClaimDetail(d) { return renderUnifiedClaimDetail(d); }
+  function renderAdvanceClaimDetail(d) { return renderUnifiedClaimDetail(d); }
+  function renderExpenseClaimDetail(d) { return renderUnifiedClaimDetail(d); }
 
   function triggerClaimViewDetails(itemId) {
     closeClaimThreeDotsMenu();
@@ -1310,7 +1107,7 @@
     const optName = data.optionName || 'Benefit Claim';
     const optLower = optName.toLowerCase();
 
-    // AGENTS.md Header Naming Standard:
+    // Dynamically set header modal title matching claim type
     let headerTitleText = 'Benefit Claim Approval';
     if (optLower.includes('medical')) {
       headerTitleText = 'Medical Claim Approval';
@@ -1328,77 +1125,31 @@
 
     const titleEl = document.getElementById('claimDetailHeaderTitle');
     if (titleEl) titleEl.textContent = headerTitleText;
+    const subTitleEl = document.getElementById('claimDetailHeaderSub');
+    if (subTitleEl) subTitleEl.textContent = `Review ${headerTitleText.replace(' Approval', '').toLowerCase()} request details`;
 
     const bodyEl = document.getElementById('claimDetailsDynamicBody');
-    const medNavEl = document.getElementById('medClaimBottomNavBar');
-
-    if (optLower.includes('medical')) {
-      activeMedSubTab = 'general';
-      if (medNavEl) medNavEl.style.display = 'flex';
-      updateMedSubTabsUI('general');
-      if (bodyEl) bodyEl.innerHTML = renderMedicalClaimDetail(data, 'general');
-    } else {
-      if (medNavEl) medNavEl.style.display = 'none';
-      if (bodyEl) {
-        if (optLower.includes('benefit')) {
-          bodyEl.innerHTML = renderBenefitClaimDetail(data);
-        } else if (optLower.includes('ot') || optLower.includes('overtime')) {
-          bodyEl.innerHTML = renderOTClaimDetail(data);
-        } else if (optLower.includes('travel')) {
-          bodyEl.innerHTML = renderTravelClaimDetail(data);
-        } else if (optLower.includes('entertainment')) {
-          bodyEl.innerHTML = renderEntertainmentClaimDetail(data);
-        } else if (optLower.includes('advance')) {
-          bodyEl.innerHTML = renderAdvanceClaimDetail(data);
-        } else if (optLower.includes('expense')) {
-          bodyEl.innerHTML = renderExpenseClaimDetail(data);
-        } else {
-          bodyEl.innerHTML = renderBenefitClaimDetail(data);
-        }
-      }
+    if (bodyEl) {
+      bodyEl.innerHTML = renderUnifiedClaimDetail(data);
     }
+
+    const commentInput = document.getElementById('claimDetailApproverComments');
+    if (commentInput) commentInput.value = '';
 
     const overlay = document.getElementById('claimDetailsModalOverlay');
     if (overlay) {
       overlay.style.display = 'flex';
-      overlay.style.pointerEvents = 'auto';
-      void overlay.offsetWidth;
-      overlay.style.opacity = '1';
-      overlay.style.transform = 'translateY(0)';
+      void overlay.offsetHeight;
+      overlay.classList.add('active');
     }
   }
 
   function updateMedSubTabsUI(tabName) {
-    const tabs = [
-      { name: 'general', id: 'medSubTabGeneral' },
-      { name: 'medical', id: 'medSubTabMedical' },
-      { name: 'details', id: 'medSubTabDetails' }
-    ];
-
-    tabs.forEach(t => {
-      const btn = document.getElementById(t.id);
-      if (!btn) return;
-      const indicator = btn.querySelector('.tab-indicator');
-      if (t.name === tabName) {
-        btn.classList.add('active');
-        btn.style.color = '#ffffff';
-        if (indicator) indicator.style.display = 'block';
-      } else {
-        btn.classList.remove('active');
-        btn.style.color = '#94a3b8';
-        if (indicator) indicator.style.display = 'none';
-      }
-    });
+    // Kept for backward compatibility
   }
 
   function switchMedSubTab(tabName) {
-    activeMedSubTab = tabName;
-    updateMedSubTabsUI(tabName);
-    if (!currentSelectedClaimData) return;
-    const bodyEl = document.getElementById('claimDetailsDynamicBody');
-    if (bodyEl) {
-      bodyEl.innerHTML = renderMedicalClaimDetail(currentSelectedClaimData, tabName);
-    }
+    // Kept for backward compatibility
   }
 
   function closeClaimDetailsModal(event) {
@@ -1407,29 +1158,40 @@
     }
     const overlay = document.getElementById('claimDetailsModalOverlay');
     if (overlay) {
-      overlay.style.opacity = '0';
-      overlay.style.pointerEvents = 'none';
-      overlay.style.transform = 'translateY(16px)';
-      setTimeout(() => { overlay.style.display = 'none'; }, 220);
+      overlay.classList.remove('active');
+      setTimeout(() => { overlay.style.display = 'none'; }, 250);
     }
   }
 
   function actionTeamClaimFromModal(id, action) {
-    const item = teamQueue.find(q => q.id === id) || currentSelectedClaimData;
-    const userName = item?.userName || 'Employee';
-    const amountStr = typeof item?.amount === 'number' ? `RM ${item.amount.toFixed(2)}` : (item?.amount || 'RM 0.00');
+    const targetId = (id !== null && id !== undefined) ? id : (currentSelectedClaimData ? currentSelectedClaimData.id : null);
+    if (!targetId) {
+      closeClaimDetailsModal();
+      return;
+    }
 
-    teamQueue = teamQueue.filter(q => q.id !== id);
+    const item = teamQueue.find(q => String(q.id) === String(targetId)) || currentSelectedClaimData;
+    const userName = item?.userName || 'Employee';
+    const amountStr = typeof item?.amount === 'number' ? `RM ${Math.abs(item.amount).toFixed(2)}` : (item?.amount || 'RM 0.00');
+    const commentInput = document.getElementById('claimDetailApproverComments');
+    const commentText = commentInput ? commentInput.value.trim() : '';
+
+    teamQueue = teamQueue.filter(q => String(q.id) !== String(targetId));
     renderTeamQueue();
     closeClaimDetailsModal();
 
+    let toastMsg = '';
     if (action === 'approve') {
-      showToast(`✔ Approved ${userName}'s claim of ${amountStr}`);
+      toastMsg = `✔ Approved ${userName}'s claim of ${amountStr}`;
     } else if (action === 'resubmit') {
-      showToast(`ℹ Sent back ${userName}'s claim for resubmission`);
+      toastMsg = `ℹ Sent back ${userName}'s claim for resubmission`;
     } else {
-      showToast(`✕ Rejected ${userName}'s claim of ${amountStr}`);
+      toastMsg = `✕ Rejected ${userName}'s claim of ${amountStr}`;
     }
+    if (commentText) {
+      toastMsg += ` ("${commentText}")`;
+    }
+    showToast(toastMsg);
   }
 
   function openDetailMoreMenu() {

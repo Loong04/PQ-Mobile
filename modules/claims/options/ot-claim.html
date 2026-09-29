@@ -291,6 +291,69 @@
       margin-top: 6px;
     }
 
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
     .validation-err-text {
       font-size: 12px;
       font-weight: 700;
@@ -780,7 +843,7 @@
                 <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
               </div>
             </div>
-            <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+            <div id="subChipsList" class="attachment-upload-list"></div>
           </div>
           
         </div>
@@ -938,13 +1001,30 @@
         container.innerHTML = '';
         return;
       }
-      container.innerHTML = formData.subAttachments.map((att, idx) => `
-        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
-          <i class="fa-solid fa-paperclip"></i>
-          <span>${att}</span>
-          <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="removeSubAttachment(${idx})"></i>
-        </div>
-      `).join('');
+      const rows = formData.subAttachments.map((att, idx) => {
+        const row = document.createElement('div');
+        row.className = 'attachment-upload-item';
+
+        const icon = document.createElement('span');
+        icon.className = 'attachment-upload-icon';
+        icon.innerHTML = '<i class="fa-solid fa-paperclip"></i>';
+
+        const name = document.createElement('span');
+        name.className = 'attachment-upload-name';
+        name.textContent = att;
+        name.title = att;
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'attachment-upload-remove';
+        removeButton.setAttribute('aria-label', 'Remove ' + att);
+        removeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeButton.addEventListener('click', () => removeSubAttachment(idx));
+
+        row.append(icon, name, removeButton);
+        return row;
+      });
+      container.replaceChildren(...rows);
     }
 
     function toDateInputValue(value) {

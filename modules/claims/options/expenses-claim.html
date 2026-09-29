@@ -252,6 +252,68 @@
       margin-top: 6px;
     }
 
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      width: 100%;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
     .toast-box {
       position: absolute;
       bottom: 80px;
@@ -570,7 +632,12 @@
               <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
                 <i class="fa-solid fa-receipt"></i>
               </div>
-              <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Details</h2>
+              <div>
+                <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Details</h2>
+                <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                  Total Amount: <span id="v3TotalAmountDisplay" style="color: var(--text-primary); font-weight: 800;">RM 0.00</span>
+                </div>
+              </div>
             </div>
             <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
               <i class="fa-solid fa-plus"></i>
@@ -852,11 +919,14 @@
     function renderView3List() {
       const iconBox = document.getElementById('v3CategoryIconBox');
       const titleText = document.getElementById('v3CategoryTitleText');
+      const totalAmountText = document.getElementById('v3TotalAmountDisplay');
       const container = document.getElementById('v3ItemsContainer');
       const items = formData.claimDetails.addedDetails;
+      const totalAmount = items.reduce((sum, item) => sum + (Number(item.localAmount) || 0), 0);
 
       if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-receipt"></i>';
       if (titleText) titleText.innerText = 'Details';
+      if (totalAmountText) totalAmountText.innerText = 'RM ' + totalAmount.toFixed(2);
 
       if (items.length === 0) {
         container.innerHTML = '<div style="text-align:center; padding:24px 10px 14px;">' +
@@ -1033,7 +1103,7 @@
               '<span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>' +
             '</div>' +
           '</div>' +
-          '<div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>' +
+          '<div id="subChipsList" class="attachment-upload-list"></div>' +
         '</div>' +
 
       '</div>';
@@ -1093,6 +1163,10 @@
       const v1Total = document.getElementById('v1TotalClaimDisplay');
       if (v1Total) v1Total.innerText = 'RM ' + grandTotal.toFixed(2);
 
+      // Update View 2 Details Card Total
+      const v3Total = document.getElementById('v3TotalAmountDisplay');
+      if (v3Total) v3Total.innerText = 'RM ' + grandTotal.toFixed(2);
+
       // Update View 1 Main Form "Claim Total" Input
       const claimTotalInput = document.getElementById('claimTotalInput');
       if (claimTotalInput) claimTotalInput.value = grandTotal.toFixed(2);
@@ -1147,10 +1221,10 @@
         return;
       }
       container.innerHTML = formData.mainAttachments.map((att, idx) => {
-        return '<div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">' +
-          '<i class="fa-solid fa-paperclip"></i>' +
-          '<span>' + att + '</span>' +
-          '<i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="removeMainAttachment(' + idx + ')"></i>' +
+        return '<div class="attachment-upload-item">' +
+          '<span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>' +
+          '<span class="attachment-upload-name" title="' + escapeHtml(att) + '">' + escapeHtml(att) + '</span>' +
+          '<button type="button" class="attachment-upload-remove" aria-label="Remove ' + escapeHtml(att) + '" onclick="removeMainAttachment(' + idx + ')"><i class="fa-solid fa-xmark"></i></button>' +
         '</div>';
       }).join('');
     }
@@ -1163,10 +1237,10 @@
         return;
       }
       container.innerHTML = formData.subAttachments.map((att, idx) => {
-        return '<div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">' +
-          '<i class="fa-solid fa-paperclip"></i>' +
-          '<span>' + att + '</span>' +
-          '<i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="removeSubAttachment(' + idx + ')"></i>' +
+        return '<div class="attachment-upload-item">' +
+          '<span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>' +
+          '<span class="attachment-upload-name" title="' + escapeHtml(att) + '">' + escapeHtml(att) + '</span>' +
+          '<button type="button" class="attachment-upload-remove" aria-label="Remove ' + escapeHtml(att) + '" onclick="removeSubAttachment(' + idx + ')"><i class="fa-solid fa-xmark"></i></button>' +
         '</div>';
       }).join('');
     }

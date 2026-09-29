@@ -1401,7 +1401,7 @@ class PendingApprovalCard extends HTMLElement {
         </div>
 
         <!-- 2. Card Content Body -->
-        <div style="padding: 14px; cursor: pointer;" onclick="if (!event.target.closest('.action-btn-approve, .action-btn-reject, .approval-card-checkbox, .three-dots-btn')) { window.ClaimsEngine && window.ClaimsEngine.triggerClaimViewDetails ? window.ClaimsEngine.triggerClaimViewDetails('${itemId}') : null; }">
+        <div style="padding: 14px; cursor: pointer;" onclick="if (!event.target.closest('.action-btn-approve, .action-btn-reject, .action-btn-resubmit, .approval-card-checkbox, .three-dots-btn')) { window.ClaimsEngine && window.ClaimsEngine.triggerClaimViewDetails ? window.ClaimsEngine.triggerClaimViewDetails('${itemId}') : null; }">
           <!-- Status Badge & Submit Date Row -->
           <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; border: ${badgeBorder}; color: ${badgeColor}; font-weight: 800; font-size: 11.5px; padding: 4.5px 11px; border-radius: 12px;">

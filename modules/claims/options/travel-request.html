@@ -343,6 +343,69 @@
       transform: scale(0.96);
     }
 
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
     /* Toast Notification */
     .toast-box {
       position: absolute;
@@ -482,7 +545,7 @@
     <!-- Main Content Container (4-Level Drill-Down Isolation) -->
     <div class="main-content">
 
-      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Task, 3: Traveling, 4: Accomodation) -->
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Task, 3: Traveling, 4: Accommodation) -->
       <div class="claim-stepper-card">
         <div class="stepper-track-container">
           <div class="stepper-line-bg"></div>
@@ -502,7 +565,7 @@
           </div>
           <div class="stepper-item" id="stepNode-4" onclick="navigateToStep(4)">
             <div class="stepper-circle">4</div>
-            <span class="stepper-label">Accomodation</span>
+            <span class="stepper-label">Accommodation</span>
           </div>
         </div>
       </div>
@@ -539,15 +602,12 @@
             </div>
           </div>
 
-          <!-- Start Date & End Date : -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
-            <div>
-              <label class="field-label">Start Date</label>
-              <input type="date" id="v1StartDate" class="form-ctrl" value="2026-09-24" />
-            </div>
-            <div>
-              <label class="field-label">End Date</label>
-              <input type="date" id="v1EndDate" class="form-ctrl" value="2026-09-24" />
+          <!-- Travel Date -->
+          <div class="field-group">
+            <label class="field-label">Travel Date</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="date" id="v1StartDate" class="form-ctrl" value="2026-09-24" aria-label="Travel date from" />
+              <input type="date" id="v1EndDate" class="form-ctrl" value="2026-09-24" aria-label="Travel date to" />
             </div>
           </div>
 
@@ -689,7 +749,7 @@
             </div>
           </div>
 
-          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+          <div id="mainChipsList" class="attachment-upload-list"></div>
         </div>
 
         <!-- AGGREGATED SUMMARY ROW (Categories Drill-down Entry) -->
@@ -755,7 +815,7 @@
             <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Traveling</div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catTravelingCount" style="font-size: 15px; font-weight: 800; color: #a855f7;">0</div>
+            <div id="catTravelingCount" style="font-size: 15px; font-weight: 800; color: #a855f7;">RM 0.00</div>
             <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
@@ -766,10 +826,10 @@
             <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 18px;">
               <i class="fa-solid fa-hotel"></i>
             </div>
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Accomodation</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Accommodation</div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catAccomodationCount" style="font-size: 15px; font-weight: 800; color: #8b5cf6;">0</div>
+            <div id="catAccomodationCount" style="font-size: 15px; font-weight: 800; color: #8b5cf6;">RM 0.00</div>
             <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
@@ -802,7 +862,10 @@
               <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
                 <i class="fa-solid fa-list-check"></i>
               </div>
-              <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Task</h2>
+              <div>
+                <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Task</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Records: 0</span>
+              </div>
             </div>
             <button type="button" class="btn-submit-primary" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
               <i class="fa-solid fa-plus" aria-hidden="true"></i>
@@ -1012,7 +1075,7 @@
     function getCategoryTitle(catKey) {
       if (catKey === 'task') return 'Task';
       if (catKey === 'traveling') return 'Traveling';
-      if (catKey === 'accomodation') return 'Accomodation';
+      if (catKey === 'accomodation') return 'Accommodation';
       return 'Request';
     }
 
@@ -1401,6 +1464,7 @@
       const catKey = formData.activeCategory;
       const iconBox = document.getElementById('v3CategoryIconBox');
       const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
       const container = document.getElementById('v3ItemsContainer');
       const configs = {
         task: {
@@ -1409,6 +1473,7 @@
           bg: 'rgba(124,58,237,.14)',
           items: formData.requestDetails.taskItems,
           title: item => item.taskName || 'Task',
+          itemAmount: null,
           rows: item => [
             ['Task', item.taskName],
             ['Purpose', item.purpose],
@@ -1425,6 +1490,7 @@
           bg: 'rgba(59,130,246,.14)',
           items: formData.requestDetails.travelingItems,
           title: item => item.transport || 'Traveling',
+          itemAmount: item => Number(item.estCost) || 0,
           rows: item => [
             ['Origin', item.origin],
             ['Destination', item.dest],
@@ -1450,7 +1516,8 @@
           color: '#10b981',
           bg: 'rgba(16,185,129,.14)',
           items: formData.requestDetails.accomodationItems,
-          title: item => item.hotelName || 'Accomodation',
+          title: item => item.hotelName || 'Accommodation',
+          itemAmount: item => Number(item.amount) || 0,
           rows: item => [
             ['Preferred Hotel', item.hotelName],
             ['Check In Date', item.checkInDate],
@@ -1470,6 +1537,17 @@
         iconBox.style.background = config.bg;
       }
       if (titleText) titleText.textContent = getCategoryTitle(catKey);
+      if (countText) {
+        if (catKey === 'traveling') {
+          const totalEstimatedCost = config.items.reduce((sum, item) => sum + (Number(item.estCost) || 0), 0);
+          countText.textContent = `Total Estimated Cost: RM ${totalEstimatedCost.toFixed(2)}`;
+        } else if (catKey === 'accomodation') {
+          const totalAmount = config.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+          countText.textContent = `Total Amount: RM ${totalAmount.toFixed(2)}`;
+        } else {
+          countText.textContent = `Total Records: ${config.items.length}`;
+        }
+      }
 
       if (config.items.length === 0) {
         container.innerHTML = '<div style="text-align:center; padding:16px 10px 8px;">' +
@@ -1488,6 +1566,7 @@
       let html = '<div style="display:flex; flex-direction:column; gap:16px;">';
       config.items.forEach((item, idx) => {
         const cardId = 'trCard_' + catKey + '_' + idx;
+        const itemAmount = typeof config.itemAmount === 'function' ? config.itemAmount(item) : null;
         const attachmentNames = item.attachments?.length ? item.attachments : ['xxxx.jpg'];
         const attachmentValue = attachmentNames.map(name =>
           '<span style="display:inline-flex; align-items:center; gap:4px; margin-left:5px; padding:4px 8px; border-radius:8px; background:rgba(124,58,237,.08); border:1px solid rgba(124,58,237,.2); color:var(--purple-primary);"><i class="fa-solid fa-paperclip"></i>' + escapeTravelRequestHtml(name) + '</span>'
@@ -1505,6 +1584,7 @@
               '<div style="font-size:14px; font-weight:800; color:var(--text-primary); overflow-wrap:anywhere;">' + escapeTravelRequestHtml(config.title(item)) + '</div>' +
             '</div>' +
             '<div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">' +
+              (itemAmount === null ? '' : '<span style="font-size:13px; font-weight:800; color:var(--text-primary);">RM ' + itemAmount.toFixed(2) + '</span>') +
               '<i class="fa-solid fa-chevron-down toggle-icon" style="color:var(--text-muted); font-size:13px; padding:4px; transition:transform .25s ease;"></i>' +
               '<i class="fa-solid fa-pen-to-square" style="color:var(--purple-primary); font-size:14px; padding:4px; cursor:pointer;" onclick="event.stopPropagation(); openEntryForm(\'edit\',' + idx + ')" title="Edit Item"></i>' +
               '<i class="fa-solid fa-trash-can" style="color:#ef4444; font-size:14px; padding:4px; cursor:pointer;" onclick="event.stopPropagation(); deleteSubItem(' + idx + ')" title="Delete Item"></i>' +
@@ -1543,16 +1623,16 @@
 
     function updateSubtitles() {
       const taskCount = formData.requestDetails.taskItems.length;
-      const trvCount = formData.requestDetails.travelingItems.length;
-      const accCount = formData.requestDetails.accomodationItems.length;
+      const travelingTotal = formData.requestDetails.travelingItems.reduce((sum, item) => sum + (Number(item.estCost) || 0), 0);
+      const accommodationTotal = formData.requestDetails.accomodationItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
       const taskMetric = document.getElementById('catTaskCount');
       const travelingMetric = document.getElementById('catTravelingCount');
       const accomodationMetric = document.getElementById('catAccomodationCount');
 
       if (taskMetric) taskMetric.innerText = `${taskCount}`;
-      if (travelingMetric) travelingMetric.innerText = `${trvCount}`;
-      if (accomodationMetric) accomodationMetric.innerText = `${accCount}`;
+      if (travelingMetric) travelingMetric.innerText = `RM ${travelingTotal.toFixed(2)}`;
+      if (accomodationMetric) accomodationMetric.innerText = `RM ${accommodationTotal.toFixed(2)}`;
     }
 
     /* ENTRY FORM BUILDER (Standard PeopleHCM Purple Vertical Bar Section Headers) */
@@ -1630,7 +1710,7 @@
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
                     <i class="fa-solid fa-file-arrow-up"></i>
                   </div>
-                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
@@ -1639,7 +1719,7 @@
                   <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
                 </div>
               </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
             </div>
 
           </div>
@@ -1708,7 +1788,17 @@
 
             <div class="field-group">
               <label class="field-label">Transport</label>
-              <input type="text" id="entryTrvTransport" class="form-ctrl" value="${item.transport || ''}" />
+              <div class="select-wrapper">
+                <select id="entryTrvTransport" class="form-ctrl">
+                  <option value="" ${!item.transport ? 'selected' : ''}>- Select Transport -</option>
+                  <option value="AirAsia" ${item.transport === 'AirAsia' ? 'selected' : ''}>AirAsia</option>
+                  <option value="Malaysia Airlines" ${item.transport === 'Malaysia Airlines' ? 'selected' : ''}>Malaysia Airlines</option>
+                  <option value="Taxi" ${item.transport === 'Taxi' ? 'selected' : ''}>Taxi</option>
+                  <option value="E-Hailing" ${item.transport === 'E-Hailing' ? 'selected' : ''}>E-Hailing</option>
+                  <option value="Train" ${item.transport === 'Train' ? 'selected' : ''}>Train</option>
+                  <option value="Bus" ${item.transport === 'Bus' ? 'selected' : ''}>Bus</option>
+                </select>
+              </div>
             </div>
 
             <div class="field-group">
@@ -1786,7 +1876,7 @@
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
                     <i class="fa-solid fa-file-arrow-up"></i>
                   </div>
-                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
@@ -1795,13 +1885,13 @@
                   <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
                 </div>
               </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
             </div>
 
           </div>
         `;
       } else if (catKey === 'accomodation') {
-        const titleText = isEdit ? 'EDIT ACCOMODATION DETAILS' : 'ADD ACCOMODATION DETAILS';
+        const titleText = isEdit ? 'EDIT ACCOMMODATION DETAILS' : 'ADD ACCOMMODATION DETAILS';
         container.innerHTML = `
           <div class="form-card">
             <div class="section-header-bar no-top-border">
@@ -1860,10 +1950,10 @@
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
                     <i class="fa-solid fa-camera"></i>
                   </div>
-                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
                 </div>
               </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
             </div>
 
           </div>
@@ -2020,10 +2110,12 @@
       const container = document.getElementById(containerId);
       if (!container) return;
       container.innerHTML = list.map((fn, idx) => `
-        <div style="background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); padding: 5px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-          <i class="fa-solid fa-paperclip"></i>
-          <span>${fn}</span>
-          <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 11px;" onclick="removeFile('${target}', ${idx})"></i>
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${escapeTravelRequestHtml(fn)}">${escapeTravelRequestHtml(fn)}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="removeFile('${target}', ${idx})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       `).join('');
     }

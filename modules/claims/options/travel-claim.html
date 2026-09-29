@@ -805,7 +805,7 @@
               </div>
               <div>
                 <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Mileage</h2>
-                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Records: 0</span>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Amount: RM 0.00</span>
               </div>
             </div>
             <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
@@ -1066,7 +1066,9 @@
 
       if (iconBox) iconBox.innerHTML = iconHtml;
       if (titleText) titleText.innerText = catName;
-      if (countText) countText.innerText = `Total Records: ${items.length}`;
+      const amountKeys = catKey === 'expense' ? ['localAmount', 'amount'] : ['amount'];
+      const categoryMetric = getCategoryMetric(items, amountKeys);
+      if (countText) countText.innerText = `${categoryMetric.subtitle}: ${categoryMetric.value}`;
 
       if (!container) return;
 
@@ -1379,16 +1381,17 @@
       const countText = document.getElementById('v3CategoryItemsCount');
       const container = document.getElementById('v3ItemsContainer');
       const config = {
-        mileage: { items: formData.claimDetails.mileageItems, icon: 'fa-route', color: 'var(--purple-primary)', bg: 'rgba(124, 58, 237, 0.14)' },
-        travel: { items: formData.claimDetails.travelItems, icon: 'fa-plane-departure', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.14)' },
-        expense: { items: formData.claimDetails.generalExpenseItems, icon: 'fa-receipt', color: '#10b981', bg: 'rgba(16, 185, 129, 0.14)' }
+        mileage: { items: formData.claimDetails.mileageItems, amountKeys: ['amount'], icon: 'fa-route', color: 'var(--purple-primary)', bg: 'rgba(124, 58, 237, 0.14)' },
+        travel: { items: formData.claimDetails.travelItems, amountKeys: ['amount'], icon: 'fa-plane-departure', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.14)' },
+        expense: { items: formData.claimDetails.generalExpenseItems, amountKeys: ['localAmount', 'amount'], icon: 'fa-receipt', color: '#10b981', bg: 'rgba(16, 185, 129, 0.14)' }
       }[catKey];
       if (!config || !container) return;
 
       const items = config.items || [];
+      const categoryMetric = getCategoryMetric(items, config.amountKeys);
       if (iconBox) iconBox.innerHTML = `<i class="fa-solid ${config.icon}"></i>`;
       if (titleText) titleText.innerText = getCategoryTitle(catKey);
-      if (countText) countText.innerText = `Total Records: ${items.length}`;
+      if (countText) countText.innerText = `${categoryMetric.subtitle}: ${categoryMetric.value}`;
 
       if (!items.length) {
         container.innerHTML = `
@@ -1404,6 +1407,9 @@
 
       container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 16px;">${items.map((item, idx) => {
         const cardId = `itemCard_${catKey}_${idx}`;
+        const itemAmount = catKey === 'expense'
+          ? (Number(item.localAmount ?? item.amount) || 0)
+          : (Number(item.amount) || 0);
         let title = '';
         let rows = [];
         if (catKey === 'mileage') {
@@ -1450,6 +1456,7 @@
                 <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere;">${title}</div>
               </div>
               <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">RM ${itemAmount.toFixed(2)}</span>
                 <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
                 <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
                 <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
@@ -1976,12 +1983,14 @@
         };
       }
 
-      const amountKey = amountKeys.find(key => records.some(item => Object.prototype.hasOwnProperty.call(item || {}, key)));
-      if (amountKey) {
-        const amountTotal = records.reduce((sum, item) => sum + (Number(item?.[amountKey]) || 0), 0);
+      if (amountKeys.length) {
+        const amountTotal = records.reduce((sum, item) => {
+          const amountKey = amountKeys.find(key => Object.prototype.hasOwnProperty.call(item || {}, key));
+          return sum + (Number(amountKey ? item?.[amountKey] : 0) || 0);
+        }, 0);
         return {
           value: `RM ${amountTotal.toFixed(2)}`,
-          subtitle: `Total Records: ${recordCount}`
+          subtitle: 'Total Amount'
         };
       }
 
@@ -2008,13 +2017,13 @@
 
       const catM = document.getElementById('catMileageAmount');
       const catMSub = document.getElementById('catMileageSubtitle');
-      const mileageMetric = getCategoryMetric(formData.claimDetails.mileageItems, [], 'records');
+      const mileageMetric = getCategoryMetric(formData.claimDetails.mileageItems, ['amount']);
       if (catM) catM.innerText = mileageMetric.value;
       if (catMSub) catMSub.innerText = mileageMetric.subtitle;
 
       const catT = document.getElementById('catTravelAmount');
       const catTSub = document.getElementById('catTravelSubtitle');
-      const travelMetric = getCategoryMetric(formData.claimDetails.travelItems, [], 'records');
+      const travelMetric = getCategoryMetric(formData.claimDetails.travelItems, ['amount']);
       if (catT) catT.innerText = travelMetric.value;
       if (catTSub) catTSub.innerText = travelMetric.subtitle;
 
