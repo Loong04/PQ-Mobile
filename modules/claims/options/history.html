@@ -331,7 +331,10 @@
               <span>OT</span>
             </button>
             <button type="button" class="me-jump-pill" data-tab="travel" onclick="switchClaimTab('travel')">
-              <span>Travel</span>
+              <span>Travel Mileage</span>
+            </button>
+            <button type="button" class="me-jump-pill" data-tab="travelRequest" onclick="switchClaimTab('travelRequest')">
+              <span>Travel Request</span>
             </button>
             <button type="button" class="me-jump-pill" data-tab="entertainment" onclick="switchClaimTab('entertainment')">
               <span>Entertainment</span>
@@ -399,8 +402,8 @@
     </div>
 
     <!-- MODAL 2: CLAIM DETAILS POP-UP MODAL (Matching User Screenshots) -->
-    <div id="detailsModalOverlay" class="modal-overlay" onclick="if(event.target===this) closeDetailsModal()" style="align-items: center; justify-content: center; padding: 16px;">
-      <div id="claimDetailsModalContainer" style="width: 100%; max-width: 380px; background: var(--bg-card); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 85vh; border: 1px solid var(--border-subtle);">
+    <div id="detailsModalOverlay" class="modal-overlay" onclick="if(event.target===this) closeDetailsModal()" style="align-items: center; justify-content: center; padding: 16px 16px 94px; z-index: 200;">
+      <div id="claimDetailsModalContainer" style="width: 100%; max-width: 380px; background: var(--bg-card); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 100%; border: 1px solid var(--border-subtle);">
         <!-- Dynamically rendered by openClaimDetailsModal(item) -->
       </div>
     </div>
@@ -463,12 +466,13 @@
       { value: '11', text: 'November' }, { value: '12', text: 'December' }
     ];
 
-    // 7 Tab Metadata Schema
+    // Claim history tab metadata
     const CATEGORIES = [
       { id: 'benefit', name: 'Benefit', title: 'Benefit Claims History', icon: '🎁' },
       { id: 'medical', name: 'Medical', title: 'Medical Claims History', icon: '🏥' },
       { id: 'ot', name: 'OT', title: 'Overtime (OT) Claims History', icon: '⏰' },
-      { id: 'travel', name: 'Travel', title: 'Travel & Mileage Claims History', icon: '🚗' },
+      { id: 'travel', name: 'Mileage', title: 'Travel Mileage Claims History', icon: '🚗' },
+      { id: 'travelRequest', name: 'Travel Request', title: 'Travel Request History', icon: '✈️' },
       { id: 'entertainment', name: 'Entertainment', title: 'Entertainment Claims History', icon: '🍽️' },
       { id: 'advance', name: 'Advance', title: 'Advance Request Listing', icon: '💵' },
       { id: 'expense', name: 'Expense', title: 'Expense Claims', icon: '🧾' }
@@ -494,13 +498,18 @@
         { value: 'OT 2.0x (REST DAY)', text: 'OT 2.0x (Rest Day)' }
       ],
       travel: [
-        { value: 'all', text: 'All Travel Types' },
+        { value: 'all', text: 'All Travel Mileage Types' },
         { value: 'KL - PENANG MILEAGE', text: 'KL - Penang Mileage' },
         { value: 'PARKING & TOLL RECEIPTS', text: 'Parking & Toll Receipts' },
         { value: 'LOCAL CLIENT MEETING', text: 'Local Client Meeting' }
       ],
+      travelRequest: [
+        { value: 'all', text: 'All Benefit Types' },
+        { value: 'BUSINESS TRIP', text: 'Business Trip' },
+        { value: 'TRAINING', text: 'Training' }
+      ],
       entertainment: [
-        { value: 'all', text: 'All Entertainment Types' },
+        { value: 'all', text: 'All Benefit Types' },
         { value: 'CLIENT DINING & LUNCH', text: 'Client Dining & Lunch' },
         { value: 'STEAKHOUSE DINNER', text: 'Steakhouse Dinner' }
       ],
@@ -516,7 +525,7 @@
       ]
     };
 
-    // Comprehensive Mock History Records for All 7 Tabs
+    // Comprehensive mock history records for each claim tab
     const HISTORY_DATA = {
       benefit: [
         { id: 'CBF000000000220', title: 'CAR MAINTENANCE', subtype: 'Car Maintenance Allowance', date: '09 SEP 2026', isoDate: '2026-09-09', day: '09', month: 'SEP', dayName: 'WED', merchant: 'Teo Seng Car Workshop', amount: '12.00', quantity: '5.00', claimPeriod: '202609', dateFrom: '9 Sep 2026', dateTo: '9 Sep 2026', benefitYear: '2026', receiptNo: '5555555', otherRef: '', purpose: 'Test', remark: '', cancellationRemark: '', attachments: '1000037307.jpg', currency: 'USD', status: 'submitted', statusText: 'Submitted', empName: 'Farhan binti rahmat', empNo: 'EBB12' },
@@ -661,8 +670,8 @@
       entertainedPerson: 'Prospective Client Team',
       placeEntertained: 'Naughty Nuri’s Pavilion',
       totalAmount: '220.00',
-      internalAttendees: '2',
-      externalAttendees: '3',
+      internalAttendees: '0',
+      externalAttendees: '0',
       averagePerPax: '44.00',
       boardApprove: 'No',
       giftDeclaration: 'No',
@@ -694,6 +703,7 @@
       costCenter: 'MANAGEMENT',
       chargeTo: 'KLCC PROJECT',
       claimTotal: '336.00',
+      attachments: 'Travel_Claim.pdf',
       travels: 'No travels',
       expenses: 'No expenses',
       mileageDetails: {
@@ -711,6 +721,75 @@
         uploadFiles: 'Toll_Receipt.pdf'
       }
     });
+
+    HISTORY_DATA.travelRequest = [{
+      id: 'CTR000000000013',
+      title: 'BUSINESS TRIP',
+      subtype: 'Training & Business Travel',
+      date: '16 MAR 2026',
+      isoDate: '2026-03-16',
+      day: '16',
+      month: 'MAR',
+      dayName: 'MON',
+      amount: '0.00',
+      claimPeriod: '202603',
+      dateFrom: '16 Mar 2026',
+      dateTo: '16 Mar 2026',
+      currency: 'MYR',
+      status: 'submitted',
+      statusText: 'Submitted',
+      empName: 'Farhan binti rahmat',
+      empNo: 'EBB12',
+      historyDetailType: 'travel-request',
+      trainingReference: 'TRN-2026-032',
+      destination: 'Bangi',
+      benefitType: 'TRAINING',
+      purpose: 'BANGI BANGALOW',
+      carType: 'Personal Car',
+      chargeTo: 'BANGI BANGALOW',
+      transportType: 'Air Travel',
+      travelType: 'BUSINESS TRIP',
+      accommodation: 'No',
+      flight: 'No',
+      remark: 'Training session',
+      passengerDetails: 'No passenger details',
+      accommodationDetails: 'No accommodation details',
+      attachments: 'Travel_Request.pdf',
+      taskDetails: {
+        task: 'USER TRAINING',
+        purpose: 'BANGI BANGALOW',
+        location: 'BANGI',
+        startDate: '16 Mar 2026',
+        endDate: '16 Mar 2026',
+        startTime: '08:00',
+        endTime: '10:00',
+        attachments: 'Training_Agenda.pdf',
+        uploadFiles: 'Training_Agenda.pdf'
+      },
+      travelDetails: {
+        origin: 'Home',
+        destination: 'Bangi',
+        departDate: '16 Mar 2026',
+        departTime: '06:32',
+        arrivalDate: '16 Mar 2026',
+        arrivalTime: '15:32',
+        days: '0',
+        project: 'BANGI BANGALOW',
+        transport: 'AIR ASIA',
+        justification: 'Business training',
+        preferredTransportType: 'Air Travel',
+        transportNo: 'AK 512',
+        needAccommodation: 'No',
+        needAllowance: 'No',
+        accommodationDetail: '—',
+        bookingType: 'Economy',
+        travelClass: 'Economy',
+        distance: '0.00',
+        amount: '0.00',
+        attachments: 'Travel_Itinerary.pdf',
+        uploadFiles: 'Travel_Itinerary.pdf'
+      }
+    }];
 
     Object.assign(HISTORY_DATA.ot[0], {
       otType: '1.5 OT',
@@ -751,7 +830,8 @@
         benefit: 'Benefit Type',
         medical: 'Medical Type',
         travel: 'Travel & Mileage Type',
-        entertainment: 'Entertainment Type',
+        travelRequest: 'Benefit Type',
+        entertainment: 'Benefit Type',
         advance: 'Benefit Type',
         expense: 'Expense Type'
       };
@@ -891,7 +971,7 @@
               ${statusRow}
             </div>
           `;
-        } else if (activeTabKey === 'travel' || activeTabKey === 'entertainment') {
+        } else if (activeTabKey === 'travel' || activeTabKey === 'travelRequest' || activeTabKey === 'entertainment') {
           detailsBlock = `
             <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -948,6 +1028,7 @@
           medical: 'fa-kit-medical',
           ot: 'fa-clock',
           travel: 'fa-route',
+          travelRequest: 'fa-plane-departure',
           entertainment: 'fa-utensils',
           advance: 'fa-hand-holding-dollar',
           expense: 'fa-receipt'
@@ -1048,9 +1129,10 @@
       if (!modal || !container) return;
 
       const isMedical = activeTabKey === 'medical' || item.benefitType === 'MEDICAL CLAIMS' || (item.id && item.id.startsWith('CMD')) || item.title === 'Medical Listing';
-      const isTravelRequest = activeTabKey === 'travel' && item.historyDetailType === 'travel-request';
+      const isTravelRequest = activeTabKey === 'travelRequest' || (activeTabKey === 'travel' && item.historyDetailType === 'travel-request');
       const detailStatus = getHistoryStatus(item);
 
+      let bodyHtml = '';
       let headerTitle = item.title ? item.title.toUpperCase() : 'CLAIM DETAILS';
       if (isMedical) {
         headerTitle = 'Medical Listing';
@@ -1061,6 +1143,7 @@
       } else if (activeTabKey === 'entertainment') {
         headerTitle = 'Entertainment Claim Listing';
       } else if (activeTabKey === 'ot') {
+        headerTitle = 'OT Claim History';
         const displayOtValue = value => (
           value === undefined || value === null || value === ''
             ? '<span style="color: var(--text-muted);">—</span>'
@@ -1103,13 +1186,13 @@
             </tbody>
           </table>
         `;
-      } else if (activeTabKey === 'travel') {
+      } else if (activeTabKey === 'travel' || activeTabKey === 'travelRequest') {
         headerTitle = isTravelRequest ? 'Travel Request History' : 'Travelling Mileage Listing';
       } else if (activeTabKey === 'ot') {
         headerTitle = 'OT Claim History';
       }
 
-      let bodyHtml = '';
+      bodyHtml = bodyHtml || '';
 
       if (isMedical) {
         // Medical Claim Details Layout (Matching Screenshot 2)
@@ -1195,7 +1278,9 @@
             </table>
           </div>
         `;
-      } else if (activeTabKey === 'travel') {
+      } else if (activeTabKey === 'ot') {
+        bodyHtml = bodyHtml || '';
+      } else if (activeTabKey === 'travel' || activeTabKey === 'travelRequest') {
         const displayTravelValue = value => (
           value === undefined || value === null || value === ''
             ? '<span style="color: var(--text-muted);">—</span>'
@@ -1226,8 +1311,8 @@
               ['Emp #', item.empNo ? `#${item.empNo}` : '—'],
               ['Name', item.empName],
               ['Travel Period', item.claimPeriod],
-              ['Date From', item.dateFrom || item.date],
-              ['Date To', item.dateTo || item.date],
+              ['Start Date', item.dateFrom || item.date],
+              ['End Date', item.dateTo || item.date],
               ['Training Reference #', item.trainingReference],
               ['Destination', item.destination],
               ['Benefit', item.benefitType],
@@ -1288,8 +1373,8 @@
               ['Travel Request #', item.travelRequestNo],
               ['Claim Period', item.claimPeriod],
               ['Benefit Type', item.benefitType],
-              ['Date From', item.dateFrom || item.date],
-              ['Date To', item.dateTo || item.date],
+              ['Start Date', item.dateFrom || item.date],
+              ['End Date', item.dateTo || item.date],
               ['Cost Center', item.costCenter],
               ['Charge To', item.chargeTo],
               ['Purpose', item.purpose],
@@ -1351,8 +1436,8 @@
               ['Benefit Year', item.benefitYear],
               ['Claim Period', item.claimPeriod],
               ['Benefit Type', item.benefitType],
-              ['Date From', item.dateFrom || item.date],
-              ['Date To', item.dateTo || item.date],
+              ['Start Date', item.dateFrom || item.date],
+              ['End Date', item.dateTo || item.date],
               ['Currency', item.currency],
               ['Total Amount', item.totalAmount || item.amount],
               ['Project', item.project],
@@ -1370,8 +1455,7 @@
               ['Forex Rate', detail.forexRate || item.forexRate || '1.00'],
               ['Claim Amount', detail.claimAmount || item.amount],
               ['Description', detail.description || item.description],
-              ['Attachments', detail.attachments || attachmentValue],
-              ['Upload Files', detail.uploadFiles || attachmentValue]
+              ['Attachments', detail.attachments || attachmentValue]
             ])}
           `;
         } else if (activeTabKey === 'advance') {
@@ -1416,8 +1500,8 @@
               ['Name', item.empName],
               ['Travel Mileage Claim #', item.travelMileageClaimNo],
               ['Claim Period', item.claimPeriod],
-              ['Date From', item.dateFrom || item.date],
-              ['Date To', item.dateTo || item.date],
+              ['Start Date', item.dateFrom || item.date],
+              ['End Date', item.dateTo || item.date],
               ['Benefit Type', item.benefitType],
               ['Entitlement Year', item.benefitYear],
               ['Project', item.project],
@@ -1452,6 +1536,8 @@
               ['Attachments', detail.attachments || attachmentValue],
               ['Upload Files', detail.uploadFiles || attachmentValue]
             ])}
+            <div style="margin-top: 12px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">No Internal Attendees</div>
+            <div style="margin-top: 8px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">No External Attendees</div>
           `;
         }
       } else {
@@ -1520,7 +1606,7 @@
             <i class="fa-solid fa-circle-xmark"></i>
           </button>
         </div>
-        <div style="padding: 12px; max-height: 75vh; overflow-y: auto; background: var(--bg-card); color: var(--text-primary);">
+        <div style="padding: 12px 12px 24px; flex: 1 1 auto; min-height: 0; overflow-y: auto; background: var(--bg-card); color: var(--text-primary);">
           ${bodyHtml}
         </div>
       `;
