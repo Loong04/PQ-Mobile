@@ -291,6 +291,71 @@
       margin-top: 6px;
     }
 
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      margin-top: 0;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
     .validation-err-text {
       font-size: 12px;
       font-weight: 700;
@@ -587,16 +652,19 @@
             <input type="text" id="mReceiptNoInput" class="form-ctrl" value="REC-88310" placeholder="Enter receipt number" />
           </div>
 
+          <!-- Claim Total -->
+          <div class="field-group">
+            <label class="field-label">Claim Total (RM)</label>
+            <input type="text" id="mClaimTotalInput" class="form-ctrl" value="0.00" readonly />
+          </div>
+
           <!-- Remark : -->
           <div class="field-group">
             <label class="field-label">Remark</label>
             <input type="text" id="mRemarkInput" class="form-ctrl" placeholder="Enter remark..." />
           </div>
-        </div>
-
         <!-- GENERAL ATTACHMENTS -->
-        <div class="form-card">
-          <label class="field-label" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Add Attachment</label>
+          <label class="field-label" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Upload Attachment</label>
 
           <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
             <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
@@ -614,25 +682,7 @@
             </div>
           </div>
 
-          <div id="mainChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center;"></div>
-        </div>
-
-        <!-- AGGREGATED SUMMARY ROW (Level 1 Total Claim & Drill-down Entry) -->
-        <div class="category-summary-row" onclick="navigateToStep(3)" style="display: none; background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
-              <i class="fa-solid fa-notes-medical"></i>
-            </div>
-            <div>
-              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL CLAIM AMOUNT</div>
-              <div id="v1TotalClaimDisplay" style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">RM 0.00</div>
-              <div id="v1ItemsCountSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">0 claim items added</div>
-            </div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
-            <span>Details</span>
-            <i class="fa-solid fa-chevron-right"></i>
-          </div>
+          <div id="mainChipsList" class="attachment-upload-list"></div>
         </div>
 
         <!-- BOTTOM ACTION BUTTONS -->
@@ -660,18 +710,18 @@
         </div>
 
         <!-- CATEGORY 1: MEDICAL TREATMENT -->
-        <div class="category-card" onclick="openCategoryItems('treatment')" style="background: var(--bg-card); border-radius: 18px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
+        <div class="category-card" onclick="navigateToStep(2)" style="background: var(--bg-card); border-radius: 18px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
           <div style="display: flex; align-items: center; gap: 14px;">
             <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
               <i class="fa-solid fa-notes-medical"></i>
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Medical</div>
-              <div id="catTreatmentSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 record(s) added</div>
+              <div id="catTreatmentSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catTreatmentCount" style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">0 Records</div>
+            <div id="catTreatmentCount" style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">0</div>
             <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
@@ -684,11 +734,11 @@
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Details</div>
-              <div id="catExpenseSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">0 item(s) added</div>
+              <div id="catExpenseSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catExpenseAmount" style="font-size: 14px; font-weight: 800; color: #10b981;">RM 0.00</div>
+            <div id="catExpenseAmount" style="font-size: 14px; font-weight: 800; color: #10b981;">0</div>
             <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
@@ -699,9 +749,9 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span>Back to Application</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitMedicalClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
+          <button type="button" class="btn-submit-primary" onclick="goToNextMedicalStep()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -723,12 +773,11 @@
               </div>
               <div>
                 <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Details</h2>
-                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 items recorded</span>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Records: 0</span>
               </div>
             </div>
-            <button type="button" id="v3AddItemButton" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+            <button type="button" id="v3AddItemButton" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
               <i class="fa-solid fa-plus"></i>
-              <span>Add Item</span>
             </button>
           </div>
 
@@ -757,7 +806,7 @@
         </div>
 
         <!-- BOTTOM ACTION BUTTONS -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+        <div id="v4BottomActions" style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px;">
           <button type="button" class="btn-step-back" onclick="handleHeaderBack()">
             <i class="fa-solid fa-xmark"></i>
             <span>Cancel</span>
@@ -871,11 +920,17 @@
       }
     }
 
+    function goToNextMedicalStep() {
+      if (formData.treatmentItems.length === 0) {
+        navigateToStep(2);
+      } else {
+        navigateToStep(3);
+      }
+    }
+
     function getSavedCategoryStep() {
-      if (formData.activeCategory === 'treatment' && formData.treatmentItems.length > 0) return 2;
-      if (formData.activeCategory === 'expense' && formData.expenseItems.length > 0) return 3;
-      if (formData.treatmentItems.length > 0) return 2;
       if (formData.expenseItems.length > 0) return 3;
+      if (formData.treatmentItems.length > 0) return 2;
       return 1;
     }
 
@@ -892,9 +947,7 @@
 
       // General starts at step 1. The category page reflects saved progress,
       // while category lists and forms keep their corresponding step active.
-      if (viewId === 'view-1-main') {
-        updateStepperUI(1);
-      } else if (viewId === 'view-2-categories') {
+      if (viewId === 'view-1-main' || viewId === 'view-2-categories') {
         updateStepperUI(getSavedCategoryStep());
       } else if (formData.activeCategory === 'treatment') {
         updateStepperUI(2);
@@ -1003,7 +1056,10 @@
       if (iconBox) {
         iconBox.innerHTML = isTreatment ? '<i class="fa-solid fa-notes-medical"></i>' : '<i class="fa-solid fa-receipt"></i>';
       }
-      if (countText) countText.innerText = `${items.length} ${isTreatment ? 'record(s)' : 'item(s)'} recorded`;
+      if (countText) {
+        const totalAmount = formData.expenseItems.reduce((sum, item) => sum + Number(item.localAmount || 0), 0);
+        countText.innerText = isTreatment ? `Total Records: ${items.length}` : `Total Amount: RM ${totalAmount.toFixed(2)}`;
+      }
       if (addItemButton) {
         addItemButton.style.display = isTreatment && items.length >= 1 ? 'none' : 'inline-flex';
       }
@@ -1014,10 +1070,15 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span>Back to Medical</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitMedicalClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
+          ${isTreatment
+            ? `<button type="button" class="btn-submit-primary" onclick="navigateToStep(3)">
+                <span>Next</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>`
+            : `<button type="button" class="btn-submit-primary" onclick="submitMedicalClaim()">
+                <span>Submit</span>
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>`}
         `;
       }
 
@@ -1075,24 +1136,16 @@
                     <span class="medical-data-value">${item.treatmentType || 'Others'}</span>
                   </div>
                   <div class="medical-data-row">
-                    <span class="medical-data-label">Sickness / Diagnosis</span>
-                    <span class="medical-data-value">${item.sicknessType || '-'}</span>
-                  </div>
-                  <div class="medical-data-row" style="display: none;">
-                    <span class="medical-data-label">Clinic Location / Category</span>
+                    <span class="medical-data-label">Clinic / Hospital</span>
                     <span class="medical-data-value">${item.clinicLocation || '-'} · ${item.clinicCategory || '-'}</span>
                   </div>
                   <div class="medical-data-row">
-                    <span class="medical-data-label">Clinic Location</span>
-                    <span class="medical-data-value">${item.clinicLocation || '-'}</span>
+                    <span class="medical-data-label">Non-Panel Clinic / Hospital</span>
+                    <span class="medical-data-value">${item.nonPanelClinic || item.clinicName || '-'}</span>
                   </div>
                   <div class="medical-data-row">
-                    <span class="medical-data-label">Clinic Category</span>
-                    <span class="medical-data-value">${item.clinicCategory || '-'}</span>
-                  </div>
-                  <div class="medical-data-row">
-                    <span class="medical-data-label">Clinic / Hospital Name</span>
-                    <span class="medical-data-value">${item.clinicName || item.nonPanelClinic || '-'}</span>
+                    <span class="medical-data-label">Sickness Type</span>
+                    <span class="medical-data-value">${item.sicknessType || '-'}</span>
                   </div>
                   ${item.attachments && item.attachments.length > 0 ? `
                   <div class="medical-data-row">
@@ -1214,6 +1267,28 @@
 
       formData.editingIndex = editIndex;
       const container = document.getElementById('v4SubFormContainer');
+      const actions = document.getElementById('v4BottomActions');
+      if (actions) {
+        actions.innerHTML = isTreatment ? `
+          <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        ` : `
+          <button type="button" class="btn-step-back" onclick="handleHeaderBack()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        `;
+      }
 
       if (isTreatment) {
         const item = (editIndex >= 0 && formData.treatmentItems[editIndex]) ? formData.treatmentItems[editIndex] : null;
@@ -1261,34 +1336,32 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Clinic Location</label>
-              <div class="select-wrapper">
-                <select id="mClinicLocation" class="form-ctrl">
-                  <option value="" ${!item ? 'selected' : ''} disabled>- Select Location -</option>
-                  <option value="Kuala Lumpur" ${item && item.clinicLocation === 'Kuala Lumpur' ? 'selected' : ''}>Kuala Lumpur</option>
-                  <option value="Selangor" ${item && item.clinicLocation === 'Selangor' ? 'selected' : ''}>Selangor</option>
-                  <option value="Penang" ${item && item.clinicLocation === 'Penang' ? 'selected' : ''}>Penang</option>
-                </select>
+              <label class="field-label">Clinic / Hospital</label>
+              <div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 10px;">
+                <div class="select-wrapper">
+                  <select id="mClinicLocation" class="form-ctrl" aria-label="Clinic / Hospital Location">
+                    <option value="" ${!item ? 'selected' : ''} disabled>- Select Location -</option>
+                    <option value="Kuala Lumpur" ${item && item.clinicLocation === 'Kuala Lumpur' ? 'selected' : ''}>Kuala Lumpur</option>
+                    <option value="Selangor" ${item && item.clinicLocation === 'Selangor' ? 'selected' : ''}>Selangor</option>
+                    <option value="Penang" ${item && item.clinicLocation === 'Penang' ? 'selected' : ''}>Penang</option>
+                  </select>
+                </div>
+                <div class="select-wrapper">
+                  <select id="mClinicCategory" class="form-ctrl" aria-label="Clinic / Hospital Category">
+                    <option value="Panel Clinic/Hospital" ${!item || item.clinicCategory === 'Panel Clinic/Hospital' ? 'selected' : ''}>Panel Clinic/Hospital</option>
+                    <option value="Non-Panel Clinic/Hospital" ${item && item.clinicCategory === 'Non-Panel Clinic/Hospital' ? 'selected' : ''}>Non-Panel Clinic/Hospital</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div class="field-group">
-              <label class="field-label">Clinic Category</label>
-              <div class="select-wrapper">
-                <select id="mClinicCategory" class="form-ctrl">
-                  <option value="Panel Clinic/Hospital" ${!item || item.clinicCategory === 'Panel Clinic/Hospital' ? 'selected' : ''}>Panel Clinic/Hospital</option>
-                  <option value="Non-Panel Clinic/Hospital" ${item && item.clinicCategory === 'Non-Panel Clinic/Hospital' ? 'selected' : ''}>Non-Panel Clinic/Hospital</option>
-                </select>
-              </div>
+            <div class="field-group" id="mNonPanelClinicGroup">
+              <label class="field-label">Non-Panel Clinic / Hospital</label>
+              <input type="text" id="mNonPanelClinic" class="form-ctrl" value="${item ? (item.nonPanelClinic || (item.clinicCategory === 'Non-Panel Clinic/Hospital' ? item.clinicName : '') || '') : ''}" placeholder="Enter non-panel clinic or hospital" />
             </div>
 
             <div class="field-group">
-              <label class="field-label">Clinic / Hospital Name</label>
-              <input type="text" id="mClinicName" class="form-ctrl" value="${item ? (item.clinicName || item.nonPanelClinic || '') : ''}" placeholder="Enter clinic or hospital name" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">Sickness / Diagnosis</label>
+              <label class="field-label">Sickness Type</label>
               <div class="select-wrapper">
                 <select id="mSicknessType" class="form-ctrl">
                   <option value="" ${!item ? 'selected' : ''} disabled>- Select Sickness -</option>
@@ -1301,7 +1374,7 @@
             </div>
           </div>
 
-          <div class="category-summary-row" onclick="navigateToStep(3)" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+          <div class="category-summary-row" style="display: none;">
             <div style="display: flex; align-items: center; gap: 14px;">
               <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
                 <i class="fa-solid fa-receipt"></i>
@@ -1375,6 +1448,35 @@
               </div>
             </div>
 
+            <div class="field-group">
+              <label class="field-label">Upload Attachment</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('detail')">
+                  <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('detail')">
+                  <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+                </div>
+              </div>
+              <div id="detailChipsList" class="attachment-upload-list">
+                ${(item && item.attachments && item.attachments.length > 0 ? item.attachments : []).map(att => `
+                  <div class="file-chip attachment-upload-item" data-file-name="${att}">
+                    <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+                    <span class="attachment-upload-name" title="${att}">${att}</span>
+                    <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="this.closest('.attachment-upload-item').remove()">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
           </div>
         `;
         switchView('view-4-entry', `${mode === 'edit' ? 'Edit' : 'Add'} Details`);
@@ -1397,10 +1499,10 @@
         const treatmentType = document.getElementById('mTreatmentType')?.value || 'Others';
         const clinicLocation = document.getElementById('mClinicLocation')?.value || '';
         const clinicCategory = document.getElementById('mClinicCategory')?.value || 'Panel Clinic/Hospital';
-        const clinicName = document.getElementById('mClinicName')?.value || '';
+        const nonPanelClinic = document.getElementById('mNonPanelClinic')?.value || '';
         const sicknessType = document.getElementById('mSicknessType')?.value || '';
 
-        const newItem = { patientType, patientName, treatmentType, clinicLocation, clinicCategory, clinicName, sicknessType };
+        const newItem = { patientType, patientName, treatmentType, clinicLocation, clinicCategory, nonPanelClinic, clinicName: nonPanelClinic, sicknessType };
         if (typeof editIdx === 'number' && editIdx >= 0) {
           formData.treatmentItems[editIdx] = newItem;
         } else if (formData.treatmentItems.length === 0) {
@@ -1422,9 +1524,12 @@
         const existingAttachments = typeof editIdx === 'number' && editIdx >= 0
           ? formData.expenseItems[editIdx]?.attachments
           : null;
-        const attachments = existingAttachments && existingAttachments.length > 0
-          ? existingAttachments
-          : ['xxxx.jpg'];
+        const detailChips = Array.from(document.querySelectorAll('#detailChipsList .file-chip'))
+          .map(chip => chip.dataset.fileName || chip.textContent.trim())
+          .filter(Boolean);
+        const attachments = detailChips.length > 0
+          ? detailChips
+          : (existingAttachments && existingAttachments.length > 0 ? existingAttachments : ['xxxx.jpg']);
 
         const newItem = { receiptNo, expenseType, amt, currency, forexRate, localAmount, attachments };
         if (typeof editIdx === 'number' && editIdx >= 0) {
@@ -1452,22 +1557,24 @@
     function recalcAllTotals() {
       const grandTotal = formData.expenseItems.reduce((sum, i) => sum + i.localAmount, 0);
       
-      const v1TotalEl = document.getElementById('v1TotalClaimDisplay');
-      const v1SubEl = document.getElementById('v1ItemsCountSubtitle');
-      if (v1TotalEl) v1TotalEl.innerText = `RM ${grandTotal.toFixed(2)}`;
-      if (v1SubEl) v1SubEl.innerText = `${formData.treatmentItems.length + formData.expenseItems.length} claim item(s) added`;
+      const claimTotalInput = document.getElementById('mClaimTotalInput');
+      if (claimTotalInput) claimTotalInput.value = grandTotal.toFixed(2);
 
       const catTreatmentSub = document.getElementById('catTreatmentSubtitle');
       const catTreatmentCount = document.getElementById('catTreatmentCount');
-      if (catTreatmentSub) catTreatmentSub.innerText = `${formData.treatmentItems.length} record(s) added`;
-      if (catTreatmentCount) catTreatmentCount.innerText = `${formData.treatmentItems.length} Records`;
+      if (catTreatmentSub) catTreatmentSub.innerText = '';
+      if (catTreatmentCount) catTreatmentCount.innerText = `${formData.treatmentItems.length}`;
 
       const catExpenseSub = document.getElementById('catExpenseSubtitle');
       const catExpenseAmt = document.getElementById('catExpenseAmount');
-      if (catExpenseSub) catExpenseSub.innerText = `${formData.expenseItems.length} item(s) added`;
-      if (catExpenseAmt) catExpenseAmt.innerText = `RM ${grandTotal.toFixed(2)}`;
+      if (catExpenseSub) catExpenseSub.innerText = formData.expenseItems.length > 0
+        ? `Total Records: ${formData.expenseItems.length}`
+        : '';
+      if (catExpenseAmt) catExpenseAmt.innerText = formData.expenseItems.length > 0
+        ? `RM ${grandTotal.toFixed(2)}`
+        : '0';
       const detailsCount = document.getElementById('v2DetailsCount');
-      if (detailsCount) detailsCount.innerText = `${formData.expenseItems.length} item(s) added`;
+      if (detailsCount) detailsCount.innerText = `Total Records: ${formData.expenseItems.length}`;
     }
 
     function triggerFileUpload(target) {
@@ -1483,9 +1590,15 @@
       const container = document.getElementById(containerId);
       if (container) {
         const chip = document.createElement('div');
-        chip.className = 'file-chip';
+        chip.className = 'file-chip attachment-upload-item';
         chip.dataset.fileName = file.name;
-        chip.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="this.parentElement.remove()"></i>`;
+        chip.innerHTML = `
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${file.name}">${file.name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="this.closest('.attachment-upload-item').remove()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        `;
         container.appendChild(chip);
       }
     }

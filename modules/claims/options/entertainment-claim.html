@@ -616,7 +616,13 @@
           <!-- Cost Centre : -->
           <div class="field-group">
             <label class="field-label">Cost Centre</label>
-            <input type="text" id="costCentreInput" class="form-ctrl" value="MANAGEMENT" />
+            <div class="select-wrapper">
+              <select id="costCentreInput" class="form-ctrl">
+                <option value="MANAGEMENT" selected>MANAGEMENT</option>
+                <option value="ADMINISTRATION">ADMINISTRATION</option>
+                <option value="OPERATIONS">OPERATIONS</option>
+              </select>
+            </div>
           </div>
 
           <!-- Project : -->
@@ -703,7 +709,7 @@
           </div>
 
           <div style="margin-top: 18px;">
-            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">Upload Attachments</label>
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">Upload Attachment</label>
             <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
               <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -748,9 +754,9 @@
             <i class="fa-solid fa-floppy-disk"></i>
             <span>Draft</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitEntertainmentClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('details')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -820,9 +826,9 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span>Back to Application</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitEntertainmentClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('details')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -846,9 +852,8 @@
                 <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Detail</h2>
               </div>
             </div>
-            <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+            <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
               <i class="fa-solid fa-plus"></i>
-              <span>Add Item</span>
             </button>
           </div>
 
@@ -865,9 +870,9 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span>Back to Categories</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitEntertainmentClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
+          <button type="button" id="entertainmentListNextButton" class="btn-submit-primary" onclick="goToNextEntertainmentStep()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -1049,7 +1054,30 @@
     function openCategoryItems(categoryKey) {
       formData.activeCategory = categoryKey;
       renderView3List();
+      updateEntertainmentListAction();
       switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function goToNextEntertainmentStep() {
+      const nextCategory = {
+        details: 'employees',
+        employees: 'guests'
+      }[formData.activeCategory];
+      if (nextCategory) {
+        openCategoryItems(nextCategory);
+      } else {
+        submitEntertainmentClaim();
+      }
+    }
+
+    function updateEntertainmentListAction() {
+      const button = document.getElementById('entertainmentListNextButton');
+      if (!button) return;
+      const isFinalStep = formData.activeCategory === 'guests';
+      button.onclick = isFinalStep ? submitEntertainmentClaim : goToNextEntertainmentStep;
+      button.innerHTML = isFinalStep
+        ? '<span>Submit</span><i class="fa-solid fa-paper-plane"></i>'
+        : '<span>Next</span><i class="fa-solid fa-arrow-right"></i>';
     }
 
     function toggleItemCard(cardId) {
@@ -1090,7 +1118,7 @@
 
       if (iconBox) iconBox.innerHTML = iconHtml;
       if (titleText) titleText.innerText = catName;
-      if (countText) countText.innerText = `${items.length} record(s)`;
+      if (countText) countText.innerText = `Total Records: ${items.length}`;
 
       if (items.length === 0) {
         container.innerHTML = `
@@ -1489,9 +1517,9 @@
               <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? item.amt.toFixed(2) : '0.00'}" readonly style="font-weight: 800;" />
             </div>
 
-            <!-- Upload Attachments -->
+            <!-- Upload Attachment -->
             <div style="margin-top: 14px;">
-              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
               <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -1696,17 +1724,17 @@
       const catDetAmt = document.getElementById('catDetailsAmount');
       const catDetSub = document.getElementById('catDetailsSubtitle');
       if (catDetAmt) catDetAmt.innerText = `RM ${totalAmt.toFixed(2)}`;
-      if (catDetSub) catDetSub.innerText = `${formData.claimDetails.addedDetails.length} items added`;
+      if (catDetSub) catDetSub.innerText = `Total Records: ${formData.claimDetails.addedDetails.length}`;
 
       const catEmpCnt = document.getElementById('catEmployeesCount');
       const catEmpSub = document.getElementById('catEmployeesSubtitle');
       if (catEmpCnt) catEmpCnt.innerText = `${intPax} Pax`;
-      if (catEmpSub) catEmpSub.innerText = `${intPax} employees recorded`;
+      if (catEmpSub) catEmpSub.innerText = `Total Pax: ${intPax}`;
 
       const catGstCnt = document.getElementById('catGuestsCount');
       const catGstSub = document.getElementById('catGuestsSubtitle');
       if (catGstCnt) catGstCnt.innerText = `${extPax} Pax`;
-      if (catGstSub) catGstSub.innerText = `${extPax} guests recorded`;
+      if (catGstSub) catGstSub.innerText = `Total Pax: ${extPax}`;
     }
 
     function triggerFileUpload(target) {

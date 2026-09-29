@@ -287,6 +287,69 @@
       margin-top: 6px;
     }
 
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
     .claim-data-list {
       display: flex;
       flex-direction: column;
@@ -521,22 +584,25 @@
             </div>
           </div>
 
-          <!-- Start Date & End Date : -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
-            <div>
-              <label class="field-label">Start Date</label>
-              <input type="date" id="v1ClaimStartDate" class="form-ctrl" value="2026-09-23" />
-            </div>
-            <div>
-              <label class="field-label">End Date</label>
-              <input type="date" id="v1ClaimEndDate" class="form-ctrl" value="2026-09-23" />
+          <!-- Claim Date : -->
+          <div class="field-group">
+            <label class="field-label">Claim Date</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="date" id="v1ClaimStartDate" class="form-ctrl" value="2026-09-23" aria-label="Claim Date From" />
+              <input type="date" id="v1ClaimEndDate" class="form-ctrl" value="2026-09-23" aria-label="Claim Date To" />
             </div>
           </div>
 
           <!-- Cost Centre : -->
           <div class="field-group">
             <label class="field-label">Cost Centre</label>
-            <input type="text" id="v1CostCentre" class="form-ctrl" value="MANAGEMENT" />
+            <div class="select-wrapper">
+              <select id="v1CostCentre" class="form-ctrl">
+                <option value="MANAGEMENT" selected>MANAGEMENT</option>
+                <option value="ADMINISTRATION">ADMINISTRATION</option>
+                <option value="OPERATIONS">OPERATIONS</option>
+              </select>
+            </div>
           </div>
 
           <!-- Charge To : -->
@@ -596,6 +662,22 @@
             <input type="text" id="v1Remarks" class="form-ctrl" placeholder="" />
           </div>
 
+          <!-- Upload Attachment -->
+          <div class="field-group">
+            <label class="field-label">Upload Attachment</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;"><i class="fa-solid fa-file-arrow-up"></i></div>
+                <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);"><i class="fa-solid fa-camera"></i></div>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+              </div>
+            </div>
+            <div id="mainChipsList" class="attachment-upload-list"></div>
+          </div>
+
         </div>
 
         <!-- AGGREGATED SUMMARY ROW (Level 1 Total Claim & Drill-down Entry) -->
@@ -624,9 +706,9 @@
             <i class="fa-solid fa-floppy-disk"></i>
             <span>Save Draft</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitTravelClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('mileage')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -650,10 +732,11 @@
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Mileage</div>
+              <div id="catMileageSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catMileageAmount" style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM 0.00</div>
+            <div id="catMileageAmount" style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">0</div>
             <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
@@ -666,10 +749,11 @@
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Travel</div>
+              <div id="catTravelSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catTravelAmount" style="font-size: 15px; font-weight: 800; color: #3b82f6;">RM 0.00</div>
+            <div id="catTravelAmount" style="font-size: 15px; font-weight: 800; color: #3b82f6;">0</div>
             <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
@@ -682,10 +766,11 @@
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Expenses</div>
+              <div id="catExpenseSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div id="catExpenseAmount" style="font-size: 15px; font-weight: 800; color: #10b981;">RM 0.00</div>
+            <div id="catExpenseAmount" style="font-size: 15px; font-weight: 800; color: #10b981;">0</div>
             <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
           </div>
         </div>
@@ -696,9 +781,9 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span>Back to Application</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitTravelClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('mileage')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -720,11 +805,11 @@
               </div>
               <div>
                 <h2 id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Mileage</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Records: 0</span>
               </div>
             </div>
-            <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+            <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
               <i class="fa-solid fa-plus"></i>
-              <span>Add Item</span>
             </button>
           </div>
 
@@ -741,9 +826,9 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span>Back to Categories</span>
           </button>
-          <button type="button" class="btn-submit-primary" onclick="submitTravelClaim()">
-            <span>Submit</span>
-            <i class="fa-solid fa-paper-plane"></i>
+          <button type="button" id="travelClaimListNextButton" class="btn-submit-primary" onclick="goToNextTravelClaimStep()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -798,6 +883,7 @@
         claimCurrency: 'RINGGIT MALAYSIA',
         remarks: ''
       },
+      mainAttachments: [],
       claimDetails: {
         mileageItems: [],
         travelItems: [],
@@ -916,7 +1002,30 @@
     function openCategoryItems(categoryKey) {
       formData.activeCategory = categoryKey;
       renderView3List();
+      updateTravelClaimListAction();
       switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function goToNextTravelClaimStep() {
+      const nextCategory = {
+        mileage: 'travel',
+        travel: 'expense'
+      }[formData.activeCategory];
+      if (nextCategory) {
+        openCategoryItems(nextCategory);
+      } else {
+        submitTravelClaim();
+      }
+    }
+
+    function updateTravelClaimListAction() {
+      const button = document.getElementById('travelClaimListNextButton');
+      if (!button) return;
+      const isFinalStep = formData.activeCategory === 'expense';
+      button.onclick = isFinalStep ? submitTravelClaim : goToNextTravelClaimStep;
+      button.innerHTML = isFinalStep
+        ? '<span>Submit</span><i class="fa-solid fa-paper-plane"></i>'
+        : '<span>Next</span><i class="fa-solid fa-arrow-right"></i>';
     }
 
     function toggleItemCard(cardId) {
@@ -957,7 +1066,7 @@
 
       if (iconBox) iconBox.innerHTML = iconHtml;
       if (titleText) titleText.innerText = catName;
-      if (countText) countText.innerText = `${items.length} records in this category`;
+      if (countText) countText.innerText = `Total Records: ${items.length}`;
 
       if (!container) return;
 
@@ -1185,11 +1294,11 @@
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'General Expense'}</div>
                   </div>
                   <div>
-                    <span style="color: var(--text-muted); font-weight: 600;">Start Date &amp; Time:</span>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expenses From</span>
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dateFrom || '24/09/2026'} ${item.timeFrom || '10:56'}</div>
                   </div>
                   <div>
-                    <span style="color: var(--text-muted); font-weight: 600;">End Date &amp; Time:</span>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expenses To</span>
                     <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dateTo || '24/09/2026'} ${item.timeTo || '12:56'}</div>
                   </div>
                   <div>
@@ -1279,7 +1388,7 @@
       const items = config.items || [];
       if (iconBox) iconBox.innerHTML = `<i class="fa-solid ${config.icon}"></i>`;
       if (titleText) titleText.innerText = getCategoryTitle(catKey);
-      if (countText) countText.innerText = `${items.length} item(s) recorded`;
+      if (countText) countText.innerText = `Total Records: ${items.length}`;
 
       if (!items.length) {
         container.innerHTML = `
@@ -1483,7 +1592,7 @@
             </div>
 
             <div style="margin-top: 14px;">
-              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
               <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -1498,7 +1607,7 @@
                   <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
                 </div>
               </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
             </div>
           </div>
         `;
@@ -1609,7 +1718,7 @@
             </div>
 
             <div style="margin-top: 14px;">
-              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
               <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -1624,7 +1733,7 @@
                   <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
                 </div>
               </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
             </div>
           </div>
         `;
@@ -1654,7 +1763,7 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Start Date &amp; Time</label>
+              <label class="field-label">Expenses From</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
                 <input type="date" id="eDateFrom" class="form-ctrl" value="${toDateInputValue(item ? item.dateFrom : '24/09/2026')}" />
                 <input type="time" id="eTimeFrom" class="form-ctrl" value="${item ? (item.timeFrom || '10:56') : '10:56'}" />
@@ -1662,7 +1771,7 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">End Date &amp; Time</label>
+              <label class="field-label">Expenses To</label>
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
                 <input type="date" id="eDateTo" class="form-ctrl" value="${toDateInputValue(item ? item.dateTo : '24/09/2026')}" />
                 <input type="time" id="eTimeTo" class="form-ctrl" value="${item ? (item.timeTo || '12:56') : '12:56'}" />
@@ -1721,7 +1830,7 @@
             </div>
 
             <div style="margin-top: 14px;">
-              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+              <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
               <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                   <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -1736,7 +1845,7 @@
                   <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
                 </div>
               </div>
-              <div id="subChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;"></div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
             </div>
           </div>
         `;
@@ -1845,10 +1954,47 @@
       if (typeof showToast === 'function') showToast(isEdit ? '✅ Item updated!' : '✅ Item saved!');
     }
 
+    function getCategoryMetric(items, amountKeys = [], metricType = 'auto') {
+      const records = Array.isArray(items) ? items : [];
+      const recordCount = records.length;
+
+      if (metricType === 'records') {
+        return {
+          value: `${recordCount}`,
+          subtitle: ''
+        };
+      }
+
+      const paxKeys = ['pax', 'totalPax', 'noOfPax', 'headcount', 'internalAttendees', 'externalAttendees'];
+      const paxKey = paxKeys.find(key => records.some(item => Object.prototype.hasOwnProperty.call(item || {}, key)));
+
+      if (paxKey) {
+        const paxTotal = records.reduce((sum, item) => sum + (Number(item?.[paxKey]) || 0), 0);
+        return {
+          value: `${paxTotal} Pax`,
+          subtitle: ''
+        };
+      }
+
+      const amountKey = amountKeys.find(key => records.some(item => Object.prototype.hasOwnProperty.call(item || {}, key)));
+      if (amountKey) {
+        const amountTotal = records.reduce((sum, item) => sum + (Number(item?.[amountKey]) || 0), 0);
+        return {
+          value: `RM ${amountTotal.toFixed(2)}`,
+          subtitle: `Total Records: ${recordCount}`
+        };
+      }
+
+      return {
+        value: `${recordCount}`,
+        subtitle: ''
+      };
+    }
+
     function recalcAllTotals() {
-      const mTotal = formData.claimDetails.mileageItems.reduce((sum, i) => sum + i.amount, 0);
-      const tTotal = formData.claimDetails.travelItems.reduce((sum, i) => sum + i.amount, 0);
-      const eTotal = formData.claimDetails.generalExpenseItems.reduce((sum, i) => sum + i.amount, 0);
+      const mTotal = formData.claimDetails.mileageItems.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+      const tTotal = formData.claimDetails.travelItems.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+      const eTotal = formData.claimDetails.generalExpenseItems.reduce((sum, i) => sum + (Number(i.localAmount ?? i.amount) || 0), 0);
       const grandTotal = mTotal + tTotal + eTotal;
       const totalCount = formData.claimDetails.mileageItems.length + formData.claimDetails.travelItems.length + formData.claimDetails.generalExpenseItems.length;
 
@@ -1862,21 +2008,25 @@
 
       const catM = document.getElementById('catMileageAmount');
       const catMSub = document.getElementById('catMileageSubtitle');
-      if (catM) catM.innerText = `RM ${mTotal.toFixed(2)}`;
-      if (catMSub) catMSub.innerText = `${formData.claimDetails.mileageItems.length} items added`;
+      const mileageMetric = getCategoryMetric(formData.claimDetails.mileageItems, [], 'records');
+      if (catM) catM.innerText = mileageMetric.value;
+      if (catMSub) catMSub.innerText = mileageMetric.subtitle;
 
       const catT = document.getElementById('catTravelAmount');
       const catTSub = document.getElementById('catTravelSubtitle');
-      if (catT) catT.innerText = `RM ${tTotal.toFixed(2)}`;
-      if (catTSub) catTSub.innerText = `${formData.claimDetails.travelItems.length} items added`;
+      const travelMetric = getCategoryMetric(formData.claimDetails.travelItems, [], 'records');
+      if (catT) catT.innerText = travelMetric.value;
+      if (catTSub) catTSub.innerText = travelMetric.subtitle;
 
       const catE = document.getElementById('catExpenseAmount');
       const catESub = document.getElementById('catExpenseSubtitle');
-      if (catE) catE.innerText = `RM ${eTotal.toFixed(2)}`;
-      if (catESub) catESub.innerText = `${formData.claimDetails.generalExpenseItems.length} items added`;
+      const expenseMetric = getCategoryMetric(formData.claimDetails.generalExpenseItems, ['localAmount', 'amount']);
+      if (catE) catE.innerText = expenseMetric.value;
+      if (catESub) catESub.innerText = expenseMetric.subtitle;
     }
 
-    function triggerFileUpload() {
+    function triggerFileUpload(target = 'sub') {
+      formData.uploadTarget = target;
       const input = document.getElementById('hiddenTravelFileInput');
       if (input) input.click();
     }
@@ -1884,9 +2034,16 @@
     function handleFileSelected(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
-      if (!formData.subAttachments) formData.subAttachments = [];
-      formData.subAttachments.push(file.name);
-      renderSubChips();
+      const target = formData.uploadTarget || 'sub';
+      if (target === 'main') {
+        if (!formData.mainAttachments) formData.mainAttachments = [];
+        formData.mainAttachments.push(file.name);
+        renderMainAttachments();
+      } else {
+        if (!formData.subAttachments) formData.subAttachments = [];
+        formData.subAttachments.push(file.name);
+        renderSubChips();
+      }
       if (typeof showToast === 'function') showToast(`📎 Attachment added: ${file.name}`);
       input.value = '';
     }
@@ -1897,6 +2054,26 @@
       renderSubChips();
     }
 
+    function removeMainAttachment(idx) {
+      if (!formData.mainAttachments) return;
+      formData.mainAttachments.splice(idx, 1);
+      renderMainAttachments();
+    }
+
+    function renderMainAttachments() {
+      const container = document.getElementById('mainChipsList');
+      if (!container) return;
+      container.innerHTML = (formData.mainAttachments || []).map((name, idx) => `
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${name}">${name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove ${name}" title="Remove attachment" onclick="removeMainAttachment(${idx})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
     function renderSubChips() {
       const container = document.getElementById('subChipsList');
       if (!container) return;
@@ -1905,10 +2082,12 @@
         return;
       }
       container.innerHTML = formData.subAttachments.map((att, idx) => `
-        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
-          <i class="fa-solid fa-paperclip"></i>
-          <span>${att}</span>
-          <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:4px;" onclick="removeSubAttachment(${idx})"></i>
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${att}">${att}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove ${att}" title="Remove attachment" onclick="removeSubAttachment(${idx})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       `).join('');
     }

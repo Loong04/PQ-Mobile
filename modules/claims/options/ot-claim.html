@@ -570,12 +570,11 @@
               </div>
               <div>
                 <h2 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">OT Details</h2>
-                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">0 entries recorded</span>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Hours: 0.0 hrs</span>
               </div>
             </div>
-            <button type="button" class="btn-submit-primary" style="padding: 8px 16px; font-size: 12.5px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+            <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
               <i class="fa-solid fa-plus"></i>
-              <span>Add Item</span>
             </button>
           </div>
 
@@ -764,9 +763,9 @@
             <textarea id="otRemarksInput" rows="3" class="form-ctrl" placeholder="Enter remarks or mileage details..." style="font-family: inherit; resize: vertical;"></textarea>
           </div>
 
-          <!-- 12. Upload Attachments -->
+          <!-- 12. Upload Attachment -->
           <div style="margin-top: 14px;">
-            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachments</label>
+            <label class="field-label" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
             <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
               <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
@@ -1073,8 +1072,11 @@
     function renderOTEntries() {
       const container = document.getElementById('v3ItemsContainer');
       const countText = document.getElementById('v3CategoryItemsCount');
-      
-      countText.innerText = `${formData.otEntries.length} entries recorded`;
+
+      const totalHours = formData.otEntries.reduce((sum, item) => {
+        return sum + (parseFloat(item.hours) || 0);
+      }, 0);
+      countText.innerText = `Total Hours: ${totalHours.toFixed(1)} hrs`;
       
       if (formData.otEntries.length === 0) {
         container.innerHTML = `<div style="text-align: center; padding: 30px 20px; background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px dashed rgba(255, 255, 255, 0.1);">
@@ -1181,7 +1183,7 @@
                   <span class="ot-data-value">${item.remarks || '-'}</span>
                 </div>
                 <div class="ot-data-row">
-                  <span class="ot-data-label">Upload Attachments</span>
+                  <span class="ot-data-label">Upload Attachment</span>
                   <div class="ot-data-value" style="display: flex; flex-wrap: wrap; gap: 6px;">
                     ${(item.attachments && item.attachments.length > 0 ? item.attachments : ['xxxx.jpg']).map(att => `
                       <span class="file-chip" style="margin-top: 0;">
