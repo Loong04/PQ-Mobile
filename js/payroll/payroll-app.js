@@ -97,26 +97,27 @@
 
   /**
    * ==========================================
-   * 3. INDIVIDUAL HUB RENDERING (Payslip, EA)
+   * 3. INDIVIDUAL HUB RENDERING
    * ==========================================
    */
   function renderIndividualPayrollHub() {
-    // 1. Render Options (payslip, EA)
+    // Render the five individual self-service entries.
     const optionsContainer = document.getElementById('individualPayrollOptionsGrid');
     if (optionsContainer && window.PAYROLL_CONFIG?.individualOptions) {
       optionsContainer.innerHTML = '';
       window.PAYROLL_CONFIG.individualOptions.forEach(opt => {
-        const card = document.createElement('a');
+        const card = document.createElement(opt.link ? 'a' : 'button');
         card.className = 'payroll-option-card';
-        card.href = opt.link;
-        card.style.textDecoration = 'none';
+        if (opt.link) {
+          card.href = opt.link;
+        } else {
+          card.type = 'button';
+          card.onclick = () => previewIndividualFeature(opt.action, opt.name);
+        }
 
         card.innerHTML = `
-          <div class="opt-card-top">
-            <div class="opt-icon-wrap" style="background: ${opt.bg}; color: ${opt.color};">
-              ${opt.icon}
-            </div>
-            ${opt.badge ? `<span class="opt-pill-badge">${opt.badge}</span>` : ''}
+          <div class="opt-icon-wrap">
+            ${opt.icon}
           </div>
           <div class="opt-card-info">
             <div class="opt-card-title">${opt.name}</div>
@@ -130,7 +131,7 @@
       });
     }
 
-    // 2. Render Recent Statements List
+    // Keep the existing statement renderer available to the Payslip page shell.
     const historyContainer = document.getElementById('individualRecentPayslipsList');
     if (historyContainer && window.PAYROLL_CONFIG?.payslips) {
       historyContainer.innerHTML = '';
@@ -161,6 +162,12 @@
         `;
         historyContainer.appendChild(row);
       });
+    }
+  }
+
+  function previewIndividualFeature(action, label) {
+    if (window.showToast) {
+      window.showToast(`${label} UI entry is ready for the next screen`);
     }
   }
 
@@ -448,7 +455,8 @@
     openReliefReceiptModal,
     closeReliefReceiptModal,
     handleGlobalBack,
-    downloadMockFile
+    downloadMockFile,
+    previewIndividualFeature
   };
 
   document.addEventListener('DOMContentLoaded', () => {

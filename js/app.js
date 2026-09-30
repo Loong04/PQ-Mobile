@@ -1284,10 +1284,322 @@ function initExploreScrollListener() {
   handleExploreScroll();
 }
 
+/*
+ * Canonical filter helpers. Attendance contains several generations of
+ * filter markup, so the shared layer normalizes presentation while leaving
+ * each page's fields and filtering functions intact.
+ */
+function formatStandardFilterLabel(label) {
+  return label
+    .replace(/\s+/g, ' ')
+    .replace(/\s*:\s*$/, '')
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (character) => character.toUpperCase())
+    .replace(/\bRm\b/g, 'RM')
+    .replace(/\bId\b/g, 'ID')
+    .replace(/\bOt\b/g, 'OT');
+}
+
+function closeStandardFilterOverlay(overlay) {
+  if (!overlay) return;
+  if (overlay.id === 'sharedInlineFilterSheet') {
+    overlay.classList.remove('is-open');
+    return;
+  }
+
+  // Existing pages already know how to close and animate their own overlay.
+  // Clicking the backdrop calls that original handler with the correct target.
+  if (overlay.getAttribute('onclick')) {
+    overlay.click();
+    return;
+  }
+
+  const panel = overlay.querySelector('.standard-filter-panel');
+  if (panel) panel.style.transform = 'translateY(100%)';
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+  window.setTimeout(() => { overlay.style.display = 'none'; }, 300);
+}
+
+function findStandardFilterPanel(overlay) {
+  if (!overlay || overlay.id === 'filterBodyContainer') return null;
+  const position = window.getComputedStyle(overlay).position;
+  const overlayLike = overlay.matches('.modal-overlay, .indicators-overlay, .bottom-sheet, .claim-filter-sheet')
+    || /modal|overlay|sheet/i.test(overlay.id)
+    || position === 'fixed'
+    || position === 'absolute';
+  if (!overlayLike) return null;
+
+  return Array.from(overlay.children).find((child) => child.querySelector?.('input, select, textarea')) || null;
+}
+
+function initStandardFilterSheets() {
+  const filterOverlays = document.querySelectorAll('[id*="filter" i]');
+
+  filterOverlays.forEach((overlay) => {
+    if (overlay.classList.contains('claim-filter-sheet')) return;
+
+    const panel = findStandardFilterPanel(overlay);
+    if (!panel || panel.dataset.standardFilterReady === 'true') return;
+    panel.dataset.standardFilterReady = 'true';
+
+    overlay.classList.add('standard-filter-sheet');
+    panel.classList.add('standard-filter-panel');
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Filter');
+
+    let handle = panel.querySelector('.standard-filter-handle, .claim-filter-handle, .drag-handle, .sheet-handle');
+    if (!handle) {
+      const firstChild = panel.firstElementChild;
+      if (firstChild && !firstChild.querySelector('input, select, textarea, button')) {
+        const firstStyle = window.getComputedStyle(firstChild);
+        if (parseFloat(firstStyle.width) <= 48 && parseFloat(firstStyle.height) <= 10) handle = firstChild;
+      }
+    }
+    if (!handle) {
+      handle = document.createElement('div');
+      panel.prepend(handle);
+    }
+    handle.classList.add('standard-filter-handle');
+    handle.setAttribute('aria-hidden', 'true');
+
+    const title = panel.querySelector('h2, h3, .sheet-title, .filter-modal-title');
+    if (title) {
+      title.textContent = 'Filter';
+
+      let header = title.parentElement;
+      let ancestor = title.parentElement;
+      while (ancestor && ancestor !== panel) {
+        if (Array.from(ancestor.children).some((child) => child.matches?.('button'))) {
+          header = ancestor;
+          break;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      header.classList.add('standard-filter-header');
+
+      header.querySelectorAll('p, small, .filter-subtitle, [class*="subtitle" i], [class*="description" i]')
+        .forEach((element) => element.classList.add('standard-filter-subtitle'));
+
+      let actions = header.querySelector('.standard-filter-header-actions');
+      if (!actions) {
+        actions = document.createElement('div');
+        actions.className = 'standard-filter-header-actions';
+        Array.from(header.querySelectorAll(':scope > button')).forEach((button) => actions.appendChild(button));
+        header.appendChild(actions);
+      }
+
+      const actionButtons = Array.from(actions.querySelectorAll('button'));
+      let resetButton = actionButtons.find((button) => /reset/i.test(button.textContent));
+      let closeButton = actionButtons.find((button) => {
+        const descriptor = [
+          button.textContent,
+          button.getAttribute('aria-label'),
+          button.getAttribute('title'),
+          button.getAttribute('onclick')
+        ].filter(Boolean).join(' ');
+        return /close|dismiss/i.test(descriptor) && !/reset/i.test(descriptor);
+      });
+
+      if (!resetButton) {
+        resetButton = document.createElement('button');
+        resetButton.type = 'button';
+        actions.appendChild(resetButton);
+      }
+      resetButton.classList.add('standard-filter-reset');
+      resetButton.innerHTML = '<i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span>';
+      resetButton.setAttribute('aria-label', 'Reset filter');
+
+      if (!closeButton) {
+        closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeStandardFilterOverlay(overlay);
+        });
+        actions.appendChild(closeButton);
+      }
+      closeButton.classList.add('standard-filter-close');
+      closeButton.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+      closeButton.setAttribute('aria-label', 'Close filter');
+
+      // The order is part of the filter standard: Reset first, Close last.
+      actions.appendChild(resetButton);
+      actions.appendChild(closeButton);
+    }
+
+    const fields = Array.from(panel.querySelectorAll('input, select, textarea'));
+    const initialValues = fields.map((field) => ({
+      field,
+      value: field.value,
+      checked: field.checked
+    }));
+
+    panel.querySelectorAll('label').forEach((label) => {
+      const labelText = label.textContent.replace(/\s+/g, ' ').trim();
+      if (labelText) label.textContent = formatStandardFilterLabel(labelText);
+    });
+
+    panel.querySelectorAll('button').forEach((button) => {
+      const label = button.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+      if (label.includes('reset')) button.classList.add('standard-filter-reset');
+      if (label.includes('apply') && label.includes('filter')) {
+        button.classList.add('standard-filter-apply');
+        button.textContent = 'Apply Filter';
+      }
+    });
+
+    panel.querySelectorAll('.standard-filter-reset').forEach((button) => {
+      if (button.dataset.standardResetReady === 'true') return;
+      button.dataset.standardResetReady = 'true';
+      button.addEventListener('click', () => {
+        initialValues.forEach(({ field, value, checked }) => {
+          field.value = value;
+          if (field.type === 'checkbox' || field.type === 'radio') field.checked = checked;
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+          field.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      });
+    });
+  });
+}
+
+/*
+ * Legacy summary pages put the real filter controls in an accordion. Move
+ * them into the standard sheet, unless the page already has a functional
+ * bottom sheet; in that case the accordion becomes only its trigger.
+ */
+function initInlineFilterSheet() {
+  const inlineBody = document.getElementById('filterBodyContainer');
+  const inlineHeader = document.getElementById('filterHeaderBar');
+  if (!inlineBody || !inlineHeader || document.getElementById('sharedInlineFilterSheet')) return;
+
+  const existingFilterSheets = Array.from(document.querySelectorAll('[id*="filter" i]'))
+    .filter((element) => element !== inlineBody && findStandardFilterPanel(element));
+  const functionalSheet = existingFilterSheets.find((overlay) => {
+    const panel = findStandardFilterPanel(overlay);
+    const applyButton = Array.from(panel.querySelectorAll('button')).find((button) => /apply filter/i.test(button.textContent));
+    return /apply|submit/i.test(applyButton?.getAttribute('onclick') || '');
+  });
+
+  const openExistingSheet = () => {
+    if (typeof window.openFilterModal === 'function') {
+      window.openFilterModal();
+      return;
+    }
+    if (!functionalSheet) return;
+    functionalSheet.style.display = 'flex';
+    functionalSheet.style.opacity = '1';
+    functionalSheet.style.pointerEvents = 'auto';
+    const panel = findStandardFilterPanel(functionalSheet);
+    if (panel) panel.style.transform = 'translateY(0)';
+  };
+
+  const makeTrigger = (open) => {
+    inlineHeader.classList.add('standard-filter-inline-trigger');
+    inlineHeader.removeAttribute('onclick');
+    inlineHeader.querySelectorAll('span').forEach((span) => {
+      if (/data filter|filter history/i.test(span.textContent)) span.textContent = 'Filter';
+    });
+    inlineHeader.addEventListener('click', open);
+    const toggleButton = document.getElementById('btnToggleFilter');
+    if (toggleButton) {
+      toggleButton.removeAttribute('onclick');
+      toggleButton.addEventListener('click', open);
+    }
+  };
+
+  if (functionalSheet) {
+    inlineBody.style.display = 'none';
+    inlineBody.setAttribute('aria-hidden', 'true');
+    makeTrigger(openExistingSheet);
+    return;
+  }
+
+  existingFilterSheets.forEach((overlay) => overlay.classList.add('standard-filter-unused'));
+
+  const initialValues = Array.from(inlineBody.querySelectorAll('input, select, textarea')).map((field) => ({
+    field,
+    value: field.value,
+    checked: field.checked
+  }));
+
+  const sheet = document.createElement('div');
+  sheet.id = 'sharedInlineFilterSheet';
+  sheet.className = 'modal-overlay standard-filter-sheet';
+  sheet.innerHTML = `
+    <div class="standard-filter-panel" role="dialog" aria-modal="true" aria-label="Filter">
+      <div class="standard-filter-handle" aria-hidden="true"></div>
+      <div class="standard-filter-header">
+        <h2>Filter</h2>
+        <div class="standard-filter-header-actions">
+          <button type="button" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button>
+          <button type="button" class="standard-filter-close" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="standard-filter-inline-body"></div>
+      <div class="standard-filter-footer">
+        <button type="button" class="standard-filter-apply">Apply Filter</button>
+      </div>
+    </div>
+  `;
+
+  const panel = sheet.querySelector('.standard-filter-panel');
+  const body = sheet.querySelector('.standard-filter-inline-body');
+  const resetButton = sheet.querySelector('.standard-filter-reset');
+  const closeButton = sheet.querySelector('.standard-filter-close');
+  const applyButton = sheet.querySelector('.standard-filter-apply');
+  body.appendChild(inlineBody);
+  const sheetHost = document.querySelector('.phone-container') || document.body;
+  sheetHost.appendChild(sheet);
+
+  inlineBody.querySelectorAll('label').forEach((label) => {
+    label.textContent = formatStandardFilterLabel(label.textContent);
+  });
+  inlineBody.querySelectorAll('button').forEach((button) => {
+    const label = button.textContent.replace(/\s+/g, ' ').trim();
+    if (/^(reset|search|apply filter)$/i.test(label)) button.classList.add('standard-filter-legacy-action');
+  });
+
+  const close = () => sheet.classList.remove('is-open');
+  const open = () => sheet.classList.add('is-open');
+  const apply = () => {
+    if (typeof window.applyFilters === 'function') window.applyFilters();
+    close();
+  };
+
+  sheet.addEventListener('click', (event) => {
+    if (event.target === sheet) close();
+  });
+  panel.addEventListener('click', (event) => event.stopPropagation());
+  closeButton.addEventListener('click', close);
+  resetButton.addEventListener('click', () => {
+    if (typeof window.resetFilters === 'function') {
+      window.resetFilters();
+      return;
+    }
+    initialValues.forEach(({ field, value, checked }) => {
+      field.value = value;
+      if (typeof checked === 'boolean') field.checked = checked;
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+  applyButton.addEventListener('click', apply);
+  makeTrigger(open);
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initExploreScrollListener);
+  document.addEventListener('DOMContentLoaded', initStandardFilterSheets);
+  document.addEventListener('DOMContentLoaded', initInlineFilterSheet);
 } else {
   initExploreScrollListener();
+  initStandardFilterSheets();
+  initInlineFilterSheet();
 }
 window.addEventListener('load', initExploreScrollListener);
 

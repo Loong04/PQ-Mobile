@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PeopleHCM - Shift Summary</title>
   <script src="../../../js/components.js"></script>
-  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/app.js?v=20260930-2" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css?v=20260930-2">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
@@ -341,40 +342,6 @@
     }
     .toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   
-    /* Filter Accordion Header Bar Pill (Matching Target Screenshot) */
-    .filter-header-bar-pill {
-      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-      color: #ffffff;
-      padding: 10px 16px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
-    }
-    .filter-header-pill-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.3px;
-    }
-    .filter-header-pill-icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: #ffffff;
-      color: #7c3aed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      transition: transform 0.25s ease;
-    }
-    .filter-header-pill-icon.open {
-      transform: rotate(180deg);
-    }
-
     /* Filter 2-Column Row Layout matching Target Screenshot */
     .filter-row-grid {
       display: flex;
@@ -417,6 +384,29 @@
     }
     .date-circle-btn:active { transform: scale(0.9); }
 
+    /* Normalize legacy rows after they are moved into the shared filter sheet. */
+    .standard-filter-panel .filter-row-grid {
+      display: block !important;
+      margin: 0 !important;
+    }
+    .standard-filter-panel .filter-row-label {
+      width: auto !important;
+      margin-bottom: 8px !important;
+    }
+    .standard-filter-panel .filter-row-input-wrap {
+      width: 100% !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      gap: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+    }
+    .standard-filter-panel .date-circle-btn,
+    .standard-filter-panel .filter-row-input-wrap > .fa-circle-xmark {
+      display: none !important;
+    }
+
   </style>
 </head>
 <body>
@@ -444,11 +434,6 @@
             <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.8);" id="headerSubDate">Thu, 24 Sep 2026</div>
           </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;" id="headerActionsArea">
-          <button class="header-btn-icon" onclick="toggleFilterAccordion()" title="Toggle Filter" aria-label="Toggle Filter" id="btnToggleFilter">
-            <i class="fa-solid fa-sliders" style="font-size: 14px;"></i>
-          </button>
-        </div>
       </div>
     </div>
 
@@ -464,21 +449,25 @@
            ======================================================== -->
       <div id="view-summary" style="display: block;">
 
-        <!-- 1. DATA FILTER PILL ACCORDION CARD -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
-          <div class="filter-header-bar-pill" onclick="toggleFilterAccordion()" id="filterHeaderBar">
-            <span class="filter-header-pill-title">Data Filter</span>
-            <div class="filter-header-pill-icon open" id="filterToggleIcon">
-              <i class="fa-solid fa-chevron-down"></i>
+        <!-- 1. STANDARD CONTENT-LEVEL FILTER SUMMARY -->
+        <div class="claim-filter-bar" onclick="toggleFilterAccordion()" id="filterHeaderBar" role="button" tabindex="0" aria-label="Open filter options">
+          <div class="claim-filter-copy">
+            <div class="claim-eyebrow">CURRENT FILTER</div>
+            <div class="claim-filter-value">
+              <span id="filterSummaryText">24 Sep 2026 - All Shift Types - All Departments</span>
             </div>
           </div>
+          <button type="button" class="claim-icon-button" title="Filter Options" aria-label="Filter Options">
+            <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
+          </button>
+        </div>
 
-          <div id="filterBodyContainer" style="padding: 6px 16px 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div id="filterBodyContainer" style="padding: 6px 16px 14px; display: none; flex-direction: column; gap: 8px;">
             <!-- Date Filter Row -->
             <div class="filter-row-grid">
               <label class="filter-row-label">Date:</label>
               <div class="filter-row-input-wrap">
-                <input type="text" id="filterDateDisplay" value="24/09/2026" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 13px; font-weight: 800; outline: none;" readonly>
+                <input type="date" id="filterDateInput" value="2026-09-24" onchange="handleDateInputChange()" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 13px; font-weight: 800; outline: none;">
                 <button type="button" class="date-circle-btn" onclick="adjustDate(-1)" title="Previous Day">
                   <i class="fa-solid fa-arrow-left"></i>
                 </button>
@@ -563,7 +552,6 @@
               <button type="button" class="btn-filter-reset" onclick="resetFilters()" style="padding: 7px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 700;">Reset</button>
               <button type="button" class="btn-filter-search" onclick="applyFilters()" style="padding: 7px 20px; border-radius: 8px; font-size: 12.5px; font-weight: 800;">Search</button>
             </div>
-          </div>
         </div>
 
         <!-- 2. INLINE DONUT CHART & LEGEND CONTAINER (MATCHING TARGET SCREENSHOT) -->
@@ -874,7 +862,6 @@
       const chartView = document.getElementById('view-chart');
       const detailView = document.getElementById('view-shift-detail');
       const pageTitle = document.getElementById('pageHeaderTitle');
-      const filterBtn = document.getElementById('btnToggleFilter');
 
       summaryView.style.display = 'none';
       chartView.style.display = 'none';
@@ -883,17 +870,14 @@
       if (section === 'chart') {
         chartView.style.display = 'block';
         pageTitle.innerText = 'Shift Distribution Chart';
-        if (filterBtn) filterBtn.style.display = 'none';
         renderDedicatedDonutChart();
       } else if (section === 'detail') {
         detailView.style.display = 'block';
         pageTitle.innerText = 'Shift Employee Detail';
-        if (filterBtn) filterBtn.style.display = 'none';
         renderShiftEmployeeDetail(currentSelectedShift, currentSelectedRole);
       } else {
         summaryView.style.display = 'block';
         pageTitle.innerText = 'Shift Summary';
-        if (filterBtn) filterBtn.style.display = 'flex';
       }
     }
 
@@ -922,10 +906,31 @@
 
       const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
       const formatted = currentDate.toLocaleDateString('en-GB', options);
-      document.getElementById('headerSubDate').textContent = formatted;
-      document.getElementById('kpiDateSubtitle').textContent = formatted;
-      document.getElementById('chartViewDateLabel').textContent = formatted;
-      document.getElementById('detailDateDisplay').textContent = formatted;
+      ['headerSubDate', 'kpiDateSubtitle', 'chartViewDateLabel', 'detailDateDisplay'].forEach((id) => {
+        const target = document.getElementById(id);
+        if (target) target.textContent = formatted;
+      });
+      updateFilterSummaryText();
+    }
+
+    function getSelectedFilterLabel(id, fallback) {
+      const field = document.getElementById(id);
+      if (!field || field.value === 'all') return fallback;
+      return field.options[field.selectedIndex]?.textContent.trim() || fallback;
+    }
+
+    function updateFilterSummaryText() {
+      const target = document.getElementById('filterSummaryText');
+      if (!target) return;
+
+      const dateLabel = currentDate.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+      const shiftLabel = getSelectedFilterLabel('filterShiftType', 'All Shift Types');
+      const departmentLabel = getSelectedFilterLabel('filterDepartment', 'All Departments');
+      target.textContent = [dateLabel, shiftLabel, departmentLabel].join(' \u2022 ');
     }
 
     // Toggle Filter Accordion
@@ -933,15 +938,16 @@
       const container = document.getElementById('filterBodyContainer');
       const icon = document.getElementById('filterToggleIcon');
       const header = document.getElementById('filterHeaderBar');
+      if (!container) return;
 
       if (container.style.display === 'none') {
         container.style.display = 'flex';
-        icon.classList.add('open');
-        header.classList.add('expanded');
+        if (icon) icon.classList.add('open');
+        if (header) header.classList.add('expanded');
       } else {
         container.style.display = 'none';
-        icon.classList.remove('open');
-        header.classList.remove('expanded');
+        if (icon) icon.classList.remove('open');
+        if (header) header.classList.remove('expanded');
       }
     }
 
@@ -954,12 +960,14 @@
       document.getElementById('filterBranch').value = 'all';
       document.getElementById('filterSection').value = 'all';
       document.getElementById('filterCostCentre').value = 'all';
+      updateFilterSummaryText();
       renderAll();
       showToast('Filters reset to default');
     }
 
     // Apply Filters
     function applyFilters() {
+      updateFilterSummaryText();
       renderAll();
       if (currentActiveSection === 'chart') {
         renderDedicatedDonutChart();
@@ -987,11 +995,13 @@
       const total = filtered.reduce((sum, item) => sum + item.count, 0);
       
       // Update Top KPI Card
-      document.getElementById('kpiTotalHeadcount').textContent = `${Math.round(total)} Staff`;
+      const totalHeadcount = document.getElementById('kpiTotalHeadcount');
+      if (totalHeadcount) totalHeadcount.textContent = `${Math.round(total)} Staff`;
       
       const shiftGroups = {};
       filtered.forEach(item => { shiftGroups[item.shift] = true; });
-      document.getElementById('kpiShiftCount').textContent = Object.keys(shiftGroups).length;
+      const shiftCount = document.getElementById('kpiShiftCount');
+      if (shiftCount) shiftCount.textContent = Object.keys(shiftGroups).length;
 
       renderSummaryTable(filtered);
     }
@@ -1012,20 +1022,20 @@
             No shift breakdown records found matching filters.
           </div>
         `;
-        badge.innerText = `0 Records`;
-        footerSummary.innerText = `0 Shifts &bull; 0 Roles`;
-        footerTotal.innerText = `0.00`;
+        if (badge) badge.innerText = `0 Records`;
+        if (footerSummary) footerSummary.innerText = `0 Shifts &bull; 0 Roles`;
+        if (footerTotal) footerTotal.innerText = `0.00`;
         return;
       }
 
-      badge.innerText = `${data.length} Record${data.length === 1 ? '' : 's'}`;
+      if (badge) badge.innerText = `${data.length} Record${data.length === 1 ? '' : 's'}`;
 
       const total = data.reduce((sum, item) => sum + item.count, 0);
       const shiftGroups = {};
       data.forEach(item => { shiftGroups[item.shift] = true; });
 
-      footerSummary.innerText = `${Object.keys(shiftGroups).length} Shifts &bull; ${data.length} Roles`;
-      footerTotal.innerText = `${total.toFixed(2)}`;
+      if (footerSummary) footerSummary.innerText = `${Object.keys(shiftGroups).length} Shifts &bull; ${data.length} Roles`;
+      if (footerTotal) footerTotal.innerText = `${total.toFixed(2)}`;
 
       container.innerHTML = data.map(item => `
         <div class="summary-table-row" onclick="openShiftEmployeeDetail('${item.shift}', '${item.jobTitle}')">

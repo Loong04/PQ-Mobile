@@ -190,6 +190,24 @@
       gap: 8px;
       margin-top: 12px;
     }
+    .history-submit-btn {
+      padding: 8px 16px;
+      border: 0;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .history-submit-btn:hover { filter: brightness(1.08); }
+    .history-submit-btn:active { transform: scale(0.96); }
+    .history-submit-btn:focus-visible {
+      outline: 2px solid var(--purple-text);
+      outline-offset: 3px;
+    }
     .history-cancel-btn {
       padding: 8px 16px;
       border: 1px solid #fda4af;
@@ -414,10 +432,13 @@
         <div class="claim-filter-handle"></div>
         <div class="claim-filter-header">
           <h2 class="claim-filter-title">Filter</h2>
-          <button type="button" class="claim-filter-reset" onclick="resetHistoryFilter()">
-            <i class="fa-solid fa-rotate-left"></i>
-            <span>Reset</span>
-          </button>
+          <div class="claim-filter-header-actions">
+            <button type="button" class="claim-filter-reset" onclick="resetHistoryFilter()">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>Reset</span>
+            </button>
+            <button type="button" class="claim-filter-close" onclick="closeDateFilterModal()" aria-label="Close filter" title="Close filter">&times;</button>
+          </div>
         </div>
 
         <div class="claim-filter-fields">
@@ -487,10 +508,10 @@
         { value: 'OPTICAL & DENTAL', text: 'Optical & Dental' }
       ],
       medical: [
-        { value: 'all', text: 'All Medical Types' },
-        { value: 'OUTPATIENT GP CLINIC', text: 'Outpatient GP Clinic' },
-        { value: 'SPECIALIST CONSULTATION', text: 'Specialist Consultation' },
-        { value: 'PHARMACY & MEDICATION', text: 'Pharmacy & Medication' }
+        { value: 'all', text: 'All Benefit Types' },
+        { value: 'MEDICAL', text: 'Medical' },
+        { value: 'DENTAL', text: 'Dental' },
+        { value: 'SKIM SPECIALISATION', text: 'Skim Specialisation' }
       ],
       ot: [
         { value: 'all', text: 'All OT Types' },
@@ -498,7 +519,7 @@
         { value: 'OT 2.0x (REST DAY)', text: 'OT 2.0x (Rest Day)' }
       ],
       travel: [
-        { value: 'all', text: 'All Travel Mileage Types' },
+        { value: 'all', text: 'All Benefit Types' },
         { value: 'KL - PENANG MILEAGE', text: 'KL - Penang Mileage' },
         { value: 'PARKING & TOLL RECEIPTS', text: 'Parking & Toll Receipts' },
         { value: 'LOCAL CLIENT MEETING', text: 'Local Client Meeting' }
@@ -536,7 +557,8 @@
       medical: [
         { 
           id: 'CMD000000000276', 
-          title: 'Medical Listing', 
+          title: 'Medical',
+          medicalType: 'Medical',
           subtype: 'Outpatient GP Clinic', 
           date: '01 JAN 2026', isoDate: '2026-01-01', day: '01', month: 'JAN', dayName: 'THU', 
           merchant: 'KLINIK KULIT CHEN', 
@@ -544,7 +566,7 @@
           status: 'submitted', statusText: 'Submitted', 
           benefitYear: '2026', 
           claimPeriod: '202601', 
-          benefitType: 'MEDICAL CLAIMS', 
+          benefitType: 'MEDICAL',
           receiptDate: '1 Jan 2026', 
           receiptNo: 'usidjs', 
           patientType: 'Spouse', 
@@ -569,7 +591,8 @@
         },
         { 
           id: 'CMD000000000277', 
-          title: 'Medical Listing', 
+          title: 'Skim Specialisation',
+          medicalType: 'Skim Specialisation',
           subtype: 'Specialist Consultation', 
           date: '02 SEP 2026', isoDate: '2026-09-02', day: '02', month: 'SEP', dayName: 'WED', 
           merchant: 'Subang Jaya Medical Centre', 
@@ -577,7 +600,7 @@
           status: 'approved', statusText: 'Approved', 
           benefitYear: '2026', 
           claimPeriod: '202609', 
-          benefitType: 'MEDICAL CLAIMS', 
+          benefitType: 'SKIM SPECIALISATION',
           receiptDate: '2 Sep 2026', 
           receiptNo: 'SJMC-9012', 
           patientType: 'Self', 
@@ -599,6 +622,40 @@
             uploadFiles: 'Medical_Invoice_277.pdf'
           },
           empName: 'Farhan binti rahmat', empNo: 'EBB12' 
+        },
+        {
+          id: 'CMD000000000278',
+          title: 'Dental',
+          medicalType: 'Dental',
+          subtype: 'Dental Treatment',
+          date: '18 SEP 2026', isoDate: '2026-09-18', day: '18', month: 'SEP', dayName: 'FRI',
+          merchant: 'SmileCare Dental Clinic',
+          amount: '180.00',
+          status: 'approved', statusText: 'Approved',
+          benefitYear: '2026',
+          claimPeriod: '202609',
+          benefitType: 'DENTAL',
+          receiptDate: '18 Sep 2026',
+          receiptNo: 'SMC-1842',
+          patientType: 'Self',
+          patientName: 'Farhan binti rahmat',
+          clinicHospital: 'SMILECARE DENTAL CLINIC',
+          sickness: 'DENTAL SCALING',
+          totalAmount: '180.00',
+          remark: 'Routine dental treatment',
+          attachments: 'Dental_Receipt_278.pdf',
+          paymentType: 'BANK TRANSFER', paymentPeriod: '202609', paymentDate: '25 Sep 2026',
+          claimDetails: {
+            receiptNo: 'SMC-1842',
+            expense: 'DENTAL TREATMENT',
+            amount: '180.00',
+            currency: 'RINGGIT MALAYSIA',
+            forexRate: '1.00',
+            claimAmount: '180.00',
+            attachments: 'Dental_Receipt_278.pdf',
+            uploadFiles: 'Dental_Receipt_278.pdf'
+          },
+          empName: 'Farhan binti rahmat', empNo: 'EBB12'
         }
       ],
       ot: [
@@ -735,6 +792,7 @@
       claimPeriod: '202603',
       dateFrom: '16 Mar 2026',
       dateTo: '16 Mar 2026',
+      submitDate: '16 Mar 2026',
       currency: 'MYR',
       status: 'submitted',
       statusText: 'Submitted',
@@ -828,8 +886,8 @@
       const catMeta = CATEGORIES.find(c => c.id === activeTabKey) || CATEGORIES[0];
       const typeLabels = {
         benefit: 'Benefit Type',
-        medical: 'Medical Type',
-        travel: 'Travel & Mileage Type',
+        medical: 'Benefit Type',
+        travel: 'Benefit Type',
         travelRequest: 'Benefit Type',
         entertainment: 'Benefit Type',
         advance: 'Benefit Type',
@@ -971,7 +1029,29 @@
               ${statusRow}
             </div>
           `;
-        } else if (activeTabKey === 'travel' || activeTabKey === 'travelRequest' || activeTabKey === 'entertainment') {
+        } else if (activeTabKey === 'travelRequest') {
+          const submitDateDisplay = item.submitDate || item.submittedDate || datesDisplay;
+          detailsBlock = `
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Period :</span>
+                <span style="color: var(--text-primary); font-weight: 700; font-family: monospace, sans-serif;">${periodDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Submit Date :</span>
+                <span style="color: var(--text-primary); font-weight: 700;">${submitDateDisplay}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Purpose :</span>
+                <span style="color: var(--text-primary); font-weight: 700; text-align: right;">${item.purpose || '—'}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Status :</span>
+                <span style="color: var(--text-primary); font-weight: 700;">${displayStatus.text}</span>
+              </div>
+            </div>
+          `;
+        } else if (activeTabKey === 'travel' || activeTabKey === 'entertainment') {
           detailsBlock = `
             <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; margin-top: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1042,15 +1122,26 @@
         const statusIcon = statusIconMap[displayStatus.key];
         const canCancel = ['submitted', 'approved', 'draft'].includes(displayStatus.key);
         const actionLabel = displayStatus.key === 'draft' ? 'Discard' : 'Cancel';
-        const actionHtml = canCancel
+        const actionHtml = displayStatus.key === 'draft'
           ? `<div class="history-card-actions">
+              <button type="button" class="history-submit-btn" onclick="handleHistorySubmit(event, '${item.id}')">Submit</button>
               <button type="button" class="history-cancel-btn" onclick="handleHistoryCancel(event, '${item.id}')">${actionLabel}</button>
             </div>
           `
-          : '';
+          : canCancel
+            ? `<div class="history-card-actions">
+                <button type="button" class="history-cancel-btn" onclick="handleHistoryCancel(event, '${item.id}')">${actionLabel}</button>
+              </div>
+            `
+            : '';
 
+        const otPeriodDisplay = item.claimPeriod || String(periodDisplay).replace('-', '');
         const cardTitle = activeTabKey === 'ot'
-          ? `${periodDisplay} · ${datesDisplay}`
+          ? `${otPeriodDisplay} - ${datesDisplay}`
+          : activeTabKey === 'travel'
+            ? (item.purpose || 'No Purpose')
+          : activeTabKey === 'travelRequest'
+            ? (item.destination || 'No Destination')
           : (activeTabKey === 'advance' || activeTabKey === 'expense')
             ? (item.purpose || 'No Purpose')
             : item.title;
@@ -1081,6 +1172,13 @@
       event.stopPropagation();
       if (typeof showToast === 'function') {
         showToast(`Cancel selected for ${itemId}`);
+      }
+    }
+
+    function handleHistorySubmit(event, itemId) {
+      event.stopPropagation();
+      if (typeof showToast === 'function') {
+        showToast(`Submit selected for ${itemId}`);
       }
     }
 
@@ -1128,14 +1226,14 @@
       const container = document.getElementById('claimDetailsModalContainer');
       if (!modal || !container) return;
 
-      const isMedical = activeTabKey === 'medical' || item.benefitType === 'MEDICAL CLAIMS' || (item.id && item.id.startsWith('CMD')) || item.title === 'Medical Listing';
+      const isMedical = activeTabKey === 'medical' || (item.id && item.id.startsWith('CMD')) || Boolean(item.medicalType);
       const isTravelRequest = activeTabKey === 'travelRequest' || (activeTabKey === 'travel' && item.historyDetailType === 'travel-request');
       const detailStatus = getHistoryStatus(item);
 
       let bodyHtml = '';
       let headerTitle = item.title ? item.title.toUpperCase() : 'CLAIM DETAILS';
       if (isMedical) {
-        headerTitle = 'Medical Listing';
+        headerTitle = item.medicalType || item.title || 'Medical';
       } else if (activeTabKey === 'expense') {
         headerTitle = 'Expense Claims';
       } else if (activeTabKey === 'advance') {
@@ -1238,6 +1336,13 @@
           `;
         }
 
+        const medicalDetailAttachments = medicalDetails.attachments === 'No Data of Attachments' || !medicalDetails.attachments
+          ? '<span style="color: var(--text-muted);">No Data of Attachments</span>'
+          : medicalDetails.attachments;
+        const medicalDetailUploads = medicalDetails.uploadFiles === 'No Data of Upload Files' || !medicalDetails.uploadFiles
+          ? 'No Data of Upload Files'
+          : medicalDetails.uploadFiles;
+
         bodyHtml = `
           <table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 11.5px;">
             <tbody>
@@ -1245,7 +1350,7 @@
               ${renderRow('Status', detailStatus.text)}
               ${renderRow('Benefit Year', item.benefitYear || '2026')}
               ${renderRow('Claim Period', item.claimPeriod || '202601')}
-              ${renderRow('Benefit Type', item.benefitType || 'MEDICAL CLAIMS')}
+              ${renderRow('Benefit Type', item.benefitType || item.medicalType || item.title || 'Medical')}
               ${renderRow('Receipt Date', item.receiptDate || item.date || '1 Jan 2026')}
               ${renderRow('Receipt No', item.receiptNo || 'usidjs')}
               ${renderRow('Patient Type', item.patientType || 'Spouse')}
@@ -1254,10 +1359,11 @@
               ${renderRow('Sickness', item.sickness || 'BLOOD TEST')}
               ${renderRow('Total Amount', item.totalAmount || item.amount || '70.00')}
               ${renderRow('Remark', item.remark || 'hhshs')}
-              ${renderRow('No Data of Attachments', attachmentsVal)}
               ${renderRow('Payment Type', item.paymentType, true)}
               ${renderRow('Payment Period', item.paymentPeriod, true)}
               ${renderRow('Payment Date', item.paymentDate, true)}
+              ${renderRow('Attachments', attachmentsVal)}
+              ${renderRow('Upload Files', item.uploadFiles || attachmentsVal)}
             </tbody>
           </table>
 
@@ -1272,8 +1378,8 @@
                 ${renderRow('Currency', medicalDetails.currency || 'RINGGIT MALAYSIA')}
                 ${renderRow('Forex Rate', medicalDetails.forexRate || '1.00')}
                 ${renderRow('Claim Amount', medicalDetails.claimAmount || '70.00')}
-                ${renderRow('No Data of Attachments', medicalDetails.attachments === 'No Data of Attachments' || !medicalDetails.attachments ? `<span style="color: var(--text-muted);">No Data of Attachments</span>` : medicalDetails.attachments)}
-                ${renderRow('No Data of Upload Files', medicalDetails.uploadFiles === 'No Data of Upload Files' || !medicalDetails.uploadFiles ? `<span style="color: var(--text-muted);">No Data of Upload Files</span>` : medicalDetails.uploadFiles)}
+                ${renderRow('Attachments', medicalDetailAttachments)}
+                ${renderRow('Upload Files', medicalDetailUploads)}
               </tbody>
             </table>
           </div>
@@ -1297,6 +1403,24 @@
           <div style="margin: 14px 0 7px; font-size: 12px; font-weight: 800; color: var(--text-secondary);">${title}</div>
           <div style="border: 1px solid var(--border-subtle); border-left: 3px solid var(--purple-primary); border-radius: 10px; overflow: hidden; background: var(--bg-card);">${travelTable(rows)}</div>
         `;
+        const passengerSection = passengerDetails => {
+          const passengerList = Array.isArray(passengerDetails)
+            ? passengerDetails.filter(Boolean)
+            : (passengerDetails && !/^no passenger details$/i.test(String(passengerDetails).trim())
+              ? [passengerDetails]
+              : []);
+          const passengerRows = passengerList.length
+            ? passengerList.map((passenger, index) => {
+              if (typeof passenger === 'object') {
+                const passengerName = passenger.name || passenger.passengerName || passenger.employeeName || `Passenger ${index + 1}`;
+                const passengerId = passenger.empNo || passenger.employeeId;
+                return [`Passenger ${index + 1}`, passengerId ? `${passengerName}<br><span style="color: var(--text-muted); font-size: 10.5px;">#${String(passengerId).replace(/^#/, '')}</span>` : passengerName];
+              }
+              return [`Passenger ${index + 1}`, passenger];
+            })
+            : [['Passenger', 'No passenger details']];
+          return travelSection('Passenger Details', passengerRows);
+        };
         const travelDetail = item.travelDetails || {};
         const attachmentValue = item.attachments
           ? `<span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-primary);"><i class="fa-solid fa-paperclip" style="color: var(--purple-primary);"></i>${item.attachments}</span>`
@@ -1323,9 +1447,9 @@
               ['Travel Type', item.travelType],
               ['Accommodation', item.accommodation],
               ['Flight?', item.flight],
-              ['Remark', item.remark],
-              ['Passenger Details', item.passengerDetails || 'No passenger details']
+              ['Remark', item.remark]
             ])}
+            ${passengerSection(item.passengerDetails)}
             ${travelSection('Task Details', [
               ['Task', task.task],
               ['Purpose', task.purpose],
@@ -1334,8 +1458,8 @@
               ['End Date', task.endDate],
               ['Est. Start Time', task.startTime],
               ['Est. End Time', task.endTime],
-              ['Attachments', task.attachments || attachmentValue],
-              ['Upload Files', task.uploadFiles || attachmentValue]
+              ['Attachments', task.attachments || 'No attachments'],
+              ['Upload Files', task.uploadFiles || task.attachments || 'No upload files']
             ])}
             ${travelSection('Travel Details', [
               ['Origin', travelDetail.origin],
@@ -1357,8 +1481,8 @@
               ['Class', travelDetail.travelClass],
               ['Distance (KM)', travelDetail.distance],
               ['Amount', travelDetail.amount],
-              ['Attachments', travelDetail.attachments || attachmentValue],
-              ['Upload Files', travelDetail.uploadFiles || attachmentValue]
+              ['Attachments', travelDetail.attachments || 'No attachments'],
+              ['Upload Files', travelDetail.uploadFiles || travelDetail.attachments || 'No upload files']
             ])}
             <div style="margin-top: 12px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">${item.accommodationDetails || 'No accommodation details'}</div>
           `;
@@ -1398,7 +1522,6 @@
             ])}
             <div style="margin-top: 12px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">${item.travels || 'No travels'}</div>
             <div style="margin-top: 8px; color: var(--text-muted); font-size: 11.5px; font-weight: 700;">${item.expenses || 'No expenses'}</div>
-            ${travelSection('Attachments', [['Attachments', attachmentValue]])}
           `;
         }
       } else if (['expense', 'advance', 'entertainment'].includes(activeTabKey)) {
@@ -1455,7 +1578,8 @@
               ['Forex Rate', detail.forexRate || item.forexRate || '1.00'],
               ['Claim Amount', detail.claimAmount || item.amount],
               ['Description', detail.description || item.description],
-              ['Attachments', detail.attachments || attachmentValue]
+              ['Attachments', detail.attachments || attachmentValue],
+              ['Upload Files', detail.uploadFiles || attachmentValue]
             ])}
           `;
         } else if (activeTabKey === 'advance') {
@@ -1519,7 +1643,8 @@
               ['Remarks', item.remark],
               ['Declaration', item.declaration],
               ['Agree', item.agree || 'No'],
-              ['Attachments', attachmentValue]
+              ['Attachments', attachmentValue],
+              ['Upload Files', item.uploadFiles || attachmentValue]
             ])}
             ${detailSection('Claim Details', [
               ['Date', detail.date || item.dateFrom || item.date],
@@ -1590,10 +1715,8 @@
               ${renderRow('Purpose', item.purpose || 'Test')}
               ${renderRow('Remark', item.remark, true)}
               ${renderRow('Cancellation Remark', item.cancellationRemark, true)}
-              <tr>
-                <td style="padding: 6px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 700; color: var(--text-muted); width: 40%; background: var(--bg-card); vertical-align: middle;">Attachments</td>
-                <td style="padding: 6px 10px; border: 1px solid var(--border-subtle); font-size: 11.5px; font-weight: 500; color: var(--text-primary); background: var(--bg-card); vertical-align: middle;">${attachmentDisplay}</td>
-              </tr>
+              ${renderRow('Attachments', attachmentDisplay)}
+              ${renderRow('Upload Files', item.uploadFiles || attachmentDisplay)}
             </tbody>
           </table>
         `;

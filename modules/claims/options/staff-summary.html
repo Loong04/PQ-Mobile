@@ -2,233 +2,398 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PeopleHCM - Staff Claim Summary</title>
   <script src="../../../js/components.js"></script>
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
+  <link rel="stylesheet" href="../../../css/claim-summary-details.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    body { background: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
-    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 16px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
-    .center-modal-overlay {
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
-      z-index: 999; display: none; align-items: center; justify-content: center;
-      padding: 24px; opacity: 0; transition: opacity 0.25s ease;
+    .cal-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 16px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 8px 24px rgba(76,29,149,.28); position: relative; z-index: 20; }
+    .staff-page-title { display: flex; align-items: center; gap: 12px; margin-top: 4px; color: var(--text-hero); }
+    .staff-page-title h1 { font-size: 17px; font-weight: 800; }
+    .staff-back { width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; color: inherit; text-decoration: none; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); }
+    button { font-family: inherit; }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--purple-text); outline-offset: 3px; }
+    .staff-filter-trigger { width: 100%; text-align: left; }
+    .staff-filter-trigger .claim-icon-button { width: 44px; height: 44px; flex-basis: 44px; }
+    .staff-filter-trigger .claim-filter-value { display: block; line-height: 1.55; overflow-wrap: anywhere; }
+    .staff-kpis { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 12px; margin-bottom: 20px; }
+    .staff-kpi { min-width: 0; padding: 15px 13px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); }
+    .staff-kpi dt { color: var(--text-muted); font-size: 10.5px; font-weight: 700; line-height: 1.5; margin-bottom: 5px; }
+    .staff-kpi dd { color: var(--text-primary); font-size: 20px; font-weight: 800; letter-spacing: -.5px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .staff-list-header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+    .staff-list-header h2 { font-size: 13px; font-weight: 700; }
+    .staff-list-header span { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+    .staff-summary-card { display: block; width: 100%; margin-bottom: 12px; padding: 0; overflow: hidden; border: 1px solid var(--border-card); border-radius: 20px; background: var(--bg-card); color: var(--text-primary); text-align: left; cursor: pointer; transition: border-color .18s ease, transform .18s ease; }
+    .staff-summary-card:hover { border-color: var(--purple-border); }
+    .staff-summary-card:active { transform: scale(.99); }
+    .staff-card-header { display: flex; align-items: flex-start; gap: 11px; padding: 15px 16px; background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%); color: #ffffff; }
+    .staff-identity { min-width: 0; flex: 1; }
+    .staff-name { color: #ffffff; font-size: 14.5px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+    .staff-employee-id { display: block; font-size: 11.5px; font-weight: 700; color: rgba(255,255,255,.72); opacity: .9; font-family: monospace, sans-serif; margin-bottom: 4px; line-height: 1.5; }
+    .staff-role { color: rgba(255,255,255,.78); font-size: 11px; font-weight: 600; }
+    .staff-card-chevron { color: rgba(255,255,255,.82); font-size: 11px; padding-top: 12px; }
+    .staff-summary-card-body { padding: 14px 16px 16px; }
+    .staff-current-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .staff-current-label { color: var(--text-muted); font-size: 11.5px; font-weight: 700; }
+    .staff-current-value { color: var(--text-primary); font-size: 21px; font-weight: 900; letter-spacing: -.6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .staff-stat-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+    .staff-stat { min-width: 0; padding: 10px 11px; border: 1px solid var(--border-subtle); border-radius: 12px; background: var(--bg-input); }
+    .staff-stat-label { display: block; margin-bottom: 4px; color: var(--text-muted); font-size: 10px; font-weight: 700; }
+    .staff-stat-value { display: block; color: var(--text-primary); font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .staff-stat-value.increase { color: #ef4444; }
+    .staff-stat-value.decrease { color: #10b981; }
+    .staff-stat-value.neutral { color: var(--text-muted); }
+    .staff-record-count { margin-top: 11px; color: var(--text-muted); font-size: 11px; font-weight: 600; }
+    .staff-empty { padding: 28px 16px; border: 1px dashed var(--border-subtle); border-radius: 18px; color: var(--text-secondary); font-size: 13px; text-align: center; line-height: 1.6; }
+    .staff-data-note { color: var(--text-secondary); font-size: 11.5px; line-height: 1.6; margin: 0 0 14px; }
+    .staff-export { width: 100%; min-height: 48px; margin-top: 10px; padding: 13px; display: flex; justify-content: center; align-items: center; gap: 9px; border: 1px solid var(--purple-border); border-radius: 14px; background: var(--purple-subtle); color: var(--purple-text); font-size: 12px; font-weight: 800; cursor: pointer; }
+    .staff-export:disabled { opacity: .5; cursor: default; }
+    #staffFilterModal .claim-filter-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-sheet); }
+    #staffFilterModal .claim-filter-header, #staffFilterModal .claim-filter-handle, #staffFilterModal .claim-filter-apply { flex: 0 0 auto; }
+    #staffFilterModal .claim-filter-close { width: 44px; height: 44px; }
+    #staffFilterModal .claim-filter-reset { min-height: 44px; }
+    #staffFilterModal .claim-filter-fields { min-height: 0; overflow-y: auto; padding: 3px; overscroll-behavior: contain; scrollbar-width: thin; }
+    .staff-period-field { border: 0; min-width: 0; }
+    .staff-period-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.35fr); gap: 10px; }
+    .staff-search { padding-right: 16px; cursor: text; }
+    .staff-search::placeholder { color: var(--text-muted); opacity: 1; font-size: 12px; font-weight: 500; }
+    #staffFilterModal option { background: var(--bg-phone); color: var(--text-primary); }
+    .staff-record-employee {
+      padding: 14px 15px 0;
     }
-    .center-modal-overlay.active { display: flex; opacity: 1; }
-    .popout-card {
-      width: 100%; max-height: 80vh; background: var(--bg-card);
-      border-radius: 28px; border: 1px solid var(--border-subtle);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column;
-      transform: scale(0.95) translateY(10px); transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      overflow: hidden;
+    .staff-record-employee-name {
+      display: block;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
     }
-    .center-modal-overlay.active .popout-card { transform: scale(1) translateY(0); }
-    .popout-header {
-      padding: 24px 20px 16px; border-bottom: 1px solid var(--border-subtle);
-      display: flex; justify-content: space-between; align-items: flex-start;
+    .staff-record-employee .staff-employee-id {
+      margin: 2px 0 0;
+      color: var(--text-muted);
+      opacity: .8;
     }
-    .popout-body { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
-    
-    .history-card-item {
-      background: var(--bg-input); border: 1px solid var(--border-subtle);
-      border-radius: 18px; padding: 16px;
+    #summaryDetailsModalOverlay .summary-details-header { margin-bottom: 0; }
+    @media (prefers-reduced-motion: reduce) { .staff-summary-card { transition: none; } }
+    @media print {
+      html { --bg-page: #fff; --bg-phone: #fff; --bg-card: #fff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #64748b; --border-card: #e2e8f0; --border-subtle: #e2e8f0; --purple-text: #6d28d9; }
+      body { display: block; padding: 0; height: auto; }
+      .phone-container { display: block; max-width: none; height: auto; overflow: visible; box-shadow: none; border-radius: 0; }
+      .main-content { overflow: visible; padding: 16px 0; }
+      preview-top-bar, phone-status-bar, phone-bottom-nav, .staff-back, .staff-export, .staff-filter-trigger .claim-icon-button, .claim-filter-sheet, .modal-overlay { display: none !important; }
+      .cal-top-header { background: none; box-shadow: none; padding: 0; }
+      .staff-page-title { color: var(--text-primary); }
+      .staff-summary-card { break-inside: avoid; }
     }
   </style>
 </head>
 <body>
-
   <preview-top-bar active-page="claims"></preview-top-bar>
-
   <div class="phone-container">
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="../index.html" class="me-back-btn" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
-            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-          </a>
-          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0;">Staff Claim Summary</h1>
-        </div>
+      <div class="staff-page-title">
+        <a href="../index.html" class="staff-back" aria-label="Back to claims"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <h1>Staff Claim Summary</h1>
       </div>
     </div>
-
-    <div class="main-content">
-      
-      <!-- Top Overview Card -->
-      <div class="card" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); color: #ffffff;">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.85;">Subordinates YTD Claim Statements</div>
-        <div style="font-size: 22px; font-weight: 900; margin-top: 4px;">24 Total Requests</div>
-        <div style="font-size: 12px; font-weight: 600; margin-top: 4px; opacity: 0.9;">Approved: 21 &bull; Pending: 3 &bull; Rejected: 0</div>
-      </div>
-
-      <!-- Staff List -->
-      <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">Individual Staff YTD Summary</div>
-
-      <!-- Staff 1 -->
-      <div class="card" style="cursor: pointer;" onclick="openStaffModal('EBB01')">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 10px;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Sarah Chen</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EBB01</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Marketing Lead</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">RM 1,250.00</div>
-            <div style="font-size: 10.5px; color: var(--text-muted);">6 Requests</div>
-          </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
-          <span>Main Expense: Entertainment</span>
-          <span style="color: #10b981;">✔ Approved</span>
-        </div>
-      </div>
-
-      <!-- Staff 2 -->
-      <div class="card" style="cursor: pointer;" onclick="openStaffModal('004177')">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 10px;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Marcus Tan</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004177</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Senior Engineer</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">RM 950.00</div>
-            <div style="font-size: 10.5px; color: var(--text-muted);">4 Requests</div>
-          </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
-          <span>Main Expense: OT Meal &amp; Taxi</span>
-          <span style="color: #f59e0b;">⏳ 1 Pending</span>
-        </div>
-      </div>
-
-      <!-- Staff 3 -->
-      <div class="card" style="cursor: pointer;" onclick="openStaffModal('000582')">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 10px;">
-          <div>
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Daniel Lee</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#000582</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Operations Specialist</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">RM 1,420.00</div>
-            <div style="font-size: 10.5px; color: var(--text-muted);">8 Requests</div>
-          </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
-          <span>Main Expense: Travel Mileage</span>
-          <span style="color: #f59e0b;">⏳ 1 Pending</span>
-        </div>
-      </div>
-
-      <button style="width: 100%; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); margin-top: 10px;" onclick="alert('PDF Summary Statement exported!')">
-        📥 Export Team YTD PDF Summary
+    <main class="main-content">
+      <button type="button" class="claim-filter-bar staff-filter-trigger" id="staffFilterTrigger" onclick="openStaffFilter()" aria-haspopup="dialog">
+        <span class="claim-filter-copy"><span class="claim-eyebrow">Filter</span><span class="claim-filter-value" id="staffFilterText"></span></span>
+        <span class="claim-icon-button" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span>
       </button>
+      <dl class="staff-kpis">
+        <div class="staff-kpi"><dt>Total Claim Amount</dt><dd id="staffTotalAmount">RM 0.00</dd></div>
+        <div class="staff-kpi"><dt>Total Records Found</dt><dd id="staffTotalRecords">0</dd></div>
+      </dl>
+      <div class="staff-list-header"><h2>Staff summaries</h2><span id="staffResultCount"></span></div>
+      <p class="staff-data-note" id="staffStatusNote" hidden>Records without an approval status are excluded.</p>
+      <div id="staffCardsContainer" aria-live="polite"></div>
+      <button type="button" class="staff-export" id="staffExport" onclick="window.print()"><i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i><span>Export Team YTD PDF Summary</span></button>
+    </main>
 
-    </div>
-
-    <!-- Center Pop-out Modal for Staff Details -->
-    <div class="center-modal-overlay" id="staffDetailsModalOverlay" onclick="if(event.target===this) closeStaffModal()">
-      <div class="popout-card" onclick="event.stopPropagation()">
-        <div class="popout-header">
-          <div>
-            <div id="modalStaffName" style="font-size: 18px; font-weight: 800; color: var(--text-primary);">Staff Name</div>
-            <div id="modalStaffId" style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EMP001</div>
-            <div id="modalStaffTotal" style="font-size: 13px; font-weight: 800; color: var(--purple-primary); margin-top: 2px;">Total: RM 0.00</div>
+    <div class="claim-filter-sheet" id="staffFilterModal" aria-hidden="true" onclick="if(event.target===this) closeStaffFilter()">
+      <form class="claim-filter-panel" role="dialog" aria-modal="true" aria-labelledby="staffFilterTitle" onsubmit="applyStaffFilters(event)">
+        <div class="claim-filter-handle" aria-hidden="true"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title" id="staffFilterTitle">Filter</h2>
+          <div class="claim-filter-header-actions">
+            <button type="button" class="claim-filter-reset" onclick="resetStaffFilters()"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button>
+            <button type="button" class="claim-filter-close" onclick="closeStaffFilter()" aria-label="Close filter">&times;</button>
           </div>
-          <button type="button" onclick="closeStaffModal()" style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
         </div>
-        <div class="popout-body" id="modalRecordsList">
-          <!-- Cards injected here -->
+        <div class="claim-filter-fields">
+          <div>
+            <label class="claim-filter-label" for="staffSearchKeywords">Search Keywords</label>
+            <input id="staffSearchKeywords" class="claim-filter-select staff-search" type="search" placeholder="Name, employee ID or expense" autocomplete="off">
+          </div>
+          <fieldset class="staff-period-field">
+            <legend class="claim-filter-label">Period</legend>
+            <div class="staff-period-grid">
+              <div class="claim-filter-select-wrap"><select id="staffPeriodYear" class="claim-filter-select" aria-label="Period year"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div>
+              <div class="claim-filter-select-wrap"><select id="staffPeriodMonth" class="claim-filter-select" aria-label="Period month"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div>
+            </div>
+          </fieldset>
+          <div><label class="claim-filter-label" for="staffCompany">Company</label><div class="claim-filter-select-wrap"><select id="staffCompany" class="claim-filter-select" onchange="syncOrganizationOptions()"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
+          <div><label class="claim-filter-label" for="staffBranch">Branch</label><div class="claim-filter-select-wrap"><select id="staffBranch" class="claim-filter-select" onchange="syncDepartmentOptions()"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
+          <div><label class="claim-filter-label" for="staffDepartment">Department</label><div class="claim-filter-select-wrap"><select id="staffDepartment" class="claim-filter-select"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
+          <div><label class="claim-filter-label" for="staffIncludePending">Include Pending</label><div class="claim-filter-select-wrap"><select id="staffIncludePending" class="claim-filter-select"><option value="yes">Yes</option><option value="no">No</option></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
         </div>
-      </div>
+        <button type="submit" class="claim-filter-apply">Apply Filter</button>
+      </form>
     </div>
 
+    <div class="modal-overlay" id="summaryDetailsModalOverlay" aria-hidden="true" onclick="if(event.target===this) closeStaffModal()">
+      <section class="modal-sheet summary-details-sheet" role="dialog" aria-modal="true" aria-labelledby="staffDetailsTitle">
+        <div class="summary-details-top">
+          <div class="summary-details-handle" aria-hidden="true"></div>
+          <div class="summary-details-header">
+            <div class="summary-details-category">
+              <h2 class="summary-details-title" id="staffDetailsTitle">Staff Claim Summary</h2>
+            </div>
+            <button type="button" class="summary-details-close" onclick="closeStaffModal()" aria-label="Close details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <div class="summary-details-records-header"><h3 class="summary-details-section-title">Itemized records</h3><span class="summary-details-record-count" id="modalStaffRecordCount"></span></div>
+        <div class="summary-details-records" id="modalRecordsList" tabindex="0" aria-label="Staff itemized claim records"></div>
+      </section>
+    </div>
     <phone-bottom-nav active="apps"></phone-bottom-nav>
   </div>
-
   <script>
     const STAFF_DATA = {
       'EBB01': {
-        name: 'Sarah Chen', empNo: 'EBB01', total: '1,250.00',
+        name: 'Sarah Chen', empNo: 'EBB01', lastAmount: 980.00, ytdAmount: 4550.00, averageAmount: 910.00,
         records: [
-          { dateToDate: '01/05/2026 - 05/05/2026', period: '202605', expense: 'Entertainment', amount: 450.00 },
-          { dateToDate: '10/05/2026 - 12/05/2026', period: '202605', expense: 'Travel Mileage', amount: 300.00 },
+          { dateToDate: '01/05/2026 - 05/05/2026', period: '202605', expense: 'Advertisement', amount: 450.00 },
+          { dateToDate: '10/05/2026 - 12/05/2026', period: '202605', expense: 'Entertainment', amount: 300.00 },
           { dateToDate: '20/05/2026 - 22/05/2026', period: '202605', expense: 'Entertainment', amount: 500.00 }
         ]
       },
       '004177': {
-        name: 'Marcus Tan', empNo: '004177', total: '950.00',
+        name: 'Marcus Tan', empNo: '004177', lastAmount: 1040.00, ytdAmount: 3980.00, averageAmount: 995.00,
         records: [
           { dateToDate: '15/05/2026 - 16/05/2026', period: '202605', expense: 'OT Meal & Taxi', amount: 150.00 },
           { dateToDate: '18/05/2026 - 18/05/2026', period: '202605', expense: 'OT Meal & Taxi', amount: 800.00 }
         ]
       },
       '000582': {
-        name: 'Daniel Lee', empNo: '000582', total: '1,420.00',
+        name: 'Daniel Lee', empNo: '000582', lastAmount: 1260.00, ytdAmount: 6120.00, averageAmount: 1224.00,
         records: [
           { dateToDate: '02/05/2026 - 08/05/2026', period: '202605', expense: 'Travel Mileage', amount: 1420.00 }
         ]
       }
     };
 
-    function openStaffModal(empId) {
-      const data = STAFF_DATA[empId];
-      if (!data) return;
+    const STAFF_ROLES = { EBB01: 'Marketing Lead', '004177': 'Senior Engineer', '000582': 'Operations Specialist' };
+    const STAFF_PERIODS = [...new Set(Object.values(STAFF_DATA).flatMap(staff => staff.records.map(rec => rec.period)))].sort();
+    const DEFAULT_STAFF_FILTERS = { keywords: '', period: STAFF_PERIODS.at(-1) || '202605', company: '', branch: '', department: '', includePending: true };
+    let staffFilters = { ...DEFAULT_STAFF_FILTERS };
+    let visibleStaff = [];
+    let sheetOpener = null;
 
-      document.getElementById('modalStaffName').textContent = data.name;
-      document.getElementById('modalStaffId').textContent = '#' + data.empNo;
-      document.getElementById('modalStaffTotal').textContent = 'Total: RM ' + data.total;
-
-      const container = document.getElementById('modalRecordsList');
-      container.innerHTML = '';
-
-      data.records.forEach(rec => {
-        const card = document.createElement('div');
-        card.className = 'history-card-item';
-        card.innerHTML = `
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);"><i class="fa-solid fa-receipt" style="color: var(--text-muted); font-size: 12px; margin-right: 6px;"></i>${rec.expense}</div>
-            <div style="font-size: 14px; font-weight: 900; color: var(--purple-primary);">RM ${rec.amount.toFixed(2)}</div>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Period</span>
-              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${rec.period}</span>
-            </div>
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Date to Date</span>
-              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${rec.dateToDate}</span>
-            </div>
-          </div>
-        `;
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    }
+    function amountText(value) { return 'RM ' + value.toFixed(2); }
+    function sumRecords(records) { return records.reduce((total, rec) => total + rec.amount, 0); }
+    function organizationValue(staff, key) { return String(staff[key] || '').trim() || '__unspecified__'; }
+    function matchesOrganization(staff, key, value) { return !value || organizationValue(staff, key) === value; }
+    function approvalStatus(rec) { return String(rec.status || rec.docStatus || '').toLowerCase().replace(/[^a-z]/g, ''); }
+    function includeRecord(rec) {
+      if (staffFilters.includePending) return true;
+      const status = approvalStatus(rec);
+      // Missing status cannot be treated as an approved claim.
+      return !!status && !['pending', 'pendingapproval', 'submitted', 'draft'].includes(status);
+    }
+    function collectVisibleStaff() {
+      const query = staffFilters.keywords.toLowerCase().replace(/^#/, '');
+      return Object.values(STAFF_DATA).flatMap(staff => {
+        if (!['company', 'branch', 'department'].every(key => matchesOrganization(staff, key, staffFilters[key]))) return [];
+        const employeeMatches = [staff.name, staff.empNo, STAFF_ROLES[staff.empNo] || ''].some(value => value.toLowerCase().includes(query));
+        const records = staff.records.filter(rec => rec.period === staffFilters.period && includeRecord(rec) && (employeeMatches || rec.expense.toLowerCase().includes(query)));
+        if (!records.length) return [];
+        const ytdRecords = staff.records.filter(rec => rec.period.slice(0, 4) === staffFilters.period.slice(0, 4) && rec.period <= staffFilters.period && includeRecord(rec));
+        const calculatedYtd = sumRecords(ytdRecords);
+        const ytd = Number.isFinite(Number(staff.ytdAmount)) ? Number(staff.ytdAmount) : calculatedYtd;
+        const average = Number.isFinite(Number(staff.averageAmount)) ? Number(staff.averageAmount) : calculatedYtd;
+        return [{
+          staff,
+          records,
+          current: sumRecords(records),
+          last: Number(staff.lastAmount) || 0,
+          ytd,
+          average
+        }];
+      });
+    }
+    function renderStaffSummaries() {
+      visibleStaff = collectVisibleStaff();
+      const container = document.getElementById('staffCardsContainer');
+      container.replaceChildren();
+      visibleStaff.forEach(entry => {
+        const staff = entry.staff;
+        const variance = entry.last > 0 ? ((entry.current - entry.last) / entry.last) * 100 : 0;
+        const varianceText = entry.last <= 0 || variance === 0 ? '-' : (variance > 0 ? '+' : '') + variance.toFixed(1) + '%';
+        const varianceClass = variance > 0 ? 'increase' : variance < 0 ? 'decrease' : 'neutral';
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'staff-summary-card';
+        card.setAttribute('aria-haspopup', 'dialog');
+        card.addEventListener('click', () => openStaffModal(staff.empNo));
+        card.innerHTML = '<div class="staff-card-header"><div class="staff-identity"><div class="staff-name">' + escapeHtml(staff.name) +
+          '</div><span class="staff-employee-id">#' + escapeHtml(staff.empNo) + '</span><div class="staff-role">' +
+          escapeHtml(STAFF_ROLES[staff.empNo] || '') + '</div></div><i class="fa-solid fa-chevron-right staff-card-chevron" aria-hidden="true"></i></div>' +
+          '<div class="staff-summary-card-body"><div class="staff-current-row"><span class="staff-current-label">Current Amount</span><span class="staff-current-value">' +
+          amountText(entry.current) + '</span></div><div class="staff-stat-grid">' +
+          '<div class="staff-stat"><span class="staff-stat-label">Last Amount</span><span class="staff-stat-value">' + amountText(entry.last) + '</span></div>' +
+          '<div class="staff-stat"><span class="staff-stat-label">Variance %</span><span class="staff-stat-value ' + varianceClass + '">' + varianceText + '</span></div>' +
+          '<div class="staff-stat"><span class="staff-stat-label">YTD Amount</span><span class="staff-stat-value">' + amountText(entry.ytd) + '</span></div>' +
+          '<div class="staff-stat"><span class="staff-stat-label">Average Amount</span><span class="staff-stat-value">' + amountText(entry.average) + '</span></div>' +
+          '</div><div class="staff-record-count">' + entry.records.length + ' record' + (entry.records.length === 1 ? '' : 's') + ' in ' +
+          escapeHtml(staffFilters.period) + '</div></div>';
         container.appendChild(card);
       });
-
-      const modal = document.getElementById('staffDetailsModalOverlay');
-      modal.style.display = 'flex';
-      setTimeout(() => modal.classList.add('active'), 10);
+      if (!visibleStaff.length) {
+        const empty = document.createElement('p');
+        empty.className = 'staff-empty';
+        empty.textContent = 'No claims match these filters.';
+        container.appendChild(empty);
+      }
+      document.getElementById('staffTotalAmount').textContent = amountText(visibleStaff.reduce((total, entry) => total + entry.current, 0));
+      document.getElementById('staffTotalRecords').textContent = visibleStaff.reduce((total, entry) => total + entry.records.length, 0);
+      document.getElementById('staffResultCount').textContent = visibleStaff.length + ' staff';
+      document.getElementById('staffExport').disabled = !visibleStaff.length;
+      const filterText = ['Period: ' + staffFilters.period, staffFilters.includePending ? 'Include Pending' : 'Exclude Pending'];
+      if (staffFilters.keywords) filterText.push('Search: ' + staffFilters.keywords);
+      ['company', 'branch', 'department'].forEach(key => {
+        if (staffFilters[key]) filterText.push(key.charAt(0).toUpperCase() + key.slice(1) + ': ' + (staffFilters[key] === '__unspecified__' ? 'Not specified' : staffFilters[key]));
+      });
+      document.getElementById('staffFilterText').textContent = filterText.join(' • ');
+      document.getElementById('staffStatusNote').hidden = staffFilters.includePending || !Object.values(STAFF_DATA).some(staff => staff.records.some(rec => rec.period === staffFilters.period && !approvalStatus(rec)));
     }
-
-    function closeStaffModal() {
-      const modal = document.getElementById('staffDetailsModalOverlay');
-      modal.classList.remove('active');
-      setTimeout(() => modal.style.display = 'none', 250);
+    function setOrganizationOptions(id, key, staffList, allLabel, selected) {
+      const select = document.getElementById(id);
+      const previous = selected ?? select.value;
+      const values = [...new Set(staffList.map(staff => organizationValue(staff, key)))].sort();
+      select.replaceChildren(new Option(allLabel, ''));
+      values.forEach(value => select.add(new Option(value === '__unspecified__' ? 'Not specified' : value, value)));
+      select.value = values.includes(previous) ? previous : '';
     }
+    function syncOrganizationOptions(branch, department) {
+      const company = document.getElementById('staffCompany').value;
+      const staffList = Object.values(STAFF_DATA).filter(staff => matchesOrganization(staff, 'company', company));
+      setOrganizationOptions('staffBranch', 'branch', staffList, 'All Branches', branch);
+      syncDepartmentOptions(department);
+    }
+    function syncDepartmentOptions(selected) {
+      const company = document.getElementById('staffCompany').value;
+      const branch = document.getElementById('staffBranch').value;
+      const staffList = Object.values(STAFF_DATA).filter(staff => matchesOrganization(staff, 'company', company) && matchesOrganization(staff, 'branch', branch));
+      setOrganizationOptions('staffDepartment', 'department', staffList, 'All Departments', selected);
+    }
+    function syncStaffFilterFields() {
+      document.getElementById('staffSearchKeywords').value = staffFilters.keywords;
+      document.getElementById('staffPeriodYear').value = staffFilters.period.slice(0, 4);
+      document.getElementById('staffPeriodMonth').value = staffFilters.period.slice(4, 6);
+      document.getElementById('staffIncludePending').value = staffFilters.includePending ? 'yes' : 'no';
+      setOrganizationOptions('staffCompany', 'company', Object.values(STAFF_DATA), 'All Companies', staffFilters.company);
+      syncOrganizationOptions(staffFilters.branch, staffFilters.department);
+    }
+    function openSheet(id, focusSelector) {
+      const sheet = document.getElementById(id);
+      sheetOpener = document.activeElement;
+      sheet.setAttribute('aria-hidden', 'false');
+      sheet.classList.add('active');
+      sheet.querySelector(focusSelector).focus({ preventScroll: true });
+    }
+    function closeSheet(id) {
+      const sheet = document.getElementById(id);
+      sheet.classList.remove('active');
+      sheet.setAttribute('aria-hidden', 'true');
+      if (sheetOpener?.isConnected) sheetOpener.focus({ preventScroll: true });
+    }
+    function openStaffFilter() {
+      syncStaffFilterFields();
+      openSheet('staffFilterModal', '.claim-filter-close');
+      document.querySelector('#staffFilterModal .claim-filter-fields').scrollTop = 0;
+    }
+    function closeStaffFilter() { closeSheet('staffFilterModal'); }
+    function applyStaffFilters(event) {
+      event.preventDefault();
+      staffFilters = {
+        keywords: document.getElementById('staffSearchKeywords').value.trim(),
+        period: document.getElementById('staffPeriodYear').value + document.getElementById('staffPeriodMonth').value,
+        company: document.getElementById('staffCompany').value,
+        branch: document.getElementById('staffBranch').value,
+        department: document.getElementById('staffDepartment').value,
+        includePending: document.getElementById('staffIncludePending').value === 'yes'
+      };
+      renderStaffSummaries();
+      closeStaffFilter();
+    }
+    function resetStaffFilters() {
+      staffFilters = { ...DEFAULT_STAFF_FILTERS };
+      syncStaffFilterFields();
+      renderStaffSummaries();
+    }
+    function openStaffModal(empId) {
+      const entry = visibleStaff.find(item => item.staff.empNo === empId);
+      if (!entry) return;
+      document.getElementById('modalStaffRecordCount').textContent = entry.records.length + ' record' + (entry.records.length === 1 ? '' : 's');
+      const container = document.getElementById('modalRecordsList');
+      container.replaceChildren();
+      entry.records.forEach(rec => {
+        const card = document.createElement('article');
+        card.className = 'claim-summary-record summary-colored-record';
+        card.innerHTML = '<dl class="summary-record-fields">' +
+          '<div class="summary-record-field summary-record-date"><dt>Claim Date</dt><dd>' + escapeHtml(rec.dateToDate) + '</dd></div></dl>' +
+          '<div class="staff-record-employee"><strong class="staff-record-employee-name">' + escapeHtml(entry.staff.name) + '</strong>' +
+          '<span class="staff-employee-id">#' + escapeHtml(entry.staff.empNo) + '</span></div>' +
+          '<dl class="summary-record-fields">' +
+          '<div class="summary-record-field summary-record-period"><dt>Period</dt><dd>' + escapeHtml(rec.period) + '</dd></div>' +
+          '<div class="summary-record-field summary-record-expense"><dt>Expense</dt><dd>' + escapeHtml(rec.expense) + '</dd></div>' +
+          '<div class="summary-record-field summary-record-amount"><dt>Amount</dt><dd>' + amountText(rec.amount) + '</dd></div>' +
+          '</dl>';
+        container.appendChild(card);
+      });
+      container.scrollTop = 0;
+      openSheet('summaryDetailsModalOverlay', '.summary-details-close');
+    }
+    function closeStaffModal() { closeSheet('summaryDetailsModalOverlay'); }
+    document.addEventListener('keydown', event => {
+      const sheet = document.querySelector('#staffFilterModal.active, #summaryDetailsModalOverlay.active');
+      if (!sheet) return;
+      if (event.key === 'Escape') { event.preventDefault(); closeSheet(sheet.id); return; }
+      if (event.key !== 'Tab') return;
+      const targets = [...sheet.querySelectorAll('button, input, select, [tabindex="0"]')].filter(el => !el.disabled && el.getClientRects().length);
+      const first = targets[0], last = targets.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+      const year = Number(DEFAULT_STAFF_FILTERS.period.slice(0, 4));
+      const years = [...new Set([...STAFF_PERIODS.map(period => Number(period.slice(0, 4))), year - 1, year, year + 1])].sort();
+      years.forEach(value => document.getElementById('staffPeriodYear').add(new Option(String(value), String(value))));
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      months.forEach((label, index) => document.getElementById('staffPeriodMonth').add(new Option(label, String(index + 1).padStart(2, '0'))));
+      syncStaffFilterFields();
+      renderStaffSummaries();
+    });
   </script>
 </body>
 </html>

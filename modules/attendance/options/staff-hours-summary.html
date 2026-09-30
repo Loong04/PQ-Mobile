@@ -12,12 +12,28 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
     .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 130px !important; position: relative; z-index: 10; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
     .main-content::-webkit-scrollbar { display: none; }
+
+    .staff-hours-filter-trigger { width: 100%; text-align: left; font-family: inherit; }
+    .staff-hours-filter-trigger .claim-filter-value { display: block; line-height: 1.5; overflow-wrap: anywhere; }
+    .staff-hours-filter-trigger .claim-icon-button { width: 44px; height: 44px; flex-basis: 44px; }
+    .staff-hours-filter-trigger:focus-visible { outline: 2px solid var(--purple-text); outline-offset: 3px; }
+    #filterModal .claim-filter-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-sheet); }
+    #filterModal .claim-filter-handle, #filterModal .claim-filter-header, #filterModal .claim-filter-apply { flex: 0 0 auto; }
+    #filterModal .claim-filter-fields { min-height: 0; overflow-y: auto; padding: 3px; overscroll-behavior: contain; scrollbar-width: thin; }
+    #filterModal .claim-filter-close { width: 44px; height: 44px; }
+    #filterModal .claim-filter-reset { min-height: 44px; }
+    #filterModal .staff-hours-filter-input { padding-right: 16px; cursor: text; }
+    #filterModal input::placeholder { color: var(--text-muted); opacity: 1; font-size: 12px; font-weight: 500; }
+    #filterModal option { background: var(--bg-phone); color: var(--text-primary); }
+    [data-theme="dark"] #filterModal input { color-scheme: dark; }
+    [data-theme="light"] #filterModal input { color-scheme: light; }
     
     .cal-top-header {
       background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
@@ -555,150 +571,13 @@
       
       <!-- ================= DASHBOARD VIEW ================= -->
       <div id="view-dashboard" style="display: block;">
-
-        <!-- 1. COLLAPSIBLE DATA FILTER CARD -->
-        <div class="filter-accordion-card">
-          <div class="filter-header-bar" id="filterHeaderBar" onclick="toggleFilterAccordion()">
-            <div class="filter-badge-title">
-              <i class="fa-solid fa-filter" style="font-size: 12px;"></i>
-              <span>Data Filter</span>
-            </div>
-            <div class="filter-toggle-icon" id="filterToggleIcon">
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-          </div>
-
-          <div class="filter-body-container" id="filterBodyContainer">
-            <div class="filter-field-row" style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Date</label>
-              <div style="display: flex; align-items: center; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 2px 6px;">
-                <button type="button" class="date-nav-btn" onclick="adjustDate(-1)" title="Previous Day" style="width: 32px; height: 32px; border-radius: 9px; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px;">
-                  <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <input type="date" id="filterDateInput" value="2026-09-24" onchange="handleDateInputChange()" style="flex: 1; border: none; background: transparent; color: var(--text-primary); font-size: 13px; font-weight: 800; text-align: center; outline: none; padding: 8px 4px;">
-                <button type="button" class="date-nav-btn" onclick="adjustDate(1)" title="Next Day" style="width: 32px; height: 32px; border-radius: 9px; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px;">
-                  <i class="fa-solid fa-chevron-right"></i>
-                </button>
-              </div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Department</label>
-              <select id="filterDepartment" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 700; padding: 9px 12px; border-radius: 12px; outline: none;" onchange="applyFilters()">
-                <option value="all">- All Departments -</option>
-                <option value="Accounting">Accounting</option>
-                <option value="Operations">Operations</option>
-                <option value="Quality Control">Quality Control</option>
-                <option value="Production">Production</option>
-              </select>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--border-subtle);">
-              <button type="button" onclick="resetFilters()" style="padding: 8px 16px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer;">
-                <i class="fa-solid fa-rotate-left"></i> Reset
-              </button>
-              <button type="button" onclick="applyFilters()" style="padding: 8px 20px; border-radius: 12px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 12.5px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
-                <i class="fa-solid fa-magnifying-glass"></i> Search
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. HERO TOTAL KPI OVERVIEW CARD WITH AGENTS.MD VIEW CHART BUTTON -->
-        <div class="history-card-item" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(109, 40, 217, 0.05) 100%); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.6px;">Total Staff Hours</div>
-              <div style="font-size: 28px; font-weight: 900; color: var(--text-primary); margin: 2px 0;" id="kpiTotalStaffHoursVal">2,184.00 Hrs</div>
-              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
-                <span><i class="fa-regular fa-calendar" style="margin-right: 4px;"></i><span id="kpiStaffPeriodSubtitle">16 Aug - 14 Sep 2026</span></span>
-                <span>&bull;</span>
-                <span><span style="color: #10b981; font-weight: 800;">13</span> Staff</span>
-              </div>
-            </div>
-
-            <!-- AGENTS.md View Chart Button Presentation Standard -->
-            <button type="button" class="view-chart-btn" onclick="openChartModal()" title="View Chart">
-              <i class="fa-solid fa-chart-pie"></i><span>View Chart</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 3. STAFF HOURS SUMMARY DATA TABLE HEADER -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
-          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-table-list" style="color: var(--purple-primary);"></i>
-            <span>Staff Hours Breakdown Table</span>
-          </div>
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
-            13 Records
-          </div>
-        </div>
-
-        <!-- 4. STAFF HOURS SUMMARY DATA TABLE GRID (TABLE SHOW DATA) -->
-        <div class="summary-table-card">
-          <div class="summary-table-hdr">
-            <div>Employee</div>
-            <div>Job Title / Department</div>
-            <div style="text-align: right;">Total Hours</div>
-          </div>
-          <div id="staffHoursSummaryTableContainer">
-            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
-              <div>
-                <div style="font-weight: 800;">Lee Soon Hock</div>
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004101</div>
-              </div>
-              <div style="color: var(--text-secondary);">ACCOUNT EXECUTIVE</div>
-              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
-            </div>
-            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
-              <div>
-                <div style="font-weight: 800;">Jinny Wat</div>
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004102</div>
-              </div>
-              <div style="color: var(--text-secondary);">BARTENDER</div>
-              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
-            </div>
-            <div class="summary-table-row" onclick="openListDetails('Normal OT Hours')">
-              <div>
-                <div style="font-weight: 800;">Raju Kumar</div>
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004103</div>
-              </div>
-              <div style="color: var(--text-secondary);">PRODUCTION OPERATOR</div>
-              <div style="text-align: right; color: #60a5fa; font-weight: 800;">168.50 Hrs</div>
-            </div>
-            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
-              <div>
-                <div style="font-weight: 800;">Tee Ang Lung</div>
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004104</div>
-              </div>
-              <div style="color: var(--text-secondary);">QUALITY CHECKER</div>
-              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
-            </div>
-            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
-              <div>
-                <div style="font-weight: 800;">Tay Siow Kung</div>
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004105</div>
-              </div>
-              <div style="color: var(--text-secondary);">OPERATION DIRECTOR</div>
-              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
-            </div>
-            <div class="summary-table-row" onclick="openListDetails('Normal Work Hours')">
-              <div>
-                <div style="font-weight: 800;">Tan Siow Soon</div>
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#004106</div>
-              </div>
-              <div style="color: var(--text-secondary);">CLEANING SPECIALIST</div>
-              <div style="text-align: right; color: #10b981; font-weight: 800;">168.00 Hrs</div>
-            </div>
-          </div>
-          <div class="summary-table-footer">
-            <div style="color: var(--purple-primary); font-weight: 900;">Total</div>
-            <div style="color: var(--text-muted); font-size: 11.5px;">13 Staff Summary</div>
-            <div style="text-align: right; color: var(--purple-primary); font-weight: 900; font-size: 13.5px;">2,184.50 Hrs</div>
-          </div>
-        </div>
-
+        <button type="button" class="claim-filter-bar staff-hours-filter-trigger" onclick="openFilterModal()" aria-haspopup="dialog" aria-controls="filterModal">
+          <span class="claim-filter-copy">
+            <span class="claim-eyebrow">Filter</span>
+            <span class="claim-filter-value" id="filterSummaryText">16/08/2026 – 14/09/2026</span>
+          </span>
+          <span class="claim-icon-button" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span>
+        </button>
 
         <!-- Section 1: Work & Attendance (3 Metrics) -->
         <div class="dashboard-section-header">
@@ -896,71 +775,64 @@
 
     <phone-bottom-nav active="apps"></phone-bottom-nav>
 
-    <!-- Bottom Sheet Filter Modal -->
-    <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)" style="align-items: flex-end; padding: 0;">
-      <div class="modal-content" onclick="event.stopPropagation()">
-        <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
-        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
-          <button type="button" onclick="resetFilterModal()" style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
-          </button>
+    <!-- Shared Claim History filter presentation. -->
+    <div class="claim-filter-sheet" id="filterModal" aria-hidden="true" onclick="closeFilterModal(event)">
+      <form class="claim-filter-panel" role="dialog" aria-modal="true" aria-labelledby="staffHoursFilterTitle" onsubmit="event.preventDefault(); applyFilterModal()">
+        <div class="claim-filter-handle" aria-hidden="true"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title" id="staffHoursFilterTitle">Filter</h2>
+          <div class="claim-filter-header-actions">
+            <button type="button" class="claim-filter-reset" onclick="resetFilterModal()"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button>
+            <button type="button" class="claim-filter-close" onclick="closeFilterModal(true)" aria-label="Close filter">&times;</button>
+          </div>
         </div>
-
-        <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;">
-          
-          <!-- 1. Search Keyword -->
-          <div class="modern-form-group">
-            <label class="modern-label">Search Keyword</label>
-            <input type="text" id="filterKeyword" class="modern-input" placeholder="Search name, emp ID, department...">
+        <div class="claim-filter-fields">
+          <div>
+            <label class="claim-filter-label" for="filterKeyword">Search keyword</label>
+            <input type="search" id="filterKeyword" class="claim-filter-select staff-hours-filter-input" placeholder="Search name, emp ID, department..." autocomplete="off">
           </div>
-
-          <!-- 2. Start Date & 3. End Date Grid -->
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-            <div class="modern-form-group">
-              <label class="modern-label">Start Date</label>
-              <input type="date" id="filterStartDate" class="modern-input" value="2026-08-16">
+          <div>
+            <label class="claim-filter-label" for="filterStartDate">Start date</label>
+            <input type="date" id="filterStartDate" class="claim-filter-select staff-hours-filter-input" value="2026-08-16" required onchange="validateStaffHoursDates()">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterEndDate">End date</label>
+            <input type="date" id="filterEndDate" class="claim-filter-select staff-hours-filter-input" value="2026-09-14" required onchange="validateStaffHoursDates()">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterMinHours">Minimum present hours</label>
+            <input type="number" id="filterMinHours" class="claim-filter-select staff-hours-filter-input" placeholder="e.g. 150" value="0" min="0" step="0.01">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterCompany">Company</label>
+            <div class="claim-filter-select-wrap">
+              <select id="filterCompany" class="claim-filter-select">
+                <option value="all">All Companies</option>
+                <option value="ACME Corporation">ACME Corporation</option>
+                <option value="Tech Global Ltd">Tech Global Ltd</option>
+                <option value="Apex Logistics">Apex Logistics</option>
+                <option value="Nexus Solutions">Nexus Solutions</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i>
             </div>
-            <div class="modern-form-group">
-              <label class="modern-label">End Date</label>
-              <input type="date" id="filterEndDate" class="modern-input" value="2026-09-14">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterCostCentre">Cost centre</label>
+            <div class="claim-filter-select-wrap">
+              <select id="filterCostCentre" class="claim-filter-select">
+                <option value="all">All Cost Centres</option>
+                <option value="CC-101 IT &amp; Tech">CC-101 IT &amp; Tech</option>
+                <option value="CC-102 Sales &amp; Marketing">CC-102 Sales &amp; Marketing</option>
+                <option value="CC-103 HR &amp; Admin">CC-103 HR &amp; Admin</option>
+                <option value="CC-104 Operations">CC-104 Operations</option>
+                <option value="CC-105 Finance">CC-105 Finance</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i>
             </div>
           </div>
-
-          <!-- 4. Minimum Present Hours -->
-          <div class="modern-form-group">
-            <label class="modern-label">Minimum Present Hours</label>
-            <input type="number" id="filterMinHours" class="modern-input" placeholder="e.g. 150" value="0" min="0">
-          </div>
-
-          <!-- 5. Company -->
-          <div class="modern-form-group">
-            <label class="modern-label">Company</label>
-            <select id="filterCompany" class="modern-input modern-select">
-              <option value="all">All Companies</option>
-              <option value="ACME Corporation">ACME Corporation</option>
-              <option value="Tech Global Ltd">Tech Global Ltd</option>
-              <option value="Apex Logistics">Apex Logistics</option>
-              <option value="Nexus Solutions">Nexus Solutions</option>
-            </select>
-          </div>
-
-          <!-- 6. Cost Centre -->
-          <div class="modern-form-group">
-            <label class="modern-label">Cost Centre</label>
-            <select id="filterCostCentre" class="modern-input modern-select">
-              <option value="all">All Cost Centres</option>
-              <option value="CC-101 IT & Tech">CC-101 IT & Tech</option>
-              <option value="CC-102 Sales & Marketing">CC-102 Sales & Marketing</option>
-              <option value="CC-103 HR & Admin">CC-103 HR & Admin</option>
-              <option value="CC-104 Operations">CC-104 Operations</option>
-              <option value="CC-105 Finance">CC-105 Finance</option>
-            </select>
-          </div>
-
-          <button type="button" onclick="applyFilterModal()" class="modern-btn-primary" style="width: 100%; margin-top: 10px;">Apply Filter</button>
         </div>
-      </div>
+        <button type="submit" class="claim-filter-apply">Apply Filter</button>
+      </form>
     </div>
 
     <!-- Attendance Details Pop-out Modal Window (Matches Individual Hours Summary Popout Modal) -->
@@ -1376,25 +1248,53 @@
     }
 
     // Modal Filter Functions
+    let staffHoursFilterOpener = null;
+
     function openFilterModal() {
       const overlay = document.getElementById('filterModal');
-      const content = overlay.querySelector('.modal-content');
-      overlay.style.display = 'flex';
-      setTimeout(() => {
-        overlay.style.opacity = '1';
-        content.style.transform = 'translateY(0)';
-      }, 10);
+      staffHoursFilterOpener = document.activeElement;
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+      overlay.querySelector('.claim-filter-fields').scrollTop = 0;
+      overlay.querySelector('.claim-filter-close').focus({ preventScroll: true });
     }
 
     function closeFilterModal(e) {
       if (e === true || (e && e.target.id === 'filterModal')) {
         const overlay = document.getElementById('filterModal');
-        const content = overlay.querySelector('.modal-content');
-        content.style.transform = 'translateY(100%)';
-        overlay.style.opacity = '0';
-        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        if (staffHoursFilterOpener && staffHoursFilterOpener.isConnected) {
+          staffHoursFilterOpener.focus({ preventScroll: true });
+        }
       }
     }
+
+    function validateStaffHoursDates() {
+      const start = document.getElementById('filterStartDate');
+      const end = document.getElementById('filterEndDate');
+      end.setCustomValidity(start.value && end.value && end.value < start.value
+        ? 'End date must be on or after start date.' : '');
+    }
+
+    document.getElementById('filterModal').addEventListener('keydown', function (event) {
+      if (!this.classList.contains('active')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeFilterModal(true);
+      } else if (event.key === 'Tab') {
+        const controls = this.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled)');
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
 
     function resetFilterModal() {
       document.getElementById('filterKeyword').value = '';
@@ -1446,6 +1346,8 @@
     }
 
     function applyFilterModal() {
+      validateStaffHoursDates();
+      if (!document.querySelector('#filterModal form').reportValidity()) return;
       const filtered = filterStaffData();
 
       // Update Filter Summary Header Text
@@ -1467,7 +1369,8 @@
         text += ` • ${extra.join(' • ')}`;
       }
 
-      document.getElementById('filterSummaryText').innerText = text;
+      const filterSummary = document.getElementById('filterSummaryText');
+      if (filterSummary) filterSummary.innerText = text;
 
       // Recalculate 12 metric totals for active staff selection
       let totPresentDays = 0;

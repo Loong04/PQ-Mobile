@@ -21,27 +21,42 @@ window.PAYROLL_CONFIG = {
     bankAccount: '•••• •••• 6821'
   },
 
-  // 1. INDIVIDUAL: QUICK OPTIONS (User: payslip, EA)
+  // 1. INDIVIDUAL: QUICK OPTIONS
   individualOptions: [
+    {
+      id: 'prior_pay',
+      name: 'Prior Pay Data',
+      desc: 'Previous payroll records',
+      icon: '<i class="fa-solid fa-calendar-clock"></i>',
+      link: 'options/payslip.html'
+    },
+    {
+      id: 'tax_relief',
+      name: 'Tax Relief',
+      desc: 'Personal tax relief records',
+      icon: '<i class="fa-solid fa-file-circle-check"></i>',
+      action: 'tax-relief'
+    },
+    {
+      id: 'deduction_request',
+      name: 'Deduction Request',
+      desc: 'Submit a payroll deduction',
+      icon: '<i class="fa-solid fa-file-circle-plus"></i>',
+      action: 'deduction-request'
+    },
     {
       id: 'payslip',
       name: 'Payslip',
-      desc: 'Monthly salary statements & breakdown',
+      desc: 'Monthly salary statements',
       icon: '<i class="fa-solid fa-file-invoice-dollar"></i>',
-      color: '#7c3aed',
-      bg: 'rgba(124, 58, 237, 0.14)',
-      link: 'options/payslip.html',
-      badge: 'Sep 2026'
+      link: 'options/payslip.html'
     },
     {
       id: 'ea',
-      name: 'EA Form',
-      desc: 'Annual tax statement (C.P.8A)',
-      icon: '<i class="fa-solid fa-file-lines"></i>',
-      color: '#0ea5e9',
-      bg: 'rgba(14, 165, 233, 0.14)',
-      link: 'options/ea-form.html',
-      badge: 'YA 2025'
+      name: 'EA',
+      desc: 'Annual tax statement',
+      icon: '<i class="fa-solid fa-file-contract"></i>',
+      link: 'options/ea-form.html'
     }
   ],
 

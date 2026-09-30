@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
+  <link rel="stylesheet" href="../../../css/claim-summary-details.css">
   <style>
     * {
       margin: 0;
@@ -70,7 +72,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: 18px;
-      padding: 12px 16px;
+      padding: 10px 16px;
       margin-bottom: 16px;
       display: flex;
       align-items: center;
@@ -123,38 +125,50 @@
     .status-pill.approved { background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
     .status-pill.rejected { background: rgba(239, 68, 68, 0.16); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 
-    /* Bottom Sheet Modal */
-    .modal-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      z-index: 100;
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.25s ease;
+    /* Claim summary cards: same visual hierarchy as claim review cards, without approval actions. */
+    .claim-summary-card {
+      padding: 0;
+      overflow: hidden;
+      border-radius: 20px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
-    .modal-overlay.active {
+    .claim-summary-card:hover { transform: translateY(-1px); border-color: rgba(167, 139, 250, 0.5); }
+    .claim-summary-card:active { transform: scale(0.99); }
+    .claim-summary-card-head {
+      padding: 15px 16px;
+      background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+      color: #fff;
       display: flex;
-      opacity: 1;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
-    .modal-sheet {
-      width: 100%;
-      max-height: 85%;
-      background: #0f172a; /* Solid dark background to prevent transparency bleed */
-      border-top-left-radius: 28px;
-      border-top-right-radius: 28px;
-      padding: 22px 18px 30px;
-      overflow-y: auto;
-      transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    .claim-summary-card-title { font-size: 14px; font-weight: 900; letter-spacing: -0.2px; }
+    .claim-summary-card-subtitle { font-size: 10.5px; font-weight: 700; opacity: 0.78; margin-top: 3px; }
+    .claim-summary-card-body { padding: 14px 16px 16px; }
+    .claim-summary-total {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 12px;
     }
-    .modal-overlay.active .modal-sheet {
-      transform: translateY(0);
+    .claim-summary-total-label { color: var(--text-muted); font-size: 11.5px; font-weight: 700; }
+    .claim-summary-total-value { color: var(--text-primary); font-size: 21px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -0.6px; }
+    .claim-summary-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .claim-summary-stat {
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+    }
+    .claim-summary-stat-label { display: block; color: var(--text-muted); font-size: 10px; font-weight: 700; margin-bottom: 4px; }
+    .claim-summary-stat-value { color: var(--text-primary); font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+
+    .summary-filter-period-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 10px;
     }
 
     /* Remove unused checkbox CSS */
@@ -216,76 +230,77 @@
 
     </div>
 
-    <!-- Filter Modal (Consistent Aesthetic) -->
-    <div class="modal-overlay" id="filterModalOverlay" onclick="if(event.target===this) closeFilterModalForce()">
-      <div class="modal-sheet" style="padding: 16px 20px 28px; max-height: 85vh; border: 1px solid var(--border-subtle); border-bottom: none; border-radius: 28px 28px 0 0; background: var(--bg-card); display: flex; flex-direction: column; box-sizing: border-box;">
-        <div style="width: 38px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 0 auto 16px; opacity: 0.7;"></div>
-        
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 14px;">
-          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
-          <button type="button" onclick="resetFilters()" style="background: transparent; border: 1px solid rgba(255,255,255,0.15); color: var(--text-primary); border-radius: 20px; font-size: 12px; font-weight: 800; padding: 5px 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
-          </button>
+    <!-- Claim Summary filter: uses the shared claim filter design. -->
+    <div class="claim-filter-sheet" id="filterModalOverlay" onclick="if(event.target===this) closeFilterModalForce()">
+      <div class="claim-filter-panel" onclick="event.stopPropagation()">
+        <div class="claim-filter-handle"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title">Filter</h2>
+          <div class="claim-filter-header-actions">
+            <button type="button" class="claim-filter-reset" onclick="resetFilters()"><i class="fa-solid fa-rotate-left"></i><span>Reset</span></button>
+            <button type="button" class="claim-filter-close" onclick="closeFilterModalForce()" aria-label="Close filter" title="Close filter">&times;</button>
+          </div>
         </div>
-
-        <div style="display: flex; flex-direction: column; overflow-y: auto; flex: 1; padding-right: 2px; gap: 14px;">
-          
+        <div class="claim-filter-fields">
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">PERIOD</label>
-            <div style="position: relative;">
-              <input type="month" id="periodInput" value="2026-05"
-                style="width: 100%; padding: 12px 14px; border-radius: 12px; background: transparent; border: 1px solid var(--border-subtle); color: #ffffff; font-size: 14px; font-weight: 700; outline: none; -webkit-appearance: none; appearance: none; box-sizing: border-box;">
-              <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;"></i>
+            <label class="claim-filter-label">Claim Period</label>
+            <div class="summary-filter-period-grid">
+              <div class="claim-filter-select-wrap">
+                <select id="periodYearSelect" class="claim-filter-select" aria-label="Claim period year">
+                  <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+                </select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+              </div>
+              <div class="claim-filter-select-wrap">
+                <select id="periodMonthSelect" class="claim-filter-select" aria-label="Claim period month">
+                  <option value="01">January</option><option value="02">February</option><option value="03">March</option><option value="04">April</option><option value="05" selected>May</option><option value="06">June</option><option value="07">July</option><option value="08">August</option><option value="09">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                </select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+              </div>
             </div>
           </div>
-
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">INCLUDE PENDING?</label>
-            <div style="position: relative;">
-              <select id="includePendingSelect" 
-                style="width: 100%; padding: 12px 14px; border-radius: 12px; background: transparent; border: 1px solid var(--border-subtle); color: #ffffff; font-size: 14px; font-weight: 700; outline: none; -webkit-appearance: none; appearance: none; cursor: pointer; box-sizing: border-box;">
-                <option value="yes" style="background: var(--bg-card); color: #fff;">Yes</option>
-                <option value="no" style="background: var(--bg-card); color: #fff;">No</option>
-              </select>
-              <i class="fa-solid fa-chevron-down" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-primary); font-size: 12px; pointer-events: none;"></i>
+            <label class="claim-filter-label">Include Pending</label>
+            <div class="claim-filter-select-wrap">
+              <select id="includePendingSelect" class="claim-filter-select" aria-label="Include pending claims"><option value="yes">Yes</option><option value="no">No</option></select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
             </div>
           </div>
-
-          <button type="button" onclick="applyFiltersAndClose()" style="width: 100%; margin-top: 6px; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 14.5px; font-weight: 800; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">
-            <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
-            <span>Apply Filter</span>
-          </button>
         </div>
+        <button type="button" class="claim-filter-apply" onclick="applyFiltersAndClose()">Apply Filter</button>
       </div>
     </div>
 
     <!-- Category Details Modal -->
-    <div class="modal-overlay" id="summaryDetailsModalOverlay" onclick="closeDetailsModal(event)">
-      <div class="modal-sheet" onclick="event.stopPropagation()" style="padding-bottom: 100px; border-top-left-radius: 32px; border-top-right-radius: 32px; background: var(--bg-phone);">
-        
-        <div class="sheet-handle" style="width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 0 auto 20px;"></div>
-        
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-          <h2 id="modalCategoryTitle" style="font-size: 20px; font-weight: 900; color: #ffffff; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Category Details</h2>
-          <button type="button" onclick="closeDetailsModalForce()" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+    <div class="modal-overlay" id="summaryDetailsModalOverlay" aria-hidden="true" onclick="if(event.target===this) closeDetailsModalForce()">
+      <div class="modal-sheet summary-details-sheet" role="dialog" aria-modal="true" aria-labelledby="modalCategoryTitle" onclick="event.stopPropagation()">
+        <div class="summary-details-top">
+          <div class="summary-details-handle" aria-hidden="true"></div>
+
+          <div class="summary-details-header">
+            <div class="summary-details-category">
+              <h2 id="modalCategoryTitle" class="summary-details-title">Category details</h2>
+            </div>
+            <button type="button" class="summary-details-close" onclick="closeDetailsModalForce()" aria-label="Close details" title="Close details">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="summary-details-metrics">
+            <div class="summary-details-metric">
+              <div class="summary-details-metric-label">Current Amount</div>
+              <div id="modalCurrentAmt" class="summary-details-metric-value">RM 0.00</div>
+            </div>
+            <div class="summary-details-metric accent">
+              <div class="summary-details-metric-label">YTD Total</div>
+              <div id="modalYtdAmt" class="summary-details-metric-value">RM 0.00</div>
+            </div>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
-          <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 16px;">
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Current Amount</div>
-            <div id="modalCurrentAmt" style="font-size: 18px; font-weight: 900; color: #ffffff;">RM 0.00</div>
-          </div>
-          <div style="background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 16px;">
-            <div style="font-size: 11.5px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">YTD Total</div>
-            <div id="modalYtdAmt" style="font-size: 18px; font-weight: 900; color: #ffffff;">RM 0.00</div>
-          </div>
+        <div class="summary-details-records-header">
+          <h3 class="summary-details-section-title">Itemized records</h3>
+          <span id="modalRecordsCount" class="summary-details-record-count"></span>
         </div>
-
-        <div style="font-size: 14px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px;">Itemized Records</div>
-        <div id="modalRecordsListContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
-
+        <div id="modalRecordsListContainer" class="summary-details-records" tabindex="0" aria-label="Itemized claim records"></div>
       </div>
     </div>
 
@@ -357,9 +372,18 @@
 
     let currentPeriod = '2026-05';
 
+    function syncSummaryPeriodControls() {
+      const [year, month] = currentPeriod.split('-');
+      const yearSelect = document.getElementById('periodYearSelect');
+      const monthSelect = document.getElementById('periodMonthSelect');
+      if (yearSelect) yearSelect.value = year || '2026';
+      if (monthSelect) monthSelect.value = month || '05';
+    }
+
     function openFilterModal() {
       const modal = document.getElementById('filterModalOverlay');
       if (modal) {
+        syncSummaryPeriodControls();
         modal.style.display = 'flex';
         // Small delay to allow display to apply before fading in
         setTimeout(() => modal.classList.add('active'), 10);
@@ -376,14 +400,16 @@
 
     function resetFilters() {
       currentPeriod = '2026-05';
-      document.getElementById('periodInput').value = currentPeriod;
+      syncSummaryPeriodControls();
       document.getElementById('includePendingSelect').value = 'yes';
       applyFilters();
       closeFilterModalForce();
     }
 
     function applyFiltersAndClose() {
-      currentPeriod = document.getElementById('periodInput').value || '2026-05';
+      const year = document.getElementById('periodYearSelect').value || '2026';
+      const month = document.getElementById('periodMonthSelect').value || '05';
+      currentPeriod = `${year}-${month}`;
       applyFilters();
       closeFilterModalForce();
     }
@@ -435,7 +461,7 @@
           totalAmt += catCurrentAmount;
 
           const card = document.createElement('div');
-          card.className = 'history-card-item';
+          card.className = 'history-card-item claim-summary-card';
           card.onclick = () => openDetailsModal(cat.id, targetStatus);
 
           let variance = 0;
@@ -457,30 +483,23 @@
           let varianceDisplay = variance === 0 ? '-' : `${varianceSign}${Math.abs(variance).toFixed(1)}%`;
 
           card.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-              <div class="history-time-row">${cat.icon} ${cat.title}</div>
-              <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 13px;"></i>
+            <div class="claim-summary-card-head">
+              <div style="min-width: 0;">
+                <div class="claim-summary-card-title">${cat.title}</div>
+                <div class="claim-summary-card-subtitle">${validRecords.length} record${validRecords.length === 1 ? '' : 's'} in ${displayPeriod}</div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 13px; opacity: 0.9;"></i>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Current Amount</span>
-                <span style="font-size: 14px; font-weight: 800; color: var(--text-primary);">RM ${catCurrentAmount.toFixed(2)}</span>
+            <div class="claim-summary-card-body">
+              <div class="claim-summary-total">
+                <span class="claim-summary-total-label">Current Amount</span>
+                <span class="claim-summary-total-value">RM ${catCurrentAmount.toFixed(2)}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Last Amount</span>
-                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">RM ${cat.lastAmount.toFixed(2)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Variance</span>
-                <span style="font-size: 13px; font-weight: 800; color: ${varianceColor};">${varianceDisplay}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">YTD Amount</span>
-                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">RM ${cat.ytdAmount.toFixed(2)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Average Amount</span>
-                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">RM ${cat.averageAmount.toFixed(2)}</span>
+              <div class="claim-summary-stat-grid">
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">Last Amount</span><span class="claim-summary-stat-value">RM ${cat.lastAmount.toFixed(2)}</span></div>
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">Variance %</span><span class="claim-summary-stat-value" style="color: ${varianceColor};">${varianceDisplay}</span></div>
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">YTD Amount</span><span class="claim-summary-stat-value">RM ${cat.ytdAmount.toFixed(2)}</span></div>
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">Average Amount</span><span class="claim-summary-stat-value">RM ${cat.averageAmount.toFixed(2)}</span></div>
               </div>
             </div>
           `;
@@ -501,6 +520,8 @@
       document.getElementById('totalAmountText').textContent = `RM ${totalAmt.toFixed(2)}`;
     }
 
+    let summaryDetailsOpener = null;
+
     function openDetailsModal(catId, targetStatus) {
       const cat = SUMMARY_CATEGORIES.find(c => c.id === catId);
       if (!cat) return;
@@ -515,54 +536,65 @@
 
       const modalAmt = recordsToDisplay.reduce((sum, r) => sum + r.amount, 0);
 
-      document.getElementById('modalCategoryTitle').textContent = `${cat.icon} ${cat.title}`;
+      document.getElementById('modalCategoryTitle').textContent = cat.title;
       document.getElementById('modalCurrentAmt').textContent = `RM ${modalAmt.toFixed(2)}`;
       document.getElementById('modalYtdAmt').textContent = `RM ${cat.ytdAmount.toFixed(2)}`;
+      document.getElementById('modalRecordsCount').textContent = `${recordsToDisplay.length} record${recordsToDisplay.length === 1 ? '' : 's'}`;
       
       const recordsContainer = document.getElementById('modalRecordsListContainer');
       recordsContainer.innerHTML = '';
       
       recordsToDisplay.forEach(r => {
-        const recItem = document.createElement('div');
-        recItem.className = 'history-card-item';
-        recItem.style.marginBottom = '0';
-        recItem.style.cursor = 'default';
+        const recItem = document.createElement('article');
+        recItem.className = 'claim-summary-record summary-colored-record';
         
         recItem.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 12px;">
-            <div>
-              <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">${r.empName}</div>
-              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#${r.empNo}</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
-                <i class="fa-solid fa-location-dot"></i> ${r.merchant}
-              </div>
-            </div>
-            <div style="text-align: right;">
-              <span class="status-pill ${r.status}" style="display: inline-block; margin-bottom: 8px;">${r.statusText}</span>
-              <div style="font-size: 15px; font-weight: 900; color: var(--purple-primary);">RM ${r.amount.toFixed(2)}</div>
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Period</span>
-              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${r.period}</span>
-            </div>
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Date to Date</span>
-              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">${r.dateRange}</span>
-            </div>
-          </div>
+          <dl class="summary-record-fields">
+            <div class="summary-record-field summary-record-date"><dt>Claim Date</dt><dd>${r.dateRange}</dd></div>
+            <div class="summary-record-field summary-record-period"><dt>Period</dt><dd>${r.period}</dd></div>
+            <div class="summary-record-field summary-record-expense"><dt>Expense</dt><dd>${r.expense}</dd></div>
+            <div class="summary-record-field summary-record-amount"><dt>Amount</dt><dd>RM ${r.amount.toFixed(2)}</dd></div>
+          </dl>
         `;
         recordsContainer.appendChild(recItem);
       });
+      if (!recordsToDisplay.length) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.className = 'summary-details-empty';
+        emptyMessage.textContent = 'No records match the selected filters.';
+        recordsContainer.appendChild(emptyMessage);
+      }
 
-      document.getElementById('summaryDetailsModalOverlay').classList.add('active');
+      summaryDetailsOpener = document.activeElement;
+      recordsContainer.scrollTop = 0;
+      const modal = document.getElementById('summaryDetailsModalOverlay');
+      modal.setAttribute('aria-hidden', 'false');
+      modal.classList.add('active');
+      modal.querySelector('.summary-details-close').focus({ preventScroll: true });
     }
 
     function closeDetailsModalForce() {
-      document.getElementById('summaryDetailsModalOverlay').classList.remove('active');
+      const modal = document.getElementById('summaryDetailsModalOverlay');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      if (summaryDetailsOpener?.isConnected) summaryDetailsOpener.focus({ preventScroll: true });
     }
+
+    document.addEventListener('keydown', event => {
+      const modal = document.getElementById('summaryDetailsModalOverlay');
+      if (!modal.classList.contains('active')) return;
+      if (event.key === 'Escape') closeDetailsModalForce();
+      if (event.key !== 'Tab') return;
+      const first = modal.querySelector('.summary-details-close');
+      const last = document.getElementById('modalRecordsListContainer');
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus({ preventScroll: true });
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus({ preventScroll: true });
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', applyFilters);
   </script>

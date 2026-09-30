@@ -92,3 +92,8 @@ To ensure unified user experience across all modules (`me.html`, `change-request
 
 
 4. **Font Awesome Standard**: All future icons must use the Font Awesome styling and classes (e.g., <i class="fa-solid fa-trash-can"></i>) instead of inline SVGs or emojis, to ensure consistency across the application. The Font Awesome 6.4 CDN is required in the <head> of all pages.
+
+## 6. History Detail Attachment Standard
+
+- Attachments and uploaded files belong to the same information table as their related detail data.
+- Put `Attachments` and `Upload Files` as the final two rows of that table, after all normal information rows. Do not create a separate card, block, or second table for them.
