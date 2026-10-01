@@ -27,22 +27,22 @@ window.PAYROLL_CONFIG = {
       id: 'prior_pay',
       name: 'Prior Pay Data',
       desc: 'Previous payroll records',
-      icon: '<i class="fa-solid fa-calendar-clock"></i>',
-      link: 'options/payslip.html'
+      icon: '<i class="fa-solid fa-clock-rotate-left"></i>',
+      link: 'options/prior-pay-data.html'
     },
     {
       id: 'tax_relief',
       name: 'Tax Relief',
       desc: 'Personal tax relief records',
       icon: '<i class="fa-solid fa-file-circle-check"></i>',
-      action: 'tax-relief'
+      link: 'options/tax-relief-request.html'
     },
     {
       id: 'deduction_request',
       name: 'Deduction Request',
       desc: 'Submit a payroll deduction',
       icon: '<i class="fa-solid fa-file-circle-plus"></i>',
-      action: 'deduction-request'
+      link: 'options/deduction-request.html'
     },
     {
       id: 'payslip',
@@ -57,6 +57,13 @@ window.PAYROLL_CONFIG = {
       desc: 'Annual tax statement',
       icon: '<i class="fa-solid fa-file-contract"></i>',
       link: 'options/ea-form.html'
+    },
+    {
+      id: 'history',
+      name: 'History',
+      desc: 'Payroll activity records',
+      icon: '<i class="fa-solid fa-rectangle-list"></i>',
+      link: 'options/history.html'
     }
   ],
 
@@ -76,6 +83,50 @@ window.PAYROLL_CONFIG = {
 
   // 3. INDIVIDUAL: PAYSLIP DATA BY MONTH
   payslips: {
+    '2025-12': {
+      monthKey: '2025-12',
+      monthLabel: 'December 2025',
+      shortLabel: 'Dec 2025',
+      payDate: '31 Dec 2025',
+      status: 'Paid',
+      company: 'PEOPLE QUEST SDN BHD',
+      payrollCycle: 'MONTH END',
+      bankBranch: 'CIMB',
+      accountNumber: '10447856855254',
+      grossPay: 10618.00,
+      totalDeductions: 1722.85,
+      netPay: 8895.15,
+      earnings: [
+        { name: 'BASIC PAY', amount: 9400.00 },
+        { name: 'CAR PETROL ALLOWANCE', amount: 600.00 },
+        { name: 'COLA', amount: 300.00 },
+        { name: 'HOME GOING ALLOWANCE', amount: 60.00 },
+        { name: 'INCONVENIENCE', amount: 28.00 },
+        { name: 'SENIORITY ALLOWANCE', amount: 30.00 },
+        { name: 'TOLL ALLOWANCE', amount: 200.00 }
+      ],
+      deductions: [
+        { name: 'HOUSING LOAN', amount: 500.00 },
+        { name: 'EMPLOYEE EPF', amount: 1166.00 },
+        { name: 'EMPLOYEE SOCSO', amount: 24.75 },
+        { name: 'EMPLOYEE TAX', amount: 32.10 }
+      ],
+      employerStatutory: [
+        { name: 'EMPLOYER EPF', amount: 1272.00 },
+        { name: 'EMPLOYER SOCSO', amount: 86.65 }
+      ],
+      statutoryBases: [
+        { name: 'EPF BASE', amount: 10558.00 },
+        { name: 'HRD BASE', amount: 9730.00 },
+        { name: 'SIP BASE', amount: 9958.00 },
+        { name: 'SOCSO BASE', amount: 9958.00 },
+        { name: 'CP39 BASE', amount: 10590.00 }
+      ],
+      otherInformation: [
+        { name: 'WORK DAYS', value: '23.00' }
+      ],
+      pdfFile: 'Payslip_Dec_2025_Farhan_Binti_Rahmat.pdf'
+    },
     '2026-09': {
       monthKey: '2026-09',
       monthLabel: 'September 2026',
@@ -228,6 +279,7 @@ window.PAYROLL_CONFIG = {
   eaForms: {
     '2025': {
       year: '2025',
+      taxRef: 'T01 (TAX)',
       formType: 'C.P.8A [Pin. 2025]',
       serialNo: 'EA-2025-004128',
       employer: {
@@ -281,6 +333,7 @@ window.PAYROLL_CONFIG = {
     },
     '2024': {
       year: '2024',
+      taxRef: 'T01 (TAX)',
       formType: 'C.P.8A [Pin. 2024]',
       serialNo: 'EA-2024-003891',
       employer: {
@@ -331,6 +384,69 @@ window.PAYROLL_CONFIG = {
       generatedDate: '28 Feb 2025',
       officerName: 'Amanda Loo (Head of Payroll)',
       officerPhone: '+603-2788 9000'
+    }
+  },
+
+  teamPayroll: {
+    monthKey: '2026-09',
+    monthLabel: 'September 2026',
+    pendingApprovalCount: 6,
+    summaryGroups: [
+      {
+        key: 'payments',
+        title: 'Payments',
+        icon: 'fa-wallet',
+        items: [
+          { name: 'Basic Pay', amount: 392136.02 },
+          { name: 'Hourly Pay', amount: 141128.00 }
+        ]
+      },
+      {
+        key: 'deductions',
+        title: 'Employee Deductions',
+        icon: 'fa-file-invoice-dollar',
+        items: [
+          { name: 'Employee EPF', amount: 34142.00 },
+          { name: 'Employee Tax', amount: 39771.25 }
+        ]
+      },
+      {
+        key: 'employer',
+        title: 'Employer Contributions',
+        icon: 'fa-building-columns',
+        items: [
+          { name: 'Employer EPF', amount: 37245.00 },
+          { name: 'Employer SOCSO', amount: 3362.00 }
+        ]
+      }
+    ],
+    breakdown: {
+      payments: [
+        { name: 'Basic Pay', amount: 392136.02 },
+        { name: 'Hourly Pay', amount: 141128.00 },
+        { name: 'Attendance Allowance', amount: 16400.00 },
+        { name: 'Car Petrol Allowance', amount: 13600.00 },
+        { name: 'House Allowance', amount: 3231.00 },
+        { name: 'Attendance Incentive', amount: 3160.00 },
+        { name: 'COLA', amount: 3000.00 },
+        { name: 'Meal Allowance', amount: 1951.67 },
+        { name: 'Allowance', amount: 200.00 },
+        { name: 'Inconvenience Allowance', amount: 28.00 },
+        { name: 'Overtime Payment', amount: 0.00 }
+      ],
+      deductions: [
+        { name: 'Employee EPF', amount: 34142.00 },
+        { name: 'Employee Tax', amount: 39771.25 },
+        { name: 'Employee SOCSO', amount: 7284.40 },
+        { name: 'Employee EIS', amount: 1456.88 },
+        { name: 'Zakat', amount: 0.00 }
+      ],
+      employer: [
+        { name: 'Employer EPF', amount: 37245.00 },
+        { name: 'Employer SOCSO', amount: 3362.00 },
+        { name: 'Employer EIS', amount: 1681.00 },
+        { name: 'HRD Levy', amount: 3921.36 }
+      ]
     }
   },
 
@@ -507,3 +623,62 @@ window.PAYROLL_CONFIG = {
     ]
   }
 };
+
+window.PAYROLL_DATA = window.PAYROLL_CONFIG;
+// Compatibility view-models used by the redesigned payroll documents.
+Object.values(window.PAYROLL_DATA.payslips || {}).forEach(payslip => {
+  payslip.periodLabel = payslip.periodLabel || payslip.monthLabel;
+  payslip.totalEarnings = payslip.totalEarnings ?? payslip.grossPay;
+  payslip.employerContributions = payslip.employerContributions || payslip.employerStatutory || [];
+  payslip.statutoryBase = payslip.statutoryBase || payslip.statutoryBases || [];
+  payslip.otherInfo = payslip.otherInfo || payslip.otherInformation || [];
+  [payslip.earnings, payslip.deductions, payslip.employerContributions, payslip.statutoryBase, payslip.otherInfo]
+    .filter(Boolean)
+    .forEach(rows => rows.forEach(row => { row.description = row.description || row.name; }));
+});
+
+Object.values(window.PAYROLL_DATA.eaForms || {}).forEach(form => {
+  const employee = form.partA || {};
+  const income = form.partB || {};
+  const pension = form.partC || {};
+  const deductions = form.partD || {};
+  const contributions = form.partE || {};
+  const exempt = form.partF || {};
+  form.employee = form.employee || {
+    name: employee.name,
+    employeeId: employee.empNo,
+    position: employee.designation,
+    nric: employee.nric,
+    employmentPeriod: `01 Jan – 31 Dec ${form.year}`
+  };
+  form.income = form.income || [
+    { description: 'Gross Salary', amount: income.grossSalary },
+    { description: 'Bonus', amount: income.bonus },
+    { description: 'Fees, Commission & Perquisites', amount: income.feesPerquisites },
+    { description: 'Gratuity', amount: income.gratuity },
+    { description: 'Benefits-in-Kind', amount: income.bik },
+    { description: 'Value of Living Accommodation', amount: income.vola },
+    { description: 'Refund from Unapproved Fund', amount: income.refundFromUnapprovedFund },
+    { description: 'Compensation for Loss of Employment', amount: income.compensationForLossOfEmployment }
+  ];
+  form.totalIncome = form.totalIncome ?? income.totalGross;
+  form.pensionAnnuities = form.pensionAnnuities || [
+    { description: 'Pension', amount: pension.pension },
+    { description: 'Annuities', amount: pension.annuities }
+  ];
+  form.deductions = form.deductions || [
+    { description: 'Monthly Tax Deduction (PCB)', amount: deductions.monthlyTaxDeductionPCB },
+    { description: 'CP38 Deduction', amount: deductions.cp38Deduction },
+    { description: 'Zakat Paid via Payroll', amount: deductions.zakatPaidViaPayroll }
+  ];
+  form.totalDeductions = form.totalDeductions ?? deductions.totalTaxDeductions;
+  form.contributions = form.contributions || [
+    { description: 'Employee EPF Contribution', amount: contributions.epfTotalContribution },
+    { description: 'Employee SOCSO Contribution', amount: contributions.socsoTotalContribution },
+    { description: 'Employee EIS Contribution', amount: contributions.eisTotalContribution }
+  ];
+  form.exemptAllowances = form.exemptAllowances || [
+    { description: 'Tax-Exempt Allowances / Benefits', amount: exempt.exemptAllowances }
+  ];
+  form.certification = form.certification || { officer: form.officerName, date: form.generatedDate };
+});

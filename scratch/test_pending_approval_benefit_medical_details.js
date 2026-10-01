@@ -1,0 +1,133 @@
+const puppeteer = require('puppeteer');
+const path = require('path');
+
+const EXPECTED_BENEFIT_LABELS = [
+  'Document Reference', 'Document Status', 'Employee', 'Entitlement Year',
+  'Benefit Type', 'Claim Period', 'Start Date', 'End Date', 'Purpose',
+  'Receipt #', 'Other Ref.', 'Currency', 'Claim Amount', 'Claim Quantity',
+  'Remarks'
+];
+
+const EXPECTED_MEDICAL_SECTIONS = {
+  General: [
+    'Document Reference', 'Status', 'Employee', 'Claim Type', 'Benefit Year',
+    'Benefit Type', 'Entitled Balance', 'Usable Balance', 'Claim Period',
+    'Claim Date', 'Submit Date', 'Receipt Date', 'Receipt No.', 'Amount / Hour', 'Remark'
+  ],
+  Medical: [
+    'Patient Type', 'Patient Name', 'Treatment Type', 'Clinic Location',
+    'Clinic / Hospital', 'Sickness Type'
+  ],
+  Details: ['Receipt No.', 'Expenses', 'Amount', 'Currency', 'Forex Rate', 'Local Amount']
+};
+
+async function openDetails(page, tabName, itemId) {
+  await page.evaluate((name) => {
+    const tab = [...document.querySelectorAll('.filter-pill')]
+      .find(button => button.textContent.trim() === name);
+    if (!tab) throw new Error(`Missing tab: ${name}`);
+    tab.click();
+  }, tabName);
+
+  await page.evaluate((id) => window.ClaimsEngine.triggerClaimViewDetails(id), itemId);
+  await page.waitForSelector('#claimDetailsModalOverlay[style*="display: flex"]');
+}
+
+async function readSections(page) {
+  return page.evaluate(() => {
+    const body = document.getElementById('claimDetailsDynamicBody');
+    return {
+      text: body.innerText,
+      sections: [...body.querySelectorAll(':scope > section[aria-label]')].map(section => ({
+        ariaLabel: section.getAttribute('aria-label'),
+        title: section.querySelector(':scope > h4')?.textContent.trim() || '',
+        rows: [...section.querySelectorAll('tr')].map(row => ({
+          label: row.cells[0]?.textContent.trim() || '',
+          value: row.cells[1]?.innerText.trim() || ''
+        }))
+      }))
+    };
+  });
+}
+
+function valuesByLabel(section) {
+  return Object.fromEntries(section.rows.map(row => [row.label, row.value]));
+}
+
+async function run() {
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+
+  try {
+    const page = await browser.newPage();
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    await page.setViewport({ width: 450, height: 950 });
+
+    const url = `file:///${path.resolve(__dirname, '../modules/claims/options/pending-approval.html').replace(/\\/g, '/')}`;
+    await page.goto(url, { waitUntil: 'networkidle0' });
+    await page.waitForSelector('#teamApprovalsQueue pending-approval-card');
+
+    await openDetails(page, 'Benefit', '1');
+    const benefit = await readSections(page);
+    await page.evaluate(() => window.ClaimsEngine.closeClaimDetailsModal());
+
+    await openDetails(page, 'Medical', '5');
+    const medical = await readSections(page);
+
+    const benefitSection = benefit.sections[0];
+    const benefitValues = benefitSection ? valuesByLabel(benefitSection) : {};
+    const benefitPassed = benefit.sections.length === 1
+      && benefitSection.title === ''
+      && JSON.stringify(benefitSection.rows.map(row => row.label)) === JSON.stringify(EXPECTED_BENEFIT_LABELS)
+      && /Farhan binti rahmat\s+#EBB12/.test(benefitValues.Employee || '')
+      && benefitValues['Document Status'] === 'Submitted'
+      && benefitValues['Entitlement Year'] === '2019'
+      && benefitValues['Benefit Type'] === 'PERSONAL ALLOWANCE'
+      && benefitValues['Claim Period'] === '201902'
+      && benefitValues['Start Date'] === '4 Sep 2019'
+      && benefitValues['End Date'] === '4 Sep 2019'
+      && benefitValues['Claim Amount'] === 'RM -5.00'
+      && !/undefined/i.test(benefit.text);
+
+    const medicalTitles = medical.sections.map(section => section.title);
+    const medicalLabels = Object.fromEntries(
+      medical.sections.map(section => [section.title, section.rows.map(row => row.label)])
+    );
+    const medicalGeneralValues = valuesByLabel(
+      medical.sections.find(section => section.title === 'General') || { rows: [] }
+    );
+    const medicalPassed = JSON.stringify(medicalTitles) === JSON.stringify(['General', 'Medical', 'Details'])
+      && Object.entries(EXPECTED_MEDICAL_SECTIONS).every(([title, labels]) => (
+        JSON.stringify(medicalLabels[title]) === JSON.stringify(labels)
+      ))
+      && /Jessica Wong\s+#003891/.test(medicalGeneralValues.Employee || '')
+      && medicalGeneralValues['Claim Type'] === 'MEDICAL CLAIM'
+      && medicalGeneralValues['Benefit Type'] === 'General Consultation'
+      && medicalGeneralValues['Claim Date'] === '07 Sep 2026'
+      && medicalGeneralValues['Submit Date'] === '08 Sep 2026'
+      && medicalGeneralValues.Status === 'Submitted'
+      && medicalGeneralValues['Amount / Hour'] === 'RM 135.00 / 1.5 hrs';
+
+    const passed = benefitPassed && medicalPassed && pageErrors.length === 0;
+    console.log(JSON.stringify({
+      benefit: { sectionTitles: benefit.sections.map(section => section.title), rows: benefitSection?.rows || [] },
+      medical: { sectionTitles: medicalTitles, labels: medicalLabels },
+      pageErrors,
+      benefitPassed,
+      medicalPassed,
+      passed
+    }, null, 2));
+
+    if (!passed) process.exitCode = 1;
+  } finally {
+    await browser.close();
+  }
+}
+
+run().catch(error => {
+  console.error(error);
+  process.exit(1);
+});

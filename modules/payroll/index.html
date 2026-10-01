@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/app.css">
+  <link rel="stylesheet" href="../../css/claim-forms.css">
   <style>
     * {
       margin: 0;
@@ -33,6 +34,15 @@
       color: var(--text-primary);
       padding: 20px 0;
     }
+
+    .payroll-header-row {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) 36px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .payroll-header-spacer { width: 36px; height: 36px; }
 
     .phone-container {
       width: 100%;
@@ -475,62 +485,72 @@
     .request-metric.approved span::before { background: #10b981; }
     .request-metric.rejected span::before { background: #ef4444; }
 
+    .payroll-quick-options-heading {
+      margin: 20px 0 12px;
+      padding: 0 4px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     #scopeIndividualSection .payroll-options-grid {
-      gap: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
       margin: 0;
     }
 
     #scopeIndividualSection .payroll-option-card {
-      width: 100%;
-      min-height: 82px;
-      padding: 13px;
-      flex-direction: row;
+      flex: 0 0 calc((100% - 24px) / 3);
+      min-width: 0;
+      padding: 14px 8px;
+      border-radius: 20px;
+      border-color: var(--border-card);
+      flex-direction: column;
       align-items: center;
-      gap: 11px;
       color: inherit;
-      text-align: left;
+      text-align: center;
       text-decoration: none;
       font: inherit;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-card);
     }
 
-    #scopeIndividualSection .payroll-option-card:last-child:nth-child(odd) {
-      grid-column: 1 / -1;
+    #scopeIndividualSection .payroll-option-card:hover {
+      border-color: var(--purple-primary);
+    }
+
+    #scopeIndividualSection .payroll-option-card:focus-visible {
+      outline: 2px solid var(--purple-primary);
+      outline-offset: 3px;
     }
 
     #scopeIndividualSection .opt-icon-wrap {
-      width: 42px;
-      height: 42px;
-      border-radius: 13px;
-      background: rgba(124, 58, 237, 0.12);
-      border: 1px solid rgba(124, 58, 237, 0.2);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: rgba(124, 58, 237, 0.15);
       color: var(--purple-primary);
-      flex: 0 0 42px;
-      font-size: 17px;
-    }
-
-    #scopeIndividualSection .opt-card-info {
-      min-width: 0;
-      padding-right: 12px;
+      flex: 0 0 40px;
+      font-size: 18px;
     }
 
     #scopeIndividualSection .opt-card-title {
+      margin: 0;
       font-size: 13px;
-      line-height: 1.25;
+      font-weight: 800;
+      line-height: 1.2;
+      text-wrap: balance;
     }
 
-    #scopeIndividualSection .opt-card-desc {
-      margin-top: 3px;
-      font-size: 10.5px;
-    }
-
-    #scopeIndividualSection .opt-card-arrow {
-      right: 12px;
-      bottom: auto;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-    }
+    #scopeIndividualSection [data-payroll-option="tax_relief"] .opt-icon-wrap { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    #scopeIndividualSection [data-payroll-option="deduction_request"] .opt-icon-wrap { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    #scopeIndividualSection [data-payroll-option="payslip"] .opt-icon-wrap { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    #scopeIndividualSection [data-payroll-option="ea"] .opt-icon-wrap { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+    #scopeIndividualSection [data-payroll-option="history"] .opt-icon-wrap { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
 
     .payroll-info-card {
       overflow: hidden;
@@ -618,10 +638,364 @@
       font-weight: 600;
     }
 
-    @media (max-width: 370px) {
-      #scopeIndividualSection .payroll-options-grid { grid-template-columns: 1fr; }
-      #scopeIndividualSection .payroll-option-card:last-child:nth-child(odd) { grid-column: auto; }
+    .team-dashboard-row {
+      width: 100%;
+      min-height: 76px;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: inherit;
+      text-decoration: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
+
+    .team-dashboard-row:hover { border-color: rgba(124, 58, 237, 0.45); }
+    .team-dashboard-row:active { transform: scale(0.98); }
+
+    .team-row-icon,
+    .team-summary-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      color: var(--purple-primary);
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .team-row-icon {
+      width: 43px;
+      height: 43px;
+      border-radius: 13px;
+      font-size: 17px;
+    }
+
+    .team-row-copy { flex: 1; min-width: 0; }
+
+    .team-row-title {
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 850;
+    }
+
+    .team-row-desc {
+      margin-top: 3px;
+      color: var(--text-muted);
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+
+    .team-action-count {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      color: #ffffff;
+      background: #f59e0b;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .team-period-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      margin-bottom: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .team-period-value {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .team-period-value i { color: var(--purple-primary); }
+
+    .team-period-filter {
+      min-height: 36px;
+      padding: 8px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border-radius: 11px;
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      background: var(--purple-subtle);
+      color: var(--purple-text);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .team-dashboard-search { position: relative; margin-bottom: 12px; }
+    .team-dashboard-search i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .team-summary-group + .team-summary-group {
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .team-summary-group-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 15px 5px;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .team-summary-group-title i {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: var(--purple-subtle);
+      color: var(--purple-primary);
+      font-size: 11px;
+    }
+
+    .team-summary-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 38px;
+      padding: 7px 15px 7px 47px;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .team-summary-group .team-summary-item:last-child { padding-bottom: 13px; }
+    .team-summary-item + .team-summary-item { padding-top: 4px; }
+    .team-payroll-empty { padding: 28px 16px; text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+
+    .team-summary-item strong,
+    .team-breakdown-amount {
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .team-breakdown-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: hidden;
+      margin-bottom: 12px;
+      padding: 3px;
+      border-radius: 15px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .team-breakdown-tab {
+      min-height: 38px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .team-breakdown-tab.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+    }
+
+    .team-payroll-search {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px 0 39px;
+      border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 650;
+      outline: none;
+    }
+
+    .team-payroll-search:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+    }
+
+    .team-zero-toggle-card {
+      margin: 12px 0 6px;
+      padding: 11px 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .team-switch-input { position: absolute; opacity: 0; pointer-events: none; }
+
+    .team-switch-track {
+      width: 42px;
+      height: 24px;
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      border-radius: 999px;
+      background: var(--text-muted);
+      transition: background 0.2s ease;
+    }
+
+    .team-switch-track::after {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+      content: '';
+      transition: transform 0.2s ease;
+    }
+
+    .team-switch-input:checked + .team-switch-track { background: var(--purple-primary); }
+    .team-switch-input:checked + .team-switch-track::after { transform: translateX(18px); }
+
+    .team-breakdown-table {
+      overflow: hidden;
+      margin-top: 10px;
+      border-radius: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+    }
+
+    .team-breakdown-table-head,
+    .team-breakdown-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 28px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .team-breakdown-table-head {
+      padding: 11px 13px;
+      color: var(--text-muted);
+      background: var(--bg-input);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+    }
+
+    .team-breakdown-row {
+      min-height: 49px;
+      padding: 10px 13px;
+    }
+
+    .team-breakdown-row + .team-breakdown-row { border-top: 1px solid var(--border-subtle); }
+
+    .team-breakdown-name {
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .team-breakdown-amount { font-size: 11.5px; text-align: right; }
+
+    .team-trend-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.1);
+      color: var(--purple-primary);
+      cursor: pointer;
+    }
+
+    .payroll-breakdown-sheet {
+      display: flex;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.24s ease;
+    }
+
+    .payroll-breakdown-sheet.active {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .team-payroll-breakdown-panel {
+      max-height: 88%;
+      padding: 18px 16px 28px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .payroll-breakdown-sheet.active .team-payroll-breakdown-panel {
+      transform: translateY(0);
+    }
+
+    .team-breakdown-sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .team-breakdown-sheet-header h2 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .payroll-breakdown-sheet,
+      .team-payroll-breakdown-panel { transition: none; }
+    }
+
   </style>
 </head>
 <body>
@@ -634,7 +1008,7 @@
     <div class="cal-top-header" id="dynamic-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
 
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+      <div class="payroll-header-row">
         <button class="me-back-btn" id="headerBackButton" onclick="window.PayrollEngine.handleGlobalBack()" aria-label="Back" title="Back"
           style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
           <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
@@ -645,10 +1019,7 @@
           <div style="font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.85); margin-top: 2px;" id="headerSubtitleText">Individual</div>
         </div>
         
-        <button type="button" onclick="window.PayrollEngine.toggleSalaryPrivacy()" title="Toggle Salary Privacy"
-          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
-          <i class="fa-solid fa-eye privacy-toggle-icon" style="font-size: 14px;"></i>
-        </button>
+        <span class="payroll-header-spacer" aria-hidden="true"></span>
       </div>
     </div>
 
@@ -696,10 +1067,7 @@
           </div>
         </section>
 
-        <div class="payroll-section-heading">
-          <h2>Quick Options</h2>
-          <span>Self-service</span>
-        </div>
+        <div class="payroll-quick-options-heading">Quick Options</div>
         <div class="payroll-options-grid" id="individualPayrollOptionsGrid"></div>
 
         <div class="payroll-section-heading">
@@ -853,6 +1221,48 @@
            ======================================================== -->
       <div id="scopeTeamSection" style="display: none;">
 
+        <div class="payroll-section-heading" style="margin-top: 2px;">
+          <h2>Action Required</h2>
+          <span>All outstanding requests</span>
+        </div>
+        <a id="teamPendingApprovalCard" class="team-dashboard-row" href="options/tax-relief.html">
+          <span class="team-row-icon"><i class="fa-solid fa-file-circle-exclamation" aria-hidden="true"></i></span>
+          <span class="team-row-copy">
+            <span class="team-row-title">Pending Approval</span>
+            <span class="team-row-desc" style="display:block;">Tax relief requests</span>
+          </span>
+          <span class="team-action-count" id="teamPendingApprovalCount">6</span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true" style="color:var(--text-muted); font-size:11px;"></i>
+        </a>
+
+        <div class="payroll-section-heading">
+          <h2>Quick Actions</h2>
+        </div>
+        <a id="teamTaxReliefQuickAction" class="team-dashboard-row" href="options/tax-relief.html">
+          <span class="team-row-icon"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i></span>
+          <span class="team-row-copy"><span class="team-row-title">Tax Relief</span></span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true" style="color:var(--text-muted); font-size:11px;"></i>
+        </a>
+
+        <div class="payroll-section-heading">
+          <h2>Payroll Summary</h2>
+        </div>
+        <div class="team-period-card" aria-label="Team payroll period">
+          <div class="team-period-value"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span class="team-payroll-month-label">September 2026</span></div>
+          <button type="button" id="teamPayrollDashboardFilter" class="team-period-filter" aria-haspopup="dialog" aria-controls="teamPayrollFilterSheet" onclick="window.PayrollEngine.openTeamPayrollFilter(this)"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Filter</span></button>
+        </div>
+        <div class="team-dashboard-search">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input type="search" id="teamPayrollDashboardSearch" class="team-payroll-search" placeholder="Search components" aria-label="Search payroll summary components" oninput="window.PayrollEngine.filterTeamPayrollSummary(this.value)">
+        </div>
+        <section class="payroll-info-card" id="teamPayrollSummaryCard" aria-label="Team payroll summary">
+          <div id="teamPayrollSummaryItems" aria-live="polite"></div>
+          <button type="button" class="payroll-info-link" id="teamViewFullBreakdown" onclick="window.PayrollEngine.showTeamPayrollBreakdown()">
+            View Full Breakdown <i class="fa-solid fa-chevron-right" aria-hidden="true" style="float:right;"></i>
+          </button>
+        </section>
+
+        <template id="scopeTeamLegacyTemplate">
         <!-- Card 1: Team Tax Relief Overview -->
         <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(13, 148, 136, 0.08) 100%); border-color: rgba(16, 185, 129, 0.28);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -923,9 +1333,73 @@
 
         <!-- Queue List Container for Staff Tax Relief Submissions -->
         <div id="teamTaxReliefQueue"></div>
+        </template>
 
       </div>
 
+    </div>
+
+    <div id="teamPayrollBreakdownSection" class="claim-filter-sheet payroll-breakdown-sheet" aria-hidden="true" onclick="if(event.target === this) window.PayrollEngine.hideTeamPayrollBreakdown()">
+      <section class="claim-filter-panel team-payroll-breakdown-panel" role="dialog" aria-modal="true" aria-labelledby="teamPayrollBreakdownTitle">
+        <div class="claim-filter-handle" aria-hidden="true"></div>
+        <div class="team-breakdown-sheet-header">
+          <h2 id="teamPayrollBreakdownTitle">Payroll Breakdown</h2>
+          <button type="button" id="teamPayrollBreakdownClose" class="claim-filter-close" aria-label="Close payroll breakdown" onclick="window.PayrollEngine.hideTeamPayrollBreakdown()">&times;</button>
+        </div>
+        <div class="team-period-card" aria-label="Payroll breakdown period">
+          <div class="team-period-value"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span class="team-payroll-month-label">September 2026</span></div>
+          <button type="button" class="team-period-filter" aria-haspopup="dialog" aria-controls="teamPayrollFilterSheet" onclick="window.PayrollEngine.openTeamPayrollFilter(this)"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Filter</span></button>
+        </div>
+
+        <div class="team-breakdown-tabs" role="tablist" aria-label="Payroll component categories">
+          <button type="button" class="team-breakdown-tab active" data-team-payroll-tab="payments" onclick="window.PayrollEngine.switchTeamPayrollBreakdownTab('payments')">Payments</button>
+          <button type="button" class="team-breakdown-tab" data-team-payroll-tab="deductions" onclick="window.PayrollEngine.switchTeamPayrollBreakdownTab('deductions')">Deductions</button>
+          <button type="button" class="team-breakdown-tab" data-team-payroll-tab="employer" onclick="window.PayrollEngine.switchTeamPayrollBreakdownTab('employer')">Employer</button>
+        </div>
+
+        <div style="position:relative;">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:12px;"></i>
+          <input type="search" id="teamPayrollSearch" class="team-payroll-search" placeholder="Search components" oninput="window.PayrollEngine.filterTeamPayrollComponents(this.value)">
+        </div>
+
+        <label class="team-zero-toggle-card" for="teamShowZeroAmounts">
+          <span>Show Zero Amounts</span>
+          <span style="position:relative; display:inline-flex;">
+            <input type="checkbox" class="team-switch-input" id="teamShowZeroAmounts" onchange="window.PayrollEngine.toggleTeamZeroAmounts(this.checked)">
+            <span class="team-switch-track" aria-hidden="true"></span>
+          </span>
+        </label>
+        <div style="margin:0 3px 10px; color:var(--text-muted); font-size:10.5px; font-weight:650;">Tap a component to view its trend</div>
+
+        <section class="team-breakdown-table" aria-label="Payroll components">
+          <div class="team-breakdown-table-head"><span>Payroll Component</span><span>Amount (RM)</span><span></span></div>
+          <div id="teamBreakdownRows"></div>
+        </section>
+      </section>
+    </div>
+
+    <div id="teamPayrollFilterSheet" class="claim-filter-sheet" aria-hidden="true" onclick="if(event.target === this) window.PayrollEngine.closeTeamPayrollFilter()">
+      <div class="claim-filter-panel" role="dialog" aria-modal="true" aria-labelledby="teamPayrollFilterTitle">
+        <div class="claim-filter-handle" aria-hidden="true"></div>
+        <div class="claim-filter-header">
+          <h2 id="teamPayrollFilterTitle" class="claim-filter-title">Filter</h2>
+          <div class="claim-filter-header-actions">
+            <button type="button" id="teamPayrollFilterReset" class="claim-filter-reset" onclick="window.PayrollEngine.resetTeamPayrollFilter()"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Reset</button>
+            <button type="button" id="teamPayrollFilterClose" class="claim-filter-close" aria-label="Close filter" onclick="window.PayrollEngine.closeTeamPayrollFilter()">&times;</button>
+          </div>
+        </div>
+        <div class="claim-filter-fields">
+          <div>
+            <label for="teamPayrollFilterYear" class="claim-filter-label">Year</label>
+            <div class="claim-filter-select-wrap"><select id="teamPayrollFilterYear" class="claim-filter-select"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div>
+          </div>
+          <div>
+            <label for="teamPayrollFilterMonth" class="claim-filter-label">Month</label>
+            <div class="claim-filter-select-wrap"><select id="teamPayrollFilterMonth" class="claim-filter-select"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div>
+          </div>
+        </div>
+        <button type="button" id="teamPayrollFilterApply" class="claim-filter-apply" onclick="window.PayrollEngine.applyTeamPayrollFilter()">Apply Filter</button>
+      </div>
     </div>
 
     <!-- 3. PROOF RECEIPT MODAL -->

@@ -124,6 +124,137 @@
       color: #047857;
     }
 
+    .leave-highlight-details-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow: hidden;
+      border-radius: 44px;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .leave-highlight-details-dialog {
+      width: 100%;
+      max-width: 370px;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sheet);
+      transform: scale(0.85);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .leave-highlight-details-header,
+    .leave-highlight-detail-date {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+    }
+
+    .leave-highlight-details-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding: 16px 18px 18px;
+      background: var(--bg-card);
+      scrollbar-width: none;
+    }
+
+    .leave-highlight-detail-record {
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .leave-highlight-detail-date {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(216, 180, 254, 0.25);
+      color: #ffffff;
+    }
+
+    .leave-highlight-detail-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 8px;
+      padding: 12px 14px;
+    }
+
+    .leave-highlight-detail-field {
+      min-width: 0;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+    }
+
+    .leave-highlight-detail-label {
+      margin-bottom: 4px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .leave-highlight-detail-description {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .leave-highlight-detail-days {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--text-primary);
+      line-height: 1.4;
+      letter-spacing: -0.3px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .leave-highlight-total-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border: 1px solid var(--purple-border);
+      border-radius: 8px;
+      background: var(--purple-subtle);
+      color: var(--purple-primary);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    html[data-theme="light"] .leave-highlight-details-overlay {
+      background: rgba(15, 23, 42, 0.44);
+    }
+
+    html[data-theme="light"] .leave-highlight-details-list {
+      background: var(--bg-input);
+    }
+
+    html[data-theme="light"] .leave-highlight-detail-record {
+      background: var(--bg-card);
+    }
+
     :root {
       --primary: #7c3aed;
       --primary-dark: #6d28d9;
@@ -1697,6 +1828,20 @@
       color: #fca5a5;
     }
     .action-btn-reject:active { transform: scale(0.95); }
+  [data-leave-trend-bar] {
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  [data-leave-trend-bar]:hover,
+  [data-leave-trend-bar]:focus-visible {
+    background: var(--purple-subtle) !important;
+  }
+
+  [data-leave-trend-bar]:focus-visible {
+    outline: 1px solid var(--purple-border);
+    outline-offset: 1px;
+  }
+
 </style>
 </head>
 
@@ -4273,9 +4418,10 @@
               <div class="summary-value" style="color: var(--purple-primary); font-size: 18px; font-weight: 800;">127</div>
             </div>
             <div class="action-icons" style="display: flex; gap: 12px;">
-              <div class="action-icon-btn chart" title="View Chart" onclick="showLeaveSection('viewLeaveHighlightChart')" style="width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); cursor: pointer; color: #f59e0b;">
-                <i class="fa-solid fa-chart-pie" style="font-size: 16px;"></i>
-              </div>
+              <button type="button" class="view-chart-btn" title="View Chart" onclick="showLeaveSection('viewLeaveHighlightChart')" style="padding: 7px 13px; border-radius: 12px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
+                <i class="fa-solid fa-chart-pie" style="font-size: 13px;"></i>
+                <span>View Chart</span>
+              </button>
             </div>
           </div>
           <div style="height: 1px; background: var(--border-subtle); width: 100%;"></div>
@@ -4292,14 +4438,6 @@
                 <i class="fa-solid fa-file-excel" style="font-size: 16px;"></i>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Data List Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Employee Leave Highlights Table</div>
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-input); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-            Total: 4 records
           </div>
         </div>
 
@@ -4329,8 +4467,8 @@
                   <td style="padding: 13px 16px; white-space: nowrap;">
                     <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
                   </td>
-                  <td style="padding: 13px 16px; text-align: right; white-space: nowrap;">
-                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">2.00</span>
+                  <td onclick="openLeaveHighlightDetailsModal('#004177', 'AHMAD RAFY BIN ZULKIPLE')" style="padding: 13px 16px; text-align: right; white-space: nowrap; cursor: pointer;">
+                    <span class="leave-highlight-total-pill">2.00</span>
                   </td>
                 </tr>
 
@@ -4345,8 +4483,8 @@
                   <td style="padding: 13px 16px; white-space: nowrap;">
                     <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">NORTHERN REGION BRANCH</span>
                   </td>
-                  <td style="padding: 13px 16px; text-align: right; white-space: nowrap;">
-                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">3.00</span>
+                  <td onclick="openLeaveHighlightDetailsModal('#TEST69', 'TEST69 Test')" style="padding: 13px 16px; text-align: right; white-space: nowrap; cursor: pointer;">
+                    <span class="leave-highlight-total-pill">3.00</span>
                   </td>
                 </tr>
 
@@ -4361,8 +4499,8 @@
                   <td style="padding: 13px 16px; white-space: nowrap;">
                     <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">SOUTHERN REGION BRANCH</span>
                   </td>
-                  <td style="padding: 13px 16px; text-align: right; white-space: nowrap;">
-                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">1.00</span>
+                  <td onclick="openLeaveHighlightDetailsModal('#007216', 'HAILIZAM BIN MOHAMED IKHSAN')" style="padding: 13px 16px; text-align: right; white-space: nowrap; cursor: pointer;">
+                    <span class="leave-highlight-total-pill">1.00</span>
                   </td>
                 </tr>
 
@@ -4377,8 +4515,8 @@
                   <td style="padding: 13px 16px; white-space: nowrap;">
                     <span style="background: var(--bg-input); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid var(--border-subtle);">HEADQUARTERS (HQ)</span>
                   </td>
-                  <td style="padding: 13px 16px; text-align: right; white-space: nowrap;">
-                    <span style="background: rgba(245, 158, 11, 0.14); color: #d97706; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid rgba(245, 158, 11, 0.25);">5.00</span>
+                  <td onclick="openLeaveHighlightDetailsModal('#006611', 'POR SUAT BEE')" style="padding: 13px 16px; text-align: right; white-space: nowrap; cursor: pointer;">
+                    <span class="leave-highlight-total-pill">5.00</span>
                   </td>
                 </tr>
               </tbody>
@@ -4417,10 +4555,6 @@
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--text-muted);">
-            <i class="fa-solid fa-calendar-days"></i>
-            <span id="highlightChartSubTitle">13 Aug – 12 Sep 2026</span>
-          </div>
         </div>
 
         <!-- Card 2: Donut Chart Card -->
@@ -4496,34 +4630,34 @@
         </div>
 
         <!-- Card 2: Total Leave Days Card -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 18px 20px; margin-bottom: 16px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div onclick="openLeaveHighlightAnalysis('Oct 2025 - Sep 2026', '894.00')" role="button" tabindex="0" title="View leave days analysis" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 20px 22px; margin-bottom: 16px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm); cursor: pointer;">
           <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: linear-gradient(180deg, #7c3aed 0%, #a855f7 100%);"></div>
 
-          <div>
-            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+          <div style="padding-left: 6px;">
+            <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
               Total leave days
             </div>
             <div id="trendSubPeriodText" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
               Selected 12 months
             </div>
           </div>
-          <div id="trendTotalDays" style="font-size: 32px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">
+          <div id="trendTotalDays" style="font-size: 24px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">
             894.00
           </div>
         </div>
 
         <!-- Card 3: Monthly Leave Days Breakdown -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 22px 18px 18px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 22px 20px 20px; margin-bottom: 24px; box-shadow: var(--shadow-card);">
           <!-- Header -->
-          <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">
+          <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">
             Monthly leave days
           </div>
-          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 18px;">
+          <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 20px;">
             October 2025 – September 2026
           </div>
 
           <!-- Table Column Header -->
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px 10px; font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px 12px; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 12px;">
             <div>MONTH</div>
             <div>DAYS</div>
           </div>
@@ -4542,7 +4676,7 @@
             <div style="display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 1;">
               
               <!-- 1. Oct 2025 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Oct 2025', '84.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Oct 2025</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 84%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4551,7 +4685,7 @@
               </div>
 
               <!-- 2. Nov 2025 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Nov 2025', '67.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Nov 2025</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 67%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4560,7 +4694,7 @@
               </div>
 
               <!-- 3. Dec 2025 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Dec 2025', '73.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Dec 2025</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 73%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4569,7 +4703,7 @@
               </div>
 
               <!-- 4. Jan 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Jan 2026', '64.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Jan 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 64%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4578,7 +4712,7 @@
               </div>
 
               <!-- 5. Feb 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Feb 2026', '72.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Feb 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 72%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4587,7 +4721,7 @@
               </div>
 
               <!-- 6. Mar 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Mar 2026', '58.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Mar 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 58%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4596,7 +4730,7 @@
               </div>
 
               <!-- 7. Apr 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Apr 2026', '86.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Apr 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 86%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4605,7 +4739,7 @@
               </div>
 
               <!-- 8. May 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('May 2026', '69.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">May 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 69%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4614,7 +4748,7 @@
               </div>
 
               <!-- 9. Jun 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Jun 2026', '92.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Jun 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 92%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4623,7 +4757,7 @@
               </div>
 
               <!-- 10. Jul 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Jul 2026', '75.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Jul 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 75%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4632,7 +4766,7 @@
               </div>
 
               <!-- 11. Aug 2026 -->
-              <div style="display: flex; align-items: center; min-height: 28px;">
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Aug 2026', '83.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
                 <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Aug 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
                   <div style="width: 83%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
@@ -4640,16 +4774,13 @@
                 <div style="width: 60px; text-align: right; font-size: 13.5px; font-weight: 800; color: var(--text-primary); flex-shrink: 0;">83.00</div>
               </div>
 
-              <!-- 12. Sep 2026 (Highlighted MTD Row) -->
-              <div style="display: flex; align-items: center; min-height: 38px; background: rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 4px 8px; margin: 0 -8px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                <div style="width: 80px; flex-shrink: 0;">
-                  <div style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Sep 2026</div>
-                  <div style="font-size: 9.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">MTD</div>
-                </div>
+              <!-- 12. Sep 2026 -->
+              <div data-leave-trend-bar onclick="openLeaveHighlightAnalysis('Sep 2026', '71.00')" role="button" tabindex="0" style="display: flex; align-items: center; min-height: 28px; cursor: pointer; border-radius: 10px; padding: 2px 4px; margin: 0 -4px;">
+                <div style="width: 80px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">Sep 2026</div>
                 <div style="flex: 1; padding-right: 12px; display: flex; align-items: center;">
-                  <div style="width: 71%; height: 16px; background: linear-gradient(90deg, #c084fc, #d8b4fe); border-radius: 8px; box-shadow: 0 0 10px rgba(192, 132, 252, 0.4);"></div>
+                  <div style="width: 71%; height: 16px; background: linear-gradient(90deg, #8b5cf6, #a78bfa); border-radius: 8px;"></div>
                 </div>
-                <div style="width: 60px; text-align: right; font-size: 14px; font-weight: 900; color: var(--text-primary); flex-shrink: 0;">71.00</div>
+                <div style="width: 60px; text-align: right; font-size: 13.5px; font-weight: 800; color: var(--text-primary); flex-shrink: 0;">71.00</div>
               </div>
 
             </div>
@@ -4674,6 +4805,56 @@
 
       </div>
       
+      <!-- ==========================================
+           VIEW 5D: LEAVE HIGHLIGHT FINAL ANALYSIS
+           ========================================== -->
+      <div id="viewLeaveHighlightAnalysis" style="display: none; margin-top: 14px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow-card);">
+          <label for="leaveAnalysisMetricSelect" style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">BREAKDOWN BY</label>
+          <div style="position: relative;">
+            <select id="leaveAnalysisMetricSelect" onchange="changeLeaveAnalysisMetric(this.value)" style="width: 100%; padding: 13px 40px 13px 16px; background: var(--bg-input); color: var(--text-primary); border: 1.5px solid var(--purple-border); border-radius: 16px; font-size: 14.5px; font-weight: 800; outline: none; cursor: pointer; appearance: none;">
+              <option value="branch" selected>Branch</option>
+              <option value="department">Department</option>
+              <option value="section">Section</option>
+              <option value="grade">Grade</option>
+              <option value="supervisor">Supervisor</option>
+              <option value="leave_type">Leave Type</option>
+              <option value="day_of_week">Day of Week</option>
+              <option value="years_of_service">Years of Services</option>
+              <option value="age">Age</option>
+              <option value="gender">Gender</option>
+              <option value="nationality">Nationality</option>
+              <option value="race">Race</option>
+            </select>
+            <div aria-hidden="true" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 12px; font-weight: 900;">&#9662;</div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 24px 20px 28px; margin-bottom: 14px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+          <div id="leaveAnalysisTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; text-align: center;">Leave days by Branch</div>
+          <div id="leaveAnalysisSubtitle" style="font-size: 13.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 18px; text-align: center;">As At Oct 2025</div>
+          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 210px; height: 210px; margin: 8px 0 20px;">
+            <svg id="leaveAnalysisDonutSvg" width="210" height="210" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 18px rgba(0,0,0,0.12));">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="24"></circle>
+              <g id="leaveAnalysisDonutCircles"></g>
+            </svg>
+            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div id="leaveAnalysisCenterTotal" style="font-size: 22px; font-weight: 900; color: var(--text-primary); line-height: 1.1; font-variant-numeric: tabular-nums;">84.00</div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 3px;">Total leave days</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 18px 18px; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 70px 80px; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+            <div id="leaveAnalysisColumnHeaderKey">BRANCH</div>
+            <div style="text-align: right;">DAYS</div>
+            <div style="text-align: right;">% OF TOTAL</div>
+          </div>
+          <div id="leaveAnalysisLegendList" style="width: 100%; display: flex; flex-direction: column; gap: 16px; padding-top: 16px;"></div>
+        </div>
+      </div>
+
       <!-- ==========================================
            LEAVE HIGHLIGHT TREND MODAL (BOTTOM SHEET)
            ========================================== -->
@@ -4749,7 +4930,22 @@
         </div>
       </div>
 
-            
+      <div id="leaveHighlightDetailsModal" class="leave-highlight-details-overlay" onclick="closeLeaveHighlightDetailsModal(event)">
+        <div class="leave-highlight-details-dialog" onclick="event.stopPropagation()">
+          <div class="leave-highlight-details-header" style="padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);">
+            <div>
+              <div id="leaveHighlightModalEmpName" style="font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1.25;"></div>
+              <div id="leaveHighlightModalEmpId" style="font-family: monospace, sans-serif; color: rgba(255, 255, 255, 0.76); font-size: 11.5px; font-weight: 700; margin-top: 3px;"></div>
+              <div style="font-size: 10.5px; color: rgba(255, 255, 255, 0.75); font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px;">Leave Highlight Details</div>
+            </div>
+            <button type="button" onclick="closeLeaveHighlightDetailsModal()" aria-label="Close leave highlight details" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+              <i class="fa-solid fa-xmark" style="font-size: 15px;"></i>
+            </button>
+          </div>
+          <div id="leaveHighlightDetailsList" class="leave-highlight-details-list"></div>
+        </div>
+      </div>
+
       <div id="viewStaffEntitlement" style="display: none; margin-top: 14px;">
 
         <!-- Current Filter Bar (Matching User Spec Image 1:1) -->
@@ -8153,6 +8349,7 @@
         'viewLeaveHighlight',
         'viewLeaveHighlightChart',
         'viewLeaveHighlightTrend',
+        'viewLeaveHighlightAnalysis',
         'viewStaffEntitlement',
         'viewTeamApprovals'
       ];
@@ -8215,11 +8412,20 @@
 
         if (sectionId === 'viewLeaveHighlightTrend') {
           if (backBtn) backBtn.setAttribute('onclick', "showLeaveSection('viewLeaveHighlightChart')");
-          if (headerTitle) headerTitle.innerText = 'Leave Days Trend';
+          if (headerTitle) headerTitle.innerText = 'Leave Days Trend Analysis';
           const mainEl = document.querySelector('.main-content');
           if (mainEl) mainEl.scrollTop = 0;
           return;
         }
+
+        if (sectionId === 'viewLeaveHighlightAnalysis') {
+          if (backBtn) backBtn.setAttribute('onclick', "showLeaveSection('viewLeaveHighlightTrend')");
+          if (headerTitle) headerTitle.innerText = 'Leave Days Analysis';
+          const mainEl = document.querySelector('.main-content');
+          if (mainEl) mainEl.scrollTop = 0;
+          return;
+        }
+
 
         if (sectionId === 'viewApplyLeaveForm') {
           if (backBtn) backBtn.setAttribute('onclick', "showLeaveSection('viewApplyLeave')");
@@ -8234,7 +8440,7 @@
             else if (sectionId === 'viewMyPersonalCalendar') { headerTitle.innerText = 'My Leave Calendar'; renderMyPersonalCalendar(); }
             else if (sectionId === 'viewMyLeaveHistory') { updateHistoryHeaderTitle(); renderHistoryCards(); }
             else if (sectionId === 'viewLeaveCalendar') { headerTitle.innerText = 'Team Calendar'; renderTeamCalendar(); }
-            else if (sectionId === 'viewLeaveHighlight') headerTitle.innerText = 'Team Highlights';
+            else if (sectionId === 'viewLeaveHighlight') headerTitle.innerText = 'Leave Highlights';
             else if (sectionId === 'viewLeaveHighlightChart') headerTitle.innerText = 'Leave Days Analysis';
             else if (sectionId === 'viewStaffEntitlement') headerTitle.innerText = 'Staff Leave Entitlement';
             else if (sectionId === 'viewTeamApprovals') { headerTitle.innerText = 'Team Approvals'; if (typeof switchApprovalCategory === 'function') switchApprovalCategory(currentApprovalCategory || 'leave'); else if (typeof updateBatchApprovalCount === 'function') updateBatchApprovalCount(); }
@@ -11884,6 +12090,87 @@
   </div>
 
 <script>
+    const leaveHighlightDetailsData = {
+      '#004177': {
+        name: 'AHMAD RAFY BIN ZULKIPLE',
+        items: [
+          { date: '02 Sep 2026', description: 'Annual Leave', days: '1.00' },
+          { date: '18 Sep 2026', description: 'Medical Leave', days: '1.00' }
+        ]
+      },
+      '#TEST69': {
+        name: 'TEST69 Test',
+        items: [
+          { date: '04 Sep 2026', description: 'Annual Leave', days: '2.00' },
+          { date: '21 Sep 2026', description: 'Replacement Leave', days: '1.00' }
+        ]
+      },
+      '#007216': {
+        name: 'HAILIZAM BIN MOHAMED IKHSAN',
+        items: [
+          { date: '11 Sep 2026', description: 'Medical Leave', days: '1.00' }
+        ]
+      },
+      '#006611': {
+        name: 'POR SUAT BEE',
+        items: [
+          { date: '01 Sep 2026', description: 'Annual Leave', days: '2.00' },
+          { date: '14 Sep 2026', description: 'Annual Leave', days: '2.00' },
+          { date: '28 Sep 2026', description: 'Replacement Leave', days: '1.00' }
+        ]
+      }
+    };
+
+    function openLeaveHighlightDetailsModal(empNo, empName) {
+      const modal = document.getElementById('leaveHighlightDetailsModal');
+      if (!modal) return;
+
+      const normalizedEmpNo = empNo.startsWith('#') ? empNo : '#' + empNo;
+      const data = leaveHighlightDetailsData[normalizedEmpNo] || {
+        name: empName,
+        items: [
+          { date: '12 Sep 2026', description: 'Annual Leave', days: '1.00' }
+        ]
+      };
+
+      document.getElementById('leaveHighlightModalEmpName').textContent = data.name || empName;
+      document.getElementById('leaveHighlightModalEmpId').textContent = normalizedEmpNo;
+      document.getElementById('leaveHighlightDetailsList').innerHTML = data.items.map(item => `
+        <article class="leave-highlight-detail-record">
+          <div class="leave-highlight-detail-date">
+            <span style="font-family: monospace, sans-serif; font-size: 12.5px; font-weight: 800; color: #ffffff;">${item.date}</span>
+          </div>
+          <div class="leave-highlight-detail-body">
+            <div class="leave-highlight-detail-field">
+              <div class="leave-highlight-detail-label">Description</div>
+              <div class="leave-highlight-detail-description">${item.description}</div>
+            </div>
+            <div class="leave-highlight-detail-field">
+              <div class="leave-highlight-detail-label">Days</div>
+              <div class="leave-highlight-detail-days">${item.days}</div>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.leave-highlight-details-dialog').style.transform = 'scale(1)';
+      }, 10);
+    }
+
+    function closeLeaveHighlightDetailsModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      const modal = document.getElementById('leaveHighlightDetailsModal');
+      if (!modal) return;
+      modal.style.opacity = '0';
+      modal.querySelector('.leave-highlight-details-dialog').style.transform = 'scale(0.85)';
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 260);
+    }
+
     function toggleHighlightTrendModal() {
       const overlay = document.getElementById('highlightTrendModalOverlay');
       if (!overlay) return;
@@ -12397,6 +12684,7 @@
     };
 
     let isHighlightViewAllExpanded = false;
+    let leaveAnalysisSelection = { period: 'Oct 2025', total: 84.00 };
 
     function toggleHighlightViewAll() {
       isHighlightViewAllExpanded = !isHighlightViewAllExpanded;
@@ -12536,6 +12824,65 @@
       if (typeof showToast === 'function') {
         const data = highlightChartDataset[value];
         showToast(`📊 Metric: ${data ? data.title : value}`);
+      }
+    }
+
+    function openLeaveHighlightAnalysis(periodLabel, totalDays) {
+      leaveAnalysisSelection = {
+        period: periodLabel,
+        total: Number.parseFloat(totalDays) || 0
+      };
+      const metricSelect = document.getElementById('leaveAnalysisMetricSelect');
+      if (metricSelect) metricSelect.value = 'branch';
+      renderLeaveHighlightAnalysis('branch');
+      showLeaveSection('viewLeaveHighlightAnalysis');
+    }
+
+    function changeLeaveAnalysisMetric(metricKey) {
+      renderLeaveHighlightAnalysis(metricKey);
+    }
+
+    function renderLeaveHighlightAnalysis(metricKey = 'branch') {
+      const data = highlightChartDataset[metricKey] || highlightChartDataset.branch;
+      const items = data.items || [];
+      const total = leaveAnalysisSelection.total;
+      const title = document.getElementById('leaveAnalysisTitle');
+      const subtitle = document.getElementById('leaveAnalysisSubtitle');
+      const centerTotal = document.getElementById('leaveAnalysisCenterTotal');
+      const columnHeader = document.getElementById('leaveAnalysisColumnHeaderKey');
+
+      if (title) title.innerText = `Leave days by ${data.title}`;
+      if (subtitle) subtitle.innerText = `As At ${leaveAnalysisSelection.period}`;
+      if (centerTotal) centerTotal.innerText = total.toFixed(2);
+      if (columnHeader) columnHeader.innerText = data.title.toUpperCase();
+
+      const svgGroup = document.getElementById('leaveAnalysisDonutCircles');
+      if (svgGroup) {
+        const circumference = 439.82;
+        let offset = 0;
+        svgGroup.innerHTML = items.map(item => {
+          const segment = (item.pct / 100) * circumference;
+          const dashOffset = -offset;
+          offset += segment;
+          return `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${item.color}" stroke-width="24" stroke-dasharray="${segment.toFixed(2)} ${(circumference - segment).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+        }).join('');
+      }
+
+      const list = document.getElementById('leaveAnalysisLegendList');
+      if (list) {
+        list.innerHTML = items.map(item => {
+          const days = (total * item.pct / 100).toFixed(2);
+          return `
+            <div style="display: grid; grid-template-columns: 1fr 70px 80px; gap: 10px; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; padding-right: 8px;">
+                <span style="width: 10px; height: 10px; border-radius: 3px; background: ${item.color}; flex-shrink: 0;"></span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right; font-variant-numeric: tabular-nums;">${days}</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: right; font-variant-numeric: tabular-nums;">${item.pct.toFixed(2)}%</div>
+            </div>
+          `;
+        }).join('');
       }
     }
 

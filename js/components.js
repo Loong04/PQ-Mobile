@@ -1323,7 +1323,6 @@ class PendingApprovalCard extends HTMLElement {
     const showPeriod = !isBenefitOrMedical && Boolean(period);
 
     const category = this.getAttribute('category') || 'General';
-    const receipt = this.getAttribute('receipt') || '';
     const rawAmount = this.getAttribute('amount') || 'RM 0.00';
     const amount = rawAmount.startsWith('RM') ? rawAmount : `RM ${parseFloat(rawAmount || 0).toFixed(2)}`;
     const hours = this.getAttribute('hours') || '';
@@ -1365,7 +1364,7 @@ class PendingApprovalCard extends HTMLElement {
       </div>
 
       <!-- Period & Amount / Hour Structured Box -->
-      <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; margin-bottom: ${receipt ? '10px' : '14px'}; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
+      <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
         ${showPeriod ? `
         <div style="display: flex; justify-content: space-between; font-size: 11.5px; align-items: center;">
           <span style="color: var(--text-muted); font-weight: 700;">Period:</span>
@@ -1416,13 +1415,6 @@ class PendingApprovalCard extends HTMLElement {
 
           <!-- Dynamic Middle Content (Benefit/Medical Grid vs Other Claims Box) -->
           ${middleContentHtml}
-
-          <!-- Receipt Reference (if present) -->
-          ${receipt ? `
-          <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); margin-bottom: 14px; padding: 0 2px;">
-            <i class="fa-solid fa-receipt" style="color: #10b981;"></i>
-            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Receipt: <strong style="color: var(--text-primary); font-weight: 600;">${receipt}</strong></span>
-          </div>` : ''}
 
           <!-- Bottom Action Buttons Grid (Approve, Resubmit, Reject) matching Attendance -->
           <div class="pending-action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">

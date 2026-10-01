@@ -13,6 +13,16 @@
   let activeMonthKey = '2026-09';
   let activeEAYear = '2025';
   let currentReliefFilter = 'all';
+  let activeTeamPayrollTab = 'payments';
+  let teamPayrollSearchTerm = '';
+  let teamPayrollSummarySearchTerm = '';
+  let activeTeamPayrollMonth = '';
+  let teamPayrollFilterOpener = null;
+  let teamPayrollFilterBackground = [];
+  let teamShowZeroAmounts = false;
+  let teamPayrollBreakdownOpener = null;
+  let teamPayrollBreakdownBackground = [];
+  let teamPayrollBreakdownKeydownAttached = false;
 
   function initPayroll() {
     renderIndividualPayrollHub();
@@ -40,18 +50,24 @@
     const secIndiv = document.getElementById('scopeIndividualSection');
     const secTeam = document.getElementById('scopeTeamSection');
     const subtitleEl = document.getElementById('headerSubtitleText');
+    const titleEl = document.getElementById('globalTopTitle');
+    const switcherEl = document.getElementById('mainScopeSwitcher');
 
     if (scope === 'team') {
       if (tabIndiv) tabIndiv.classList.remove('active');
       if (tabTeam) tabTeam.classList.add('active');
       if (secIndiv) secIndiv.style.display = 'none';
       if (secTeam) secTeam.style.display = 'block';
+      if (switcherEl) switcherEl.style.display = 'flex';
+      if (titleEl) titleEl.textContent = 'Payroll';
       if (subtitleEl) subtitleEl.textContent = 'Team';
     } else {
       if (tabTeam) tabTeam.classList.remove('active');
       if (tabIndiv) tabIndiv.classList.add('active');
       if (secTeam) secTeam.style.display = 'none';
       if (secIndiv) secIndiv.style.display = 'block';
+      if (switcherEl) switcherEl.style.display = 'flex';
+      if (titleEl) titleEl.textContent = 'Payroll';
       if (subtitleEl) subtitleEl.textContent = 'Individual';
     }
 
@@ -101,13 +117,14 @@
    * ==========================================
    */
   function renderIndividualPayrollHub() {
-    // Render the five individual self-service entries.
+    // Render the individual self-service entries.
     const optionsContainer = document.getElementById('individualPayrollOptionsGrid');
     if (optionsContainer && window.PAYROLL_CONFIG?.individualOptions) {
       optionsContainer.innerHTML = '';
       window.PAYROLL_CONFIG.individualOptions.forEach(opt => {
         const card = document.createElement(opt.link ? 'a' : 'button');
         card.className = 'payroll-option-card';
+        card.dataset.payrollOption = opt.id;
         if (opt.link) {
           card.href = opt.link;
         } else {
@@ -116,16 +133,10 @@
         }
 
         card.innerHTML = `
-          <div class="opt-icon-wrap">
+          <div class="opt-icon-wrap" aria-hidden="true">
             ${opt.icon}
           </div>
-          <div class="opt-card-info">
-            <div class="opt-card-title">${opt.name}</div>
-            <div class="opt-card-desc">${opt.desc}</div>
-          </div>
-          <div class="opt-card-arrow">
-            <i class="fa-solid fa-chevron-right"></i>
-          </div>
+          <span class="opt-card-title">${opt.name}</span>
         `;
         optionsContainer.appendChild(card);
       });
@@ -167,47 +178,243 @@
 
   function previewIndividualFeature(action, label) {
     if (window.showToast) {
-      window.showToast(`${label} UI entry is ready for the next screen`);
+      window.showToast(action === 'payroll-history' ? 'Payroll history is coming soon.' : `${label} UI entry is ready for the next screen`);
     }
   }
 
   /**
    * ==========================================
-   * 4. TEAM HUB RENDERING (Tax Relief Only)
+   * 4. TEAM HUB RENDERING
    * ==========================================
    */
   function renderTeamPayrollHub() {
-    // 1. Render Team Options (Only Tax Relief as specified by user)
-    const teamOptionsContainer = document.getElementById('teamPayrollOptionsGrid');
-    if (teamOptionsContainer && window.PAYROLL_CONFIG?.teamOptions) {
-      teamOptionsContainer.innerHTML = '';
-      window.PAYROLL_CONFIG.teamOptions.forEach(opt => {
-        const card = document.createElement('a');
-        card.className = 'payroll-option-card team-mode';
-        card.href = opt.link;
-        card.style.textDecoration = 'none';
+    const config = window.PAYROLL_CONFIG?.teamPayroll;
+    const summaryContainer = document.getElementById('teamPayrollSummaryItems');
+    const pendingCount = document.getElementById('teamPendingApprovalCount');
+    if (!config || !summaryContainer) return;
 
-        card.innerHTML = `
-          <div class="opt-card-top">
-            <div class="opt-icon-wrap" style="background: ${opt.bg}; color: ${opt.color};">
-              ${opt.icon}
-            </div>
-            ${opt.badge ? `<span class="opt-pill-badge amber">${opt.badge}</span>` : ''}
+    if (pendingCount) pendingCount.textContent = String(config.pendingApprovalCount || 0);
+    if (!activeTeamPayrollMonth) activeTeamPayrollMonth = config.monthKey;
+    updateTeamPayrollPeriodLabels();
+    renderTeamPayrollSummary();
+    renderTeamPayrollBreakdown();
+  }
+
+  function teamPayrollPeriodLabel() {
+    const [year, month] = activeTeamPayrollMonth.split('-').map(Number);
+    return new Date(year, month - 1, 1).toLocaleDateString('en-MY', { month: 'long', year: 'numeric' });
+  }
+
+  function updateTeamPayrollPeriodLabels() {
+    document.querySelectorAll('.team-payroll-month-label').forEach(label => {
+      label.textContent = teamPayrollPeriodLabel();
+    });
+  }
+
+  function hasTeamPayrollPeriodData() {
+    return activeTeamPayrollMonth === window.PAYROLL_CONFIG?.teamPayroll?.monthKey;
+  }
+
+  function teamPayrollEmptyMessage() {
+    return hasTeamPayrollPeriodData() ? 'No payroll components found' : `No payroll data for ${teamPayrollPeriodLabel()}`;
+  }
+
+  function renderTeamPayrollSummary() {
+    const container = document.getElementById('teamPayrollSummaryItems');
+    if (!container) return;
+    const groups = hasTeamPayrollPeriodData() ? window.PAYROLL_CONFIG?.teamPayroll?.summaryGroups || [] : [];
+    const query = teamPayrollSummarySearchTerm.toLowerCase();
+    const filteredGroups = groups.map(group => ({
+      ...group,
+      items: group.items.filter(item => item.name.toLowerCase().includes(query))
+    })).filter(group => group.items.length);
+
+    container.innerHTML = filteredGroups.length ? filteredGroups.map(group => `
+      <section class="team-summary-group" aria-label="${group.title}">
+        <div class="team-summary-group-title">
+          <i class="fa-solid ${group.icon}" aria-hidden="true"></i>
+          <span>${group.title}</span>
+        </div>
+        ${group.items.map(item => `
+          <div class="team-summary-item">
+            <span>${item.name}</span>
+            <strong>${formatTeamPayrollAmount(item.amount)}</strong>
           </div>
-          <div class="opt-card-info">
-            <div class="opt-card-title">${opt.name}</div>
-            <div class="opt-card-desc">${opt.desc}</div>
-          </div>
-          <div class="opt-card-arrow">
-            <i class="fa-solid fa-chevron-right"></i>
-          </div>
-        `;
-        teamOptionsContainer.appendChild(card);
-      });
+        `).join('')}
+      </section>
+    `).join('') : `<div class="team-payroll-empty">${teamPayrollEmptyMessage()}</div>`;
+  }
+
+  function filterTeamPayrollSummary(value) {
+    teamPayrollSummarySearchTerm = String(value || '').trim();
+    renderTeamPayrollSummary();
+  }
+
+  function setTeamPayrollFilterFields(monthKey) {
+    const [year, month] = monthKey.split('-');
+    document.getElementById('teamPayrollFilterYear').value = year;
+    document.getElementById('teamPayrollFilterMonth').value = month;
+  }
+
+  function openTeamPayrollFilter(opener) {
+    const sheet = document.getElementById('teamPayrollFilterSheet');
+    if (!sheet || sheet.classList.contains('active')) return;
+    const defaultYear = Number(window.PAYROLL_CONFIG.teamPayroll.monthKey.slice(0, 4));
+    const yearSelect = document.getElementById('teamPayrollFilterYear');
+    const monthSelect = document.getElementById('teamPayrollFilterMonth');
+    yearSelect.replaceChildren(...[defaultYear + 1, defaultYear, defaultYear - 1, defaultYear - 2].map(year => new Option(String(year), String(year))));
+    monthSelect.replaceChildren(...Array.from({ length: 12 }, (_, index) => new Option(new Date(defaultYear, index, 1).toLocaleDateString('en-MY', { month: 'long' }), String(index + 1).padStart(2, '0'))));
+    setTeamPayrollFilterFields(activeTeamPayrollMonth);
+    teamPayrollFilterOpener = opener || document.activeElement;
+    sheet.classList.add('active');
+    sheet.setAttribute('aria-hidden', 'false');
+    document.getElementById('teamPayrollFilterClose').focus();
+    teamPayrollFilterBackground = Array.from(sheet.parentElement.children).filter(el => el !== sheet).map(el => ({ el, inert: el.inert }));
+    teamPayrollFilterBackground.forEach(({ el }) => { el.inert = true; });
+    document.addEventListener('keydown', handleTeamPayrollFilterKeydown);
+  }
+
+  function closeTeamPayrollFilter() {
+    const sheet = document.getElementById('teamPayrollFilterSheet');
+    if (!sheet || !sheet.classList.contains('active')) return;
+    teamPayrollFilterBackground.forEach(({ el, inert }) => { el.inert = inert; });
+    teamPayrollFilterBackground = [];
+    teamPayrollFilterOpener?.focus();
+    sheet.classList.remove('active');
+    sheet.setAttribute('aria-hidden', 'true');
+    document.removeEventListener('keydown', handleTeamPayrollFilterKeydown);
+  }
+
+  function handleTeamPayrollFilterKeydown(event) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeTeamPayrollFilter();
+    } else if (event.key === 'Tab') {
+      const controls = Array.from(document.querySelectorAll('#teamPayrollFilterSheet button, #teamPayrollFilterSheet select'));
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
+  }
 
-    // 2. Render Team Pending Relief Queue
-    renderTeamReliefList();
+  function resetTeamPayrollFilter() {
+    setTeamPayrollFilterFields(window.PAYROLL_CONFIG.teamPayroll.monthKey);
+  }
+
+  function applyTeamPayrollFilter() {
+    const year = document.getElementById('teamPayrollFilterYear').value;
+    const month = document.getElementById('teamPayrollFilterMonth').value;
+    activeTeamPayrollMonth = `${year}-${month}`;
+    updateTeamPayrollPeriodLabels();
+    renderTeamPayrollSummary();
+    renderTeamPayrollBreakdown();
+    closeTeamPayrollFilter();
+  }
+
+  function formatTeamPayrollAmount(amount) {
+    return `RM ${Number(amount || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  function renderTeamPayrollBreakdown() {
+    const rowsContainer = document.getElementById('teamBreakdownRows');
+    const items = hasTeamPayrollPeriodData() ? window.PAYROLL_CONFIG?.teamPayroll?.breakdown?.[activeTeamPayrollTab] || [] : [];
+    if (!rowsContainer) return;
+
+    const filtered = items.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(teamPayrollSearchTerm.toLowerCase());
+      const matchesAmount = teamShowZeroAmounts || Number(item.amount) !== 0;
+      return matchesSearch && matchesAmount;
+    });
+
+    rowsContainer.innerHTML = filtered.length ? filtered.map(item => `
+      <div class="team-breakdown-row">
+        <span class="team-breakdown-name">${item.name}</span>
+        <strong class="team-breakdown-amount">${formatTeamPayrollAmount(item.amount)}</strong>
+        <button type="button" class="team-trend-btn" aria-label="View ${item.name} trend" onclick="window.PayrollEngine.previewIndividualFeature('payroll-trend', '${item.name.replace(/'/g, "\\'")} Trend')">
+          <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+        </button>
+      </div>
+    `).join('') : `
+      <div class="team-payroll-empty">${teamPayrollEmptyMessage()}</div>
+    `;
+  }
+
+  function handleTeamPayrollBreakdownKeydown(event) {
+    if (document.getElementById('teamPayrollFilterSheet')?.classList.contains('active')) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      hideTeamPayrollBreakdown();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const controls = Array.from(document.querySelectorAll('#teamPayrollBreakdownSection button, #teamPayrollBreakdownSection input')).filter(control => !control.disabled);
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function showTeamPayrollBreakdown() {
+    const sheet = document.getElementById('teamPayrollBreakdownSection');
+    if (!sheet || sheet.classList.contains('active')) return;
+    teamPayrollBreakdownOpener = document.activeElement;
+    renderTeamPayrollBreakdown();
+    sheet.classList.add('active');
+    sheet.setAttribute('aria-hidden', 'false');
+    document.getElementById('teamPayrollBreakdownClose')?.focus();
+    teamPayrollBreakdownBackground = Array.from(sheet.parentElement.children)
+      .filter(element => element !== sheet)
+      .map(element => ({ element, inert: element.inert }));
+    teamPayrollBreakdownBackground.forEach(({ element }) => { element.inert = true; });
+    if (!teamPayrollBreakdownKeydownAttached) {
+      document.addEventListener('keydown', handleTeamPayrollBreakdownKeydown);
+      teamPayrollBreakdownKeydownAttached = true;
+    }
+  }
+
+  function hideTeamPayrollBreakdown() {
+    const sheet = document.getElementById('teamPayrollBreakdownSection');
+    if (!sheet || !sheet.classList.contains('active')) return;
+    teamPayrollBreakdownBackground.forEach(({ element, inert }) => { element.inert = inert; });
+    teamPayrollBreakdownBackground = [];
+    sheet.classList.remove('active');
+    sheet.setAttribute('aria-hidden', 'true');
+    if (teamPayrollBreakdownKeydownAttached) {
+      document.removeEventListener('keydown', handleTeamPayrollBreakdownKeydown);
+      teamPayrollBreakdownKeydownAttached = false;
+    }
+    const opener = teamPayrollBreakdownOpener;
+    teamPayrollBreakdownOpener = null;
+    opener?.focus();
+  }
+
+  function switchTeamPayrollBreakdownTab(tabName) {
+    activeTeamPayrollTab = tabName;
+    document.querySelectorAll('.team-breakdown-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.teamPayrollTab === tabName);
+    });
+    renderTeamPayrollBreakdown();
+  }
+
+  function filterTeamPayrollComponents(value) {
+    teamPayrollSearchTerm = String(value || '').trim();
+    renderTeamPayrollBreakdown();
+  }
+
+  function toggleTeamZeroAmounts(checked) {
+    teamShowZeroAmounts = Boolean(checked);
+    renderTeamPayrollBreakdown();
   }
 
   function renderTeamReliefList() {
@@ -432,6 +639,12 @@
   }
 
   function handleGlobalBack() {
+    const breakdownSection = document.getElementById('teamPayrollBreakdownSection');
+    if (breakdownSection?.classList.contains('active')) {
+      hideTeamPayrollBreakdown();
+      return;
+    }
+
     if (window.navTo) {
       window.navTo('home');
     } else {
@@ -456,7 +669,17 @@
     closeReliefReceiptModal,
     handleGlobalBack,
     downloadMockFile,
-    previewIndividualFeature
+    previewIndividualFeature,
+    showTeamPayrollBreakdown,
+    hideTeamPayrollBreakdown,
+    switchTeamPayrollBreakdownTab,
+    filterTeamPayrollComponents,
+    filterTeamPayrollSummary,
+    openTeamPayrollFilter,
+    closeTeamPayrollFilter,
+    resetTeamPayrollFilter,
+    applyTeamPayrollFilter,
+    toggleTeamZeroAmounts
   };
 
   document.addEventListener('DOMContentLoaded', () => {

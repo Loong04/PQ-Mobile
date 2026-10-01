@@ -13,429 +13,340 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    body {
-      background-color: var(--bg-page);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: var(--text-primary);
-      padding: 20px 0;
-    }
-
-    .phone-container {
-      width: 100%;
-      max-width: 420px;
-      height: 900px;
-      background: var(--bg-phone);
-      border-radius: 44px;
-      overflow: hidden;
-      box-shadow: var(--shadow-phone);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .cal-top-header {
-      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
-      padding: 12px 16px 16px;
-      border-bottom-left-radius: 24px;
-      border-bottom-right-radius: 24px;
-      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
-      position: relative;
-      z-index: 20;
-    }
-
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px 14px 90px;
-      position: relative;
-      z-index: 10;
-      scrollbar-width: none;
-    }
-    .main-content::-webkit-scrollbar { display: none; }
-
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: var(--shadow-card);
-      margin-bottom: 14px;
-      transition: all 0.2s ease;
-    }
-
-    .period-scroll-pills {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      margin-bottom: 14px;
-      scrollbar-width: none;
-      white-space: nowrap;
-    }
-    .period-scroll-pills::-webkit-scrollbar { display: none; }
-
-    .period-pill {
-      padding: 7px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-
-    .period-pill.active {
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      color: #ffffff;
-      border-color: transparent;
-      box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3);
-    }
-
-    .breakdown-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 7px 0;
-      font-size: 12px;
-    }
-
-    .breakdown-row.border-top {
-      border-top: 1px dashed var(--border-subtle);
-      margin-top: 6px;
-      padding-top: 9px;
-      font-weight: 800;
-      font-size: 12.5px;
-    }
-
-    .btn-pill-action {
-      flex: 1;
-      padding: 10px;
-      border-radius: 14px;
-      font-size: 12px;
-      font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-input);
-      color: var(--text-primary);
-    }
-
-    .btn-pill-action:active {
-      transform: scale(0.97);
-    }
-
-    .btn-pill-action.primary {
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      color: #ffffff;
-      border-color: transparent;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-    }
-  </style>
+  <link rel="stylesheet" href="../../../css/payroll-documents.css">
+  <link rel="stylesheet" href="../../../css/payslip.css">
 </head>
 <body>
+  <preview-top-bar></preview-top-bar>
 
-  <preview-top-bar active-page="payroll"></preview-top-bar>
-
-  <div class="phone-container">
-    
-    <!-- Top Header -->
-    <div class="cal-top-header">
-      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
-
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
-        <button class="me-back-btn" onclick="window.location.href='../index.html'" aria-label="Back" title="Back"
-          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
-          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
-        </button>
-        
-        <div style="text-align: center;">
-          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;">Payslip</h1>
-          <div style="font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.85); margin-top: 2px;" id="headerPayslipMonthText">September 2026</div>
+  <div class="phone-container payroll-document-phone">
+    <header class="payroll-document-header">
+      <div class="status-bar"><span>9:41</span><span><i class="fa-solid fa-signal"></i>&nbsp; <i class="fa-solid fa-wifi"></i>&nbsp; <i class="fa-solid fa-battery-three-quarters"></i></span></div>
+      <div class="payroll-header-row payslip-header-row">
+        <button class="payroll-header-button" type="button" onclick="history.back()" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="payroll-header-copy">
+          <h1>Payslip</h1>
+          <p id="headerPayslipMonthText">December 2025</p>
         </div>
-        
-        <button type="button" onclick="togglePrivacy()" title="Toggle Privacy"
-          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
-          <i class="fa-solid fa-eye" id="payslipPrivacyIcon" style="font-size: 14px;"></i>
+        <span class="payslip-header-spacer" aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <main class="payroll-document-content">
+      <button id="payrollFilterTrigger" class="payroll-filter-trigger" type="button" onclick="openPayslipFilter()">
+        <span><small>PAYROLL PERIOD</small><strong id="payrollFilterSummary">December 2025</strong></span>
+        <i class="fa-solid fa-sliders"></i>
+      </button>
+
+      <section class="payslip-overview-card" aria-label="Payslip overview">
+        <div class="payslip-overview-top">
+          <div class="payslip-company-mark">
+            <span aria-hidden="true"><i class="fa-solid fa-building"></i></span>
+            <div>
+              <small>Payslip issued by</small>
+              <strong id="payslipCompany">PEOPLE QUEST SDN BHD</strong>
+            </div>
+          </div>
+          <span id="payslipStatus" class="payslip-paid-status">Paid</span>
+        </div>
+
+        <div class="payslip-net-pay">
+          <span>Net Pay</span>
+          <strong id="netPayMainDisplay">RM 8,895.15</strong>
+          <small>Paid on <b id="payslipPayDate">31 Dec 2025</b></small>
+        </div>
+
+        <div class="payslip-calculation" aria-label="Net pay calculation">
+          <div>
+            <span>Total Earnings</span>
+            <strong id="payslipEarningsTotal">RM 10,618.00</strong>
+          </div>
+          <div>
+            <span>Total Deductions</span>
+            <strong id="payslipDeductionsTotal">RM 1,722.85</strong>
+          </div>
+        </div>
+
+        <div class="payslip-contribution-row">
+          <span><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Employer Contributions</span>
+          <strong id="payslipContributionsTotal">RM 1,358.65</strong>
+        </div>
+      </section>
+
+      <section class="payslip-info-card" aria-labelledby="payslipInfoTitle">
+        <div class="payslip-card-label" id="payslipInfoTitle">
+          <i class="fa-regular fa-credit-card" aria-hidden="true"></i>
+          <span>Payment Details</span>
+        </div>
+        <div class="payslip-info-grid">
+          <div><span>Payroll Period</span><strong id="payslipPayrollPeriod">December 2025</strong></div>
+          <div><span>Payroll Cycle</span><strong id="payslipPayrollCycle">MONTH END</strong></div>
+          <div><span>Bank Branch</span><strong id="payslipBankBranch">CIMB</strong></div>
+          <div><span>Account Number</span><strong id="payslipAccountNumber">10447856855254</strong></div>
+        </div>
+      </section>
+
+      <div class="payslip-section-label">
+        <span>Pay Breakdown</span>
+        <small>Tap a section to expand</small>
+      </div>
+
+      <section class="payslip-section is-expanded" data-payroll-section="Earnings">
+        <button class="payslip-section-toggle" type="button" aria-expanded="true" aria-controls="earningsSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-wallet"></i></span><span><strong>Earnings</strong><small id="earningsItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><strong id="earningsHeadingTotal"></strong><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
         </button>
+        <div id="earningsSectionBody" class="payslip-section-body" aria-hidden="false"><div id="earningsRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Deductions">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="deductionsSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-receipt"></i></span><span><strong>Deductions</strong><small id="deductionsItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><strong id="deductionsHeadingTotal"></strong><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="deductionsSectionBody" class="payslip-section-body" aria-hidden="true"><div id="deductionsRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Employer Contributions">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="contributionsSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-landmark"></i></span><span><strong>Employer Contributions</strong><small id="contributionsItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><strong id="contributionsHeadingTotal"></strong><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="contributionsSectionBody" class="payslip-section-body" aria-hidden="true"><div id="contributionsRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Statutory Base Details">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="statutorySectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-scale-balanced"></i></span><span><strong>Statutory Base Details</strong><small id="statutoryItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="statutorySectionBody" class="payslip-section-body" aria-hidden="true"><div id="statutoryRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Other Information">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="otherSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-circle-info"></i></span><span><strong>Other Information</strong><small id="otherItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="otherSectionBody" class="payslip-section-body" aria-hidden="true"><div id="otherRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <div class="payslip-document-actions">
+        <button class="payslip-action-secondary" type="button" onclick="printPayslip()"><i class="fa-solid fa-print"></i><span>Print</span></button>
+        <button class="payslip-action-primary" type="button" onclick="downloadPayslip()"><i class="fa-solid fa-download"></i><span>Download PDF</span></button>
+      </div>
+    </main>
+
+    <div id="payslipFilterModal" class="modal-overlay standard-filter-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="payslipFilterTitle" onclick="if(event.target===this) closePayslipFilter()">
+      <div class="standard-filter-panel">
+        <div class="standard-filter-handle"></div>
+        <div class="standard-filter-header">
+          <h2 id="payslipFilterTitle">Filter</h2>
+          <div class="standard-filter-header-actions">
+            <button class="standard-filter-reset" type="button" data-filter-reset onclick="resetPayslipFilter(event)"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            <button class="standard-filter-close" type="button" data-filter-close onclick="closePayslipFilter()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="payroll-filter-body">
+          <label for="payslipCompanySelect">Company</label>
+          <select id="payslipCompanySelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <label for="payslipPeriodSelect">Payroll Period</label>
+          <select id="payslipPeriodSelect"></select>
+          <label for="payslipCycleSelect">Payroll Cycle</label>
+          <select id="payslipCycleSelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <label for="payslipBankSelect">Bank Branch</label>
+          <select id="payslipBankSelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <label for="payslipAccountSelect">Account #</label>
+          <select id="payslipAccountSelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <p id="payslipFilterEmpty" class="payslip-filter-empty" role="status" hidden>No payslips match these filters.</p>
+        </div>
+        <div class="payroll-filter-footer"><button class="standard-filter-apply" type="button" onclick="applyPayslipFilter()">Apply Filter</button></div>
       </div>
     </div>
 
-    <div class="main-content">
-
-      <!-- Month Selector Pills -->
-      <div class="period-scroll-pills" id="payslipMonthPills">
-        <button type="button" class="period-pill active" onclick="switchMonth('2026-09', this)">Sep 2026</button>
-        <button type="button" class="period-pill" onclick="switchMonth('2026-08', this)">Aug 2026</button>
-        <button type="button" class="period-pill" onclick="switchMonth('2026-07', this)">Jul 2026</button>
-        <button type="button" class="period-pill" onclick="switchMonth('2026-06', this)">Jun 2026</button>
-      </div>
-
-      <!-- Net Pay Hero Highlight Card -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(79, 70, 229, 0.08) 100%); border-color: rgba(124, 58, 237, 0.28); text-align: center; padding: 22px 16px;">
-        <div style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;">
-          Take-Home Net Salary
-        </div>
-        <div class="net-pay-amount-display" id="netPayMainDisplay" style="font-size: 34px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; font-family: monospace, sans-serif; margin-bottom: 4px;">
-          RM 6,482.50
-        </div>
-        <div style="font-size: 12px; font-weight: 700; color: #10b981; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 16px;">
-          <i class="fa-solid fa-circle-check"></i>
-          <span id="payslipPaidStatusText">Paid on 25 Sep 2026</span>
-        </div>
-
-        <!-- 2 Action Buttons: Download PDF & Share -->
-        <div style="display: flex; gap: 10px;">
-          <button type="button" class="btn-pill-action primary" onclick="downloadPayslipPdf()">
-            <i class="fa-solid fa-file-arrow-down"></i>
-            <span>Download PDF</span>
-          </button>
-          <button type="button" class="btn-pill-action" onclick="sharePayslip()">
-            <i class="fa-solid fa-share-nodes"></i>
-            <span>Share</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 3-Column Summary Bar -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; background: var(--bg-card); border-radius: 16px; padding: 12px 6px; border: 1px solid var(--border-subtle); margin-bottom: 14px;">
-        <div>
-          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px;">Gross Pay</div>
-          <div id="sumGrossPay" style="font-size: 13.5px; font-weight: 900; color: var(--text-primary); font-family: monospace, sans-serif;">RM 7,500.00</div>
-        </div>
-        <div style="border-left: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle);">
-          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px;">Deductions</div>
-          <div id="sumDeductions" style="font-size: 13.5px; font-weight: 900; color: #ef4444; font-family: monospace, sans-serif;">-RM 1,017.50</div>
-        </div>
-        <div>
-          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px;">Employer+</div>
-          <div id="sumEmployer" style="font-size: 13.5px; font-weight: 900; color: #3b82f6; font-family: monospace, sans-serif;">RM 1,193.35</div>
-        </div>
-      </div>
-
-      <!-- Card 1: Earnings Breakdown -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
-          <div style="font-size: 13px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-plus-circle"></i>
-            <span>EARNINGS (PENDAPATAN)</span>
-          </div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Amount (RM)</span>
-        </div>
-        <div id="earningsListContainer"></div>
-      </div>
-
-      <!-- Card 2: Deductions Breakdown -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
-          <div style="font-size: 13px; font-weight: 800; color: #ef4444; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-minus-circle"></i>
-            <span>DEDUCTIONS (POTONGAN)</span>
-          </div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Amount (RM)</span>
-        </div>
-        <div id="deductionsListContainer"></div>
-      </div>
-
-      <!-- Card 3: Employer Statutory Contributions -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
-          <div style="font-size: 13px; font-weight: 800; color: #3b82f6; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-building-columns"></i>
-            <span>EMPLOYER STATUTORY (CARUMAN MAJIKAN)</span>
-          </div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Amount (RM)</span>
-        </div>
-        <div id="employerListContainer"></div>
-      </div>
-
-      <!-- Card 4: Year-To-Date (YTD) Cumulative Table -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-chart-line" style="color: var(--purple-primary);"></i>
-            <span>Year-To-Date (YTD) Summary</span>
-          </div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">2026 Cumulative</span>
-        </div>
-
-        <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px; font-size: 11.5px;">
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted); font-weight: 700;">YTD Gross Earnings:</span>
-            <strong style="color: var(--text-primary); font-family: monospace;" id="ytdGross">RM 67,500.00</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-subtle); padding-top: 6px;">
-            <span style="color: var(--text-muted); font-weight: 700;">YTD EPF Employee:</span>
-            <strong style="color: var(--text-primary); font-family: monospace;" id="ytdEpf">RM 7,425.00</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-subtle); padding-top: 6px;">
-            <span style="color: var(--text-muted); font-weight: 700;">YTD SOCSO + EIS:</span>
-            <strong style="color: var(--text-primary); font-family: monospace;" id="ytdSocsoEis">RM 463.05</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-subtle); padding-top: 6px;">
-            <span style="color: var(--text-muted); font-weight: 700;">YTD Income Tax (PCB):</span>
-            <strong style="color: #a78bfa; font-family: monospace;" id="ytdPcb">RM 1,269.45</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-subtle); padding-top: 6px;">
-            <span style="color: var(--text-muted); font-weight: 700;">YTD Net Pay:</span>
-            <strong style="color: #10b981; font-family: monospace; font-size: 13px; font-weight: 900;" id="ytdNet">RM 58,342.50</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- Employee Identification Box -->
-      <div style="background: var(--bg-card); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); font-size: 11.5px; color: var(--text-muted); margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span>Employee: <strong style="color: var(--text-primary);">Sarah Jenkins</strong> (<span style="font-family: monospace;">#EBB01</span>)</span>
-          <span>Dept: <strong style="color: var(--text-primary);">Product &amp; Design</strong></span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Bank: <strong style="color: var(--text-primary);">Maybank Berhad</strong></span>
-          <span>Account: <strong style="color: var(--text-primary); font-family: monospace;">•••• 6821</strong></span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <phone-bottom-nav active="home"></phone-bottom-nav>
-
+    <app-bottom-nav active="hub"></app-bottom-nav>
   </div>
 
   <script>
-    let currentMonth = '2026-09';
-    let isHidden = false;
+    const PAYSLIP_DEFAULT_PERIOD = '2025-12';
+    const payslipCollection = window.PAYROLL_DATA?.payslips || {};
+    const requestedPayslipPeriod = new URLSearchParams(window.location.search).get('month');
+    let selectedPayslipPeriod = requestedPayslipPeriod && payslipCollection[requestedPayslipPeriod]
+      ? requestedPayslipPeriod
+      : (payslipCollection[PAYSLIP_DEFAULT_PERIOD] ? PAYSLIP_DEFAULT_PERIOD : Object.keys(payslipCollection)[0]);
+    let payslipFilterOpener = null;
 
-    function renderPayslip(monthKey) {
-      const data = window.PAYROLL_CONFIG?.payslips?.[monthKey];
-      if (!data) return;
+    const payslipMoney = value => `RM ${Number(value || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const payslipData = () => payslipCollection[selectedPayslipPeriod] || {};
+    const payslipDefaults = () => payslipCollection[PAYSLIP_DEFAULT_PERIOD] || Object.values(payslipCollection)[0] || {};
+    const sumValues = rows => (rows || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
 
-      document.getElementById('headerPayslipMonthText').textContent = data.monthLabel;
-      document.getElementById('netPayMainDisplay').textContent = isHidden ? '••••••••' : `RM ${data.netPay.toFixed(2)}`;
-      document.getElementById('payslipPaidStatusText').textContent = `Paid on ${data.payDate}`;
-
-      document.getElementById('sumGrossPay').textContent = isHidden ? '••••••' : `RM ${data.grossPay.toFixed(2)}`;
-      document.getElementById('sumDeductions').textContent = isHidden ? '••••••' : `-RM ${data.totalDeductions.toFixed(2)}`;
-      const employerTotal = data.employerStatutory.reduce((acc, i) => acc + i.amount, 0);
-      document.getElementById('sumEmployer').textContent = isHidden ? '••••••' : `RM ${employerTotal.toFixed(2)}`;
-
-      // Earnings List
-      const earningsEl = document.getElementById('earningsListContainer');
-      earningsEl.innerHTML = data.earnings.map(item => `
-        <div class="breakdown-row">
-          <span style="color: var(--text-primary);">${item.name}</span>
-          <span style="font-weight: 800; font-family: monospace; color: var(--text-primary);">${isHidden ? '••••••' : item.amount.toFixed(2)}</span>
-        </div>
-      `).join('') + `
-        <div class="breakdown-row border-top">
-          <span style="color: var(--text-primary);">TOTAL GROSS EARNINGS</span>
-          <span style="color: #10b981; font-family: monospace;">RM ${isHidden ? '••••••' : data.grossPay.toFixed(2)}</span>
-        </div>
-      `;
-
-      // Deductions List
-      const deductionsEl = document.getElementById('deductionsListContainer');
-      deductionsEl.innerHTML = data.deductions.map(item => `
-        <div class="breakdown-row">
-          <span style="color: var(--text-primary);">${item.name}</span>
-          <span style="font-weight: 800; font-family: monospace; color: #ef4444;">${isHidden ? '••••••' : '-' + item.amount.toFixed(2)}</span>
-        </div>
-      `).join('') + `
-        <div class="breakdown-row border-top">
-          <span style="color: var(--text-primary);">TOTAL DEDUCTIONS</span>
-          <span style="color: #ef4444; font-family: monospace;">-RM ${isHidden ? '••••••' : data.totalDeductions.toFixed(2)}</span>
-        </div>
-      `;
-
-      // Employer Statutory List
-      const employerEl = document.getElementById('employerListContainer');
-      employerEl.innerHTML = data.employerStatutory.map(item => `
-        <div class="breakdown-row">
-          <span style="color: var(--text-primary);">${item.name}</span>
-          <span style="font-weight: 800; font-family: monospace; color: #3b82f6;">${isHidden ? '••••••' : item.amount.toFixed(2)}</span>
-        </div>
-      `).join('') + `
-        <div class="breakdown-row border-top">
-          <span style="color: var(--text-primary);">TOTAL EMPLOYER CONTRIBUTION</span>
-          <span style="color: #3b82f6; font-family: monospace;">RM ${isHidden ? '••••••' : employerTotal.toFixed(2)}</span>
-        </div>
-      `;
-
-      // YTD
-      if (data.ytd) {
-        document.getElementById('ytdGross').textContent = isHidden ? '••••••' : `RM ${data.ytd.gross.toFixed(2)}`;
-        document.getElementById('ytdEpf').textContent = isHidden ? '••••••' : `RM ${data.ytd.epf.toFixed(2)}`;
-        document.getElementById('ytdSocsoEis').textContent = isHidden ? '••••••' : `RM ${(data.ytd.socso + data.ytd.eis).toFixed(2)}`;
-        document.getElementById('ytdPcb').textContent = isHidden ? '••••••' : `RM ${data.ytd.pcb.toFixed(2)}`;
-        document.getElementById('ytdNet').textContent = isHidden ? '••••••' : `RM ${data.ytd.net.toFixed(2)}`;
+    function renderMoneyRows(targetId, rows) {
+      if (!rows?.length) {
+        document.getElementById(targetId).innerHTML = '<div class="payslip-empty-row">No information recorded for this period</div>';
+        return;
       }
+      document.getElementById(targetId).innerHTML = (rows || []).map(row => `<div class="payroll-data-row"><span>${row.description}</span> <strong data-sensitive="true">${payslipMoney(row.amount)}</strong></div>`).join('');
     }
 
-    function switchMonth(mKey, btnEl) {
-      currentMonth = mKey;
-      if (btnEl) {
-        document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
-        btnEl.classList.add('active');
-      }
-      renderPayslip(mKey);
+    function renderValueRows(targetId, rows) {
+      document.getElementById(targetId).innerHTML = (rows || []).map(row => `<div class="payroll-data-row"><span>${row.description}</span> <strong>${row.value ?? row.amount ?? '—'}</strong></div>`).join('');
     }
 
-    function togglePrivacy() {
-      isHidden = !isHidden;
-      const icon = document.getElementById('payslipPrivacyIcon');
-      if (icon) {
-        icon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-      }
-      renderPayslip(currentMonth);
-      if (window.showToast) {
-        window.showToast(isHidden ? '🔒 Salary figures masked' : '👁 Salary figures visible');
-      }
+    function renderItemCount(targetId, rows) {
+      const count = rows?.length || 0;
+      document.getElementById(targetId).textContent = count + (count === 1 ? ' item' : ' items');
     }
 
-    function downloadPayslipPdf() {
-      const data = window.PAYROLL_CONFIG?.payslips?.[currentMonth];
-      const filename = data?.pdfFile || `Payslip_${currentMonth}.pdf`;
-      if (window.showToast) {
-        window.showToast(`⬇ Downloading ${filename}...`);
-      }
+    function renderPayslip() {
+      const data = payslipData();
+      const defaults = payslipDefaults();
+      const periodLabel = data.periodLabel || data.monthLabel || selectedPayslipPeriod;
+      const contributions = data.employerContributions || [];
+      const contributionsTotal = data.totalContributions ?? sumValues(contributions);
+      document.getElementById('headerPayslipMonthText').textContent = periodLabel;
+      document.getElementById('payrollFilterSummary').textContent = periodLabel;
+      document.getElementById('payslipCompany').textContent = data.company || '—';
+      document.getElementById('payslipPayrollPeriod').textContent = periodLabel;
+      document.getElementById('payslipPayrollCycle').textContent = data.payrollCycle || '—';
+      document.getElementById('payslipBankBranch').textContent = data.bankBranch || '—';
+      document.getElementById('payslipAccountNumber').textContent = data.accountNumber || '—';
+      document.getElementById('payslipCompany').textContent = data.company || defaults.company || '—';
+      document.getElementById('payslipPayrollCycle').textContent = data.payrollCycle || defaults.payrollCycle || '—';
+      document.getElementById('payslipBankBranch').textContent = data.bankBranch || defaults.bankBranch || '—';
+      document.getElementById('payslipAccountNumber').textContent = data.accountNumber || defaults.accountNumber || '—';
+      document.getElementById('payslipPayDate').textContent = data.payDate || '—';
+      document.getElementById('payslipStatus').textContent = data.status || 'Paid';
+      document.getElementById('netPayMainDisplay').textContent = payslipMoney(data.netPay);
+      document.getElementById('payslipEarningsTotal').textContent = payslipMoney(data.totalEarnings);
+      document.getElementById('payslipDeductionsTotal').textContent = payslipMoney(data.totalDeductions);
+      document.getElementById('payslipContributionsTotal').textContent = payslipMoney(contributionsTotal);
+      document.getElementById('earningsHeadingTotal').textContent = payslipMoney(data.totalEarnings);
+      document.getElementById('deductionsHeadingTotal').textContent = payslipMoney(data.totalDeductions);
+      document.getElementById('contributionsHeadingTotal').textContent = payslipMoney(contributionsTotal);
+      renderMoneyRows('earningsRows', data.earnings);
+      renderMoneyRows('deductionsRows', data.deductions);
+      renderMoneyRows('contributionsRows', contributions);
+      renderMoneyRows('statutoryRows', data.statutoryBase);
+      renderValueRows('otherRows', data.otherInfo);
+      renderItemCount('earningsItemCount', data.earnings);
+      renderItemCount('deductionsItemCount', data.deductions);
+      renderItemCount('contributionsItemCount', contributions);
+      renderItemCount('statutoryItemCount', data.statutoryBase);
+      renderItemCount('otherItemCount', data.otherInfo);
     }
 
-    function sharePayslip() {
-      if (window.showToast) {
-        window.showToast('🔗 Payslip secure link copied to clipboard');
-      }
+    function togglePayslipSection(button) {
+      const section = button.closest('[data-payroll-section]');
+      const body = document.getElementById(button.getAttribute('aria-controls'));
+      const expanded = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(expanded));
+      body?.setAttribute('aria-hidden', String(!expanded));
+      section?.classList.toggle('is-expanded', expanded);
     }
+
+    function setPayslipPageInert(inert) {
+      document.querySelectorAll('.phone-container > :not(#payslipFilterModal)').forEach(node => { node.inert = inert; });
+    }
+
+    function payslipFilterFocusable() {
+      return [...document.querySelectorAll('#payslipFilterModal button:not([disabled]), #payslipFilterModal select:not([disabled])')]
+        .filter(node => node.getClientRects().length);
+    }
+
+    function openPayslipFilter() {
+      const modal = document.getElementById('payslipFilterModal');
+      payslipFilterOpener = document.activeElement;
+      populatePayslipFilter(selectedPayslipPeriod);
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      setPayslipPageInert(true);
+      requestAnimationFrame(() => modal.querySelector('[data-filter-close]')?.focus());
+    }
+
+    function closePayslipFilter() {
+      const modal = document.getElementById('payslipFilterModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      setPayslipPageInert(false);
+      payslipFilterOpener?.focus?.();
+    }
+
+    function resetPayslipFilter(event) {
+      event?.stopImmediatePropagation();
+      populatePayslipFilter(payslipCollection[PAYSLIP_DEFAULT_PERIOD] ? PAYSLIP_DEFAULT_PERIOD : Object.keys(payslipCollection)[0]);
+    }
+
+    function applyPayslipFilter() {
+      const period = document.getElementById('payslipPeriodSelect').value;
+      if (!period || !payslipCollection[period]) return;
+      selectedPayslipPeriod = period;
+      const url = new URL(window.location.href);
+      url.searchParams.set('month', selectedPayslipPeriod);
+      history.replaceState(null, '', url.href);
+      renderPayslip();
+      closePayslipFilter();
+    }
+
+    function downloadPayslip() { window.showToast?.('Payslip PDF is ready to download', 'success'); }
+    function printPayslip() { window.showToast?.('Payslip opened in print preview', 'success'); }
+
+    const payslipFilterMetadata = [
+      ['payslipCompanySelect', 'company'], ['payslipCycleSelect', 'payrollCycle'],
+      ['payslipBankSelect', 'bankBranch'], ['payslipAccountSelect', 'accountNumber']
+    ];
+    const payslipMetadataValue = (data, property) => String(data[property] || payslipDefaults()[property] || '—');
+
+    function populatePayslipFilter(period) {
+      const data = payslipCollection[period] || {};
+      payslipFilterMetadata.forEach(([id, property]) => {
+        const select = document.getElementById(id);
+        const options = [...new Set(Object.values(payslipCollection).map(item => payslipMetadataValue(item, property)))];
+        select.replaceChildren(...options.map(value => new Option(value, value)));
+        select.value = payslipMetadataValue(data, property);
+      });
+      refreshPayslipFilterPeriods(period);
+    }
+
+    function refreshPayslipFilterPeriods(preferredPeriod) {
+      const select = document.getElementById('payslipPeriodSelect');
+      const previous = preferredPeriod || select.value;
+      const matching = Object.entries(payslipCollection)
+        .filter(([, data]) => payslipFilterMetadata.every(([id, property]) => document.getElementById(id).value === payslipMetadataValue(data, property)))
+        .sort(([a], [b]) => b.localeCompare(a));
+      select.replaceChildren(...matching.map(([key, data]) => new Option(data.periodLabel || data.monthLabel || key, key)));
+      if (matching.some(([key]) => key === previous)) select.value = previous;
+      const empty = !matching.length;
+      document.getElementById('payslipFilterEmpty').hidden = !empty;
+      select.disabled = empty;
+      document.querySelector('#payslipFilterModal .standard-filter-apply').disabled = empty;
+    }
+
+    document.addEventListener('keydown', event => {
+      const modal = document.getElementById('payslipFilterModal');
+      if (!modal.classList.contains('is-open')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closePayslipFilter();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = payslipFilterFocusable();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const m = urlParams.get('month');
-      if (m && window.PAYROLL_CONFIG?.payslips?.[m]) {
-        currentMonth = m;
-        document.querySelectorAll('.period-pill').forEach(p => {
-          if (p.textContent.includes(m.slice(5))) p.classList.add('active');
-          else p.classList.remove('active');
-        });
-      }
-      renderPayslip(currentMonth);
+      populatePayslipFilter(selectedPayslipPeriod);
+      renderPayslip();
     });
   </script>
 </body>

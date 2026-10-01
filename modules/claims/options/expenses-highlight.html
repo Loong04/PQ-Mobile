@@ -119,9 +119,9 @@
     }
 
     .expense-detail-record {
-      background: var(--bg-input);
+      flex-shrink: 0;
+      background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-left: 4px solid var(--record-accent);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: var(--shadow-sm);
@@ -129,15 +129,57 @@
 
     .expense-detail-period-row {
       padding: 9px 14px;
-      background: var(--bg-card-hover);
-      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      border-bottom: 1px solid rgba(216, 180, 254, 0.25);
       display: flex;
       justify-content: flex-start;
       align-items: center;
       gap: 10px;
     }
 
-    .expense-detail-period-value,
+    .expense-detail-period-value {
+      color: #ffffff;
+    }
+
+    .expense-detail-fields {
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .expense-detail-field {
+      min-width: 0;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+    }
+
+    .expense-detail-field-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .expense-detail-type {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .expense-detail-amount {
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.4;
+      letter-spacing: -0.3px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
     .expense-detail-amount,
     .expense-details-total {
       color: var(--text-primary);
@@ -162,6 +204,14 @@
 
     [data-theme=light] .popout-modal-overlay {
       background: rgba(15, 23, 42, 0.44);
+    }
+
+    [data-theme="light"] .expense-details-list {
+      background: var(--bg-input);
+    }
+
+    [data-theme="light"] .expense-detail-record {
+      background: var(--bg-card);
     }
 
     .filter-bottom-sheet {
@@ -1048,15 +1098,6 @@
       }
     };
 
-    function getExpenseCategoryColor(type) {
-      const t = (type || '').toUpperCase();
-      if (t.includes('DINING') || t.includes('ENTERTAINMENT')) return { border: '#f43f5e', text: '#f43f5e' };
-      if (t.includes('TRAVEL') || t.includes('MILEAGE')) return { border: '#38bdf8', text: '#38bdf8' };
-      if (t.includes('TAXI') || t.includes('TRANSPORT')) return { border: '#fbbf24', text: '#fbbf24' };
-      if (t.includes('OFFICE') || t.includes('PRINTING')) return { border: '#34d399', text: '#34d399' };
-      return { border: '#c084fc', text: '#c084fc' };
-    }
-
     function openExpenseDetailsModal(empNo, empName) {
       const modal = document.getElementById('expenseDetailsModal');
       if (!modal) return;
@@ -1080,21 +1121,19 @@
         const displayAmount = item.amount.replace(/^RM\s*/i, '');
         totalNum += rawVal;
 
-        const theme = getExpenseCategoryColor(item.type);
-
         html += `
-          <article class="expense-detail-record" style="--record-accent: ${theme.border};">
+          <article class="expense-detail-record">
             <div class="expense-detail-period-row">
               <span class="expense-detail-period-value" style="font-family: monospace, sans-serif; font-size: 12.5px; font-weight: 800;">${item.period}</span>
             </div>
-            <div style="padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end;">
-              <div>
-                <div style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.65px; margin-bottom: 4px;">Expense</div>
-                <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); line-height: 1.3; text-transform: uppercase;">${item.type}</div>
+            <div class="expense-detail-fields">
+              <div class="expense-detail-field">
+                <div class="expense-detail-field-label">Expense</div>
+                <div class="expense-detail-type">${item.type}</div>
               </div>
-              <div style="text-align: right;">
-                <div style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.65px; margin-bottom: 4px;">Amount</div>
-                <div class="expense-detail-amount" style="font-size: 16px; font-weight: 900; letter-spacing: -0.3px; white-space: nowrap;">${displayAmount}</div>
+              <div class="expense-detail-field">
+                <div class="expense-detail-field-label">Amount</div>
+                <div class="expense-detail-amount">${displayAmount}</div>
               </div>
             </div>
           </article>

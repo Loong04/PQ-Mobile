@@ -119,9 +119,9 @@
     }
 
     .benefit-detail-record {
-      background: var(--bg-input);
+      flex-shrink: 0;
+      background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-left: 4px solid var(--record-accent);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: var(--shadow-sm);
@@ -129,8 +129,8 @@
 
     .benefit-detail-period-row {
       padding: 9px 14px;
-      background: var(--bg-card-hover);
-      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      border-bottom: 1px solid rgba(216, 180, 254, 0.25);
       display: flex;
       justify-content: flex-start;
       align-items: center;
@@ -138,11 +138,47 @@
     }
 
     .benefit-detail-period-value {
+      color: #ffffff;
+    }
+
+    .benefit-detail-fields {
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .benefit-detail-field {
+      min-width: 0;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+    }
+
+    .benefit-detail-field-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .benefit-detail-type {
+      font-size: 12.5px;
+      font-weight: 800;
       color: var(--text-primary);
+      line-height: 1.4;
+      overflow-wrap: anywhere;
     }
 
     .benefit-detail-amount {
       color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.4;
+      letter-spacing: -0.3px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
     .benefit-details-footer {
@@ -165,6 +201,14 @@
 
     [data-theme="light"] .popout-modal-overlay {
       background: rgba(15, 23, 42, 0.44);
+    }
+
+    [data-theme="light"] .benefit-details-list {
+      background: var(--bg-input);
+    }
+
+    [data-theme="light"] .benefit-detail-record {
+      background: var(--bg-card);
     }
 
     .filter-bottom-sheet {
@@ -1062,16 +1106,6 @@
       }
     };
 
-    function getBenefitCategoryColor(type) {
-      const t = (type || '').toUpperCase();
-      if (t.includes('CAR')) return { border: '#c084fc', text: '#c084fc' };
-      if (t.includes('PERSONAL')) return { border: '#38bdf8', text: '#38bdf8' };
-      if (t.includes('ENTERTAINMENT') || t.includes('DINING')) return { border: '#f43f5e', text: '#f43f5e' };
-      if (t.includes('PHONE') || t.includes('MOBILE')) return { border: '#fbbf24', text: '#fbbf24' };
-      if (t.includes('OPTICAL') || t.includes('DENTAL')) return { border: '#34d399', text: '#34d399' };
-      return { border: '#a78bfa', text: '#a78bfa' };
-    }
-
     function openBenefitDetailsModal(empNo, empName) {
       const modal = document.getElementById('benefitDetailsModal');
       if (!modal) return;
@@ -1095,21 +1129,19 @@
         const displayAmount = item.amount.replace(/^RM\s*/i, '');
         totalNum += rawVal;
 
-        const theme = getBenefitCategoryColor(item.type);
-
         html += `
-          <article class="benefit-detail-record" style="--record-accent: ${theme.border};">
+          <article class="benefit-detail-record">
             <div class="benefit-detail-period-row">
               <span class="benefit-detail-period-value" style="font-family: monospace, sans-serif; font-size: 12.5px; font-weight: 800;">${item.period}</span>
             </div>
-            <div style="padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end;">
-              <div>
-                <div style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.65px; margin-bottom: 4px;">Benefit Type</div>
-                <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); line-height: 1.3; text-transform: uppercase;">${item.type}</div>
+            <div class="benefit-detail-fields">
+              <div class="benefit-detail-field">
+                <div class="benefit-detail-field-label">Benefit Type</div>
+                <div class="benefit-detail-type">${item.type}</div>
               </div>
-              <div style="text-align: right;">
-                <div style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.65px; margin-bottom: 4px;">Amount</div>
-                <div class="benefit-detail-amount" style="font-size: 16px; font-weight: 900; letter-spacing: -0.3px; white-space: nowrap;">${displayAmount}</div>
+              <div class="benefit-detail-field">
+                <div class="benefit-detail-field-label">Amount</div>
+                <div class="benefit-detail-amount">${displayAmount}</div>
               </div>
             </div>
           </article>

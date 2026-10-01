@@ -313,6 +313,7 @@
       color: #ffffff;
       font-weight: 800;
       font-size: 13px;
+      font-family: inherit;
       white-space: nowrap;
       text-decoration: none;
       cursor: pointer;
@@ -323,6 +324,118 @@
 
     .btn-view-chart-pill:active {
       transform: scale(0.98);
+    }
+
+    .chart-breakdown-sheet {
+      max-height: 72%;
+      padding: 12px 18px 96px;
+    }
+
+    .chart-breakdown-handle {
+      width: 36px;
+      height: 4px;
+      margin: 0 auto 14px;
+      border-radius: 999px;
+      background: var(--border-subtle);
+    }
+
+    .chart-breakdown-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .chart-breakdown-title {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 17px;
+      font-weight: 850;
+      letter-spacing: -0.2px;
+    }
+
+    .chart-breakdown-context {
+      margin: 4px 0 0;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .chart-breakdown-close {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .chart-breakdown-close:active {
+      transform: scale(0.96);
+    }
+
+    .chart-breakdown-list {
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      background: var(--bg-card);
+    }
+
+    .chart-breakdown-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 76px 52px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chart-breakdown-columns {
+      padding: 10px 14px;
+      background: var(--purple-subtle);
+      color: var(--text-muted);
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    .chart-breakdown-column:nth-child(n + 2) {
+      text-align: right;
+    }
+
+    .chart-breakdown-row {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .chart-breakdown-category {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-breakdown-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 auto;
+      border-radius: 3px;
+    }
+
+    .chart-breakdown-amount,
+    .chart-breakdown-share {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-breakdown-share {
+      color: var(--text-muted);
     }
 
     /* 7-Column Calendar Styling */
@@ -673,11 +786,11 @@
           <div id="individual-breakdown-legend-container"></div>
 
           <!-- AGENTS.md Rule 2: View Chart Button Presentation Standard -->
-          <a href="options/summary.html" class="btn-view-chart-pill">
+          <button type="button" class="btn-view-chart-pill" onclick="window.ClaimsEngine.openChartBreakdownSheet('individual')">
             <i class="fa-solid fa-chart-pie"></i>
             <span>View chart breakdown</span>
             <i class="fa-solid fa-arrow-right" style="margin-left: auto;"></i>
-          </a>
+          </button>
         </div>
 
         <!-- Card 5: My travel -->
@@ -820,11 +933,11 @@
             <div id="team-breakdown-legend-container"></div>
 
             <!-- AGENTS.md Rule 2: View Chart Button Presentation Standard -->
-            <a href="options/staff-summary.html" class="btn-view-chart-pill">
+            <button type="button" class="btn-view-chart-pill" onclick="window.ClaimsEngine.openChartBreakdownSheet('team')">
               <i class="fa-solid fa-chart-pie"></i>
               <span>View chart breakdown</span>
               <i class="fa-solid fa-arrow-right" style="margin-left: auto;"></i>
-            </a>
+            </button>
           </div>
 
           <!-- Card 4: Staff travel calendar -->
@@ -913,6 +1026,33 @@
         </div>
         <div id="allClaimOptionsModalGrid" class="claim-square-grid"></div>
       </div>
+    </div>
+
+    <!-- INDIVIDUAL / TEAM CHART BREAKDOWN SHEET -->
+    <div class="modal-overlay" id="chartBreakdownModalOverlay"
+      onclick="if(event.target===this) window.ClaimsEngine.closeChartBreakdownSheet()">
+      <section class="modal-sheet chart-breakdown-sheet" role="dialog" aria-modal="true"
+        aria-labelledby="chartBreakdownTitle">
+        <div class="chart-breakdown-handle" aria-hidden="true"></div>
+        <div class="chart-breakdown-header">
+          <div>
+            <h3 id="chartBreakdownTitle" class="chart-breakdown-title">Chart breakdown</h3>
+            <p id="chartBreakdownContext" class="chart-breakdown-context"></p>
+          </div>
+          <button type="button" id="chartBreakdownCloseButton" class="chart-breakdown-close"
+            onclick="window.ClaimsEngine.closeChartBreakdownSheet()" aria-label="Close chart breakdown">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="chart-breakdown-list">
+          <div class="chart-breakdown-grid chart-breakdown-columns" aria-hidden="true">
+            <span class="chart-breakdown-column">Category</span>
+            <span class="chart-breakdown-column">Amount</span>
+            <span class="chart-breakdown-column">Share</span>
+          </div>
+          <div id="chartBreakdownRows"></div>
+        </div>
+      </section>
     </div>
 
     <!-- TOAST NOTIFICATION -->

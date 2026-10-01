@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../../../css/app.css">
   <link rel="stylesheet" href="../../../css/claim-forms.css">
   <link rel="stylesheet" href="../../../css/claim-summary-details.css">
+  <link rel="stylesheet" href="../../../css/claim-summary-cards.css">
   <style>
     * {
       margin: 0;
@@ -125,44 +126,8 @@
     .status-pill.approved { background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
     .status-pill.rejected { background: rgba(239, 68, 68, 0.16); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 
-    /* Claim summary cards: same visual hierarchy as claim review cards, without approval actions. */
-    .claim-summary-card {
-      padding: 0;
-      overflow: hidden;
-      border-radius: 20px;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    .claim-summary-card:hover { transform: translateY(-1px); border-color: rgba(167, 139, 250, 0.5); }
-    .claim-summary-card:active { transform: scale(0.99); }
-    .claim-summary-card-head {
-      padding: 15px 16px;
-      background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .claim-summary-card-title { font-size: 14px; font-weight: 900; letter-spacing: -0.2px; }
-    .claim-summary-card-subtitle { font-size: 10.5px; font-weight: 700; opacity: 0.78; margin-top: 3px; }
-    .claim-summary-card-body { padding: 14px 16px 16px; }
-    .claim-summary-total {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .claim-summary-total-label { color: var(--text-muted); font-size: 11.5px; font-weight: 700; }
-    .claim-summary-total-value { color: var(--text-primary); font-size: 21px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -0.6px; }
-    .claim-summary-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .claim-summary-stat {
-      padding: 10px 11px;
-      border-radius: 12px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-input);
-    }
-    .claim-summary-stat-label { display: block; color: var(--text-muted); font-size: 10px; font-weight: 700; margin-bottom: 4px; }
-    .claim-summary-stat-value { color: var(--text-primary); font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    /* The purple modal header now contains only the category name and close action. */
+    #summaryDetailsModalOverlay .summary-details-header { margin-bottom: 0; }
 
 
     .summary-filter-period-grid {
@@ -280,20 +245,7 @@
             <div class="summary-details-category">
               <h2 id="modalCategoryTitle" class="summary-details-title">Category details</h2>
             </div>
-            <button type="button" class="summary-details-close" onclick="closeDetailsModalForce()" aria-label="Close details" title="Close details">
-              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-            </button>
-          </div>
-
-          <div class="summary-details-metrics">
-            <div class="summary-details-metric">
-              <div class="summary-details-metric-label">Current Amount</div>
-              <div id="modalCurrentAmt" class="summary-details-metric-value">RM 0.00</div>
-            </div>
-            <div class="summary-details-metric accent">
-              <div class="summary-details-metric-label">YTD Total</div>
-              <div id="modalYtdAmt" class="summary-details-metric-value">RM 0.00</div>
-            </div>
+            <button type="button" class="summary-details-close" onclick="closeDetailsModalForce()" aria-label="Close details" title="Close details"></button>
           </div>
         </div>
 
@@ -535,11 +487,7 @@
         return includePending || (r.status !== 'pending' && r.status !== 'submitted');
       });
 
-      const modalAmt = recordsToDisplay.reduce((sum, r) => sum + r.amount, 0);
-
       document.getElementById('modalCategoryTitle').textContent = cat.title;
-      document.getElementById('modalCurrentAmt').textContent = `RM ${modalAmt.toFixed(2)}`;
-      document.getElementById('modalYtdAmt').textContent = `RM ${cat.ytdAmount.toFixed(2)}`;
       document.getElementById('modalRecordsCount').textContent = `${recordsToDisplay.length} record${recordsToDisplay.length === 1 ? '' : 's'}`;
       
       const recordsContainer = document.getElementById('modalRecordsListContainer');
@@ -547,14 +495,14 @@
       
       recordsToDisplay.forEach(r => {
         const recItem = document.createElement('article');
-        recItem.className = 'claim-summary-record summary-colored-record';
+        recItem.className = 'claim-summary-record summary-colored-record claim-summary-detail-card';
         
         recItem.innerHTML = `
-          <dl class="summary-record-fields">
+          <dl class="summary-record-fields claim-summary-detail-body">
             <div class="summary-record-field summary-record-date"><dd>${r.dateRange}</dd></div>
-            <div class="summary-record-field summary-record-period"><dt>Period</dt><dd>${r.period}</dd></div>
-            <div class="summary-record-field summary-record-expense"><dt>Expense</dt><dd>${r.expense}</dd></div>
-            <div class="summary-record-field summary-record-amount"><dt>Amount</dt><dd>RM ${r.amount.toFixed(2)}</dd></div>
+            <div class="summary-record-field summary-record-period summary-detail-metric-card"><dt>Period</dt><dd>${r.period}</dd></div>
+            <div class="summary-record-field summary-record-expense summary-detail-metric-card"><dt>Expense</dt><dd>${r.expense}</dd></div>
+            <div class="summary-record-field summary-record-amount summary-detail-metric-card summary-detail-metric-amount"><dt>Amount</dt><dd>RM ${r.amount.toFixed(2)}</dd></div>
           </dl>
         `;
         recordsContainer.appendChild(recItem);
