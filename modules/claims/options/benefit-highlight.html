@@ -271,14 +271,6 @@
           </div>
         </div>
 
-        <!-- 3. Data List Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Employee Benefit Highlights Table</div>
-          <div id="tableRecordCountBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-input); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-            Total: 6 records
-          </div>
-        </div>
-
         <!-- 4. Full Height Data Table Container (Enterprise Zebra + Purple Accents) -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); margin-bottom: 20px;">
           <div class="table-scroll-container" style="overflow-x: auto; flex: 1; -webkit-overflow-scrolling: touch;">
@@ -397,10 +389,6 @@
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--text-muted);">
-            <i class="fa-solid fa-calendar-days"></i>
-            <span id="highlightChartSubTitle">Entitlement Year 2026</span>
-          </div>
         </div>
 
         <!-- Card 2: Donut Chart Card -->
@@ -523,10 +511,26 @@
            ======================================================== -->
       <div id="viewBenefitAnalysis" style="display: none;">
         
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 24px 20px 28px; margin-bottom: 20px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+        <!-- Card 1: Breakdown Selector -->
+        <div id="benefitAnalysisBreakdownCard" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow-card);">
+          <label for="benefitAnalysisMetricSelect" style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">BREAKDOWN BY</label>
+          <div style="position: relative;">
+            <select id="benefitAnalysisMetricSelect" onchange="changeBenefitAnalysisMetric(this.value)" style="width: 100%; padding: 13px 40px 13px 16px; background: var(--bg-input); color: var(--text-primary); border: 1.5px solid var(--purple-border); border-radius: 16px; font-size: 14.5px; font-weight: 800; outline: none; cursor: pointer; appearance: none; transition: all 0.2s ease;">
+              <option value="category" selected>Benefit Category</option>
+              <option value="branch">Branch</option>
+              <option value="department">Department</option>
+              <option value="section">Section</option>
+              <option value="grade">Grade</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+            <div aria-hidden="true" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 12px; font-weight: 900;">&#9662;</div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 24px 20px 28px; margin-bottom: 14px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
           
-          <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; text-align: center;">
-            Benefit Spend by Branch
+          <div id="benefitAnalysisTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; text-align: center;">
+            Benefit Spend by Category
           </div>
           <div id="benefitAnalysisSubtitle" style="font-size: 13.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 18px; text-align: center;">
             As At Sep 2026
@@ -543,12 +547,19 @@
               <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Total Spend</div>
             </div>
           </div>
+        </div>
 
-          <!-- Legend Breakdown List -->
-          <div id="benefitAnalysisLegendList" style="width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
-            <!-- Populated dynamically -->
+        <!-- Card 2: Analysis Details Card -->
+        <div id="benefitAnalysisDetailsCard" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 18px 18px; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 100px 65px; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+            <div id="benefitAnalysisColumnHeaderKey">CATEGORY</div>
+            <div style="text-align: right;">AMOUNT</div>
+            <div style="text-align: right;">% TOTAL</div>
           </div>
 
+          <div id="benefitAnalysisLegendList" style="width: 100%; display: flex; flex-direction: column; gap: 16px; padding-top: 16px;">
+            <!-- Populated dynamically -->
+          </div>
         </div>
       </div>
 
@@ -787,7 +798,6 @@
       const data = benefitChartDataset[key] || benefitChartDataset['category'];
       document.getElementById('highlightChartMainTitle').innerText = `Benefit claims by ${data.title.toLowerCase()}`;
       document.getElementById('tableColHeaderKey').innerText = data.title.toUpperCase();
-      document.getElementById('highlightChartSubTitle').innerText = data.subtitle;
       document.getElementById('benefitCenterTotal').innerText = data.total;
       document.getElementById('benefitCenterBadge').innerText = data.badge;
 
@@ -875,16 +885,28 @@
       const totalEl = document.getElementById('benefitAnalysisCenterTotal');
       if (totalEl) totalEl.innerText = totalVal;
 
-      renderAnalysisDonutAndLegend();
+      const metricSelect = document.getElementById('benefitAnalysisMetricSelect');
+      if (metricSelect) metricSelect.value = 'category';
+      renderAnalysisDonutAndLegend('category');
       showBenefitSection('analysis');
     }
 
-    function renderAnalysisDonutAndLegend() {
-      const items = [
-        { name: 'Car Maintenance', pct: '43.96%', count: 'RM 3,240', color: '#7c3aed' },
-        { name: 'Mobile Phone', pct: '29.58%', count: 'RM 2,180', color: '#3b82f6' },
-        { name: 'Optical & Dental', pct: '26.46%', count: 'RM 1,950', color: '#10b981' }
-      ];
+    function changeBenefitAnalysisMetric(value) {
+      renderAnalysisDonutAndLegend(value);
+    }
+
+    function renderAnalysisDonutAndLegend(key = 'category') {
+      const data = benefitChartDataset[key] || benefitChartDataset.category;
+      const items = data.items.map(item => ({
+        name: item.name,
+        pct: item.pct,
+        count: item.val,
+        color: item.color
+      }));
+      const analysisTitle = document.getElementById('benefitAnalysisTitle');
+      const columnHeader = document.getElementById('benefitAnalysisColumnHeaderKey');
+      if (analysisTitle) analysisTitle.innerText = 'Benefit Spend by ' + data.title;
+      if (columnHeader) columnHeader.innerText = data.title.toUpperCase();
 
       const svgGroup = document.getElementById('benefitAnalysisDonutCircles');
       if (svgGroup) {
@@ -893,7 +915,7 @@
         let circlesHtml = '';
 
         items.forEach(it => {
-          const numPct = parseFloat(it.pct) / 100;
+          const numPct = it.pct / 100;
           const dashLen = numPct * C;
           const dashOffset = -currentOffset;
           currentOffset += dashLen;
@@ -907,12 +929,13 @@
         let listHtml = '';
         items.forEach(it => {
           listHtml += `
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+            <div style="display: grid; grid-template-columns: 1fr 100px 65px; gap: 10px; align-items: center;">
               <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; padding-right: 8px;">
                 <span style="width: 12px; height: 12px; border-radius: 3.5px; background: ${it.color}; flex-shrink: 0;"></span>
                 <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${it.name}</span>
               </div>
-              <div style="font-weight: 800; color: var(--text-muted); white-space: nowrap; flex-shrink: 0;">${it.count} (${it.pct})</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right; white-space: nowrap;">${it.count}</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: right; white-space: nowrap;">${it.pct.toFixed(2)}%</div>
             </div>
           `;
         });

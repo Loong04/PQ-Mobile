@@ -259,10 +259,11 @@
           </div>
           <div>
             <label class="claim-filter-label">Include Pending</label>
-            <div class="claim-filter-select-wrap">
-              <select id="includePendingSelect" class="claim-filter-select" aria-label="Include pending claims"><option value="yes">Yes</option><option value="no">No</option></select>
-              <i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
-            </div>
+            <label class="claim-filter-checkbox-row" for="includePendingSelect">
+              <input id="includePendingSelect" class="claim-filter-checkbox-input" type="checkbox" checked>
+              <span class="claim-filter-checkbox-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+              <span class="claim-filter-checkbox-text">Include pending claims</span>
+            </label>
           </div>
         </div>
         <button type="button" class="claim-filter-apply" onclick="applyFiltersAndClose()">Apply Filter</button>
@@ -401,7 +402,7 @@
     function resetFilters() {
       currentPeriod = '2026-05';
       syncSummaryPeriodControls();
-      document.getElementById('includePendingSelect').value = 'yes';
+      document.getElementById('includePendingSelect').checked = true;
       applyFilters();
       closeFilterModalForce();
     }
@@ -415,7 +416,7 @@
     }
 
     function applyFilters() {
-      const includePending = document.getElementById('includePendingSelect').value === 'yes';
+      const includePending = document.getElementById('includePendingSelect').checked;
       
       let targetStatus = null;
       if (window.location.hash) {
@@ -526,7 +527,7 @@
       const cat = SUMMARY_CATEGORIES.find(c => c.id === catId);
       if (!cat) return;
 
-      const includePending = document.getElementById('includePendingSelect').value === 'yes';
+      const includePending = document.getElementById('includePendingSelect').checked;
       const recordsToDisplay = cat.records.filter(r => {
         if (targetStatus && targetStatus !== 'all') {
           return r.status.toLowerCase() === targetStatus.toLowerCase();
@@ -550,7 +551,7 @@
         
         recItem.innerHTML = `
           <dl class="summary-record-fields">
-            <div class="summary-record-field summary-record-date"><dt>Claim Date</dt><dd>${r.dateRange}</dd></div>
+            <div class="summary-record-field summary-record-date"><dd>${r.dateRange}</dd></div>
             <div class="summary-record-field summary-record-period"><dt>Period</dt><dd>${r.period}</dd></div>
             <div class="summary-record-field summary-record-expense"><dt>Expense</dt><dd>${r.expense}</dd></div>
             <div class="summary-record-field summary-record-amount"><dt>Amount</dt><dd>RM ${r.amount.toFixed(2)}</dd></div>

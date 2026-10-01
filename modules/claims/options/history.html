@@ -866,6 +866,40 @@
       uploadFiles: 'OT_Timesheet.pdf'
     });
 
+    function normalizeHistoryPeriod(value, fallbackIsoDate = '') {
+      const rawValue = String(value || '').trim();
+      const separatedMatch = rawValue.match(/^(\d{4})\D+(\d{1,2})$/);
+      const compactValue = rawValue.replace(/\D/g, '');
+      let year = '';
+      let month = '';
+
+      if (separatedMatch) {
+        year = separatedMatch[1];
+        month = separatedMatch[2];
+      } else if (/^\d{5,6}$/.test(compactValue)) {
+        year = compactValue.slice(0, 4);
+        month = compactValue.slice(4);
+      } else {
+        const isoMatch = String(fallbackIsoDate || '').match(/^(\d{4})-(\d{1,2})/);
+        if (isoMatch) {
+          year = isoMatch[1];
+          month = isoMatch[2];
+        }
+      }
+
+      const monthNumber = Number(month);
+      if (!year || monthNumber < 1 || monthNumber > 12) return '202601';
+      return `${year}${String(monthNumber).padStart(2, '0')}`;
+    }
+
+    // Normalize the source once so cards, filters and detail tables share YYYYMM.
+    Object.values(HISTORY_DATA).flat().forEach(item => {
+      item.claimPeriod = normalizeHistoryPeriod(item.claimPeriod, item.isoDate);
+      if (item.paymentPeriod) {
+        item.paymentPeriod = normalizeHistoryPeriod(item.paymentPeriod, item.isoDate);
+      }
+    });
+
     function getHistoryStatus(item) {
       const allowedStatuses = {
         approved: 'Approved',
@@ -963,7 +997,7 @@
       // 2. Filter by selected claim periods, not individual receipt dates.
       if (activeStartPeriod && activeEndPeriod) {
         items = items.filter(i => {
-          const recordPeriod = String(i.claimPeriod || (i.isoDate || '').slice(0, 7).replace('-', ''));
+          const recordPeriod = normalizeHistoryPeriod(i.claimPeriod, i.isoDate);
           if (!recordPeriod) return true;
           return recordPeriod >= activeStartPeriod && recordPeriod <= activeEndPeriod;
         });
@@ -999,9 +1033,11 @@
           }
         };
 
-        const periodDisplay = item.claimPeriod
-          ? (item.claimPeriod.length === 6 ? `${item.claimPeriod.substring(0,4)}-${item.claimPeriod.substring(4)}` : item.claimPeriod)
-          : (item.paymentPeriod || item.benefitYear || '2026-09');
+        // History period values use the compact YYYYMM pattern consistently.
+        const periodDisplay = normalizeHistoryPeriod(
+          item.claimPeriod || item.paymentPeriod,
+          item.isoDate
+        );
 
         let datesDisplay = item.date || '09 SEP 2026';
         if (item.dateFrom && item.dateTo) {
@@ -1044,10 +1080,6 @@
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                 <span style="color: var(--text-muted); font-weight: 600;">Purpose :</span>
                 <span style="color: var(--text-primary); font-weight: 700; text-align: right;">${item.purpose || '—'}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
-                <span style="color: var(--text-muted); font-weight: 600;">Status :</span>
-                <span style="color: var(--text-primary); font-weight: 700;">${displayStatus.text}</span>
               </div>
             </div>
           `;

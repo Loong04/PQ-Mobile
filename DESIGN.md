@@ -97,3 +97,12 @@ To ensure unified user experience across all modules (`me.html`, `change-request
 
 - Attachments and uploaded files belong to the same information table as their related detail data.
 - Put `Attachments` and `Upload Files` as the final two rows of that table, after all normal information rows. Do not create a separate card, block, or second table for them.
+
+## 7. Analytics Chart Card Standard
+
+- A chart visualization and its supporting details must use separate sibling cards.
+- The chart card contains the title, subtitle, visualization, and chart-specific controls only.
+- The details card contains the legend, category breakdown, amounts, percentages, or other supporting rows.
+- Never place the details list inside the chart card. Apply this structure consistently to all current and future analytics screens.
+- When an analysis supports multiple breakdown dimensions, place a standalone `BREAKDOWN BY` selector card above the chart card.
+- Keep that selector card focused on its label and dropdown. Do not add “Share of…” helper copy inside it.

@@ -202,7 +202,7 @@
           <button class="me-back-btn" onclick="handleBackNavigation()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
             <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
           </button>
-          <h1 id="pageHeaderTitle" style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Expenses Highlights</h1>
+          <h1 id="pageHeaderTitle" style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Expense Highlights</h1>
         </div>
       </div>
     </div>
@@ -268,15 +268,7 @@
           </div>
         </div>
 
-        <!-- 3. Data List Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">Employee Expenses Highlights Table</div>
-          <div id="tableRecordCountBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-input); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-            Total: 6 records
-          </div>
-        </div>
-
-        <!-- 4. Full Height Data Table Container (Enterprise Zebra + Purple Accents) -->
+        <!-- 3. Full Height Data Table Container (Enterprise Zebra + Purple Accents) -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); margin-bottom: 20px;">
           <div class="table-scroll-container" style="overflow-x: auto; flex: 1; -webkit-overflow-scrolling: touch;">
             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
@@ -394,10 +386,6 @@
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--text-muted);">
-            <i class="fa-solid fa-calendar-days"></i>
-            <span id="highlightChartSubTitle">Entitlement Year 2026</span>
-          </div>
         </div>
 
         <!-- Card 2: Donut Chart Card -->
@@ -519,11 +507,28 @@
            VIEW 4: EXPENSES SPEND ANALYSIS DETAILS
            ======================================================== -->
       <div id="viewExpensesAnalysis" style="display: none;">
-        
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 24px 20px 28px; margin-bottom: 20px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+
+        <!-- Card 1: Breakdown Selector -->
+        <div id="expensesAnalysisBreakdownCard" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 18px 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow-card);">
+          <label for="expensesAnalysisMetricSelect" style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">BREAKDOWN BY</label>
+          <div style="position: relative;">
+            <select id="expensesAnalysisMetricSelect" onchange="changeExpensesAnalysisMetric(this.value)" style="width: 100%; padding: 13px 40px 13px 16px; background: var(--bg-input); color: var(--text-primary); border: 1.5px solid var(--purple-border); border-radius: 16px; font-size: 14.5px; font-weight: 800; outline: none; cursor: pointer; appearance: none; transition: all 0.2s ease;">
+              <option value="category" selected>Expense Category</option>
+              <option value="branch">Branch</option>
+              <option value="department">Department</option>
+              <option value="section">Section</option>
+              <option value="grade">Grade</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+            <div aria-hidden="true" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--purple-primary); font-size: 12px; font-weight: 900;">&#9662;</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Analysis Chart -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 24px 20px 28px; margin-bottom: 14px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
           
-          <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; text-align: center;">
-            Expense Spend by Branch
+          <div id="expensesAnalysisTitle" style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; text-align: center;">
+            Expense Spend by Category
           </div>
           <div id="expensesAnalysisSubtitle" style="font-size: 13.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 18px; text-align: center;">
             As At Sep 2026
@@ -541,11 +546,19 @@
             </div>
           </div>
 
-          <!-- Legend Breakdown List -->
-          <div id="expensesAnalysisLegendList" style="width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
-            <!-- Populated dynamically -->
+        </div>
+
+        <!-- Card 3: Analysis Details -->
+        <div id="expensesAnalysisDetailsCard" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 18px 18px; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 100px 65px; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+            <div id="expensesAnalysisColumnHeaderKey">CATEGORY</div>
+            <div style="text-align: right;">AMOUNT</div>
+            <div style="text-align: right;">% TOTAL</div>
           </div>
 
+          <div id="expensesAnalysisLegendList" style="width: 100%; display: flex; flex-direction: column; gap: 16px; padding-top: 16px;">
+            <!-- Populated dynamically -->
+          </div>
         </div>
       </div>
 
@@ -615,7 +628,7 @@
       <div class="popout-dialog-card expense-details-dialog">
         
         <!-- Header Bar -->
-        <div style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);">
+        <div style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);">
           <div>
             <div id="modalExpenseEmpNameText" style="font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1.25;">MUHAMMAD ALI BIN MAN</div>
             <div id="modalExpenseEmpIdBadge" style="font-family: monospace, sans-serif; color: rgba(255, 255, 255, 0.76); font-size: 11.5px; font-weight: 700; margin-top: 3px;">#EBB01</div>
@@ -751,7 +764,7 @@
       if (vAnalysis) vAnalysis.style.display = (sec === 'analysis') ? 'block' : 'none';
 
       if (sec === 'table') {
-        headerTitle.innerText = 'Expenses Highlights';
+        headerTitle.innerText = 'Expense Highlights';
       } else if (sec === 'chart') {
         headerTitle.innerText = 'Expense Amount Analysis';
         renderExpensesChart(document.getElementById('highlightChartMetricSelect')?.value || 'category');
@@ -779,7 +792,6 @@
       const data = expensesChartDataset[key] || expensesChartDataset['category'];
       document.getElementById('highlightChartMainTitle').innerText = `Expense spend by ${data.title.toLowerCase()}`;
       document.getElementById('tableColHeaderKey').innerText = data.title.toUpperCase();
-      document.getElementById('highlightChartSubTitle').innerText = data.subtitle;
       document.getElementById('expensesCenterTotal').innerText = data.total;
       document.getElementById('expensesCenterBadge').innerText = data.badge;
 
@@ -867,19 +879,28 @@
       const totalEl = document.getElementById('expensesAnalysisCenterTotal');
       if (totalEl) totalEl.innerText = totalVal;
 
-      renderAnalysisDonutAndLegend();
+      const metricSelect = document.getElementById('expensesAnalysisMetricSelect');
+      if (metricSelect) metricSelect.value = 'category';
+      renderAnalysisDonutAndLegend('category');
       showExpensesSection('analysis');
     }
 
-    function renderAnalysisDonutAndLegend() {
-      const items = [
-        { name: 'Client Dining & Entertainment', pct: '34.14%', count: 'RM 4,250', color: '#7c3aed' },
-        { name: 'Overseas Travel Advance', pct: '25.54%', count: 'RM 3,180', color: '#3b82f6' },
-        { name: 'Travel Mileage & Tolls', pct: '19.44%', count: 'RM 2,420', color: '#10b981' },
-        { name: 'Night Transport & Taxi', pct: '9.24%', count: 'RM 1,150', color: '#f59e0b' },
-        { name: 'Office Supplies & Printing', pct: '7.87%', count: 'RM 980', color: '#ec4899' },
-        { name: 'Overtime Meal Allowance', pct: '3.77%', count: 'RM 470', color: '#6366f1' }
-      ];
+    function changeExpensesAnalysisMetric(value) {
+      renderAnalysisDonutAndLegend(value);
+    }
+
+    function renderAnalysisDonutAndLegend(key = 'category') {
+      const data = expensesChartDataset[key] || expensesChartDataset.category;
+      const items = data.items.map(item => ({
+        name: item.name,
+        pct: item.pct,
+        count: item.val,
+        color: item.color
+      }));
+      const analysisTitle = document.getElementById('expensesAnalysisTitle');
+      const columnHeader = document.getElementById('expensesAnalysisColumnHeaderKey');
+      if (analysisTitle) analysisTitle.innerText = 'Expense Spend by ' + data.title;
+      if (columnHeader) columnHeader.innerText = data.title.toUpperCase();
 
       const svgGroup = document.getElementById('expensesAnalysisDonutCircles');
       if (svgGroup) {
@@ -888,7 +909,7 @@
         let circlesHtml = '';
 
         items.forEach(it => {
-          const numPct = parseFloat(it.pct) / 100;
+          const numPct = it.pct / 100;
           const dashLen = numPct * C;
           const dashOffset = -currentOffset;
           currentOffset += dashLen;
@@ -902,12 +923,13 @@
         let listHtml = '';
         items.forEach(it => {
           listHtml += `
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+            <div style="display: grid; grid-template-columns: 1fr 100px 65px; gap: 10px; align-items: center;">
               <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; padding-right: 8px;">
                 <span style="width: 12px; height: 12px; border-radius: 3.5px; background: ${it.color}; flex-shrink: 0;"></span>
                 <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${it.name}</span>
               </div>
-              <div style="font-weight: 800; color: var(--text-muted); white-space: nowrap; flex-shrink: 0;">${it.count} (${it.pct})</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right; white-space: nowrap;">${it.count}</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: right; white-space: nowrap;">${it.pct.toFixed(2)}%</div>
             </div>
           `;
         });
@@ -1055,6 +1077,7 @@
 
       data.items.forEach(item => {
         const rawVal = parseFloat(item.amount.replace(/[^0-9.]/g, '')) || 0;
+        const displayAmount = item.amount.replace(/^RM\s*/i, '');
         totalNum += rawVal;
 
         const theme = getExpenseCategoryColor(item.type);
@@ -1071,7 +1094,7 @@
               </div>
               <div style="text-align: right;">
                 <div style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.65px; margin-bottom: 4px;">Amount</div>
-                <div class="expense-detail-amount" style="font-size: 16px; font-weight: 900; letter-spacing: -0.3px; white-space: nowrap;">${item.amount}</div>
+                <div class="expense-detail-amount" style="font-size: 16px; font-weight: 900; letter-spacing: -0.3px; white-space: nowrap;">${displayAmount}</div>
               </div>
             </div>
           </article>

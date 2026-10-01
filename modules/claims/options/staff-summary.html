@@ -59,8 +59,6 @@
     .staff-record-count { margin-top: 11px; color: var(--text-muted); font-size: 11px; font-weight: 600; }
     .staff-empty { padding: 28px 16px; border: 1px dashed var(--border-subtle); border-radius: 18px; color: var(--text-secondary); font-size: 13px; text-align: center; line-height: 1.6; }
     .staff-data-note { color: var(--text-secondary); font-size: 11.5px; line-height: 1.6; margin: 0 0 14px; }
-    .staff-export { width: 100%; min-height: 48px; margin-top: 10px; padding: 13px; display: flex; justify-content: center; align-items: center; gap: 9px; border: 1px solid var(--purple-border); border-radius: 14px; background: var(--purple-subtle); color: var(--purple-text); font-size: 12px; font-weight: 800; cursor: pointer; }
-    .staff-export:disabled { opacity: .5; cursor: default; }
     #staffFilterModal .claim-filter-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-sheet); }
     #staffFilterModal .claim-filter-header, #staffFilterModal .claim-filter-handle, #staffFilterModal .claim-filter-apply { flex: 0 0 auto; }
     #staffFilterModal .claim-filter-close { width: 44px; height: 44px; }
@@ -72,11 +70,13 @@
     .staff-search::placeholder { color: var(--text-muted); opacity: 1; font-size: 12px; font-weight: 500; }
     #staffFilterModal option { background: var(--bg-phone); color: var(--text-primary); }
     .staff-record-employee {
-      padding: 14px 15px 0;
+      padding: 12px 15px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, .22);
     }
     .staff-record-employee-name {
       display: block;
-      color: var(--text-primary);
+      color: #fff;
       font-size: 14px;
       font-weight: 800;
       line-height: 1.4;
@@ -84,17 +84,18 @@
     }
     .staff-record-employee .staff-employee-id {
       margin: 2px 0 0;
-      color: var(--text-muted);
-      opacity: .8;
+      color: rgba(255, 255, 255, .74);
+      opacity: 1;
     }
     #summaryDetailsModalOverlay .summary-details-header { margin-bottom: 0; }
+    #summaryDetailsModalOverlay .summary-details-records-header { justify-content: flex-end; }
     @media (prefers-reduced-motion: reduce) { .staff-summary-card { transition: none; } }
     @media print {
       html { --bg-page: #fff; --bg-phone: #fff; --bg-card: #fff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #64748b; --border-card: #e2e8f0; --border-subtle: #e2e8f0; --purple-text: #6d28d9; }
       body { display: block; padding: 0; height: auto; }
       .phone-container { display: block; max-width: none; height: auto; overflow: visible; box-shadow: none; border-radius: 0; }
       .main-content { overflow: visible; padding: 16px 0; }
-      preview-top-bar, phone-status-bar, phone-bottom-nav, .staff-back, .staff-export, .staff-filter-trigger .claim-icon-button, .claim-filter-sheet, .modal-overlay { display: none !important; }
+      preview-top-bar, phone-status-bar, phone-bottom-nav, .staff-back, .staff-filter-trigger .claim-icon-button, .claim-filter-sheet, .modal-overlay { display: none !important; }
       .cal-top-header { background: none; box-shadow: none; padding: 0; }
       .staff-page-title { color: var(--text-primary); }
       .staff-summary-card { break-inside: avoid; }
@@ -120,10 +121,8 @@
         <div class="staff-kpi"><dt>Total Claim Amount</dt><dd id="staffTotalAmount">RM 0.00</dd></div>
         <div class="staff-kpi"><dt>Total Records Found</dt><dd id="staffTotalRecords">0</dd></div>
       </dl>
-      <div class="staff-list-header"><h2>Staff summaries</h2><span id="staffResultCount"></span></div>
       <p class="staff-data-note" id="staffStatusNote" hidden>Records without an approval status are excluded.</p>
       <div id="staffCardsContainer" aria-live="polite"></div>
-      <button type="button" class="staff-export" id="staffExport" onclick="window.print()"><i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i><span>Export Team YTD PDF Summary</span></button>
     </main>
 
     <div class="claim-filter-sheet" id="staffFilterModal" aria-hidden="true" onclick="if(event.target===this) closeStaffFilter()">
@@ -151,7 +150,14 @@
           <div><label class="claim-filter-label" for="staffCompany">Company</label><div class="claim-filter-select-wrap"><select id="staffCompany" class="claim-filter-select" onchange="syncOrganizationOptions()"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
           <div><label class="claim-filter-label" for="staffBranch">Branch</label><div class="claim-filter-select-wrap"><select id="staffBranch" class="claim-filter-select" onchange="syncDepartmentOptions()"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
           <div><label class="claim-filter-label" for="staffDepartment">Department</label><div class="claim-filter-select-wrap"><select id="staffDepartment" class="claim-filter-select"></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
-          <div><label class="claim-filter-label" for="staffIncludePending">Include Pending</label><div class="claim-filter-select-wrap"><select id="staffIncludePending" class="claim-filter-select"><option value="yes">Yes</option><option value="no">No</option></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
+          <div>
+            <label class="claim-filter-label" for="staffIncludePending">Include Pending</label>
+            <label class="claim-filter-checkbox-row" for="staffIncludePending">
+              <input id="staffIncludePending" class="claim-filter-checkbox-input" type="checkbox" checked>
+              <span class="claim-filter-checkbox-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+              <span class="claim-filter-checkbox-text">Include pending claims</span>
+            </label>
+          </div>
         </div>
         <button type="submit" class="claim-filter-apply">Apply Filter</button>
       </form>
@@ -168,7 +174,7 @@
             <button type="button" class="summary-details-close" onclick="closeStaffModal()" aria-label="Close details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
           </div>
         </div>
-        <div class="summary-details-records-header"><h3 class="summary-details-section-title">Itemized records</h3><span class="summary-details-record-count" id="modalStaffRecordCount"></span></div>
+        <div class="summary-details-records-header"><span class="summary-details-record-count" id="modalStaffRecordCount"></span></div>
         <div class="summary-details-records" id="modalRecordsList" tabindex="0" aria-label="Staff itemized claim records"></div>
       </section>
     </div>
@@ -200,10 +206,16 @@
     };
 
     const STAFF_ROLES = { EBB01: 'Marketing Lead', '004177': 'Senior Engineer', '000582': 'Operations Specialist' };
+    const CATEGORY_METRICS = {
+      'Advertisement': { lastAmount: 380.00, ytdAmount: 2180.00, averageAmount: 436.00 },
+      'Entertainment': { lastAmount: 620.00, ytdAmount: 3200.00, averageAmount: 640.00 },
+      'OT Meal & Taxi': { lastAmount: 860.00, ytdAmount: 4100.00, averageAmount: 820.00 },
+      'Travel Mileage': { lastAmount: 1180.00, ytdAmount: 5840.00, averageAmount: 1168.00 }
+    };
     const STAFF_PERIODS = [...new Set(Object.values(STAFF_DATA).flatMap(staff => staff.records.map(rec => rec.period)))].sort();
     const DEFAULT_STAFF_FILTERS = { keywords: '', period: STAFF_PERIODS.at(-1) || '202605', company: '', branch: '', department: '', includePending: true };
     let staffFilters = { ...DEFAULT_STAFF_FILTERS };
-    let visibleStaff = [];
+    let visibleCategories = [];
     let sheetOpener = null;
 
     function escapeHtml(value) {
@@ -220,33 +232,39 @@
       // Missing status cannot be treated as an approved claim.
       return !!status && !['pending', 'pendingapproval', 'submitted', 'draft'].includes(status);
     }
-    function collectVisibleStaff() {
+    function collectVisibleCategories() {
       const query = staffFilters.keywords.toLowerCase().replace(/^#/, '');
-      return Object.values(STAFF_DATA).flatMap(staff => {
+      const categoryGroups = new Map();
+
+      Object.values(STAFF_DATA).forEach(staff => {
         if (!['company', 'branch', 'department'].every(key => matchesOrganization(staff, key, staffFilters[key]))) return [];
         const employeeMatches = [staff.name, staff.empNo, STAFF_ROLES[staff.empNo] || ''].some(value => value.toLowerCase().includes(query));
         const records = staff.records.filter(rec => rec.period === staffFilters.period && includeRecord(rec) && (employeeMatches || rec.expense.toLowerCase().includes(query)));
-        if (!records.length) return [];
-        const ytdRecords = staff.records.filter(rec => rec.period.slice(0, 4) === staffFilters.period.slice(0, 4) && rec.period <= staffFilters.period && includeRecord(rec));
-        const calculatedYtd = sumRecords(ytdRecords);
-        const ytd = Number.isFinite(Number(staff.ytdAmount)) ? Number(staff.ytdAmount) : calculatedYtd;
-        const average = Number.isFinite(Number(staff.averageAmount)) ? Number(staff.averageAmount) : calculatedYtd;
-        return [{
-          staff,
-          records,
-          current: sumRecords(records),
-          last: Number(staff.lastAmount) || 0,
-          ytd,
-          average
-        }];
+        records.forEach(rec => {
+          if (!categoryGroups.has(rec.expense)) {
+            const metrics = CATEGORY_METRICS[rec.expense] || {};
+            categoryGroups.set(rec.expense, {
+              category: rec.expense,
+              records: [],
+              current: 0,
+              last: Number(metrics.lastAmount) || 0,
+              ytd: Number(metrics.ytdAmount) || 0,
+              average: Number(metrics.averageAmount) || 0
+            });
+          }
+          const group = categoryGroups.get(rec.expense);
+          group.records.push({ ...rec, staff });
+          group.current += rec.amount;
+        });
       });
+
+      return [...categoryGroups.values()].sort((a, b) => a.category.localeCompare(b.category));
     }
     function renderStaffSummaries() {
-      visibleStaff = collectVisibleStaff();
+      visibleCategories = collectVisibleCategories();
       const container = document.getElementById('staffCardsContainer');
       container.replaceChildren();
-      visibleStaff.forEach(entry => {
-        const staff = entry.staff;
+      visibleCategories.forEach(entry => {
         const variance = entry.last > 0 ? ((entry.current - entry.last) / entry.last) * 100 : 0;
         const varianceText = entry.last <= 0 || variance === 0 ? '-' : (variance > 0 ? '+' : '') + variance.toFixed(1) + '%';
         const varianceClass = variance > 0 ? 'increase' : variance < 0 ? 'decrease' : 'neutral';
@@ -254,30 +272,26 @@
         card.type = 'button';
         card.className = 'staff-summary-card';
         card.setAttribute('aria-haspopup', 'dialog');
-        card.addEventListener('click', () => openStaffModal(staff.empNo));
-        card.innerHTML = '<div class="staff-card-header"><div class="staff-identity"><div class="staff-name">' + escapeHtml(staff.name) +
-          '</div><span class="staff-employee-id">#' + escapeHtml(staff.empNo) + '</span><div class="staff-role">' +
-          escapeHtml(STAFF_ROLES[staff.empNo] || '') + '</div></div><i class="fa-solid fa-chevron-right staff-card-chevron" aria-hidden="true"></i></div>' +
+        card.addEventListener('click', () => openStaffModal(entry.category));
+        card.innerHTML = '<div class="staff-card-header"><div class="staff-identity"><div class="staff-name">' + escapeHtml(entry.category) +
+          '</div></div><i class="fa-solid fa-chevron-right staff-card-chevron" aria-hidden="true"></i></div>' +
           '<div class="staff-summary-card-body"><div class="staff-current-row"><span class="staff-current-label">Current Amount</span><span class="staff-current-value">' +
           amountText(entry.current) + '</span></div><div class="staff-stat-grid">' +
           '<div class="staff-stat"><span class="staff-stat-label">Last Amount</span><span class="staff-stat-value">' + amountText(entry.last) + '</span></div>' +
-          '<div class="staff-stat"><span class="staff-stat-label">Variance %</span><span class="staff-stat-value ' + varianceClass + '">' + varianceText + '</span></div>' +
+          '<div class="staff-stat"><span class="staff-stat-label">Variance</span><span class="staff-stat-value ' + varianceClass + '">' + varianceText + '</span></div>' +
           '<div class="staff-stat"><span class="staff-stat-label">YTD Amount</span><span class="staff-stat-value">' + amountText(entry.ytd) + '</span></div>' +
           '<div class="staff-stat"><span class="staff-stat-label">Average Amount</span><span class="staff-stat-value">' + amountText(entry.average) + '</span></div>' +
-          '</div><div class="staff-record-count">' + entry.records.length + ' record' + (entry.records.length === 1 ? '' : 's') + ' in ' +
-          escapeHtml(staffFilters.period) + '</div></div>';
+          '</div></div>';
         container.appendChild(card);
       });
-      if (!visibleStaff.length) {
+      if (!visibleCategories.length) {
         const empty = document.createElement('p');
         empty.className = 'staff-empty';
         empty.textContent = 'No claims match these filters.';
         container.appendChild(empty);
       }
-      document.getElementById('staffTotalAmount').textContent = amountText(visibleStaff.reduce((total, entry) => total + entry.current, 0));
-      document.getElementById('staffTotalRecords').textContent = visibleStaff.reduce((total, entry) => total + entry.records.length, 0);
-      document.getElementById('staffResultCount').textContent = visibleStaff.length + ' staff';
-      document.getElementById('staffExport').disabled = !visibleStaff.length;
+      document.getElementById('staffTotalAmount').textContent = amountText(visibleCategories.reduce((total, entry) => total + entry.current, 0));
+      document.getElementById('staffTotalRecords').textContent = visibleCategories.reduce((total, entry) => total + entry.records.length, 0);
       const filterText = ['Period: ' + staffFilters.period, staffFilters.includePending ? 'Include Pending' : 'Exclude Pending'];
       if (staffFilters.keywords) filterText.push('Search: ' + staffFilters.keywords);
       ['company', 'branch', 'department'].forEach(key => {
@@ -310,7 +324,7 @@
       document.getElementById('staffSearchKeywords').value = staffFilters.keywords;
       document.getElementById('staffPeriodYear').value = staffFilters.period.slice(0, 4);
       document.getElementById('staffPeriodMonth').value = staffFilters.period.slice(4, 6);
-      document.getElementById('staffIncludePending').value = staffFilters.includePending ? 'yes' : 'no';
+      document.getElementById('staffIncludePending').checked = staffFilters.includePending;
       setOrganizationOptions('staffCompany', 'company', Object.values(STAFF_DATA), 'All Companies', staffFilters.company);
       syncOrganizationOptions(staffFilters.branch, staffFilters.department);
     }
@@ -341,7 +355,7 @@
         company: document.getElementById('staffCompany').value,
         branch: document.getElementById('staffBranch').value,
         department: document.getElementById('staffDepartment').value,
-        includePending: document.getElementById('staffIncludePending').value === 'yes'
+        includePending: document.getElementById('staffIncludePending').checked
       };
       renderStaffSummaries();
       closeStaffFilter();
@@ -351,19 +365,18 @@
       syncStaffFilterFields();
       renderStaffSummaries();
     }
-    function openStaffModal(empId) {
-      const entry = visibleStaff.find(item => item.staff.empNo === empId);
+    function openStaffModal(category) {
+      const entry = visibleCategories.find(item => item.category === category);
       if (!entry) return;
+      document.getElementById('staffDetailsTitle').textContent = entry.category;
       document.getElementById('modalStaffRecordCount').textContent = entry.records.length + ' record' + (entry.records.length === 1 ? '' : 's');
       const container = document.getElementById('modalRecordsList');
       container.replaceChildren();
       entry.records.forEach(rec => {
         const card = document.createElement('article');
         card.className = 'claim-summary-record summary-colored-record';
-        card.innerHTML = '<dl class="summary-record-fields">' +
-          '<div class="summary-record-field summary-record-date"><dt>Claim Date</dt><dd>' + escapeHtml(rec.dateToDate) + '</dd></div></dl>' +
-          '<div class="staff-record-employee"><strong class="staff-record-employee-name">' + escapeHtml(entry.staff.name) + '</strong>' +
-          '<span class="staff-employee-id">#' + escapeHtml(entry.staff.empNo) + '</span></div>' +
+        card.innerHTML = '<div class="staff-record-employee"><strong class="staff-record-employee-name">' + escapeHtml(rec.staff.name) + '</strong>' +
+          '<span class="staff-employee-id">#' + escapeHtml(rec.staff.empNo) + '</span></div>' +
           '<dl class="summary-record-fields">' +
           '<div class="summary-record-field summary-record-period"><dt>Period</dt><dd>' + escapeHtml(rec.period) + '</dd></div>' +
           '<div class="summary-record-field summary-record-expense"><dt>Expense</dt><dd>' + escapeHtml(rec.expense) + '</dd></div>' +
