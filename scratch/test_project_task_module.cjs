@@ -44,7 +44,13 @@ const expected = {
           await page.waitForFunction(file => location.pathname.endsWith('/' + file), {}, file);
           assert.equal(await page.$eval('h1', node => node.textContent.trim()), title);
           assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
-          assert.equal(await page.$eval('.project-option-status', node => node.textContent.trim()), 'Coming soon');
+          if (file === 'work-plan.html') assert.ok(await page.$('#workPlanForm'));
+          else if (file === 'time-sheet.html') assert.ok(await page.$('#timesheetForm'));
+          else if (file === 'history.html') {
+            assert.ok(await page.$('#workPlanHistoryPanel'));
+            assert.equal(await page.$$eval('.project-history-tab', tabs => tabs.length), 2);
+          }
+          else assert.equal(await page.$eval('.project-option-status', node => node.textContent.trim()), 'Coming soon');
           await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('.project-back')]);
           await page.waitForSelector(`#projectTab-${scope}[aria-selected="true"]`);
         }

@@ -390,7 +390,7 @@ window.PAYROLL_CONFIG = {
   teamPayroll: {
     monthKey: '2026-09',
     monthLabel: 'September 2026',
-    pendingApprovalCount: 6,
+    pendingApprovalCount: 20,
     summaryGroups: [
       {
         key: 'payments',

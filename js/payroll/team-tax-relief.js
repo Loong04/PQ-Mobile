@@ -112,17 +112,27 @@
             <span class="tax-relief-employee-name">${escapeHtml(record.name)}</span>
             <span class="tax-relief-employee-id">#${escapeHtml(record.empNo.replace(/^#+/, ''))}</span>
           </span>
-          <span class="tax-relief-status ${escapeHtml(record.status)}"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> ${escapeHtml(formatStatus(record.status))}</span>
+          <span class="tax-relief-card-status">
+            <span class="tax-relief-meta-label">Status</span>
+            <span class="tax-relief-status ${escapeHtml(record.status)}">${escapeHtml(formatStatus(record.status))}</span>
+          </span>
+        </span>
+        <span class="tax-relief-card-highlights">
+          <span class="tax-relief-card-row tax-relief-card-amount"><span>Amount</span><strong class="amount">${escapeHtml(formatMoney(record.amount))}</strong></span>
+          <span class="tax-relief-card-row tax-relief-card-date"><span>Transaction Date</span><strong>${escapeHtml(formatDate(record.transactionDate))}</strong></span>
+        </span>
+        <span class="tax-relief-card-rebate">
+          <span class="tax-relief-meta-label">Rebate Item</span>
+          <strong>${escapeHtml(record.rebateCode)} – ${escapeHtml(record.rebateItem)}</strong>
         </span>
         <span class="tax-relief-card-grid">
           <span class="tax-relief-card-row"><span>Position</span><strong>${escapeHtml(record.position)}</strong></span>
-          <span class="tax-relief-card-row"><span>Transaction Date</span><strong>${escapeHtml(formatDate(record.transactionDate))}</strong></span>
-          <span class="tax-relief-card-row"><span>Rebate Item</span><strong>${escapeHtml(record.rebateCode)} – ${escapeHtml(record.rebateItem)}</strong></span>
-          <span class="tax-relief-card-row"><span>Amount</span><strong class="amount">${escapeHtml(formatMoney(record.amount))}</strong></span>
-          <span class="tax-relief-card-row"><span>Status</span><strong>${escapeHtml(formatStatus(record.status))}</strong></span>
           <span class="tax-relief-card-row"><span>Period / Cycle</span><strong>${escapeHtml(periodCycle(record))}</strong></span>
         </span>
-        <span class="tax-relief-card-foot"><span>View full details</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
+        <span class="tax-relief-card-foot">
+          <span class="tax-relief-card-reference">${escapeHtml(record.reference)}</span>
+          <span class="tax-relief-card-link">View details <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
+        </span>
       </button>`;
   }
 

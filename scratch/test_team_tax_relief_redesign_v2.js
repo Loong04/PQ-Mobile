@@ -130,6 +130,10 @@ async function run() {
         assert.deepEqual(overflow, [], `${theme} ${width}px must not overflow horizontally`);
       }
       await page.setViewport({ width: 390, height: 844 });
+      await page.evaluate(async () => {
+        getComputedStyle(document.body).backgroundColor;
+        await Promise.all(document.body.getAnimations().map(animation => animation.finished.catch(() => {})));
+      });
       await page.screenshot({ path: path.join(__dirname, `team_tax_relief_redesign_${theme}.png`) });
     }
 

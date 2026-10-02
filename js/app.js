@@ -1327,7 +1327,7 @@ function findStandardFilterPanel(overlay) {
   if (!overlay || overlay.id === 'filterBodyContainer') return null;
   const position = window.getComputedStyle(overlay).position;
   const overlayLike = overlay.matches('.modal-overlay, .indicators-overlay, .bottom-sheet, .claim-filter-sheet')
-    || /modal|overlay|sheet/i.test(overlay.id)
+    || /(?:modal|overlay|sheet)$/i.test(overlay.id)
     || position === 'fixed'
     || position === 'absolute';
   if (!overlayLike) return null;

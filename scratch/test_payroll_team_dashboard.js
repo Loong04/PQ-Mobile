@@ -144,7 +144,7 @@ async function run() {
     const dashboardPassed = dashboard.title === 'Payroll'
       && dashboard.subtitle === 'Team'
       && dashboard.actionTitle === 'Pending Approval'
-      && dashboard.actionCount === '6'
+      && dashboard.actionCount === '20'
       && dashboard.quickAction === 'Tax Relief'
       && dashboard.quickActionIcon.includes('fa-file-invoice-dollar')
       && dashboard.summaryGroups.length === 0

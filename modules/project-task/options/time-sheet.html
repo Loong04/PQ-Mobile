@@ -11,11 +11,13 @@
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
   <link rel="stylesheet" href="../../../css/project-task.css">
+  <link rel="stylesheet" href="../../../css/project-task-forms.css">
   <script src="../../../js/components.js"></script>
   <script src="../../../js/app.js" defer></script>
   <script src="../../../js/project-task/project-task-app.js" defer></script>
+  <script src="../../../js/project-task/project-task-forms.js" defer></script>
 </head>
-<body class="project-task-page">
+<body class="project-task-page project-form-page">
   <preview-top-bar active-page="project-task"></preview-top-bar>
   <div class="phone-container">
     <header class="project-header">
@@ -27,9 +29,57 @@
       </div>
     </header>
     <main class="main-content project-task-content">
-      <div class="project-option-empty">
-        <span class="project-option-icon"><i class="fa-solid fa-table-list" aria-hidden="true"></i></span>
-        <p class="project-option-status">Coming soon</p>
+      <div id="timesheet-main-view">
+        <form id="timesheetForm" novalidate>
+          <section class="form-card" aria-labelledby="timesheetDetailsHeading">
+            <div class="section-header-bar"><span class="section-title-accent" aria-hidden="true"></span><h2 class="section-title-text" id="timesheetDetailsHeading">Timesheet Details</h2></div>
+            <div class="field-group"><label class="field-label" for="timesheetDate">Timesheet Date <span class="req">*</span></label><input type="date" id="timesheetDate" name="date" class="form-ctrl" data-today required></div>
+            <div class="field-group"><span class="field-label">Clock Times</span><div class="project-clock-times" id="timesheetClockTimes">No clock times recorded</div></div>
+            <div class="project-hours-summary" aria-live="polite">
+              <div class="project-hours-stat"><span>Normal Work Hours</span><strong id="normalWorkHours">0.00 Hours</strong></div>
+              <div class="project-hours-stat"><span>Overtime Hours</span><strong id="overtimeHours">0.00 Hours</strong></div>
+            </div>
+            <div class="field-group"><label class="field-label" for="timesheetRemark">Remark</label><textarea id="timesheetRemark" name="remark" class="form-ctrl" rows="3"></textarea></div>
+          </section>
+          <section class="form-card project-activities-card" aria-labelledby="workActivityHeading">
+            <div class="project-activities-header">
+              <div class="project-activities-heading"><span class="project-option-icon"><i class="fa-solid fa-list-check" aria-hidden="true"></i></span><div><h2 id="workActivityHeading">Work Activity</h2><span class="project-activities-total" id="workActivityTotal">Total Hours: 0.0 hrs</span></div></div>
+              <button type="button" class="btn-submit-primary project-add-activity" id="addWorkActivity" aria-label="Add Work Activity" title="Add Work Activity"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+            </div>
+            <div class="project-activities-list" id="workActivityList"></div>
+          </section>
+          <div class="project-form-actions">
+            <button type="button" class="btn-draft-bright" id="saveTimesheetDraft"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Draft</span></button>
+            <button type="submit" class="btn-submit-primary" id="submitTimesheet"><span>Submit</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+          </div>
+          <p class="project-form-feedback" id="timesheetFeedback" role="status" hidden></p>
+        </form>
+      </div>
+      <div id="timesheet-entry-view" hidden>
+        <form id="workActivityForm" novalidate>
+          <section class="form-card" aria-labelledby="activityFormHeading">
+            <div class="section-header-bar"><span class="section-title-accent" aria-hidden="true"></span><h2 class="section-title-text" id="activityFormHeading">Add Work Activity</h2></div>
+            <div class="field-group"><label class="field-label" for="activityTitle">Title <span class="req">*</span></label><input id="activityTitle" name="title" class="form-ctrl" maxlength="200" required></div>
+            <div class="field-group"><label class="field-label" for="activityDescription">Description</label><textarea id="activityDescription" name="description" class="form-ctrl" rows="3"></textarea></div>
+            <div class="field-group"><div class="toggle-option-card"><label class="toggle-option-label" for="activityAdhoc">Is Adhoc Task?</label><label class="custom-toggle"><input type="checkbox" id="activityAdhoc" name="adhoc" role="switch" aria-label="Is Adhoc Task?"><span class="slider"></span></label></div></div>
+            <div class="field-group"><label class="field-label" for="activityProject">Project</label><div class="select-wrapper"><select id="activityProject" name="project" class="form-ctrl" data-project-select></select></div></div>
+            <div class="field-group"><label class="field-label" for="activityTask">Task</label><div class="select-wrapper"><select id="activityTask" name="task" class="form-ctrl" data-task-select></select></div></div>
+            <div class="field-group"><div class="toggle-option-card"><label class="toggle-option-label" for="activityOvertime">Is Overtime?</label><label class="custom-toggle"><input type="checkbox" id="activityOvertime" name="overtime" role="switch" aria-label="Is Overtime?"><span class="slider"></span></label></div></div>
+            <div class="field-group">
+              <div class="project-form-grid">
+                <div><label class="field-label" for="activityTimeFrom">Time From <span class="req">*</span></label><input type="time" id="activityTimeFrom" name="timeFrom" class="form-ctrl" value="00:00" required></div>
+                <div><label class="field-label" for="activityTimeTo">Time To <span class="req">*</span></label><input type="time" id="activityTimeTo" name="timeTo" class="form-ctrl" value="00:00" required></div>
+              </div>
+              <p class="project-next-day-note" id="activityNextDay" hidden>Ends the next day</p>
+            </div>
+            <div class="field-group"><label class="field-label" for="activityCompletion">Completion %</label><input type="number" id="activityCompletion" name="completion" class="form-ctrl" value="0" min="0" max="100" step="1"></div>
+          </section>
+          <div class="project-form-actions project-entry-actions">
+            <button type="button" class="btn-step-back" id="cancelWorkActivity"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button>
+            <button type="submit" class="btn-submit-primary" id="saveWorkActivity"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span id="saveWorkActivityLabel">Save Item</span></button>
+          </div>
+          <p class="project-form-feedback" id="activityFeedback" role="status" hidden></p>
+        </form>
       </div>
     </main>
     <phone-bottom-nav active="apps"></phone-bottom-nav>

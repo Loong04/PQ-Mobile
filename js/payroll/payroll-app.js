@@ -24,6 +24,12 @@
   function initPayroll() {
     renderIndividualPayrollHub();
     renderTeamPayrollHub();
+    const pendingLink = document.getElementById('teamPendingApprovalCard');
+    pendingLink?.addEventListener('click', () => {
+      const target = new URL(pendingLink.href);
+      target.searchParams.set('theme', getCurrentTheme());
+      pendingLink.href = target.href;
+    });
 
     // Check URL query / hash for initial scope
     const urlParams = new URLSearchParams(window.location.search);
@@ -190,7 +196,7 @@
     const pendingCount = document.getElementById('teamPendingApprovalCount');
     if (!config || !summaryContainer) return;
 
-    if (pendingCount) pendingCount.textContent = String(config.pendingApprovalCount || 0);
+    if (pendingCount) pendingCount.textContent = String(window.PayrollPendingStore ? window.PayrollPendingStore.getPending().length : config.pendingApprovalCount || 0);
     if (!activeTeamPayrollMonth) activeTeamPayrollMonth = config.monthKey;
     updateTeamPayrollPeriodLabels();
     renderTeamPayrollSummary();
@@ -644,5 +650,9 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     initPayroll();
+  });
+  window.addEventListener('pageshow', () => {
+    const count = document.getElementById('teamPendingApprovalCount');
+    if (count && window.PayrollPendingStore) count.textContent = String(window.PayrollPendingStore.getPending().length);
   });
 })();
