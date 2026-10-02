@@ -55,14 +55,14 @@ async function run() {
         rows,
         idDirectlyAfterName: employeeName?.nextElementSibling === employeeId,
         employeeId: employeeId?.textContent.trim() || '',
-        attachmentInsideTable: !!sheet.querySelector('.tax-relief-detail-table [data-detail-key="Attachment"]'),
+        attachmentInsideTable: !!sheet.querySelector('.tax-relief-detail-table [data-detail-key="Attachments"]'),
         text: sheet?.innerText.replace(/\s+/g, ' ').trim() || ''
       };
     });
     await page.click('#taxReliefDetailModal [data-detail-close]');
 
     await page.click('#taxReliefFilterTrigger');
-    await page.type('#taxReliefSearch', 'Aisha');
+    await page.type('#taxReliefSearch', 'RBT000000000049');
     await page.click('#taxReliefFilterModal .standard-filter-apply');
     await new Promise(resolve => setTimeout(resolve, 150));
     const filtered = await page.evaluate(() => ({
@@ -72,7 +72,7 @@ async function run() {
 
     const requiredRows = [
       'Reference #', 'Status', 'Submit Date', 'Rebate Item', 'Transaction Date',
-      'Description', 'Receipt #', 'Amount', 'Attachment', 'Process', 'Period',
+      'Description', 'Receipt #', 'Amount', 'Attachments', 'Process', 'Period',
       'Cycle', 'Approval Date', 'Approver Remarks'
     ];
     const passed = initial.title === 'Team Tax Relief'
@@ -89,9 +89,9 @@ async function run() {
       && filter.open && filter.fields === 6 && filter.reset && filter.close && filter.apply
       && details.open && details.title === 'Tax Relief Detail'
       && requiredRows.every(row => details.rows.includes(row))
-      && details.idDirectlyAfterName && details.employeeId.startsWith('#')
+      && details.text.includes('Farhan binti rahmat') && details.text.includes('#EBB12')
       && details.attachmentInsideTable
-      && filtered.count === 1 && filtered.text.includes('Aisha')
+      && filtered.count === 1 && filtered.text.includes('Farhan binti rahmat')
       && pageErrors.length === 0;
 
     await page.screenshot({ path: path.join(__dirname, 'team_tax_relief_redesign_dark.png'), fullPage: false });

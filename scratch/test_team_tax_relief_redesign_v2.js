@@ -1,5 +1,10 @@
-const puppeteer = require('puppeteer');
+const assert = require('assert').strict;
 const path = require('path');
+const puppeteer = require('puppeteer');
+
+const pageUrl = `file:///${path.resolve(__dirname, '../modules/payroll/options/tax-relief.html').replace(/\\/g, '/')}`;
+
+const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 
 async function run() {
   const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
@@ -7,87 +12,135 @@ async function run() {
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.setViewport({ width: 450, height: 950 });
-    const url = `file:///${path.resolve(__dirname, '../modules/payroll/options/tax-relief.html').replace(/\\/g, '/')}`;
-    await page.goto(url, { waitUntil: 'networkidle0' });
-
-    const exists = async selector => !!(await page.$(selector));
-    const filter = { open: false, fieldCount: 0, actions: 0 };
-    if (await exists('#taxReliefFilterTrigger')) {
-      await page.click('#taxReliefFilterTrigger');
-      await new Promise(resolve => setTimeout(resolve, 200));
-      Object.assign(filter, await page.evaluate(() => ({
-        open: document.querySelector('#taxReliefFilterModal')?.classList.contains('is-open') || false,
-        fieldCount: ['taxReliefSearch', 'taxReliefStartDate', 'taxReliefEndDate', 'taxReliefItem', 'taxReliefStatus', 'taxReliefDescription']
-          .filter(id => document.getElementById(id)).length,
-        actions: document.querySelectorAll('#taxReliefFilterModal [data-filter-reset], #taxReliefFilterModal [data-filter-close], #taxReliefFilterModal .standard-filter-apply').length
-      })));
-      if (await exists('#taxReliefFilterModal [data-filter-close]')) await page.click('#taxReliefFilterModal [data-filter-close]');
-    }
-
-    const detail = { open: false, title: '', keys: [], attachmentInsideTable: false };
-    if (await exists('.tax-relief-record-card')) {
-      await page.click('.tax-relief-record-card');
-      await new Promise(resolve => setTimeout(resolve, 200));
-      Object.assign(detail, await page.evaluate(() => {
-        const modal = document.querySelector('#taxReliefDetailModal');
-        return {
-          open: modal?.classList.contains('is-open') || false,
-          title: modal?.querySelector('h2')?.textContent.trim() || '',
-          keys: [...(modal?.querySelectorAll('[data-detail-key]') || [])].map(row => row.dataset.detailKey),
-          attachmentInsideTable: !!modal?.querySelector('.tax-relief-detail-table [data-detail-key="Attachment"]')
-        };
-      }));
-      if (await exists('#taxReliefDetailModal [data-detail-close]')) await page.click('#taxReliefDetailModal [data-detail-close]');
-    }
+    await page.setViewport({ width: 390, height: 844 });
+    await page.goto(pageUrl, { waitUntil: 'networkidle0' });
+    await page.waitForSelector('.tax-relief-record-card');
 
     const initial = await page.evaluate(() => {
-      const card = document.querySelector('.tax-relief-record-card');
-      const name = card?.querySelector('.tax-relief-employee-name');
-      const employeeId = card?.querySelector('.tax-relief-employee-id');
+      const cards = [...document.querySelectorAll('.tax-relief-record-card')];
       return {
-        title: document.querySelector('h1')?.textContent.trim() || '',
-        cards: document.querySelectorAll('.tax-relief-record-card').length,
-        cardText: card?.innerText.replace(/\s+/g, ' ').trim() || '',
-        employeeId: employeeId?.textContent.trim() || '',
-        idBelowName: name?.nextElementSibling === employeeId,
-        purpleHeader: document.querySelector('.tax-relief-header')
-          ? getComputedStyle(document.querySelector('.tax-relief-header')).backgroundImage.includes('linear-gradient')
-          : false
+        title: document.querySelector('.tax-relief-header h1')?.textContent.trim(),
+        references: cards.map(card => card.dataset.reference),
+        statuses: cards.map(card => card.dataset.status),
+        text: cards.map(card => card.innerText.replace(/\s+/g, ' ').trim()),
+        ids: cards.map(card => card.querySelector('.tax-relief-employee-id')?.textContent.trim()),
+        idsBelowNames: cards.every(card => card.querySelector('.tax-relief-employee-name')?.nextElementSibling === card.querySelector('.tax-relief-employee-id')),
+        hasLegacyOverview: !!document.querySelector('.tax-relief-overview, .status-tab-group, .filter-pills-scroll, .action-btn-approve, .action-btn-reject'),
+        horizontalOverflow: document.querySelector('.tax-relief-phone').scrollWidth > document.querySelector('.tax-relief-phone').clientWidth + 1
       };
     });
 
-    let filtered = { count: 0, text: '' };
-    if (await exists('#taxReliefFilterTrigger')) {
-      await page.click('#taxReliefFilterTrigger');
-      await page.type('#taxReliefSearch', 'Aisha');
-      await page.click('#taxReliefFilterModal .standard-filter-apply');
-      await new Promise(resolve => setTimeout(resolve, 120));
-      filtered = await page.evaluate(() => ({
-        count: document.querySelectorAll('.tax-relief-record-card').length,
-        text: document.querySelector('#taxReliefRecords')?.innerText || ''
-      }));
+    assert.equal(initial.title, 'Team Tax Relief');
+    assert.deepEqual(initial.references, ['RBT000000000039', 'RBT000000000049', 'RBT000000000050']);
+    assert.deepEqual(initial.statuses, ['submitted', 'submitted', 'submitted']);
+    assert.deepEqual(initial.ids, ['#EBB12', '#EBB12', '#EBB12']);
+    assert.equal(initial.idsBelowNames, true);
+    assert.equal(initial.hasLegacyOverview, false, 'Legacy approval dashboard controls must be removed');
+    assert.equal(initial.horizontalOverflow, false);
+    for (const label of ['Position', 'Transaction Date', 'Rebate Item', 'Amount', 'Status', 'Period / Cycle']) {
+      assert.ok(initial.text[0].includes(label), `Card must include ${label}`);
+    }
+    assert.ok(initial.text[0].includes('GROUP HR MANAGER') && initial.text[0].includes('14 Aug 2025') && initial.text[0].includes('TXR02 – BASIC SUPPORTING EQUIPMENT') && initial.text[0].includes('RM 100.00'));
+    assert.ok(initial.text[1].includes('19 Mar 2026') && initial.text[1].includes('RM 12.00'));
+    assert.ok(initial.text[2].includes('TXR05 – COMPLETE MEDICAL EXAMINATION') && initial.text[2].includes('RM 14.00'));
+
+    await page.click('#taxReliefFilterTrigger');
+    await wait(180);
+    const filter = await page.evaluate(() => ({
+      open: document.getElementById('taxReliefFilterModal').classList.contains('is-open'),
+      labels: [...document.querySelectorAll('#taxReliefFilterModal label')].map(label => label.textContent.trim()),
+      values: {
+        start: document.getElementById('taxReliefStartDate').value,
+        end: document.getElementById('taxReliefEndDate').value
+      },
+      helperCopy: document.querySelector('#taxReliefFilterModal .history-filter-help, #taxReliefFilterModal .tax-relief-filter-help')?.textContent.trim() || '',
+      actions: [...document.querySelectorAll('#taxReliefFilterModal button')].map(button => button.textContent.trim()).filter(Boolean)
+    }));
+    assert.equal(filter.open, true);
+    assert.deepEqual(filter.labels, ['Search Keyword', 'Start Date', 'End Date', 'Rebate Item', 'Status', 'Description']);
+    assert.deepEqual(filter.values, { start: '2026-01-01', end: '2026-10-03' });
+    assert.equal(filter.helperCopy, '');
+    assert.ok(filter.actions.includes('Reset') && filter.actions.includes('Search'));
+    await page.click('#taxReliefFilterModal [data-filter-close]');
+
+    await page.click('[data-reference="RBT000000000039"]');
+    await wait(180);
+    const detail = await page.evaluate(() => {
+      const modal = document.getElementById('taxReliefDetailModal');
+      const rows = [...modal.querySelectorAll('[data-detail-key]')];
+      return {
+        open: modal.classList.contains('is-open'),
+        title: modal.querySelector('h2').textContent.trim(),
+        keys: rows.map(row => row.dataset.detailKey),
+        values: Object.fromEntries(rows.map(row => [row.dataset.detailKey, row.querySelector('strong').textContent.replace(/\s+/g, ' ').trim()])),
+        actions: [...modal.querySelectorAll('.tax-relief-detail-actions button')].map(button => button.textContent.trim())
+      };
+    });
+    assert.equal(detail.open, true);
+    assert.equal(detail.title, 'Tax Relief Detail');
+    assert.deepEqual(detail.keys, ['Reference #', 'Emp #', 'Name', 'Status', 'Submit Date', 'Rebate Item', 'Transaction Date', 'Description', 'Receipt #', 'Amount', 'Attachments', 'Process', 'Period', 'Cycle', 'Approval Date', 'Approver Remarks']);
+    assert.equal(detail.values['Reference #'], 'RBT000000000039');
+    assert.equal(detail.values['Emp #'], '#EBB12');
+    assert.equal(detail.values.Name, 'Farhan binti rahmat');
+    assert.equal(detail.values.Status, 'Submitted');
+    assert.equal(detail.values['Submit Date'], '7 Jan 2026');
+    assert.equal(detail.values['Rebate Item'], 'BASIC SUPPORTING EQUIPMENT');
+    assert.equal(detail.values['Transaction Date'], '14 Aug 2025');
+    assert.equal(detail.values.Description, 'Medical Relief');
+    assert.equal(detail.values.Amount, 'RM 100.00');
+    assert.ok(detail.values.Attachments.includes('Invoice.docx'));
+    assert.equal(detail.values.Process, 'No');
+    assert.equal(detail.values['Approval Date'], '1 Jan 1');
+    assert.equal(detail.values['Approver Remarks'], 'Reason required');
+    assert.deepEqual(detail.actions, [], 'Team Tax Relief details are informational and must not show approval actions');
+    await page.click('#taxReliefDetailModal [data-detail-close]');
+
+    await page.click('#taxReliefFilterTrigger');
+    await page.type('#taxReliefSearch', 'RBT000000000049');
+    await page.click('#taxReliefFilterModal .standard-filter-apply');
+    await wait(100);
+    assert.deepEqual(await page.$$eval('.tax-relief-record-card', cards => cards.map(card => card.dataset.reference)), ['RBT000000000049']);
+
+    await page.click('#taxReliefFilterTrigger');
+    await page.click('#taxReliefFilterModal [data-filter-reset]');
+    await page.select('#taxReliefItem', 'TXR05');
+    await page.click('#taxReliefFilterModal .standard-filter-apply');
+    await wait(100);
+    assert.deepEqual(await page.$$eval('.tax-relief-record-card', cards => cards.map(card => card.dataset.reference)), ['RBT000000000050']);
+
+    await page.click('#taxReliefFilterTrigger');
+    await page.click('#taxReliefFilterModal [data-filter-reset]');
+    await page.type('#taxReliefDescription', 'medical relief');
+    await page.click('#taxReliefFilterModal .standard-filter-apply');
+    await wait(100);
+    assert.deepEqual(await page.$$eval('.tax-relief-record-card', cards => cards.map(card => card.dataset.reference)), ['RBT000000000039']);
+
+    await page.click('#taxReliefFilterTrigger');
+    await page.click('#taxReliefFilterModal [data-filter-reset]');
+    await page.click('#taxReliefFilterModal .standard-filter-apply');
+    assert.equal(await page.$$eval('.tax-relief-record-card', cards => cards.length), 3);
+
+    for (const theme of ['dark', 'light']) {
+      await page.evaluate(value => window.setTheme(value), theme);
+      for (const width of [360, 390, 420]) {
+        await page.setViewport({ width, height: 844 });
+        const overflow = await page.evaluate(() => [...document.querySelectorAll('.tax-relief-phone, .tax-relief-content, .tax-relief-filter-panel, .tax-relief-detail-modal')]
+          .filter(node => node.getClientRects().length && node.scrollWidth > node.clientWidth + 1)
+          .map(node => node.className));
+        assert.deepEqual(overflow, [], `${theme} ${width}px must not overflow horizontally`);
+      }
+      await page.setViewport({ width: 390, height: 844 });
+      await page.screenshot({ path: path.join(__dirname, `team_tax_relief_redesign_${theme}.png`) });
     }
 
-    const requiredCardText = ['Position', 'Transaction Date', 'Rebate Item', 'Amount', 'Status', 'Period / Cycle'];
-    const requiredDetailKeys = ['Reference #', 'Status', 'Submit Date', 'Rebate Item', 'Transaction Date', 'Description', 'Receipt #', 'Amount', 'Attachment', 'Process', 'Period', 'Cycle', 'Approval Date', 'Approver Remarks'];
-    const passed = initial.title === 'Team Tax Relief'
-      && initial.cards > 0 && initial.idBelowName && initial.employeeId.startsWith('#') && initial.purpleHeader
-      && requiredCardText.every(label => initial.cardText.includes(label))
-      && filter.open && filter.fieldCount === 6 && filter.actions === 3
-      && detail.open && detail.title === 'Tax Relief Detail'
-      && requiredDetailKeys.every(key => detail.keys.includes(key)) && detail.attachmentInsideTable
-      && filtered.count === 1 && filtered.text.includes('Aisha') && errors.length === 0;
-
-    await page.screenshot({ path: path.join(__dirname, 'team_tax_relief_redesign_dark.png') });
-    await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
-    await new Promise(resolve => setTimeout(resolve, 120));
-    await page.screenshot({ path: path.join(__dirname, 'team_tax_relief_redesign_light.png') });
-    console.log(JSON.stringify({ initial, filter, detail, filtered, errors, passed }, null, 2));
-    if (!passed) process.exitCode = 1;
+    assert.deepEqual(errors, []);
+    console.log('PASS: Team Tax Relief screenshot data, filter, cards, details and responsive themes.');
   } finally {
     await browser.close();
   }
 }
 
-run().catch(error => { console.error(error); process.exit(1); });
+run().catch(error => {
+  console.error(error);
+  process.exit(1);
+});

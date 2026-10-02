@@ -11,6 +11,8 @@
   let activeSubCategoryObj = null;
   let isAttachmentUploaded = false;
   let teamQueue = window.MOCK_TEAM_APPROVALS ? [...window.MOCK_TEAM_APPROVALS] : [];
+  let selectedIndividualCalendarDay = Number(window.INDIVIDUAL_TRAVEL_DATA?.selectedDay) || 28;
+  let selectedTeamCalendarDay = Number(window.TEAM_TRAVEL_DATA?.selectedDay) || 28;
 
   function showToast(msg) {
     const toast = document.getElementById('toastNotification');
@@ -227,55 +229,67 @@
    * INDIVIDUAL TRAVEL CALENDAR (Screenshot 1)
    * ==========================================
    */
+  function formatCalendarDate(day) {
+    return new Intl.DateTimeFormat('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date(2026, 8, day));
+  }
+
   function renderIndividualCalendar() {
     const gridContainer = document.getElementById('individual-calendar-grid');
     if (!gridContainer) return;
 
-    // September 2026 (1st is Tuesday)
-    // Days layout: 1 to 30
-    const travelDays = [28, 29, 30];
+    const travelDays = window.INDIVIDUAL_TRAVEL_DATA?.travelDays || [28, 29, 30];
     const today = 24;
 
     let daysHtml = '';
-    // Empty padding slot for Monday 31 Aug
-    daysHtml += `<div class="cal-day empty"></div>`;
+    daysHtml += `<div class="cal-day empty" aria-hidden="true"></div>`;
 
     for (let d = 1; d <= 30; d++) {
-      let isToday = (d === today);
-      let isTravel = travelDays.includes(d);
-      let classes = ['cal-day'];
+      const isToday = d === today;
+      const isTravel = travelDays.includes(d);
+      const isSelected = d === selectedIndividualCalendarDay;
+      const classes = ['cal-day'];
 
       if (isToday) classes.push('today');
       if (isTravel) classes.push('travel-highlight');
-      if (d === 28) classes.push('active-pill');
+      if (isSelected) classes.push('active-pill');
 
       daysHtml += `
-        <div class="${classes.join(' ')}" onclick="selectIndividualCalendarDay(${d})">
+        <button type="button" class="${classes.join(' ')}" data-day="${d}" aria-label="${formatCalendarDate(d)}${isTravel ? ', travel date' : ''}${isToday ? ', today' : ''}" aria-pressed="${isSelected}"${isToday ? ' aria-current="date"' : ''} onclick="window.ClaimsEngine.selectIndividualCalendarDay(${d})">
           <span>${d}</span>
           ${isTravel ? '<span class="dot-indicator"></span>' : ''}
-        </div>
+        </button>
       `;
     }
 
     gridContainer.innerHTML = daysHtml;
-    updateIndividualTripDetail(28);
+    updateIndividualTripDetail(selectedIndividualCalendarDay);
   }
 
-  function selectIndividualCalendarDay(day) {
-    document.querySelectorAll('#individual-calendar-grid .cal-day').forEach(el => {
-      el.classList.remove('active-pill');
-      if (el.textContent.trim().startsWith(day.toString())) {
-        el.classList.add('active-pill');
-      }
+  function selectIndividualCalendarDay(day, focusSelected = false) {
+    selectedIndividualCalendarDay = Number(day);
+    if (window.INDIVIDUAL_TRAVEL_DATA) window.INDIVIDUAL_TRAVEL_DATA.selectedDay = selectedIndividualCalendarDay;
+    let selectedButton = null;
+    document.querySelectorAll('#individual-calendar-grid button.cal-day').forEach(button => {
+      const isSelected = Number(button.dataset.day) === selectedIndividualCalendarDay;
+      button.classList.toggle('active-pill', isSelected);
+      button.setAttribute('aria-pressed', String(isSelected));
+      if (isSelected) selectedButton = button;
     });
-    updateIndividualTripDetail(day);
+    updateIndividualTripDetail(selectedIndividualCalendarDay);
+    if (focusSelected) selectedButton?.focus({ preventScroll: true });
   }
 
   function updateIndividualTripDetail(day) {
     const detailBox = document.getElementById('individual-trip-detail-card');
     if (!detailBox) return;
 
-    if (day >= 28 && day <= 30) {
+    const travelDays = window.INDIVIDUAL_TRAVEL_DATA?.travelDays || [28, 29, 30];
+    if (travelDays.includes(day)) {
       const trip = window.INDIVIDUAL_TRAVEL_DATA?.trips?.[0] || {
         route: 'Kuala Lumpur ➔ Penang',
         destination: 'Penang Branch',
@@ -288,7 +302,7 @@
 
       detailBox.innerHTML = `
         <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
-          Monday, 28 September 2026
+          ${formatCalendarDate(day)}
         </div>
         <div style="background: var(--bg-input); border-radius: 18px; padding: 14px 16px; border: 1px solid var(--border-subtle);">
           <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
@@ -329,7 +343,7 @@
     } else if (day === 24) {
       detailBox.innerHTML = `
         <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
-          Thursday, 24 September 2026 (Today)
+          ${formatCalendarDate(day)} (Today)
         </div>
         <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-muted);">
           No travel schedules for today. Office working day.
@@ -338,7 +352,7 @@
     } else {
       detailBox.innerHTML = `
         <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
-          September ${day}, 2026
+          ${formatCalendarDate(day)}
         </div>
         <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-muted);">
           No travel records for this date.
@@ -360,38 +374,48 @@
     const today = 24;
 
     let daysHtml = '';
-    // Empty padding slot for Monday 31 Aug
-    daysHtml += `<div class="cal-day empty"></div>`;
+    daysHtml += `<div class="cal-day empty" aria-hidden="true"></div>`;
 
     for (let d = 1; d <= 30; d++) {
-      let isToday = (d === today);
-      let count = travelBadges[d] || 0;
-      let classes = ['cal-day'];
+      const isToday = d === today;
+      const count = travelBadges[d] || 0;
+      const isSelected = d === selectedTeamCalendarDay;
+      const classes = ['cal-day'];
 
       if (isToday) classes.push('today');
       if (count > 0) classes.push('staff-travel-highlight');
-      if (d === 28) classes.push('active-pill');
+      if (isSelected) classes.push('active-pill');
 
       daysHtml += `
-        <div class="${classes.join(' ')}" onclick="selectTeamCalendarDay(${d})">
+        <button type="button" class="${classes.join(' ')}" data-day="${d}" aria-label="${formatCalendarDate(d)}${count ? `, ${count} staff travelling` : ''}${isToday ? ', today' : ''}" aria-pressed="${isSelected}"${isToday ? ' aria-current="date"' : ''} onclick="window.ClaimsEngine.selectTeamCalendarDay(${d})">
           <span>${d}</span>
           ${count > 0 ? `<span class="staff-count-badge">${count}</span>` : ''}
-        </div>
+        </button>
       `;
     }
 
     gridContainer.innerHTML = daysHtml;
-    updateTeamTripDetail(28);
+    updateTeamTripDetail(selectedTeamCalendarDay);
   }
 
-  function selectTeamCalendarDay(day) {
-    document.querySelectorAll('#team-calendar-grid .cal-day').forEach(el => {
-      el.classList.remove('active-pill');
-      if (el.textContent.trim().startsWith(day.toString())) {
-        el.classList.add('active-pill');
-      }
+  function selectTeamCalendarDay(day, focusSelected = false) {
+    selectedTeamCalendarDay = Number(day);
+    if (window.TEAM_TRAVEL_DATA) window.TEAM_TRAVEL_DATA.selectedDay = selectedTeamCalendarDay;
+    let selectedButton = null;
+    document.querySelectorAll('#team-calendar-grid button.cal-day').forEach(button => {
+      const isSelected = Number(button.dataset.day) === selectedTeamCalendarDay;
+      button.classList.toggle('active-pill', isSelected);
+      button.setAttribute('aria-pressed', String(isSelected));
+      if (isSelected) selectedButton = button;
     });
-    updateTeamTripDetail(day);
+    updateTeamTripDetail(selectedTeamCalendarDay);
+    if (focusSelected) selectedButton?.focus({ preventScroll: true });
+  }
+
+  function teamTripIncludesDay(trip, day) {
+    const match = String(trip.dates || '').match(/(\d{1,2})\s*[-–—]\s*(\d{1,2})\s+Sep/i);
+    if (!match) return false;
+    return day >= Number(match[1]) && day <= Number(match[2]);
   }
 
   function updateTeamTripDetail(day) {
@@ -401,11 +425,11 @@
     const data = window.TEAM_TRAVEL_DATA;
     if (!data) return;
 
-    if (day >= 28 && day <= 30) {
-      const staffList = data.staffTrips;
+    const staffList = data.staffTrips.filter(staff => teamTripIncludesDay(staff, day));
+    if (staffList.length) {
       detailBox.innerHTML = `
         <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">
-          Monday 28 September - ${staffList.length} staff
+          ${formatCalendarDate(day)} · ${staffList.length} staff
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           ${staffList.map(s => `
@@ -426,7 +450,7 @@
     } else {
       detailBox.innerHTML = `
         <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
-          September ${day}, 2026
+          ${formatCalendarDate(day)}${day === 24 ? ' (Today)' : ''}
         </div>
         <div style="background: var(--bg-input); border-radius: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-muted);">
           No staff travel scheduled for this date.
@@ -1034,11 +1058,6 @@
     const docStatus = d.docStatus || 'Submitted';
     const receiptFile = d.receipt || (d.receiptNo ? `Receipt #${d.receiptNo}` : 'supporting_receipt_docs.pdf');
 
-    const rawHours = String(d.hours || '').trim();
-    const hasHours = rawHours
-      && rawHours !== '-'
-      && !/^0(?:\.0+)?\s*(?:hrs?|hours?)?$/i.test(rawHours);
-    const amountHourFormatted = hasHours ? `${amountFormatted} / ${rawHours}` : amountFormatted;
     const employeeHtml = `
       <div style="font-weight: 800; font-size: 13px; color: var(--text-primary);">${d.userName || 'Employee'}</div>
       <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-top: 2px;">#${empNo}</div>
@@ -1050,6 +1069,9 @@
       .trim() || '-';
 
     if (optLower.includes('medical')) {
+      const claimTotal = d.claimTotal;
+      const totalText = typeof claimTotal === 'number' ? claimTotal.toFixed(2) : String(claimTotal ?? '').trim();
+      const claimTotalFormatted = totalText ? (/^RM\s/i.test(totalText) ? totalText : `RM ${totalText}`) : amountFormatted;
       const periodStart = d.claimPeriodStart || d.period || '-';
       const periodEnd = d.claimPeriodEnd || periodStart;
       const claimPeriod = periodStart === periodEnd ? periodStart : `${periodStart} â€“ ${periodEnd}`;
@@ -1057,17 +1079,14 @@
         ${makeTableRow('Document Reference', `<span style="font-family: monospace; font-weight: 800;">${docRef}</span>`)}
         ${makeTableRow('Status', docStatus)}
         ${makeTableRow('Employee', employeeHtml)}
-        ${makeTableRow('Claim Type', `<span style="font-weight: 800;">${claimType.toUpperCase()}</span>`)}
         ${makeTableRow('Benefit Year', d.benefitYear || '2026')}
         ${makeTableRow('Benefit Type', d.benefitType || d.medicalType || d.subCatName || '-')}
         ${makeTableRow('Entitled Balance', `<span style="font-family: monospace; font-weight: 800;">RM ${d.entitledBalance || '0.00'}</span>`)}
         ${makeTableRow('Usable Balance', `<span style="font-family: monospace; font-weight: 800;">RM ${d.usableBalance || '0.00'}</span>`)}
         ${makeTableRow('Claim Period', `<span style="font-family: monospace; font-weight: 800;">${claimPeriod}</span>`)}
-        ${makeTableRow('Claim Date', d.claimDate || d.receiptDate || '-')}
-        ${makeTableRow('Submit Date', d.submitDate || d.claimDate || '-')}
         ${makeTableRow('Receipt Date', d.receiptDate || d.claimDate || '-')}
         ${makeTableRow('Receipt No.', d.receiptNo || '-')}
-        ${makeTableRow('Amount / Hour', `<span style="font-family: monospace; font-weight: 850;">${amountHourFormatted}</span>`)}
+        ${makeTableRow('Claim Total', `<span style="font-family: monospace; font-weight: 850;">${claimTotalFormatted}</span>`)}
         ${makeTableRow('Remark', cleanRemarks, true)}
       `;
       const medicalRows = `

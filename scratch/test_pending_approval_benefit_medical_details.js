@@ -10,9 +10,9 @@ const EXPECTED_BENEFIT_LABELS = [
 
 const EXPECTED_MEDICAL_SECTIONS = {
   General: [
-    'Document Reference', 'Status', 'Employee', 'Claim Type', 'Benefit Year',
+    'Document Reference', 'Status', 'Employee', 'Benefit Year',
     'Benefit Type', 'Entitled Balance', 'Usable Balance', 'Claim Period',
-    'Claim Date', 'Submit Date', 'Receipt Date', 'Receipt No.', 'Amount / Hour', 'Remark'
+    'Receipt Date', 'Receipt No.', 'Claim Total', 'Remark'
   ],
   Medical: [
     'Patient Type', 'Patient Name', 'Treatment Type', 'Clinic Location',
@@ -73,6 +73,7 @@ async function run() {
     await openDetails(page, 'Benefit', '1');
     const benefit = await readSections(page);
     await page.evaluate(() => window.ClaimsEngine.closeClaimDetailsModal());
+    await page.waitForFunction(() => document.getElementById('claimDetailsModalOverlay').style.display === 'none');
 
     await openDetails(page, 'Medical', '5');
     const medical = await readSections(page);
@@ -104,20 +105,50 @@ async function run() {
         JSON.stringify(medicalLabels[title]) === JSON.stringify(labels)
       ))
       && /Jessica Wong\s+#003891/.test(medicalGeneralValues.Employee || '')
-      && medicalGeneralValues['Claim Type'] === 'MEDICAL CLAIM'
       && medicalGeneralValues['Benefit Type'] === 'General Consultation'
-      && medicalGeneralValues['Claim Date'] === '07 Sep 2026'
-      && medicalGeneralValues['Submit Date'] === '08 Sep 2026'
+      && medicalGeneralValues['Receipt Date'] === '07/09/2026'
+      && medicalGeneralValues['Receipt No.'] === 'QC-5510'
       && medicalGeneralValues.Status === 'Submitted'
-      && medicalGeneralValues['Amount / Hour'] === 'RM 135.00 / 1.5 hrs';
+      && medicalGeneralValues['Claim Total'] === 'RM 135.00';
 
-    const passed = benefitPassed && medicalPassed && pageErrors.length === 0;
+    let screenshotExamplePassed = true;
+    for (const theme of ['dark', 'light']) {
+      await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+      await openDetails(page, 'Medical', '2');
+      const example = await readSections(page);
+      const general = example.sections.find(section => section.title === 'General');
+      const values = general ? valuesByLabel(general) : {};
+      screenshotExamplePassed = screenshotExamplePassed
+        && JSON.stringify(general?.rows.map(row => row.label)) === JSON.stringify(EXPECTED_MEDICAL_SECTIONS.General)
+        && values['Claim Period'] === '201601'
+        && values['Receipt Date'] === '09/03/2016'
+        && values['Receipt No.'] === '-'
+        && values['Claim Total'] === 'RM 100.00';
+      await page.evaluate(async () => {
+        const overlay = document.getElementById('claimDetailsModalOverlay');
+        await Promise.all(overlay.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {})));
+      });
+      await page.screenshot({ path: path.resolve(__dirname, `pending_medical_correct_fields_${theme}.png`) });
+    }
+
+    let totalsPassed = true;
+    for (const [claimTotal, expected] of [[0, 'RM 0.00'], [250.5, 'RM 250.50'], [null, 'RM 100.00']]) {
+      await page.evaluate(total => { window.MOCK_TEAM_APPROVALS.find(item => item.id === 2).claimTotal = total; }, claimTotal);
+      await openDetails(page, 'Medical', '2');
+      const example = await readSections(page);
+      const general = example.sections.find(section => section.title === 'General');
+      totalsPassed = totalsPassed && valuesByLabel(general)['Claim Total'] === expected;
+    }
+
+    const passed = benefitPassed && medicalPassed && screenshotExamplePassed && totalsPassed && pageErrors.length === 0;
     console.log(JSON.stringify({
       benefit: { sectionTitles: benefit.sections.map(section => section.title), rows: benefitSection?.rows || [] },
       medical: { sectionTitles: medicalTitles, labels: medicalLabels },
       pageErrors,
       benefitPassed,
       medicalPassed,
+      screenshotExamplePassed,
+      totalsPassed,
       passed
     }, null, 2));
 

@@ -10,6 +10,7 @@ body {
   justify-content: center;
   background: var(--bg-page);
   color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .tax-relief-phone {
@@ -44,8 +45,9 @@ body {
 }
 
 .tax-relief-header-copy { min-width: 0; }
-.tax-relief-header-copy h1 { margin: 0; color: #fff; font-size: 18px; font-weight: 850; letter-spacing: -0.35px; }
+.tax-relief-header-copy h1 { margin: 0; color: #fff; font-size: 18px; font-weight: 800; letter-spacing: -0.35px; }
 .tax-relief-header-copy p { margin: 3px 0 0; color: rgba(255,255,255,.78); font-size: 11px; font-weight: 650; }
+.tax-relief-header-spacer { width: 38px; height: 38px; }
 .tax-relief-header-btn {
   width: 38px;
   height: 38px;
@@ -104,11 +106,13 @@ body {
 .tax-relief-list-heading span { color: var(--text-muted); font-size: 10px; font-weight: 750; }
 
 .tax-relief-record-card {
+  position: relative;
   width: 100%;
   margin-bottom: 12px;
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--border-subtle);
+  border-left: 4px solid #38bdf8;
   border-radius: 19px;
   background: var(--bg-card);
   color: var(--text-primary);
@@ -116,9 +120,12 @@ body {
   text-align: left;
   cursor: pointer;
   transition: transform 180ms ease, border-color 180ms ease;
+  font-family: inherit;
 }
 .tax-relief-record-card:active { transform: scale(.985); }
-.tax-relief-card-head { padding: 13px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border-subtle); background: var(--purple-subtle); }
+.tax-relief-record-card:focus-visible { outline: 2px solid var(--purple-primary); outline-offset: 2px; }
+.tax-relief-card-head { padding: 13px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(124,58,237,.2); background: linear-gradient(135deg, rgba(124,58,237,.18), rgba(109,40,217,.08)); }
+.tax-relief-card-person { min-width: 0; display: block; }
 .tax-relief-employee-name { color: var(--text-primary); font-size: 13px; font-weight: 900; }
 .tax-relief-employee-id, .tax-relief-detail-id { display: block; margin: 2px 0 4px; color: var(--text-muted); font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; opacity: .8; }
 .tax-relief-position { color: var(--text-muted); font-size: 9.5px; font-weight: 650; }
@@ -126,7 +133,7 @@ body {
 .tax-relief-status.submitted { border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); color: #f59e0b; }
 .tax-relief-status.approved { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); color: #10b981; }
 .tax-relief-status.rejected { border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12); color: #ef4444; }
-.tax-relief-card-grid { padding: 4px 14px; }
+.tax-relief-card-grid { display: block; padding: 4px 14px; }
 .tax-relief-card-row { min-height: 39px; display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.25fr); align-items: center; gap: 12px; }
 .tax-relief-card-row + .tax-relief-card-row { border-top: 1px solid var(--border-subtle); }
 .tax-relief-card-row span { color: var(--text-muted); font-size: 9.5px; font-weight: 700; }
@@ -140,7 +147,20 @@ body {
 .tax-relief-empty strong { display: block; font-size: 13px; }
 .tax-relief-empty span { display: block; margin-top: 4px; color: var(--text-muted); font-size: 10px; }
 
-.tax-relief-filter-body { padding: 0 20px 18px; max-height: 55vh; overflow-y: auto; }
+#taxReliefFilterModal {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+}
+#taxReliefFilterModal.is-open {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+.tax-relief-filter-body { padding: 0 20px 18px; max-height: 57vh; overflow-y: auto; }
 .tax-relief-filter-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 10px; }
 .tax-relief-filter-field.full { grid-column: 1 / -1; }
 .tax-relief-filter-field label { display: block; margin-bottom: 7px; color: var(--purple-text); font-size: 10.5px; font-weight: 800; }
@@ -148,10 +168,11 @@ body {
 .tax-relief-filter-field textarea { min-height: 66px; padding-top: 12px; resize: none; }
 .tax-relief-filter-field input:focus, .tax-relief-filter-field select:focus, .tax-relief-filter-field textarea:focus { border-color: var(--purple-primary); box-shadow: 0 0 0 3px var(--purple-subtle); }
 .tax-relief-filter-footer { padding: 0 20px 22px; }
+.tax-relief-filter-error { margin: 12px 0 0; color: #f87171; font-size: 11px; font-weight: 700; }
 
 .tax-relief-detail-overlay { position: absolute; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(2,6,23,.72); backdrop-filter: blur(8px); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 200ms ease, visibility 200ms ease; }
 .tax-relief-detail-overlay.is-open { opacity: 1; visibility: visible; pointer-events: auto; }
-.tax-relief-detail-modal { width: 100%; max-height: 84%; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(124,58,237,.35); border-radius: 22px; background: var(--bg-card); box-shadow: 0 24px 60px rgba(0,0,0,.42); transform: translateY(12px) scale(.98); transition: transform 200ms ease; }
+.tax-relief-detail-modal { width: 100%; max-height: 88%; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(124,58,237,.35); border-radius: 22px; background: var(--bg-card); box-shadow: 0 24px 60px rgba(0,0,0,.42); transform: translateY(12px) scale(.98); transition: transform 200ms ease; }
 .tax-relief-detail-overlay.is-open .tax-relief-detail-modal { transform: translateY(0) scale(1); }
 .tax-relief-detail-header { padding: 14px 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: linear-gradient(135deg,#5b21b6,#7c3aed); }
 .tax-relief-detail-header h2 { margin: 0; color: #fff; font-size: 16px; font-weight: 900; }
@@ -162,10 +183,11 @@ body {
 .tax-relief-detail-table { overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 14px; }
 .tax-relief-detail-row { min-height: 42px; display: grid; grid-template-columns: minmax(0,.86fr) minmax(0,1.3fr); }
 .tax-relief-detail-row + .tax-relief-detail-row { border-top: 1px solid var(--border-subtle); }
-.tax-relief-detail-row > span, .tax-relief-detail-row > strong { padding: 10px 11px; font-size: 9.5px; line-height: 1.35; }
+.tax-relief-detail-row > span, .tax-relief-detail-row > strong { padding: 10px 11px; font-size: 10.5px; line-height: 1.4; }
 .tax-relief-detail-row > span { background: var(--bg-input); color: var(--text-muted); font-weight: 750; }
 .tax-relief-detail-row > strong { color: var(--text-primary); font-weight: 800; overflow-wrap: anywhere; }
 .tax-relief-file { display: inline-flex; align-items: center; gap: 6px; color: var(--purple-text); }
+.tax-relief-file i { color: #38bdf8; }
 .tax-relief-detail-actions { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .tax-relief-detail-actions button { min-height: 41px; border-radius: 13px; font-size: 10.5px; font-weight: 850; cursor: pointer; }
 .tax-relief-approve { border: 0; background: linear-gradient(135deg,#7c3aed,#6d28d9); color: #fff; }
@@ -173,10 +195,12 @@ body {
 
 [data-theme="light"] .tax-relief-overview { background: linear-gradient(145deg,#f3edff,#fff 65%); }
 [data-theme="light"] .tax-relief-record-card, [data-theme="light"] .tax-relief-overview, [data-theme="light"] .tax-relief-filter-trigger { box-shadow: 0 8px 22px rgba(30,41,59,.07); }
+[data-theme="light"] .tax-relief-card-head { background: linear-gradient(135deg,#f1e8ff,#f8f5ff); }
 
 @media (max-width: 440px) {
   body { padding: 0; }
   .tax-relief-phone { height: 100dvh; max-width: none; border-radius: 0; }
+  .tax-relief-detail-overlay { padding: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
