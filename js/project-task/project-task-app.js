@@ -142,9 +142,104 @@
     window.history.replaceState(null, '', url);
   }
 
+  function initPendingApprovalSelection() {
+    const selectAll = document.getElementById('projectApprovalSelectAll');
+    const boxes = [...document.querySelectorAll('#projectTimesheetApprovalList .approval-card-checkbox')];
+    if (!selectAll || !boxes.length) return;
+    const syncSelectAll = () => {
+      const selected = boxes.filter(box => box.checked).length;
+      selectAll.checked = selected === boxes.length;
+      selectAll.indeterminate = selected > 0 && selected < boxes.length;
+    };
+    selectAll.addEventListener('change', () => {
+      boxes.forEach(box => { box.checked = selectAll.checked; });
+      syncSelectAll();
+    });
+    boxes.forEach(box => box.addEventListener('change', syncSelectAll));
+  }
+
+  function initPendingApprovalSheets() {
+    const phone = document.querySelector('.phone-container');
+    const menu = document.getElementById('projectApprovalMenu');
+    const details = document.getElementById('projectApprovalDetails');
+    const workflow = document.getElementById('projectApprovalWorkflow');
+    if (!phone || !menu || !details || !workflow) return;
+    let currentCard = null;
+    let currentMenuTrigger = null;
+    let activeOverlay = null;
+    let returnFocus = null;
+    let inertElements = [];
+    const openOverlay = (overlay, trigger) => {
+      if (activeOverlay) closeOverlay(false);
+      activeOverlay = overlay;
+      returnFocus = trigger || document.activeElement;
+      inertElements = [...phone.children].filter(node => node !== overlay && !node.inert);
+      inertElements.forEach(node => { node.inert = true; });
+      overlay.hidden = false;
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+      overlay.querySelector('button')?.focus({ preventScroll: true });
+    };
+    const closeOverlay = (restoreFocus = true) => {
+      if (!activeOverlay) return;
+      activeOverlay.classList.remove('is-open');
+      activeOverlay.hidden = true;
+      inertElements.forEach(node => { node.inert = false; });
+      activeOverlay = null;
+      inertElements = [];
+      if (restoreFocus) returnFocus?.focus({ preventScroll: true });
+    };
+    const value = key => currentCard?.dataset[key] || '—';
+    const fillDetails = () => {
+      const fields = {
+        projectApprovalDetailReference: 'reference',
+        projectApprovalDetailEmployeeId: 'employeeId',
+        projectApprovalDetailEmployeeName: 'employeeName',
+        projectApprovalDetailStatus: 'status',
+        projectApprovalDetailDate: 'date',
+        projectApprovalDetailNormalHours: 'normalHours',
+        projectApprovalDetailOtHours: 'otHours'
+      };
+      Object.entries(fields).forEach(([id, key]) => {
+        document.getElementById(id).textContent = value(key);
+      });
+    };
+    document.querySelectorAll('[data-project-approval-menu]').forEach(button => {
+      button.addEventListener('click', () => {
+        currentCard = button.closest('.project-approval-card');
+        currentMenuTrigger = button;
+        openOverlay(menu, button);
+      });
+    });
+    document.getElementById('projectApprovalViewDetails').addEventListener('click', event => {
+      fillDetails();
+      closeOverlay(false);
+      openOverlay(details, currentMenuTrigger || event.currentTarget);
+    });
+    document.getElementById('projectApprovalViewWorkflow').addEventListener('click', event => {
+      document.getElementById('projectApprovalWorkflowReference').textContent = value('reference');
+      document.getElementById('projectApprovalWorkflowName').textContent = value('employeeName');
+      document.getElementById('projectApprovalWorkflowEmployeeId').textContent = value('employeeId');
+      closeOverlay(false);
+      openOverlay(workflow, currentMenuTrigger || event.currentTarget);
+    });
+    document.querySelectorAll('[data-close-project-approval]').forEach(button => button.addEventListener('click', () => closeOverlay()));
+    [menu, details, workflow].forEach(overlay => overlay.addEventListener('click', event => {
+      if (event.target === overlay) closeOverlay();
+    }));
+    document.addEventListener('keydown', event => {
+      if (!activeOverlay) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeOverlay();
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     setTheme(getCurrentTheme());
     syncThemeNavigation();
+    initPendingApprovalSelection();
+    initPendingApprovalSheets();
     document.addEventListener('click', event => {
       if (event.target.closest('[data-set-theme], .project-option, .project-team-action-card')) syncThemeNavigation();
     });

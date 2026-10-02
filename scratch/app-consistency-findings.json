@@ -1,0 +1,322 @@
+{
+  "purpose": "只读全项目一致性审查，不修改业务源码",
+  "followUp": {
+    "evidence": "scratch/app-consistency-project-current.json",
+    "reason": "检查期间三个Project文件由其他工作更新，按最新文件重新检查。",
+    "confirmed": "最新View Details和Workflow弹窗正常打开；Approve/Resubmit/Reject仍没有事件响应，F05继续成立。审批颜色已统一，不再列此页颜色问题。",
+    "files": ["css/project-task.css", "js/project-task/project-task-app.js", "modules/project-task/options/pending-approval.html"]
+  },
+  "coverage": {
+    "applicationSourceFiles": 129,
+    "htmlPagesLoaded": 88,
+    "vendorJavaScriptFiles": 1,
+    "documentationConfigFiles": 9,
+    "method": "全部业务文本源码静态扫描；全部HTML初始加载；按模块人工审查及重点交互浏览器复现。扫描依赖CDN受限，不据此判断字体视觉一致性；重点交互另允许CDN。未声称每条交互路径穷举。",
+    "inventory": "scratch/app-consistency-audit.json",
+    "interactionEvidence": "scratch/app-consistency-interactions.json"
+  },
+  "confirmedUserRequirementsNotDefects": [
+    "Tax Relief Pending Approval详情四个按钮；Deduction Request详情仅Approve/Reject，属于用户明确差异。",
+    "Tax Relief仅Pending Approval卡片不显示Payroll Period/Cycle，不扩展到普通Team列表/History。",
+    "Medical General当前Claim Period→Receipt Date→Receipt No→Claim Total顺序正确。",
+    "Training/Performance/Workplace Coming Soon为用户明确尚未实现。",
+    "当前主Home Shortcut/Explore仅标题及Leave/Clocking/Tax Relief主入口已符合要求。",
+    "表格Emp#/Name/Hours分列是Timesheet Highlight明确要求，不按员工卡位置标准误报。",
+    "no/归档及未引用旧版页面的坏路径单列，不混作当前主入口缺陷。"
+  ],
+  "findings": [
+    {
+      "id": "F01",
+      "priority": "高",
+      "title": "Claims 编辑保存改变或丢失已有值",
+      "evidence": "Travel Claim 100×4.5=450，编辑后不改直接保存变100；OT编辑保存丢失Project/Meal/Transport；Travel Request选项编辑未恢复，Entertainment修改职位未读新值。",
+      "files": [
+        "modules/claims/options/travel-claim.html:1836",
+        "modules/claims/options/travel-claim.html:1949",
+        "modules/claims/options/ot-claim.html:1082",
+        "modules/claims/options/travel-request.html:1815",
+        "modules/claims/options/entertainment-claim.html:1755"
+      ]
+    },
+    {
+      "id": "F02",
+      "priority": "高",
+      "title": "Claims 附件空值与删除不一致",
+      "evidence": "Medical无附件保存xxxx.jpg；删除全部附件又恢复旧文件。同类默认假文件见多种Claim表单。",
+      "files": [
+        "modules/claims/options/medical-claim.html:1532"
+      ]
+    },
+    {
+      "id": "F03",
+      "priority": "高",
+      "title": "Leave Pending Approval Backup/Resubmit缺失函数",
+      "evidence": "所有九张审批卡调用未定义singleBackupCard/singleResubmitCard，Off Time点击复现ReferenceError。",
+      "files": [
+        "leave.html:5284",
+        "leave.html:5287",
+        "leave.html:6041"
+      ]
+    },
+    {
+      "id": "F04",
+      "priority": "高",
+      "title": "Attendance隐藏交互缺失函数",
+      "evidence": "Daily Manpower View Chart报openChartModal不存在；Hours Costing同按钮因guard而静默无反应；Workflow Assign Backup缺少函数；Shift Summary清除Shift Type报错。",
+      "files": [
+        "modules/attendance/options/daily-manpower.html:759",
+        "modules/attendance/options/hours-costing.html:739",
+        "modules/attendance/options/team.html:3468",
+        "modules/attendance/options/shift-summary.html:489"
+      ]
+    },
+    {
+      "id": "F05",
+      "priority": "高",
+      "title": "Project Pending Approval动作未绑定",
+      "evidence": "Approve/Resubmit/Reject三按钮点击后卡片与状态无变化。",
+      "files": [
+        "modules/project-task/options/pending-approval.html:63",
+        "js/project-task/project-task-app.js:145"
+      ]
+    },
+    {
+      "id": "F06",
+      "priority": "高",
+      "title": "Root Team动作与导航未接通",
+      "evidence": "Approve/Review没有处理事件，Home指向不存在home-v1.html；此team.html为当前路由页面。",
+      "files": [
+        "team.html:888",
+        "team.html:907",
+        "team.html:1068"
+      ]
+    },
+    {
+      "id": "F07",
+      "priority": "高",
+      "title": "跨模块筛选只改变摘要",
+      "evidence": "Attendance/OT/Leave/Benefit/Expenses Highlights与Staff Entitlement输入无匹配关键词仍显示全部行/卡；部分日期筛选也只改标签。详细受影响页面见模块审查。",
+      "files": [
+        "modules/attendance/options/attendance-highlight.html:995",
+        "modules/attendance/options/overtime-highlight.html:962",
+        "leave.html:12332",
+        "modules/claims/options/benefit-highlight.html:1028",
+        "modules/claims/options/expenses-highlight.html:1027",
+        "modules/claims/options/staff-entitlement.html:471"
+      ]
+    },
+    {
+      "id": "F08",
+      "priority": "中",
+      "title": "图表、列表、汇总不使用同一数据",
+      "evidence": "Benefit六行13629.32而KPI7370；Expense12630而KPI12450；Attendance/OT切月中心改变而分类不变；Leave余额87分类89导致102.30%。",
+      "files": [
+        "modules/claims/options/benefit-highlight.html:305",
+        "modules/claims/options/expenses-highlight.html:308",
+        "modules/attendance/options/attendance-highlight.html:766",
+        "modules/attendance/options/overtime-highlight.html:733",
+        "leave.html:10128"
+      ]
+    },
+    {
+      "id": "F09",
+      "priority": "高",
+      "title": "Project History隐藏真实记录与草稿",
+      "evidence": "selectStatusSamples每种状态仅取第一条；实际Timesheet草稿另存pq_project_timesheet_draft而History不读取该key。",
+      "files": [
+        "js/project-task/project-task-history.js:314",
+        "js/project-task/project-task-history.js:367",
+        "js/project-task/project-task-forms.js:363"
+      ]
+    },
+    {
+      "id": "F10",
+      "priority": "高",
+      "title": "提交、审批及History操作仍有仅提示的实现",
+      "evidence": "Claims/Payroll/Project部分Submit/Discard/Cancel仅toast，状态未改；Leave/Attendance部分详情Approve只关闭弹窗；Claims申请Submit/Draft未保存状态。样板前端目前尚未接通，未假设应已有后端。",
+      "files": [
+        "modules/claims/options/history.html:1031",
+        "js/payroll/payroll-history.js:48",
+        "js/project-task/project-task-history.js:442",
+        "leave.html:10961",
+        "modules/attendance/options/team.html:229"
+      ]
+    },
+    {
+      "id": "F11",
+      "priority": "高",
+      "title": "Claims审批队列、统计和Workflow不对应",
+      "evidence": "独立Team显示4Requests/RM1371但零卡；Dashboard11与实际队列12不一致；不同提交年份的Workflow复用固定审批记录。",
+      "files": [
+        "modules/claims/options/team.html:129",
+        "modules/claims/index.html:917",
+        "js/claims/claims-app.js:797",
+        "js/claims/claims-app.js:1699"
+      ]
+    },
+    {
+      "id": "F12",
+      "priority": "中",
+      "title": "Timesheet Highlight缺少Chart后续流程",
+      "evidence": "当前仅table/chart两个view，Hours是普通文字，无员工趋势与月份分析入口。",
+      "files": [
+        "modules/project-task/options/timesheet-highlight.html:57",
+        "js/project-task/timesheet-highlight.js:105",
+        "js/project-task/timesheet-highlight.js:229"
+      ]
+    },
+    {
+      "id": "F13",
+      "priority": "中",
+      "title": "共享Filter外观未统一",
+      "evidence": "Claims/Payroll审批Filter44px高12px圆角、Pending Approval Filter标题、文字Reset；Leave/Timesheet标准48px/16px、Filter标题、Reset图标。字段四项正确。",
+      "files": [
+        "js/pending-approval-filter.js:80"
+      ]
+    },
+    {
+      "id": "F14",
+      "priority": "中",
+      "title": "其他Filter局部标准差异",
+      "evidence": "Calendar、Benefit、Medical缺Header X；Project History自标ready而采用旧44px/14px；Tax Relief Request底部Search不同于Apply Filter；部分日期仍text。",
+      "files": [
+        "calendar.html:148",
+        "modules/claims/options/benefit-claim.html:533",
+        "modules/claims/options/medical-claim.html:831",
+        "modules/project-task/options/history.html:76",
+        "modules/payroll/options/tax-relief-request.html:103",
+        "modules/claims/options/benefit-highlight.html:641"
+      ]
+    },
+    {
+      "id": "F15",
+      "priority": "中",
+      "title": "审批颜色有遗漏",
+      "evidence": "通知审批popup仍greenApprove/pinkReject；root Team greenApprove；Claims独立Team橙色Approve All。",
+      "files": [
+        "js/components.js:362",
+        "js/components.js:365",
+        "css/app.css:8033",
+        "css/app.css:8051",
+        "team.html:888",
+        "modules/claims/options/team.html:131"
+      ]
+    },
+    {
+      "id": "F16",
+      "priority": "中",
+      "title": "员工ID位置与#格式未统一",
+      "evidence": "Me编号在姓名上方且无#；Bonus/Salary编号混于职位行；Daily OT编号在姓名前；Attendance Team EMP-1002无#。表格单独Emp#列不列为错误。",
+      "files": [
+        "me.html:33",
+        "bonus-history.html:49",
+        "salary-history.html:49",
+        "modules/attendance/options/daily-ot.html:1074",
+        "modules/attendance/options/team.html:4404"
+      ]
+    },
+    {
+      "id": "F17",
+      "priority": "中",
+      "title": "图表容器与View Chart按钮不一致",
+      "evidence": "多个Chart与Legend嵌同卡而非同级；Hours Summary详情Chart按钮40×40 icon-only fa-chart-simple；Claims Dashboard View chart breakdown文案；Daily OT缺nowrap。",
+      "files": [
+        "work-behaviour.html:54",
+        "modules/claims/index.html:833",
+        "modules/attendance/options/attendance-highlight.html:456",
+        "leave.html:10282",
+        "modules/attendance/options/hours-summary.html:1133",
+        "modules/attendance/options/daily-ot.html:661"
+      ]
+    },
+    {
+      "id": "F18",
+      "priority": "低",
+      "title": "Attendance摘要/详情卡圆角不符规范",
+      "evidence": "OT Plan/Shift Plan主Summary与Shift Summary详情仍20px，规范18px History Card。",
+      "files": [
+        "modules/attendance/options/ot-plan.html:723",
+        "modules/attendance/options/shift-plan.html:936",
+        "modules/attendance/options/shift-summary.html:740"
+      ]
+    },
+    {
+      "id": "F19",
+      "priority": "高",
+      "title": "Calendar选择年月与实际日期不一致",
+      "evidence": "非August月份复用September数据，日期hardcode2026；选择October2027仍30天并显示September2026详情；筛掉事件变为默认工作班次。",
+      "files": [
+        "calendar.html:354",
+        "calendar.html:374",
+        "calendar.html:408"
+      ]
+    },
+    {
+      "id": "F20",
+      "priority": "高",
+      "title": "Change Request编辑/提交未正确维护数据",
+      "evidence": "编辑指定家属未带回其资料；删除开关只提示；提交清草稿但History不追加。",
+      "files": [
+        "change-request.html:1085",
+        "change-request.html:1089",
+        "change-request.html:1246"
+      ]
+    },
+    {
+      "id": "F21",
+      "priority": "高",
+      "title": "Favourites入口指向错误/不存在页面",
+      "evidence": "OT与Shift Exchange均work-behaviour；KPI进Me；Training进不存在homedark-v2。另旧modules/leave和modules/me入口有缺失子页，当前主Leave入口正确。",
+      "files": [
+        "favourite.html:90",
+        "favourite.html:108",
+        "favourite.html:109",
+        "modules/leave/index.html:98",
+        "modules/me/index.html:98"
+      ]
+    },
+    {
+      "id": "F22",
+      "priority": "中",
+      "title": "导出和打印有仅提示实现",
+      "evidence": "Benefit/Expenses Export，Bonus/Salary Export未生成文件；EA Open & Print仅toast，预览图固定与年份脱节。",
+      "files": [
+        "modules/claims/options/benefit-highlight.html:990",
+        "modules/claims/options/expenses-highlight.html:990",
+        "bonus-history.html:140",
+        "salary-history.html:165",
+        "modules/payroll/options/ea-form.html:44",
+        "modules/payroll/options/ea-form.html:103"
+      ]
+    },
+    {
+      "id": "F23",
+      "priority": "中",
+      "title": "主题切换刷新回旧主题",
+      "evidence": "Me/Calendar带?theme=dark切light后reload回dark，setTheme未同步URL但initTheme优先读取URL。",
+      "files": [
+        "js/app.js:137",
+        "js/app.js:180"
+      ]
+    },
+    {
+      "id": "F24",
+      "priority": "中",
+      "title": "筛选期间与内容年份不一致",
+      "evidence": "Tax Relief日期摘要固定；Claims Summary五月改六月仅改label金额原样；Benefit筛2025申请Entitlement仍2026。",
+      "files": [
+        "js/payroll/team-tax-relief.js:151",
+        "modules/claims/options/summary.html:405",
+        "modules/claims/options/benefit-claim.html:602"
+      ]
+    }
+  ],
+  "moduleReviews": {
+    "claims": "已完整审查范围内 **23 个文件：18 个实际 HTML 页面、2 个 JS、3 个 CSS；无纯重定向页**。已读三份规范。全过程只读，claims 范围 Git 差异为空；未触碰其他审查改动。\n\n以下为最强的 **8 组发现**。P1＝高，P2＝中；浏览器验证使用本地 Chromium。\n\n1. **P1｜编辑保存丢失原数据〔浏览器确认〕**  \n   Travel Claim 金额 100、汇率 4.5，首次保存本币金额 450；重新编辑、不修改直接保存，变成 100。[travel-claim.html:1836](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-claim.html:1836)、[1949](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-claim.html:1949)。  \n   Travel Request 的 TRAIN／SELF BOOKED／BUSINESS 编辑时均变空：[travel-request.html:1815](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-request.html:1815)、[1846](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-request.html:1846)、[1857](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-request.html:1857)。Entertainment 修改职位后保存仍为原职位：[entertainment-claim.html:1755](C:/Users/loong/PQ-Mobile/modules/claims/options/entertainment-claim.html:1755)。OT 原记录的 Project、Meal Allowance、Transport 编辑保存后清空：[ot-claim.html:1082](C:/Users/loong/PQ-Mobile/modules/claims/options/ot-claim.html:1082)。  \n   **基线：无改动编辑必须保留原值；保存读取当前字段值。**\n\n2. **P1｜筛选摘要与实际结果脱节〔浏览器确认＋静态〕**  \n   两个 Highlight 输入不存在的关键词、最低金额 999999，六行仍全部保留，只更新摘要：[benefit-highlight.html:1028](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-highlight.html:1028)、[expenses-highlight.html:1027](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-highlight.html:1027)。Staff Entitlement 同样保留全部五张卡：[staff-entitlement.html:471](C:/Users/loong/PQ-Mobile/modules/claims/options/staff-entitlement.html:471)。  \n   Summary 从五月改六月，金额仍 RM1450.50，却把五月记录标成 `202606`：[summary.html:405](C:/Users/loong/PQ-Mobile/modules/claims/options/summary.html:405)。Benefit 选择 2025，申请表仍显示 Entitlement Year 2026：[benefit-claim.html:602](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-claim.html:602)、[376](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-claim.html:376)。Dashboard 两个 Team 筛选按钮没有事件绑定〔静态〕：[index.html:953](C:/Users/loong/PQ-Mobile/modules/claims/index.html:953)、[1004](C:/Users/loong/PQ-Mobile/modules/claims/index.html:1004)。  \n   **基线：列表、统计、图表、详情和申请年份共同使用实际筛选状态。**\n\n3. **P2｜总计、分项及月份分析互相矛盾〔浏览器确认＋静态〕**  \n   Benefit 六行合计 **RM13629.32**，KPI 为 **RM7370**：[benefit-highlight.html:305](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-highlight.html:305)、[338](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-highlight.html:338)。Expense 六行合计 **RM12630**，KPI 为 **RM12450**：[expenses-highlight.html:308](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-highlight.html:308)、[341](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-highlight.html:341)。  \n   点 Oct 2025，中心金额分别变成 7800／12800，分类仍合计 7370／12450；月份未参与数据选择：[benefit-highlight.html:942](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-highlight.html:942)、[expenses-highlight.html:942](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-highlight.html:942)。十二个月实际合计 90770／148600，标题却为 89400／148500：[benefit-highlight.html:518](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-highlight.html:518)、[expenses-highlight.html:521](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-highlight.html:521)。  \n   Staff Entitlement 五卡 Claimed／Usable 合计 **1017／3183**，KPI 为 **4770／15230**：[staff-entitlement.html:225](C:/Users/loong/PQ-Mobile/modules/claims/options/staff-entitlement.html:225)、[255](C:/Users/loong/PQ-Mobile/modules/claims/options/staff-entitlement.html:255)。Dashboard Benefit 配置总额 2000、分项仅 1800；Consultation 图形实际占 33.33%，图例写 40%〔静态〕：[claims-config.js:22](C:/Users/loong/PQ-Mobile/js/claims/claims-config.js:22)、[claims-app.js:131](C:/Users/loong/PQ-Mobile/js/claims/claims-app.js:131)，呈现于 [index.html:833](C:/Users/loong/PQ-Mobile/modules/claims/index.html:833)。  \n   **基线：金额、百分比和图形从同一期间、同一数据集计算。**\n\n4. **P1｜空附件被伪装为文件，删除后恢复〔浏览器确认＋静态〕**  \n   Medical 未上传也保存 `xxxx.jpg`；实际上传 `receipt.pdf` 后删除全部附件，保存又恢复该文件：[medical-claim.html:1532](C:/Users/loong/PQ-Mobile/modules/claims/options/medical-claim.html:1532)。  \n   同类空附件显示 `xxxx.jpg` 的实现还存在于：[advance-claim.html:952](C:/Users/loong/PQ-Mobile/modules/claims/options/advance-claim.html:952)、[expenses-claim.html:946](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-claim.html:946)、[entertainment-claim.html:1396](C:/Users/loong/PQ-Mobile/modules/claims/options/entertainment-claim.html:1396)、[travel-claim.html:1368](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-claim.html:1368)、[travel-request.html:1570](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-request.html:1570)、[ot-claim.html:1268](C:/Users/loong/PQ-Mobile/modules/claims/options/ot-claim.html:1268)〔静态〕。  \n   **基线：空附件显示无附件；删除全部后保存空数组。**\n\n5. **P1｜提交／保存／历史操作仅给提示〔静态；History 已浏览器确认〕**  \n   History 点击 Submit 后仍为 Draft；Cancel／Discard 同样只 toast：[history.html:1031](C:/Users/loong/PQ-Mobile/modules/claims/options/history.html:1031)、[1038](C:/Users/loong/PQ-Mobile/modules/claims/options/history.html:1038)。简版提交页仅 `alert`：[submit-claim.html:176](C:/Users/loong/PQ-Mobile/modules/claims/options/submit-claim.html:176)。  \n   各申请页提交／草稿处理也仅提示、返回或跳页，没有保存申请状态：[benefit-claim.html:691](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-claim.html:691)、[medical-claim.html:1606](C:/Users/loong/PQ-Mobile/modules/claims/options/medical-claim.html:1606)、[expenses-claim.html:1245](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-claim.html:1245)、[advance-claim.html:1260](C:/Users/loong/PQ-Mobile/modules/claims/options/advance-claim.html:1260)、[entertainment-claim.html:1882](C:/Users/loong/PQ-Mobile/modules/claims/options/entertainment-claim.html:1882)、[ot-claim.html:1285](C:/Users/loong/PQ-Mobile/modules/claims/options/ot-claim.html:1285)、[travel-claim.html:2104](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-claim.html:2104)、[travel-request.html:2134](C:/Users/loong/PQ-Mobile/modules/claims/options/travel-request.html:2134)。  \n   **基线：成功反馈前完成状态更新，并在 History／列表中体现结果。**\n\n6. **P2｜PDF／Excel 导出没有实现〔静态〕**  \n   两页 Export 仅显示 “Generating…”，没有生成文件、下载或打印调用：[benefit-highlight.html:990](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-highlight.html:990)、[expenses-highlight.html:990](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-highlight.html:990)。  \n   **基线：导出当前筛选结果，实际产出对应文件。**\n\n7. **P1｜审批列表、数量与 Workflow 不可信〔浏览器确认＋静态〕**  \n   独立 Team 页显示 **4 Requests／RM1371**，实际零张审批卡；引擎默认初始化 Individual，没有渲染此队列：[team.html:129](C:/Users/loong/PQ-Mobile/modules/claims/options/team.html:129)、[139](C:/Users/loong/PQ-Mobile/modules/claims/options/team.html:139)、[claims-app.js:29](C:/Users/loong/PQ-Mobile/js/claims/claims-app.js:29)。Approve All 仍调用全队列清空，且按钮为橙色：[team.html:131](C:/Users/loong/PQ-Mobile/modules/claims/options/team.html:131)、[claims-app.js:905](C:/Users/loong/PQ-Mobile/js/claims/claims-app.js:905)。  \n   Dashboard 为 11，实际队列 12；无列表容器时提前返回，数量未更新：[index.html:917](C:/Users/loong/PQ-Mobile/modules/claims/index.html:917)、[claims-app.js:797](C:/Users/loong/PQ-Mobile/js/claims/claims-app.js:797)。提交日期为 2019 与 2026 的两张申请，Workflow 均显示同一审批池及 `13/09/2026` 审计记录：[pending-approval.html:337](C:/Users/loong/PQ-Mobile/modules/claims/options/pending-approval.html:337)、[359](C:/Users/loong/PQ-Mobile/modules/claims/options/pending-approval.html:359)、[claims-app.js:1699](C:/Users/loong/PQ-Mobile/js/claims/claims-app.js:1699)。  \n   **基线：先渲染真实队列；数量独立计算；Workflow 绑定当前申请；审批动作统一紫色。**\n\n8. **P2｜Claims 专属界面仍偏离标准〔浏览器确认〕**  \n   Benefit／Medical 的 Filter 标题栏只有 Reset，没有 X：[benefit-claim.html:533](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-claim.html:533)、[medical-claim.html:831](C:/Users/loong/PQ-Mobile/modules/claims/options/medical-claim.html:831)。两页 Highlight 日期在运行时仍是普通文本输入：[benefit-highlight.html:641](C:/Users/loong/PQ-Mobile/modules/claims/options/benefit-highlight.html:641)、[expenses-highlight.html:646](C:/Users/loong/PQ-Mobile/modules/claims/options/expenses-highlight.html:646)。  \n   Dashboard 两个图表把图例放在同一卡内，按钮文案为 `View chart breakdown`：[index.html:833](C:/Users/loong/PQ-Mobile/modules/claims/index.html:833)、[841](C:/Users/loong/PQ-Mobile/modules/claims/index.html:841)、[979](C:/Users/loong/PQ-Mobile/modules/claims/index.html:979)、[987](C:/Users/loong/PQ-Mobile/modules/claims/index.html:987)。  \n   **基线：共享 Filter 完整标题栏及日期选择器；Breakdown、Chart、Legend 为同级卡；按钮为饼图图标＋`View Chart` 单行胶囊。**\n\n完整检查清单（23）：\n\n```text\nmodules/claims/index.html\nmodules/claims/options/advance-claim.html\nmodules/claims/options/benefit-claim.html\nmodules/claims/options/benefit-highlight.html\nmodules/claims/options/entertainment-claim.html\nmodules/claims/options/expenses-claim.html\nmodules/claims/options/expenses-highlight.html\nmodules/claims/options/history.html\nmodules/claims/options/medical-claim.html\nmodules/claims/options/ot-claim.html\nmodules/claims/options/pending-approval.html\nmodules/claims/options/staff-entitlement.html\nmodules/claims/options/staff-summary.html\nmodules/claims/options/submit-claim.html\nmodules/claims/options/summary.html\nmodules/claims/options/team.html\nmodules/claims/options/travel-claim.html\nmodules/claims/options/travel-request.html\njs/claims/claims-app.js\njs/claims/claims-config.js\ncss/claim-forms.css\ncss/claim-summary-cards.css\ncss/claim-summary-details.css\n```\n\n另读 `AGENTS.md`、`FILTER_STANDARD.md`、`DESIGN.md`。Medical General 已符合 Claim Period → Receipt Date → Receipt No → Claim Total，未列缺陷。共享 PendingApprovalFilter 问题留给主审，未重复报告。",
+    "attendanceLeave": "已扫描范围内 **29 个文件：28 个实际 HTML 实现、1 个 CSS；无纯重定向页**。29 个文件的 SHA-256 均与审查开始时一致，未写入代码、索引或审查产物。仓库当前存在范围外的并行修改，我未触及。\n\n以下为 8 组主要发现。共享 Pending Approval Filter 样式与缺失路径由父审查汇总，不重复计入。\n\n1. **P1｜审批动作断点及“成功但未处理”〔浏览器确认〕**  \n   [leave.html:6041](/C:/Users/loong/PQ-Mobile/leave.html:6041)、[6044](/C:/Users/loong/PQ-Mobile/leave.html:6044) 调用不存在的 `singleBackupCard`／`singleResubmitCard`；同样调用覆盖全部 9 张审批卡、18 个按钮。  \n   [team.html:3468](/C:/Users/loong/PQ-Mobile/modules/attendance/options/team.html:3468) 的 Assign Backup 同样缺少函数。详情审批处理仅提示并关闭：[leave.html:10961](/C:/Users/loong/PQ-Mobile/leave.html:10961)、[team.html:229](/C:/Users/loong/PQ-Mobile/modules/attendance/options/team.html:229)；浏览器执行 Approve 后，待办及数量保持不变。  \n   **基线：**列表、详情、Backup 共用同一处理逻辑，同步请求状态、待办列表和计数。\n\n2. **P2｜其他可见按钮失效〔浏览器确认〕**  \n   [daily-manpower.html:759](/C:/Users/loong/PQ-Mobile/modules/attendance/options/daily-manpower.html:759) 的 View Chart 抛出 `openChartModal is not defined`；[hours-costing.html:739](/C:/Users/loong/PQ-Mobile/modules/attendance/options/hours-costing.html:739) 因同一函数不存在而静默无响应。  \n   [shift-summary.html:489](/C:/Users/loong/PQ-Mobile/modules/attendance/options/shift-summary.html:489) 的 Shift Type 清除按钮调用不存在的 `resetShiftTypeFilter`。  \n   **基线：**所有展示为可用的按钮必须完成对应操作，并给出一致反馈。\n\n3. **P2｜筛选条件显示已应用，但未参与结果计算〔浏览器＋静态〕**  \n   浏览器确认：\n   - Highlight 输入不存在的关键词、零上限后，Attendance／OT 仍各显示 6 行，Leave 仍显示 4 行：[attendance-highlight:995](/C:/Users/loong/PQ-Mobile/modules/attendance/options/attendance-highlight.html:995)、[overtime-highlight:962](/C:/Users/loong/PQ-Mobile/modules/attendance/options/overtime-highlight.html:962)、[leave:12332](/C:/Users/loong/PQ-Mobile/leave.html:12332)。\n   - 规划页的部门、成本中心、日期没有改变员工列表：[ot-plan:1818](/C:/Users/loong/PQ-Mobile/modules/attendance/options/ot-plan.html:1818)、[shift-plan:1972](/C:/Users/loong/PQ-Mobile/modules/attendance/options/shift-plan.html:1972)。\n   - Daily OT 改日期仍为相同 6 人：[daily-ot:1276](/C:/Users/loong/PQ-Mobile/modules/attendance/options/daily-ot.html:1276)；且日期控件是文本框：[720](/C:/Users/loong/PQ-Mobile/modules/attendance/options/daily-ot.html:720)。\n   - History 只改摘要：[history:2574](/C:/Users/loong/PQ-Mobile/modules/attendance/options/history.html:2574)；Attendance 的 Apply 仅关闭弹窗：[attendance:1468](/C:/Users/loong/PQ-Mobile/modules/attendance/options/attendance.html:1468)。\n\n   静态同类漏接：Clocking History 日期（[1221](/C:/Users/loong/PQ-Mobile/modules/attendance/options/clocking-history.html:1221)）、Staff Hours Summary 日期（[1310](/C:/Users/loong/PQ-Mobile/modules/attendance/options/staff-hours-summary.html:1310)）、Shift Summary 的日期／Section／Cost Centre（[979](/C:/Users/loong/PQ-Mobile/modules/attendance/options/shift-summary.html:979)）、Team 仪表板日期（[3537](/C:/Users/loong/PQ-Mobile/modules/attendance/options/team.html:3537)）、Leave entitlement 多个组织字段（[12260](/C:/Users/loong/PQ-Mobile/leave.html:12260)）及趋势条件（[12401](/C:/Users/loong/PQ-Mobile/leave.html:12401)）。  \n   **基线：**保留各页所需字段，但每个可操作条件必须作用于列表、指标与图表；日期统一使用 picker。\n\n4. **P2｜图表总数与明细矛盾〔浏览器确认〕**  \n   两个 Highlight 从 Oct 的 **84.00** 钻取到 Nov 的 **67.00**，图例仍完全相同，首项仍为 `79.82%,6,445`：[attendance-highlight:766](/C:/Users/loong/PQ-Mobile/modules/attendance/options/attendance-highlight.html:766)、[overtime-highlight:733](/C:/Users/loong/PQ-Mobile/modules/attendance/options/overtime-highlight.html:733)。  \n   Leave 的 SIM 总余额为 **87 天**，类别合计却为 **89 天**，圆环比例合计 **102.30%**：[leave:10128](/C:/Users/loong/PQ-Mobile/leave.html:10128)、[10132](/C:/Users/loong/PQ-Mobile/leave.html:10132)。  \n   **基线：**选中期间、总数、类别金额及百分比必须来自同一份数据。\n\n5. **P2｜员工身份展示不统一〔浏览器确认〕**  \n   Team 普通员工列表显示 `Alex Tan / EMP-1002`，ID 缺少 `#`：[team:4404](/C:/Users/loong/PQ-Mobile/modules/attendance/options/team.html:4404)。  \n   Daily OT 详情及审批身份显示 `0000101 - Lee Soon Hock`，ID 在姓名前且没有 `#`：[daily-ot:1074](/C:/Users/loong/PQ-Mobile/modules/attendance/options/daily-ot.html:1074)、[1100](/C:/Users/loong/PQ-Mobile/modules/attendance/options/daily-ot.html:1100)。  \n   **基线：**姓名独占上一行，下一行显示 muted monospace 的 `#ID`。\n\n6. **P3｜图表和图例仍嵌在同一卡片〔静态＋DOM确认〕**  \n   受影响位置：\n   [attendance-performance:539](/C:/Users/loong/PQ-Mobile/modules/attendance/options/attendance-performance.html:539)、\n   [attendance-highlight:456](/C:/Users/loong/PQ-Mobile/modules/attendance/options/attendance-highlight.html:456)、\n   [overtime-highlight:456](/C:/Users/loong/PQ-Mobile/modules/attendance/options/overtime-highlight.html:456)、\n   [ot-plan:723](/C:/Users/loong/PQ-Mobile/modules/attendance/options/ot-plan.html:723)、\n   [shift-plan:936](/C:/Users/loong/PQ-Mobile/modules/attendance/options/shift-plan.html:936)、\n   [shift-summary:558](/C:/Users/loong/PQ-Mobile/modules/attendance/options/shift-summary.html:558)、\n   [daily-ot:858](/C:/Users/loong/PQ-Mobile/modules/attendance/options/daily-ot.html:858)、\n   [leave:10282](/C:/Users/loong/PQ-Mobile/leave.html:10282)。  \n   **基线：**selector、chart、legend/breakdown 使用独立 sibling cards；可沿用现有 Highlight 主图的分卡结构。\n\n7. **P3｜Summary／Detail 圆角基线冲突〔浏览器＋静态〕**  \n   主 summary 卡实际为 20px：[ot-plan:723](/C:/Users/loong/PQ-Mobile/modules/attendance/options/ot-plan.html:723)、[shift-plan:936](/C:/Users/loong/PQ-Mobile/modules/attendance/options/shift-plan.html:936)；Shift Summary detail 亦为 20px：[740](/C:/Users/loong/PQ-Mobile/modules/attendance/options/shift-summary.html:740)。  \n   共享 CSS 仍定义 20px：[history-cards.css:7](/C:/Users/loong/PQ-Mobile/css/history-cards.css:7)，但当前范围页面未直接引用它，此项属于静态配置冲突。  \n   **基线：**统一 `.history-card-item` 为 18px；规划子 summary 当前已是 18px，且没有左侧日期徽章。\n\n8. **P3｜View Chart 控件标准未完全统一〔浏览器确认〕**  \n   Hours Summary 进入明细后展示 **40×40、无文字、`fa-chart-simple`** 的按钮：[hours-summary:1133](/C:/Users/loong/PQ-Mobile/modules/attendance/options/hours-summary.html:1133)。  \n   Daily OT 虽有 pie 图标和文字，但实际 `white-space: normal`：[daily-ot:661](/C:/Users/loong/PQ-Mobile/modules/attendance/options/daily-ot.html:661)。  \n   **基线：**统一 pie 图标＋`View Chart` 文本、水平 pill、`nowrap`。\n\n审批详情三个标题，以及 Leave／Team 四种审批按钮的紫色样式均通过核对。浏览器结论为本地交互及 DOM/CSS 验证，未验证外部 CDN 字体的最终视觉效果。\n\n完整范围清单（29）：\n\n```text\nattendance.html\nleave.html\ncss/history-cards.css\nmodules/leave/index.html\nmodules/attendance/index.html\nmodules/attendance/options/attendance-highlight.html\nmodules/attendance/options/attendance-performance.html\nmodules/attendance/options/attendance.html\nmodules/attendance/options/clocking-history.html\nmodules/attendance/options/clocking-summary.html\nmodules/attendance/options/clocking.html\nmodules/attendance/options/daily-manpower.html\nmodules/attendance/options/daily-ot.html\nmodules/attendance/options/feedback-history.html\nmodules/attendance/options/history.html\nmodules/attendance/options/hours-costing.html\nmodules/attendance/options/hours-summary.html\nmodules/attendance/options/individual.html\nmodules/attendance/options/ot-plan.html\nmodules/attendance/options/overtime-costing.html\nmodules/attendance/options/overtime-highlight.html\nmodules/attendance/options/overtime.html\nmodules/attendance/options/shift-plan.html\nmodules/attendance/options/shift-roster.html\nmodules/attendance/options/shift-summary.html\nmodules/attendance/options/staff-attendance.html\nmodules/attendance/options/staff-hours-summary.html\nmodules/attendance/options/team.html\nmodules/attendance/options/work-hour-violation.html\n```",
+    "payrollProject": "**已确认当前 Timesheet Highlight 缺少完整分析流程。**以下结论基于当前工作树，快照时间 **2026-10-02 16:45 MYT**；Project 待审批文件仍有其他进程编辑。全程只读，未修改代码、索引、分支或现有产物。\n\n共 **7 组发现**，均为静态证据；第 2 组另有 Node VM 控制器复现。**浏览器确认：0 项**，本次 Chromium 启动受到 EPERM 限制。未重复报告父审阅者负责的共享 PendingApprovalFilter 问题。\n\n1. **P2｜Timesheet Highlight 流程停在 View Chart。**  \n   [timesheet-highlight.html:57](/C:/Users/loong/PQ-Mobile/modules/project-task/options/timesheet-highlight.html:57) 只有 chart 页面；[timesheet-highlight.js:177](/C:/Users/loong/PQ-Mobile/js/project-task/timesheet-highlight.js:177) 仅定义 table/chart 标题，229 行只进入 chart。105 行 Hours 渲染为普通 `span`，[timesheet-highlight.css:37](/C:/Users/loong/PQ-Mobile/css/timesheet-highlight.css:37) 也仅提供数值样式。全文没有 View Trend、月份选择或月度分析界面。**基线：补齐既定 View Chart → View Trend → 月度分析流程，并沿用当前筛选数据。**\n\n2. **P1｜Project History 隐藏同状态记录，真实草稿不进入历史。**  \n   [project-task-history.js:314](/C:/Users/loong/PQ-Mobile/js/project-task/project-task-history.js:314) 对 submitted/draft 各执行一次 `find`，Work Plan 与 Time Sheet 均调用它（311、367 行）；筛选发生在截断之后。[project-task-forms.js:363](/C:/Users/loong/PQ-Mobile/js/project-task/project-task-forms.js:363) 将草稿保存到 `pq_project_timesheet_draft`，历史只读取 `pq_project_timesheets`。Node VM 复现：两条 submitted 仅显示最新一条；筛选旧月份也无法找回旧记录。  \n   涉及页面：`modules/project-task/options/history.html`、`work-plan.html`、`time-sheet.html`。**基线：完整读取记录后筛选，并纳入实际保存的草稿。**\n\n3. **P1｜两个模块的历史操作只有提示，没有实际状态变化。**  \n   [payroll-history.js:48](/C:/Users/loong/PQ-Mobile/js/payroll/payroll-history.js:48) 的 Submit/Discard/Cancel 处理函数仅显示 `action selected`；[project-task-history.js:442](/C:/Users/loong/PQ-Mobile/js/project-task/project-task-history.js:442) 同样只显示 toast。没有提交、删除、取消或持久化逻辑。  \n   涉及 `modules/payroll/options/history.html`、`modules/project-task/options/history.html`。**基线：执行本地状态转换并刷新列表；不要求新增后端。**\n\n4. **P1｜Project 待审批按钮已出现，但快照中没有处理器。**  \n   [pending-approval.html:63](/C:/Users/loong/PQ-Mobile/modules/project-task/options/pending-approval.html:63) 的 Approve/Resubmit/Reject，以及 91、119 行对应按钮，仅带 `data-project-approval-action`。[project-task-app.js:145](/C:/Users/loong/PQ-Mobile/js/project-task/project-task-app.js:145) 只绑定复选框，全文及共享控制器未发现审批事件绑定。**基线：审批操作应更新状态、队列和数量。**  \n   此项具有并发时效性：读取时 HTML 哈希前缀 `C4FF50BD10B36`，控制器 `20F4EC77D29D`；按钮紫色本身符合规则。\n\n5. **P2｜EA Form 显示打印成功，但没有打开或打印文件。**  \n   [ea-form.html:103](/C:/Users/loong/PQ-Mobile/modules/payroll/options/ea-form.html:103) 的 `openAndPrintEA()` 只显示成功提示。44 行预览使用固定图片；84 行 `renderEA()` 只修改筛选摘要，切换年份不会更换文档。**基线：显示所选年份对应文档，并实际打开打印预览。**\n\n6. **P2｜模块自己的 Filter 未遵循统一标准。**  \n   [Project History:76](/C:/Users/loong/PQ-Mobile/modules/project-task/options/history.html:76)、136 行预先标记 `data-standard-filter-ready=\"true\"`，但 81、141 行仍为 `Filter History`；[project-task.css:1165](/C:/Users/loong/PQ-Mobile/css/project-task.css:1165) 输入最小高度 44px、1168 行圆角 14px。[app.js:1345](/C:/Users/loong/PQ-Mobile/js/app.js:1345) 会跳过这两个面板。另有 [Tax Relief:103](/C:/Users/loong/PQ-Mobile/modules/payroll/options/tax-relief.html:103) 底部按钮仍为 `Search`，不会被标准化函数改名。**基线：统一 Filter 标题、标准头部、48px/16px 控件及全宽 Apply Filter。**\n\n7. **P2｜Tax Relief 筛选摘要显示错误日期范围。**\n   `js/payroll/team-tax-relief.js:151` 在仅修改日期时仍输出固定 `01 Jan–03 Oct 2026`。摘要应反映实际日期筛选。\n   主审校正：用户只要求 Pending Approval 的 Tax Relief 卡片移除 Payroll Period/Cycle；不将 Team Tax Relief 和 History 中的这些字段列为问题。\n\n范围内全文检查 **41 文件：16 HTML、14 JS、11 CSS**。16 个 HTML 均为实际实现，**重定向页 0 个**。另全文读取 `AGENTS.md`、`FILTER_STANDARD.md`、`DESIGN.md`。完整范围清单：\n\n```text\nmodules/payroll/index.html\nmodules/payroll/options/deduction-request.html\nmodules/payroll/options/ea-form.html\nmodules/payroll/options/history.html\nmodules/payroll/options/payslip.html\nmodules/payroll/options/pending-approval.html\nmodules/payroll/options/prior-pay-data.html\nmodules/payroll/options/tax-relief.html\nmodules/payroll/options/tax-relief-request.html\nmodules/project-task/index.html\nmodules/project-task/options/history.html\nmodules/project-task/options/pending-approval.html\nmodules/project-task/options/time-sheet.html\nmodules/project-task/options/timesheet-highlight.html\nmodules/project-task/options/work-assignment.html\nmodules/project-task/options/work-plan.html\njs/payroll/payroll-app.js\njs/payroll/payroll-config.js\njs/payroll/payroll-history.js\njs/payroll/payroll-history-data.js\njs/payroll/payroll-pending-approval.js\njs/payroll/payroll-pending-data.js\njs/payroll/payroll-request-forms.js\njs/payroll/prior-pay-data.js\njs/payroll/team-tax-relief.js\njs/project-task/project-task-app.js\njs/project-task/project-task-forms.js\njs/project-task/project-task-history.js\njs/project-task/timesheet-highlight.js\njs/project-task/timesheet-highlight-data.js\ncss/ea-form.css\ncss/payroll-documents.css\ncss/payroll-history.css\ncss/payroll-pending-approval.css\ncss/payroll-request-forms.css\ncss/payslip.css\ncss/prior-pay-data.css\ncss/project-task.css\ncss/project-task-forms.css\ncss/team-tax-relief.css\ncss/timesheet-highlight.css\n```",
+    "rootPages": "本范围已通读 **26 个 HTML，共 14,306 行**，并读取三份规范。以下为最强的 **8 组发现**；未修改项目文件、索引或分支，也未触碰工作树中的其他变更。\n\n| 严重度 | 问题与准确证据 | 建议基准／验证方式 |\n|---|---|---|\n| **高** | **当前 Team 流程失效。** [team.html:888](/C:/Users/loong/PQ-Mobile/team.html:888)、907、926 的 Approve/Review 无事件处理；页面没有脚本。Home 指向不存在的 `home-v1.html`：[1068](/C:/Users/loong/PQ-Mobile/team.html:1068)；顶部另有失效旧链接：736、737、830。 | 接入真实审批与共享导航、主题；审批按钮统一紫色。目前浏览器确认按钮为绿色，页面脚本数为零。 |\n| **高** | **收藏入口名称与目的页面不符。** [favourite.html:90](/C:/Users/loong/PQ-Mobile/favourite.html:90)、91 将 OT/Shift Exchange 导向行为分析；[108](/C:/Users/loong/PQ-Mobile/favourite.html:108) 将 KPI 导向强制浅色的 Me 重定向；109 的培训目标 `homedark-v2.html` 不存在。150、183 实际使用这些目标导航。 | 收藏入口复用真实模块路由；尚未实现的功能明确显示 coming soon。**静态确认**，不是将 App 中明确 coming soon 的模块判为缺陷。 |\n| **高** | **Change Request 操作未形成一致草稿。** [change-request.html:1085](/C:/Users/loong/PQ-Mobile/change-request.html:1085)、1094、1127 的删除／开关只显示提示；[1089](/C:/Users/loong/PQ-Mobile/change-request.html:1089) 编辑家庭成员没有载入选中记录；[1246](/C:/Users/loong/PQ-Mobile/change-request.html:1246) 提交后清空草稿，却不添加历史。 | 所有操作进入同一草稿模型并保留记录身份；提交结果应可在历史追踪。**浏览器确认**：开关／删除后仍为零修改；编辑女儿显示空姓名、HUSBAND、丈夫生日；提交后历史仍为三条。 |\n| **高** | **Calendar 筛选与详情显示错误数据。** [calendar.html:354](/C:/Users/loong/PQ-Mobile/calendar.html:354) 将所有非 August 月份当作 September；374 写死 2026 和两个月份。另在 [408](/C:/Users/loong/PQ-Mobile/calendar.html:408) 将未匹配事件替换为普通工作日；[673](/C:/Users/loong/PQ-Mobile/calendar.html:673) 多个详情主按钮仅关闭弹层。 | 月份、年份、星期及详情共用实际日期；筛选不应改变事件身份。**浏览器确认**：选择 October 2027 显示30天，首日详情为 Sep 1, 2026；Aug 1 周六显示 Standard Working Shift。主按钮问题为静态确认。 |\n| **中** | **员工编号展示违反规范。** [me.html:33](/C:/Users/loong/PQ-Mobile/me.html:33) 编号在姓名上方；员工卡将编号放在脚部：[66](/C:/Users/loong/PQ-Mobile/me.html:66)。[bonus-history.html:49](/C:/Users/loong/PQ-Mobile/bonus-history.html:49)、[salary-history.html:49](/C:/Users/loong/PQ-Mobile/salary-history.html:49) 将编号混在职位行，均缺 `#`。 | 姓名下方独立显示淡色、细小等宽字体的 `#EBB12`。Me 已浏览器确认；两份历史页为静态确认。遗留 [me-accordion.html:53](/C:/Users/loong/PQ-Mobile/me-accordion.html:53) 同样违规，但未计为当前可达页面。 |\n| **中** | **Calendar Filter 未满足共享结构。** [calendar.html:148](/C:/Users/loong/PQ-Mobile/calendar.html:148) 页头只有 Filter、Reset，没有 X；156、182 的标签仍是自定义 `div`。 | 使用共享 Filter 标记：handle、Filter、Reset→X、紫色标签及全宽 Apply Filter，保留所需字段。**浏览器确认**：面板打开后仍只有一个页头按钮，标签为深色而非紫色。 |\n| **中** | **行为分析的图表、图例仍嵌套在同一卡片。** [work-behaviour.html:54](/C:/Users/loong/PQ-Mobile/work-behaviour.html:54) 的外层图表卡同时包含83的图例和95的图表；周视图450、472的两张卡也留在这张外层卡内。 | 图表、图例／明细改为同级独立卡片。**浏览器确认**：分析容器只有一个直接子卡，图例位于其内部。 |\n| **中** | **Bonus／Salary 导出与审计入口只有提示。** [bonus-history.html:140](/C:/Users/loong/PQ-Mobile/bonus-history.html:140)、[salary-history.html:165](/C:/Users/loong/PQ-Mobile/salary-history.html:165) 没有文件生成逻辑；两页37的审计按钮仅 `alert`。 | 导出应生成文件，审计入口应打开实际记录。**浏览器确认**：PDF 按钮分别只显示图标／空提示，页面仍为 Preparing download。 |\n\n新版入口核对通过：`applight.html`／`appdark.html` 的 Clocking→`modules/attendance/options/clocking.html`、Tax Relief→`modules/payroll/options/tax-relief-request.html`，Leave→根目录 `leave.html`。Claim、Payroll、Project & Task 指向真实模块；Shortcuts／Explore 条目只有标题，没有描述。\n\n**完整审查清单（26 HTML）：**\n\n- 当前实现，13：`homelight.html`、`homedark.html`、`applight.html`、`appdark.html`、`me.html`、`calendar.html`、`team.html`、`subordinates.html`、`favourite.html`、`change-request.html`、`bonus-history.html`、`salary-history.html`、`work-behaviour.html`。\n- 重定向，4：`index.html`、`app.html`、`medark.html`、`melight.html`。\n- 未发现当前导航引用的实现，5：`light.html`、`team-v2.html`、`me-accordion.html`、`payslip.html`、`modules/me/index.html`。其中 modules/me 的98、102、106、110、114、118六个目标均不存在，单独归为未接入实现。\n- `no/**` 遗留实现，4：`no/home-v1.html`、`no/home-v2.html`、`no/homedark-v2.html`、`no/homelight-v2.html`。未发现当前入口指向它们，未把旧标题、描述或失效资源计入线上缺陷。\n\n另完整读取 `AGENTS.md`、`FILTER_STANDARD.md`、`DESIGN.md`、`package.json`；局部参考 `js/app.js`、`js/components.js`、`css/app.css`、`scratch/test_benefit_analysis_card_separation.js`。合计读取 **34 个项目文件**，其中30个全文、4个局部参考。浏览器验证使用本地页面；共享层未重复深入审查。"
+  },
+  "limits": "代码为当前工作树审查快照；使用样例数据本身不是缺陷，但同一界面样例总额互相矛盾仍是问题。成功提示而未实现状态变更/文件生成标记为未接通；不假设本项目当前已有后端。",
+  "businessCodeChangesByAudit": []
+}

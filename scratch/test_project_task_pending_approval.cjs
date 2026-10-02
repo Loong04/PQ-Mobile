@@ -20,8 +20,9 @@ const pageUrl = theme => pathToFileURL(
 
       assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
       assert.equal(await page.$eval('.project-header h1', node => node.textContent.trim()), 'Pending Approval');
-      assert.equal(await page.$eval('.project-approval-section-title', node => node.textContent.trim()), 'TIMESHEET');
+      assert.equal(await page.$eval('.project-approval-section-title', node => node.textContent.trim()), 'TIMESHEET APPROVALS');
       assert.equal(await page.$eval('#projectTimesheetApprovalCount', node => node.textContent.trim()), '3 Records');
+      assert.equal(await page.$eval('body', node => node.classList.contains('unified-approval-actions')), true);
       assert.equal(await page.$$eval('.project-approval-tab', tabs => tabs.length), 0);
       assert.equal(await page.$$eval('.project-approval-card:not([data-type="timesheet"])', cards => cards.length), 0);
       assert.deepEqual(
@@ -32,32 +33,104 @@ const pageUrl = theme => pathToFileURL(
           status: card.querySelector('.project-approval-status').textContent.trim(),
           date: card.querySelector('[data-field="date"] strong').textContent.trim(),
           normalHours: card.querySelector('[data-field="normal-hours"] strong').textContent.trim(),
-          otHours: card.querySelector('[data-field="ot-hours"] strong').textContent.trim()
+          otHours: card.querySelector('[data-field="ot-hours"] strong').textContent.trim(),
+          actions: [...card.querySelectorAll('.project-approval-actions button')].map(button => button.textContent.trim())
         }))),
         [
-          { reference: 'ETS00000002819', name: 'Farhan binti rahmat', employeeId: '#EBB12', status: 'Pending', date: '30 Sep 2026', normalHours: '7.50 hrs', otHours: '1.00 hrs' },
-          { reference: 'ETS00000002820', name: 'Aina Rahman', employeeId: '#EBB27', status: 'Pending', date: '29 Sep 2026', normalHours: '8.00 hrs', otHours: '0.00 hrs' },
-          { reference: 'ETS00000002821', name: 'Daniel Lee', employeeId: '#EBB41', status: 'Pending', date: '28 Sep 2026', normalHours: '6.50 hrs', otHours: '2.00 hrs' }
+          { reference: 'Reference # ETS00000002819', name: 'Farhan binti rahmat', employeeId: '#EBB12', status: 'Pending', date: '30 Sep 2026', normalHours: '7.50 hrs', otHours: '1.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] },
+          { reference: 'Reference # ETS00000002820', name: 'Aina Rahman', employeeId: '#EBB27', status: 'Pending', date: '29 Sep 2026', normalHours: '8.00 hrs', otHours: '0.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] },
+          { reference: 'Reference # ETS00000002821', name: 'Daniel Lee', employeeId: '#EBB41', status: 'Pending', date: '28 Sep 2026', normalHours: '6.50 hrs', otHours: '2.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] }
         ]
       );
+
+      assert.equal(await page.$$eval('.project-approval-card-banner .approval-card-checkbox', boxes => boxes.length), 3);
+      const actionStyles = await page.$$eval('.project-approval-card:first-of-type .project-approval-actions button', buttons => buttons.map(button => ({
+        background: getComputedStyle(button).backgroundColor,
+        radius: getComputedStyle(button).borderRadius,
+        minHeight: getComputedStyle(button).minHeight
+      })));
+      assert.equal(new Set(actionStyles.map(style => style.background)).size, 1);
+      assert.deepEqual([...new Set(actionStyles.map(style => style.radius))], ['12px']);
+      assert.deepEqual([...new Set(actionStyles.map(style => style.minHeight))], ['40px']);
+      await page.click('#projectApprovalSelectAll');
+      assert.equal(await page.$$eval('.project-approval-card-banner .approval-card-checkbox', boxes => boxes.every(box => box.checked)), true);
+      await page.click('#projectApprovalSelectAll');
+      assert.equal(await page.$$eval('.project-approval-card-banner .approval-card-checkbox', boxes => boxes.every(box => !box.checked)), true);
+      assert.equal(await page.$$eval('[data-project-approval-menu]', buttons => buttons.length), 3);
+      await page.click('[data-project-approval-menu]');
+      assert.equal(await page.$eval('#projectApprovalMenu', node => node.hidden), false);
+      assert.deepEqual(
+        await page.$$eval('#projectApprovalMenu .project-approval-menu-option', buttons => buttons.map(button => button.textContent.trim())),
+        ['View Details', 'View Workflow']
+      );
+      await page.click('#projectApprovalViewDetails');
+      assert.equal(await page.$eval('#projectApprovalDetails', node => node.hidden), false);
+      assert.equal(await page.$eval('#projectApprovalDetailsTitle', node => node.textContent.trim()), 'Timesheet Details');
+      assert.deepEqual(
+        await page.$$eval('#projectApprovalDetailsTable tr', rows => rows.map(row => [
+          row.querySelector('th').textContent.trim(),
+          row.querySelector('td').textContent.trim()
+        ])),
+        [
+          ['Reference #', 'ETS00000002819'],
+          ['Emp #', '#EBB12'],
+          ['Name', 'Farhan binti rahmat'],
+          ['Status', 'Pending'],
+          ['Date', '30 Sep 2026'],
+          ['Normal Hours', '7.50 hrs'],
+          ['OT Hours', '1.00 hrs']
+        ]
+      );
+      await page.click('#projectApprovalDetails [data-close-project-approval]');
+      assert.equal(await page.$eval('#projectApprovalDetails', node => node.hidden), true);
+      assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-project-approval-menu')), true);
+      await page.click('[data-project-approval-menu]');
+      await page.click('#projectApprovalViewWorkflow');
+      assert.equal(await page.$eval('#projectApprovalWorkflow', node => node.hidden), false);
+      assert.equal(await page.$eval('#projectApprovalWorkflowReference', node => node.textContent.trim()), 'ETS00000002819');
+      assert.deepEqual(
+        await page.$$eval('#projectApprovalWorkflowSteps .project-approval-workflow-step', steps => steps.map(step => ({
+          title: step.querySelector('strong').textContent.trim(),
+          status: step.querySelector('span').textContent.trim()
+        }))),
+        [
+          { title: 'Submitted', status: 'Completed' },
+          { title: 'Supervisor Approval', status: 'Pending' },
+          { title: 'Timesheet Processing', status: 'Waiting' }
+        ]
+      );
+      await page.keyboard.press('Escape');
+      assert.equal(await page.$eval('#projectApprovalWorkflow', node => node.hidden), true);
+      assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-project-approval-menu')), true);
 
       const layout = await page.evaluate(() => {
         const card = document.querySelector('.project-approval-card');
         return {
           radius: getComputedStyle(card).borderRadius,
           leftBorder: getComputedStyle(card).borderLeftWidth,
+          overflow: getComputedStyle(card).overflow,
+          bannerBackground: getComputedStyle(card.querySelector('.project-approval-card-banner')).backgroundImage,
           gridColumns: getComputedStyle(card.querySelector('.project-approval-metrics')).gridTemplateColumns.split(' ').length,
+          actionColumns: getComputedStyle(card.querySelector('.project-approval-actions')).gridTemplateColumns.split(' ').length,
           backFile: new URL(document.querySelector('.project-back').href).pathname.split('/').slice(-2).join('/'),
           backScope: new URL(document.querySelector('.project-back').href).searchParams.get('scope'),
-          overflow: document.querySelector('.phone-container').scrollWidth > document.querySelector('.phone-container').clientWidth + 1
+          phoneOverflow: document.querySelector('.phone-container').scrollWidth > document.querySelector('.phone-container').clientWidth + 1
         };
       });
-      assert.equal(layout.radius, '18px');
-      assert.equal(layout.leftBorder, '4px');
-      assert.equal(layout.gridColumns, 3);
+      assert.equal(layout.radius, '20px');
+      assert.equal(layout.leftBorder, '1px');
+      assert.equal(layout.overflow, 'hidden');
+      assert.match(layout.bannerBackground, /linear-gradient/);
+      assert.equal(layout.gridColumns, 2);
+      assert.equal(layout.actionColumns, 3);
       assert.equal(layout.backFile, 'project-task/index.html');
       assert.equal(layout.backScope, 'team');
-      assert.equal(layout.overflow, false);
+      assert.equal(layout.phoneOverflow, false);
+      for (const width of [360, 390, 450]) {
+        await page.setViewport({ width, height: 950 });
+        assert.equal(await page.$eval('.phone-container', node => node.scrollWidth > node.clientWidth + 1), false);
+        assert.equal(await page.$eval('.project-approval-card', node => node.scrollWidth > node.clientWidth + 1), false);
+      }
     }
 
     assert.deepEqual(faults, []);
