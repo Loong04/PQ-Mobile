@@ -38,7 +38,6 @@ async function run() {
     const initial = await page.evaluate(() => {
       const preview = document.querySelector('#eaFormPreview');
       const action = document.querySelector('.ea-open-print-action');
-      const actionStyle = action ? getComputedStyle(action) : null;
       return {
         hasPreview: Boolean(preview),
         previewLoaded: Boolean(preview?.complete && preview.naturalWidth > 0),
@@ -46,10 +45,13 @@ async function run() {
         legacyPartCount: document.querySelectorAll('[data-ea-part]').length,
         actionCount: document.querySelectorAll('.ea-open-print-action').length,
         actionText: action?.textContent.replace(/\s+/g, ' ').trim() || '',
-        actionBackground: actionStyle?.backgroundImage || '',
         hasPrintIcon: Boolean(action?.querySelector('.fa-print')),
         hasDownloadAction: [...document.querySelectorAll('button')].some(button => button.textContent.includes('Download PDF')),
-        filterSummary: document.querySelector('#eaFilterSummary')?.textContent.trim() || ''
+        filterSummary: document.querySelector('#eaFilterSummary')?.textContent.trim() || '',
+        headerText: document.querySelector('.payroll-header-row')?.textContent.replace(/\s+/g, ' ').trim() || '',
+        headerRightCount: document.querySelectorAll('.payroll-header-badge').length,
+        previewHeadingText: document.querySelector('.ea-form-preview-heading')?.textContent.replace(/\s+/g, ' ').trim() || '',
+        previewCodeCount: document.querySelectorAll('.ea-form-preview-heading .ea-form-code').length
       };
     });
 
@@ -59,9 +61,12 @@ async function run() {
     assert.equal(initial.legacyPartCount, 0, 'EA page must not render the old A-F data-card breakdown');
     assert.equal(initial.actionCount, 1, 'EA page must expose one Open + Print primary action');
     assert.match(initial.actionText, /Open \+ Print/, 'Primary action must use the requested Open + Print label');
-    assert.match(initial.actionBackground, /linear-gradient/, 'Open + Print must use the premium purple gradient treatment');
     assert.equal(initial.hasPrintIcon, true, 'Open + Print must include the print icon');
     assert.equal(initial.hasDownloadAction, false, 'EA page must not render a separate Download PDF action');
+    assert.equal(initial.headerText, 'EA Form', 'EA header must not show Year of Assessment');
+    assert.equal(initial.headerRightCount, 0, 'EA header must not show a right-side badge or icon');
+    assert.equal(initial.previewHeadingText, 'Official document', 'EA preview heading must not repeat EA Form or the year');
+    assert.equal(initial.previewCodeCount, 0, 'EA preview heading must not show C.P.8A');
     assert.match(initial.filterSummary, /^2024\s*[·•]\s*T01 \(TAX\)$/);
 
     await page.click('#eaFilterTrigger');

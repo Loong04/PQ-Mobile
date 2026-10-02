@@ -31,7 +31,7 @@ async function run() {
     await page.click('[data-payroll-option="history"]');
     await page.waitForFunction(() => location.pathname.endsWith('/options/history.html'), { timeout: 4000 });
     await page.waitForSelector('.history-card-item');
-    assert.deepEqual(await refs(page), ['RBT000000000039', 'RBT000000000050']);
+    assert.deepEqual(await refs(page), ['RBT000000000039', 'RBT000000000049', 'RBT000000000050']);
     assert.equal(await shown(page, '#historyFilterModal'), false, 'Filter must stay closed on entry');
     assert.equal(await shown(page, '#historyDetailsModal'), false, 'Details must stay closed on entry');
     const categoryTabs = await page.$$eval('.history-categories .me-jump-pill', tabs => tabs.map(tab => {
@@ -46,29 +46,31 @@ async function run() {
     assert.equal(categoryTabs[1].borderRadius, '999px', 'Payroll History tabs must use fully rounded pill corners');
     const cards = await page.$$eval('.history-card-item', nodes => nodes.map(node => node.textContent.replace(/\s+/g, ' ')));
     assert.ok(cards[0].includes('14 Aug 2025') && cards[0].includes('RM 100.00'));
-    assert.ok(cards[1].includes('TXR05') && cards[1].includes('RM 14.00'));
-    assert.deepEqual(await page.$$eval('.history-card-item', nodes => nodes.map(node => node.dataset.status)), ['submitted', 'draft'], 'History preview must show one Submitted card and one Draft card');
+    assert.ok(cards[1].includes('19 Mar 2026') && cards[1].includes('RM 12.00'));
+    assert.ok(cards[2].includes('TXR05') && cards[2].includes('RM 14.00'));
+    assert.deepEqual(await page.$$eval('.history-card-item', nodes => nodes.map(node => node.dataset.status)), ['submitted', 'submitted', 'submitted'], 'Tax Relief History must match the three Submitted screenshot records');
     const submittedActions = await page.$eval('[data-reference="RBT000000000039"]', card => [...card.querySelectorAll('.history-card-action')].map(button => button.textContent.trim()));
     assert.deepEqual(submittedActions, ['Cancel'], 'Submitted history cards must expose only the Cancel action');
-    const previewDraftActions = await page.$eval('[data-reference="RBT000000000050"]', card => [...card.querySelectorAll('.history-card-action')].map(button => button.textContent.trim()));
-    assert.deepEqual(previewDraftActions, ['Submit', 'Discard'], 'Draft history cards must expose Submit and Discard actions');
-    const primaryActionSizes = await page.evaluate(() => {
-      const cancel = document.querySelector('[data-reference="RBT000000000039"] .history-card-action');
-      const submit = document.querySelector('[data-reference="RBT000000000050"] .history-card-action-primary');
-      return [cancel.getBoundingClientRect(), submit.getBoundingClientRect()].map(rect => ({ width: rect.width, height: rect.height }));
-    });
-    assert.deepEqual(primaryActionSizes[0], primaryActionSizes[1], 'Cancel and Submit buttons must have identical dimensions');
-    const primaryActionColors = await page.evaluate(() => {
-      const cancel = getComputedStyle(document.querySelector('[data-reference="RBT000000000039"] .history-card-action'));
-      const submit = getComputedStyle(document.querySelector('[data-reference="RBT000000000050"] .history-card-action-primary'));
+    const remainingSubmittedActions = await page.$$eval('[data-reference="RBT000000000049"], [data-reference="RBT000000000050"]', cards => cards.map(card => [...card.querySelectorAll('.history-card-action')].map(button => button.textContent.trim())));
+    assert.deepEqual(remainingSubmittedActions, [['Cancel'], ['Cancel']], 'All screenshot Tax Relief records must remain Submitted');
+    const cancelPresentation = await page.$eval('[data-reference="RBT000000000039"] .history-card-action', button => {
+      const rect = button.getBoundingClientRect();
+      const style = getComputedStyle(button);
       return {
-        cancel: { background: cancel.backgroundColor, color: cancel.color },
-        submit: { background: submit.backgroundImage, boxShadow: submit.boxShadow, color: submit.color }
+        size: { width: rect.width, height: rect.height },
+        background: style.backgroundColor,
+        color: style.color
       };
     });
-    assert.deepEqual(primaryActionColors.cancel, { background: 'rgb(255, 241, 242)', color: 'rgb(225, 29, 72)' }, 'Cancel must keep the light blush style in dark mode');
-    assert.equal(primaryActionColors.submit.background, 'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%)', 'Submit must use the exact Claim History purple');
-    assert.ok(primaryActionColors.submit.boxShadow.includes('rgba(124, 58, 237, 0.4)') && primaryActionColors.submit.color === 'rgb(255, 255, 255)', 'Submit must use the Claim History purple glow');
+    assert.deepEqual({ background: cancelPresentation.background, color: cancelPresentation.color }, { background: 'rgb(255, 241, 242)', color: 'rgb(225, 29, 72)' }, 'Cancel must keep the light blush style in dark mode');
+    await page.click('#historyFilterTrigger');
+    const taxFilterLabels = await page.evaluate(() => ({
+      from: document.getElementById('historyDateFromLabel').textContent.trim(),
+      to: document.getElementById('historyDateToLabel').textContent.trim()
+    }));
+    assert.deepEqual(taxFilterLabels, { from: 'Start Date', to: 'End Date' }, 'Tax Relief filter must use Start Date and End Date');
+    assert.equal(await page.$('.history-filter-help'), null, 'Tax Relief filter must not show explanatory date copy');
+    await page.keyboard.press('Escape');
     await page.click('[data-reference="RBT000000000039"] .history-card-main');
     await page.waitForFunction(() => document.activeElement?.id === 'closeHistoryDetails');
     const detail = await page.$eval('#historyDetailsModal', node => node.textContent.replace(/\s+/g, ' '));
@@ -79,6 +81,7 @@ async function run() {
     assert.equal(taxRows['Emp #'], '#EBB12');
     assert.equal(taxRows.Name, 'Farhan binti rahmat');
     assert.equal(taxRows['Rebate Item'], 'BASIC SUPPORTING EQUIPMENT');
+    assert.equal(taxRows['Approval Date'], '1 Jan 1');
     await page.keyboard.press('Escape');
     assert.equal(await shown(page, '#historyDetailsModal'), false);
     assert.equal(await page.$eval('[data-reference="RBT000000000039"] .history-card-main', node => node === document.activeElement), true);
@@ -87,7 +90,7 @@ async function run() {
     await page.click('#historyFilterTrigger');
     await page.click('#resetHistoryFilter');
     await page.click('#applyHistoryFilter');
-    assert.equal((await refs(page)).length, 2);
+    assert.equal((await refs(page)).length, 3);
     await filter(page, { historyDateFrom: '2026-01-07', historyDateTo: '2026-01-07' });
     assert.deepEqual(await refs(page), ['RBT000000000039'], 'Date filter must use submission date for the 2025 transaction submitted in 2026');
     await page.click('#historyFilterTrigger');
@@ -107,7 +110,7 @@ async function run() {
     assert.ok(await shown(page, '#historyFilterError'));
     await page.click('#resetHistoryFilter');
     await page.click('#applyHistoryFilter');
-    assert.equal((await refs(page)).length, 2);
+    assert.equal((await refs(page)).length, 3);
     for (const theme of ['dark', 'light']) {
       await page.evaluate(value => window.setTheme(value), theme);
       for (const width of [360, 390, 420, 1280]) {
@@ -130,6 +133,19 @@ async function run() {
     assert.deepEqual(await refs(page), ['PDR000000000004', 'deduction-202008-asb', 'deduction-202112-absent', 'deduction-202205-advance', 'deduction-202507-uniform']);
     const deductionCards = await page.$$eval('.history-card-item', cards => cards.map(card => card.textContent.replace(/\s+/g, ' ')));
     for (const expected of ['HOUSE DEDUCTION', '202007', '11 Jun 2020', 'MONTH END', 'RM 200.00', 'Draft']) assert.ok(deductionCards[0].includes(expected));
+    const submitPresentation = await page.$eval('[data-reference="PDR000000000004"] .history-card-action-primary', button => {
+      const rect = button.getBoundingClientRect();
+      const style = getComputedStyle(button);
+      return {
+        size: { width: rect.width, height: rect.height },
+        background: style.backgroundImage,
+        boxShadow: style.boxShadow,
+        color: style.color
+      };
+    });
+    assert.deepEqual(cancelPresentation.size, submitPresentation.size, 'Cancel and Submit buttons must have identical dimensions');
+    assert.equal(submitPresentation.background, 'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%)', 'Submit must use the exact Claim History purple');
+    assert.ok(submitPresentation.boxShadow.includes('rgba(124, 58, 237, 0.4)') && submitPresentation.color === 'rgb(255, 255, 255)', 'Submit must use the Claim History purple glow');
     await page.click('[data-reference="PDR000000000004"] .history-card-main');
     const deductionRows = await page.$$eval('#historyDetailBody tr', rows => Object.fromEntries(rows.map(row => [row.querySelector('th').textContent.trim(), row.querySelector('td').textContent.replace(/\s+/g, ' ').trim()])));
     assert.deepEqual(Object.keys(deductionRows), ['Reference #', 'Emp #', 'Name', 'Status', 'Submit Date', 'Request Type', 'Deduction Type', 'Period', 'Cycle', 'Deduction Date', 'Account No', 'Amount', 'Attachments']);
@@ -151,6 +167,7 @@ async function run() {
       descriptionHidden: document.getElementById('historyDescriptionField').hidden
     }));
     assert.deepEqual(deductionFilter, { fromLabel: 'Start Period', toLabel: 'End Period', fromType: 'month', toType: 'month', itemLabel: 'Deduction Type', statusHidden: true, descriptionHidden: true });
+    assert.equal(await page.$('.history-filter-help'), null, 'Deduction filter must not show explanatory period copy');
     await page.click('#resetHistoryFilter');
     await page.click('#applyHistoryFilter');
     assert.equal(await page.$eval('#historyCreateRequest', node => node.getAttribute('href')), 'deduction-request.html');
@@ -217,7 +234,7 @@ async function run() {
     assert.equal(await page.$eval('.history-attachment', async link => (await fetch(link.href)).text()), 'Updated attachment');
     await page.keyboard.press('Escape');
     await page.click('[data-history-kind="tax"]');
-    assert.equal((await refs(page)).length, 2, 'Each category must retain its own filters');
+    assert.equal((await refs(page)).length, 3, 'Each category must retain its own filters');
 
     // Compare Claims against its original card CSS to protect the shared-style extraction.
     const baselineStyles = execFileSync('git', ['show', 'HEAD:css/history-cards.css'], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });

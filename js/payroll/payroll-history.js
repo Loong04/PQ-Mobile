@@ -155,7 +155,7 @@
         row('Process', record.process ? 'Yes' : 'No'),
         row('Period', record.period),
         row('Cycle', record.cycle),
-        row('Approval Date', date(record.approvalDate)),
+        row('Approval Date', record.approvalDateLabel || date(record.approvalDate)),
         row('Approver Remarks', record.approverRemarks)
       );
     } else {
@@ -180,8 +180,8 @@
     const periodFilter = kind === 'deduction';
     $('historyDateFrom').type = periodFilter ? 'month' : 'date';
     $('historyDateTo').type = periodFilter ? 'month' : 'date';
-    $('historyDateFromLabel').textContent = periodFilter ? 'Start Period' : 'Date From';
-    $('historyDateToLabel').textContent = periodFilter ? 'End Period' : 'Date To';
+    $('historyDateFromLabel').textContent = periodFilter ? 'Start Period' : 'Start Date';
+    $('historyDateToLabel').textContent = periodFilter ? 'End Period' : 'End Date';
     $('historyDateFrom').value = values.from;
     $('historyDateTo').value = values.to;
     $('historyStatus').value = values.status;
@@ -192,7 +192,6 @@
     $('historyItemLabel').textContent = category.label;
     $('historyDescriptionLabel').textContent = category.description;
     $('historyDescription').placeholder = `Search ${category.description.toLowerCase()}`;
-    $('historyDateHelp').textContent = periodFilter ? 'Uses the deduction period in YYYYMM format.' : 'Uses Submit Date, or Transaction Date when no Submit Date is recorded. Saved drafts use Saved Date.';
     const select = $('historyRebateItem');
     select.replaceChildren(new Option(category.all, 'all'));
     const seen = new Set();
@@ -260,7 +259,7 @@
     event.preventDefault();
     const from = $('historyDateFrom').value, to = $('historyDateTo').value;
     if (from > to) {
-      $('historyFilterError').textContent = kind === 'deduction' ? 'End Period must be on or after Start Period.' : 'Date To must be on or after Date From.';
+      $('historyFilterError').textContent = kind === 'deduction' ? 'End Period must be on or after Start Period.' : 'End Date must be on or after Start Date.';
       $('historyFilterError').hidden = false;
       $('historyDateTo').focus();
       return;
