@@ -11,7 +11,7 @@ async function screenshotAfterTransitions(page, file) {
   await page.screenshot({ path: path.resolve(__dirname, file) });
 }
 const expected = {
-  individual: [['Work Plan', 'work-plan.html'], ['Time Sheet', 'time-sheet.html']],
+  individual: [['Work Plan', 'work-plan.html'], ['Time Sheet', 'time-sheet.html'], ['History', 'history.html']],
   team: [['Work Assignment', 'work-assignment.html'], ['Timesheet Highlight', 'timesheet-highlight.html']]
 };
 
@@ -36,6 +36,7 @@ const expected = {
         assert.equal(await page.$eval(`#projectTab-${scope}`, node => node.getAttribute('aria-selected')), 'true');
         const visibleOptions = await page.$$eval('.project-option', nodes => nodes.filter(node => node.getClientRects().length).map(node => [node.querySelector('.project-option-title').textContent, new URL(node.href).pathname.split('/').pop()]));
         assert.deepEqual(visibleOptions, expected[scope]);
+        assert.equal(await page.$eval(`#projectPanel-${scope} .project-options-count`, node => Number(node.textContent)), expected[scope].length);
         assert.equal(await page.$$eval('.project-option p', nodes => nodes.length), 0);
         for (let index = 0; index < expected[scope].length; index++) {
           const [title, file] = expected[scope][index];
@@ -72,7 +73,7 @@ const expected = {
       await screenshotAfterTransitions(page, `project_task_individual_${theme}.png`);
       await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('.project-back')]);
       await page.waitForFunction(app => location.pathname.endsWith('/' + app), {}, app);
-      console.log(`${theme}: home navigation, scope switching, four entries, back navigation, keyboard controls and mobile widths passed.`);
+      console.log(`${theme}: home navigation, scope switching, five entries, back navigation, keyboard controls and mobile widths passed.`);
     }
     assert.deepEqual(faults, []);
     console.log('Project & Task module passed without browser script errors.');

@@ -8956,6 +8956,51 @@
       return HISTORY_LEAVE_DATA;
     }
 
+    function toHistoryISO(value, fallbackYear = 2026) {
+      const text = String(value || '').trim();
+      let match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+      match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (match) return `${match[3]}-${String(match[2]).padStart(2, '0')}-${String(match[1]).padStart(2, '0')}`;
+      match = text.match(/^(\d{1,2})\s+([A-Za-z]{3,9})(?:\s+(\d{4}))?/);
+      if (!match) return '';
+      const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      const month = months.indexOf(match[2].slice(0, 3).toLowerCase()) + 1;
+      if (!month) return '';
+      return `${match[3] || fallbackYear}-${String(month).padStart(2, '0')}-${String(match[1]).padStart(2, '0')}`;
+    }
+
+    function getHistoryItemDateRange(item) {
+      if (currentHistoryTab === 'offtime') {
+        const date = toHistoryISO(item.date);
+        return { start: date, end: date };
+      }
+      if (currentHistoryTab === 'credit') {
+        return {
+          start: toHistoryISO(item.effectiveDate),
+          end: toHistoryISO(item.expiryDate) || toHistoryISO(item.effectiveDate)
+        };
+      }
+      const text = String(item.dates || '');
+      const year = Number(text.match(/\b(20\d{2})\b/)?.[1]) || 2026;
+      const parts = text.split(/\s+-\s+/);
+      const start = toHistoryISO(parts[0], year);
+      return { start, end: toHistoryISO(parts[1], year) || start };
+    }
+
+    function clearHistoryFilterControls() {
+      const refInput = document.getElementById('modalHistoryRefInput');
+      const fromDate = document.getElementById('modalHistoryFromDate');
+      const toDate = document.getElementById('modalHistoryToDate');
+      const leaveType = document.getElementById('modalHistoryLeaveTypeSelect');
+      const status = document.getElementById('modalHistoryStatusSelect');
+      if (refInput) refInput.value = '';
+      if (fromDate) fromDate.value = '';
+      if (toDate) toDate.value = '';
+      if (leaveType) leaveType.value = 'all';
+      if (status) status.value = 'all';
+    }
+
     function updateHistoryHeaderTitle() {
       const headerTitle = document.getElementById('headerTitleText');
       if (!headerTitle) return;
@@ -8981,9 +9026,7 @@
       const activeEl = document.getElementById(activeTabId);
       if (activeEl) activeEl.classList.add('active');
 
-      // Reset filter modal inputs when switching tabs
-      const modalStatusSelect = document.getElementById('modalHistoryStatusSelect');
-      if (modalStatusSelect) modalStatusSelect.value = 'all';
+      clearHistoryFilterControls();
 
       // Update top header title based on active filter tab
       updateHistoryHeaderTitle();
@@ -9139,19 +9182,10 @@
       const toVal = document.getElementById('modalHistoryToDate')?.value || '';
       const leaveTypeVal = document.getElementById('modalHistoryLeaveTypeSelect')?.value || 'all';
       const statusVal = document.getElementById('modalHistoryStatusSelect')?.value || 'all';
-      const branchVal = document.getElementById('modalHistoryBranchSelect')?.value || 'all';
-      const deptVal = document.getElementById('modalHistoryDeptSelect')?.value || 'all';
-      const ccVal = document.getElementById('modalHistoryCostCenterSelect')?.value || 'all';
-      const jobVal = document.getElementById('modalHistoryJobSelect')?.value || 'all';
 
       const parts = [];
 
-      // 1. Keyword
       if (refVal) parts.push(`"${refVal}"`);
-      if (branchVal !== 'all') parts.push(branchVal);
-      if (deptVal !== 'all') parts.push(deptVal);
-      if (ccVal !== 'all') parts.push(ccVal);
-      if (jobVal !== 'all') parts.push(jobVal);
 
       // 2. Status
       if (currentHistoryTab !== 'offtime' && statusVal !== 'all') {
@@ -9207,14 +9241,19 @@
           if (itemType !== leaveTypeVal) return false;
         }
 
-        // Ref / Keyword filter
         if (refVal) {
-          const matchTitle = (item.title || '').toLowerCase().includes(refVal);
           const matchRef = (item.ref || '').toLowerCase().includes(refVal);
-          const matchReason = (item.reason || '').toLowerCase().includes(refVal);
-          const matchOffType = (item.offType || '').toLowerCase().includes(refVal);
-          if (!matchTitle && !matchRef && !matchReason && !matchOffType) return false;
+          if (currentHistoryTab === 'offtime') {
+            const keywordText = [item.ref, item.title, item.reason, item.offType].join(' ').toLowerCase();
+            if (!keywordText.includes(refVal)) return false;
+          } else if (!matchRef) {
+            return false;
+          }
         }
+
+        const itemRange = getHistoryItemDateRange(item);
+        if (fromVal && (!itemRange.end || itemRange.end < fromVal)) return false;
+        if (toVal && (!itemRange.start || itemRange.start > toVal)) return false;
 
         return true;
       });
@@ -9269,10 +9308,17 @@
       const refLabel = document.getElementById('modalHistoryRefLabel');
       const refInput = document.getElementById('modalHistoryRefInput');
       const leaveTypeGroup = document.getElementById('modalHistoryLeaveTypeGroup');
+      const statusGroup = document.getElementById('modalHistoryStatusGroup');
+      const isTimeOff = currentHistoryTab === 'offtime';
 
-      if (refLabel) refLabel.innerText = 'Search Keyword';
-      if (refInput) refInput.placeholder = 'Employee Number or Name';
-      if (leaveTypeGroup) leaveTypeGroup.style.display = (currentHistoryTab === 'leave' || currentHistoryTab === 'credit') ? 'block' : 'none';
+      if (refLabel) refLabel.innerText = isTimeOff ? 'Search Keyword' : 'Reference #';
+      if (refInput) {
+        refInput.placeholder = isTimeOff
+          ? 'e.g. Late Start, Outstation, OT...'
+          : currentHistoryTab === 'credit' ? 'e.g. CR-2026-0005' : 'e.g. LV-2026-0041';
+      }
+      if (leaveTypeGroup) leaveTypeGroup.style.display = isTimeOff ? 'none' : 'block';
+      if (statusGroup) statusGroup.style.display = isTimeOff ? 'none' : 'block';
 
       overlay.style.display = 'flex';
       setTimeout(() => {
@@ -9462,25 +9508,7 @@
     }
 
     function resetHistoryFilterModal() {
-      const refInput = document.getElementById('modalHistoryRefInput');
-      const fromDate = document.getElementById('modalHistoryFromDate');
-      const toDate = document.getElementById('modalHistoryToDate');
-      const leaveType = document.getElementById('modalHistoryLeaveTypeSelect');
-      const statusSelect = document.getElementById('modalHistoryStatusSelect');
-      const branchSelect = document.getElementById('modalHistoryBranchSelect');
-      const deptSelect = document.getElementById('modalHistoryDeptSelect');
-      const ccSelect = document.getElementById('modalHistoryCostCenterSelect');
-      const jobSelect = document.getElementById('modalHistoryJobSelect');
-
-      if (refInput) refInput.value = '';
-      if (fromDate) fromDate.value = '';
-      if (toDate) toDate.value = '';
-      if (leaveType) leaveType.value = 'all';
-      if (statusSelect) statusSelect.value = 'all';
-      if (branchSelect) branchSelect.value = 'all';
-      if (deptSelect) deptSelect.value = 'all';
-      if (ccSelect) ccSelect.value = 'all';
-      if (jobSelect) jobSelect.value = 'all';
+      clearHistoryFilterControls();
 
       renderHistoryCards();
       const summaryEl = document.getElementById('historyFilterSummaryText');
@@ -11716,17 +11744,37 @@
       </div>
 
       <!-- 1. Search Keyword -->
-      <div id="modalHistoryRefGroup" style="margin-bottom: 16px;">
+      <div id="modalHistoryRefGroup" data-history-filter-field style="margin-bottom: 16px;">
         <label id="modalHistoryRefLabel"
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
-          Search Keyword
+          Reference #
         </label>
-        <input type="text" id="modalHistoryRefInput" placeholder="Employee Number or Name"
+        <input type="text" id="modalHistoryRefInput" placeholder="e.g. LV-2026-0041"
           style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; box-sizing: border-box;">
       </div>
 
+      <!-- 2. Date Range -->
+      <div id="modalHistoryDateGroup" data-history-filter-field style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-bottom: 16px;">
+        <div>
+          <label id="modalHistoryFromLabel" for="modalHistoryFromDate"
+            style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+            Start Date
+          </label>
+          <input type="date" id="modalHistoryFromDate"
+            style="width: 100%; min-width: 0; padding: 13px 12px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+        </div>
+        <div>
+          <label id="modalHistoryToLabel" for="modalHistoryToDate"
+            style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+            End Date
+          </label>
+          <input type="date" id="modalHistoryToDate"
+            style="width: 100%; min-width: 0; padding: 13px 12px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+        </div>
+      </div>
+
       <!-- 3. Branch Selector -->
-      <div id="modalHistoryBranchGroup" style="margin-bottom: 16px;">
+      <div id="modalHistoryBranchGroup" hidden style="display: none;">
         <label
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
           Branch
@@ -11747,7 +11795,7 @@
       </div>
 
       <!-- 4. Department Selector -->
-      <div id="modalHistoryDeptGroup" style="margin-bottom: 16px;">
+      <div id="modalHistoryDeptGroup" hidden style="display: none;">
         <label
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
           Department
@@ -11770,7 +11818,7 @@
       </div>
 
       <!-- 5. Cost Center Selector -->
-      <div id="modalHistoryCostCenterGroup" style="margin-bottom: 16px;">
+      <div id="modalHistoryCostCenterGroup" hidden style="display: none;">
         <label
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
           Cost Center
@@ -11791,7 +11839,7 @@
       </div>
 
       <!-- 6. Job / Position Selector -->
-      <div id="modalHistoryJobGroup" style="margin-bottom: 16px;">
+      <div id="modalHistoryJobGroup" hidden style="display: none;">
         <label
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
           Job
@@ -11814,7 +11862,7 @@
       </div>
 
       <!-- 6. Leave Type Selector -->
-      <div id="modalHistoryLeaveTypeGroup" style="margin-bottom: 24px;">
+      <div id="modalHistoryLeaveTypeGroup" data-history-filter-field style="margin-bottom: 16px;">
         <label
           style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
           Leave Type
@@ -11829,6 +11877,29 @@
             <option value="unpaid">🏖️ Unpaid Leave</option>
             <option value="compassionate">🤝 Compassionate Leave</option>
             <option value="emergency">🚨 Emergency Leave</option>
+          </select>
+          <div
+            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Status -->
+      <div id="modalHistoryStatusGroup" data-history-filter-field style="margin-bottom: 24px;">
+        <label for="modalHistoryStatusSelect"
+          style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">
+          Status
+        </label>
+        <div style="position: relative;">
+          <select id="modalHistoryStatusSelect"
+            style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+            <option value="all">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="submitted">Submitted</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="cancelled">Cancelled</option>
           </select>
           <div
             style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
