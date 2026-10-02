@@ -25,15 +25,30 @@
     [77, '+ BASIC PAY', '2025-09-04', '2025-09-09', 0, 50, '202509', '2025-09-24']
   ];
   const reference = (prefix, number) => prefix + String(number).padStart(12, '0');
+  const taxDetails = new Map((window.PAYROLL_HISTORY_DATA?.tax || []).map(item => [item.id, item]));
+  const deductionDetails = new Map((window.PAYROLL_HISTORY_DATA?.deduction || []).map(item => [item.id, item]));
   window.PAYROLL_PENDING_DATA = {
-    tax: taxRows.map(([number, empNo, employeeName, rebateCode, rebateItem, description, transactionDate, amount, submitDate]) => ({
-      id: reference('RBT', number), category: 'tax', empNo, employeeName, rebateCode, rebateItem, description, transactionDate, amount, submitDate,
-      process: false, status: 'Submitted'
-    })),
-    deduction: deductionRows.map(([number, deductionType, dateFrom, dateTo, days, amount, period, requestDate]) => ({
-      id: reference('PDR', number), category: 'deduction', empNo: 'EBB12', employeeName: 'Farhan binti rahmat', department: 'HUMAN RESOURCE',
-      deductionType, requestType: 'Start Allowance', dateFrom, dateTo, days, amount, period, cycle: 'MONTH END', requestDate, status: 'Submitted'
-    }))
+    tax: taxRows.map(([number, empNo, employeeName, rebateCode, rebateItem, description, transactionDate, amount, submitDate]) => {
+      const id = reference('RBT', number);
+      const detail = taxDetails.get(id);
+      return {
+        id, category: 'tax', empNo, employeeName, rebateCode, rebateItem, description, transactionDate, amount, submitDate,
+        process: false, status: 'Submitted', receiptNo: detail?.receiptNo || '', period: detail?.period || '', cycle: detail?.cycle || '',
+        approvalDate: detail?.approvalDate || '', approvalDateLabel: detail?.approvalDateLabel || '', approverRemarks: detail?.approverRemarks || '',
+        attachments: (detail?.attachments || []).map(attachment => ({ ...attachment }))
+      };
+    }),
+    deduction: deductionRows.map(([number, deductionType, dateFrom, dateTo, days, amount, period, requestDate]) => {
+      const id = reference('PDR', number);
+      const detail = deductionDetails.get(id);
+      return {
+        id, category: 'deduction', empNo: 'EBB12', employeeName: 'Farhan binti rahmat', department: 'HUMAN RESOURCE',
+        deductionType, requestType: 'Start Allowance', dateFrom, dateTo, days, amount, period, cycle: 'MONTH END', requestDate, status: 'Submitted',
+        stopPeriod: detail?.stopPeriod || '', stopDate: detail?.stopDate || '', stopCycle: detail?.stopCycle || '',
+        accountNo: detail?.accountNo || '', remarks: detail?.remarks || '', approverActionComments: detail?.approverActionComments || '',
+        attachments: (detail?.attachments || []).map(attachment => ({ ...attachment }))
+      };
+    })
   };
 
   // Approval actions are retained locally for the preview; no payroll API is called.
@@ -48,10 +63,14 @@
     const handled = new Set(decisions().map(item => item.id));
     return [...window.PAYROLL_PENDING_DATA.tax, ...window.PAYROLL_PENDING_DATA.deduction].filter(item => !handled.has(item.id));
   }
-  function act(ids, action) {
+  function act(ids, action, approverActionComments = '') {
     if (!['approve', 'resubmit', 'reject'].includes(action)) throw new Error('Unknown approval action');
     const selected = new Set(ids);
-    const changes = getPending().filter(item => selected.has(item.id)).map(item => ({ id: item.id, action, decidedAt: new Date().toISOString() }));
+    const comments = String(approverActionComments).trim().slice(0, 2000);
+    const changes = getPending().filter(item => selected.has(item.id)).map(item => ({
+      id: item.id, action, decidedAt: new Date().toISOString(),
+      ...(item.category === 'deduction' && comments ? { approverActionComments: comments } : {})
+    }));
     localStorage.setItem(storageKey, JSON.stringify([...decisions(), ...changes]));
     return changes.length;
   }

@@ -13,6 +13,7 @@ async function fill(page, id, value) {
   }, value);
 }
 async function screenshot(page, name, bottom = false) {
+  if (process.env.SKIP_SCREENSHOTS === '1') return;
   await page.mouse.move(0, 0);
   await page.$eval('.project-task-content', (node, atBottom) => { node.scrollTop = atBottom ? node.scrollHeight : 0; }, bottom);
   await page.evaluate(async () => {

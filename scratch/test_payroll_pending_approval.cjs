@@ -22,7 +22,8 @@ async function snapshot(page, name) {
 async function checkDetailsPopup(page, theme, category) {
   const selector = '#payrollPendingDetails';
   const before = await page.evaluate(() => ({ url: location.href, decisions: localStorage.getItem('pq_payroll_pending_decisions') }));
-  assert.deepEqual(await page.$$eval(`${selector} footer button`, nodes => nodes.map(node => node.textContent.trim())), ['Approve', 'Resubmit', 'Cancel', 'Reject']);
+  const expectedActions = category === 'deduction' ? ['Approve', 'Reject'] : ['Approve', 'Resubmit', 'Cancel', 'Reject'];
+  assert.deepEqual(await page.$$eval(`${selector} footer button`, nodes => nodes.map(node => node.textContent.trim())), expectedActions);
   for (const width of [360, 390, 450]) {
     await page.setViewport({ width, height: 950 });
     await snapshot(page, `payroll_pending_${category}_popup_${theme}_${width}`);
@@ -30,16 +31,16 @@ async function checkDetailsPopup(page, theme, category) {
       const rect = panel.getBoundingClientRect();
       const phone = panel.closest('.phone-container').getBoundingClientRect();
       return {
-        centered: Math.abs((rect.top + rect.bottom) / 2 - (phone.top + phone.bottom) / 2) < 2,
+        centered: Math.abs((rect.top + rect.bottom) / 2 - (phone.top + phone.bottom) / 2 + 39) < 2,
         inset: rect.left > phone.left + 8 && rect.right < phone.right - 8 && rect.top > phone.top + 8 && rect.bottom < phone.bottom - 8,
         rounded: parseFloat(getComputedStyle(panel).borderBottomLeftRadius) > 0,
         buttonsFit: [...panel.querySelectorAll('footer button')].every(button => button.scrollWidth <= button.clientWidth + 1),
         colors: [...panel.querySelectorAll('footer button')].map(button => getComputedStyle(button).backgroundColor)
       };
     });
-    assert.ok(layout.centered && layout.inset && layout.rounded, 'View Details must appear as a rounded, centered popup inside the phone');
-    assert.ok(layout.buttonsFit, 'All four popup actions must fit on mobile');
-    assert.deepEqual(layout.colors, Array(4).fill('rgb(124, 58, 237)'));
+    assert.ok(layout.centered && layout.inset && layout.rounded, 'View Details must use the reference popup position above the bottom navigation');
+    assert.ok(layout.buttonsFit, 'Popup actions must fit on mobile');
+    assert.deepEqual(layout.colors, Array(expectedActions.length).fill('rgb(124, 58, 237)'));
   }
   await page.setViewport({ width: 360, height: 720 });
   const scrollLayout = await page.$eval(`${selector} [role="dialog"]`, panel => {
@@ -52,13 +53,62 @@ async function checkDetailsPopup(page, theme, category) {
     return { lastRowVisible: lastRow.top >= bodyRect.top && lastRow.bottom <= bodyRect.bottom + 1, footerVisible: footer.top >= bodyRect.bottom - 1 && footer.bottom <= phone.bottom - 8 };
   });
   assert.ok(scrollLayout.lastRowVisible && scrollLayout.footerVisible, 'Short screens must scroll to the final detail row while keeping all popup actions visible');
-  await page.click(`${selector} .action-btn-cancel`);
+  await page.click(category === 'deduction' ? `${selector} .payroll-approval-close` : `${selector} .action-btn-cancel`);
   assert.equal(await page.$eval(selector, node => node.hidden), true);
   assert.equal(await page.$$eval('.approval-request-card', nodes => nodes.length), 10, 'Cancel must keep the request pending');
   assert.deepEqual(await page.evaluate(() => ({ url: location.href, decisions: localStorage.getItem('pq_payroll_pending_decisions') })), before, 'Cancel must close details without navigating or saving an approval decision');
   assert.equal(await page.$eval('.payroll-pending-content', node => node.inert), false);
   assert.equal(await page.evaluate(() => document.activeElement.classList.contains('three-dots-btn')), true);
   await page.setViewport({ width: 450, height: 950 });
+}
+async function checkWorkflow(page, theme, category, references) {
+  const before = await page.evaluate(() => ({ url: location.href, decisions: localStorage.getItem('pq_payroll_pending_decisions'), count: window.PayrollPendingStore.getPending().length }));
+  for (const [index, reference] of references.entries()) {
+    await page.click(`[data-item-id="${reference}"] .three-dots-btn`);
+    assert.deepEqual(await page.$$eval('#payrollPendingMenu .payroll-approval-menu-option', nodes => nodes.map(node => node.textContent.trim())), ['View Details', 'View Workflow']);
+    await page.click('#payrollPendingViewWorkflow');
+    assert.equal(await page.$eval('#payrollPendingMenu', node => node.hidden), true);
+    assert.equal(await page.$eval('#payrollPendingWorkflow', node => node.hidden), false);
+    const request = await page.evaluate(id => {
+      const item = window.PayrollPendingStore.getPending().find(record => record.id === id);
+      const [year, month, day] = (item.submitDate || item.requestDate).split('-');
+      return { name: item.employeeName, empNo: item.empNo, date: `${day}/${month}/${year}` };
+    }, reference);
+    assert.equal(await page.$eval('#payrollPendingWorkflowTitle', node => node.textContent), `${category === 'tax' ? 'Tax Relief' : 'Deduction Request'} Workflow`);
+    const workflowCopy = await page.$eval('#payrollPendingWorkflow', node => node.textContent);
+    for (const value of [reference, request.name, '#' + request.empNo, request.date, 'Request Submitted', 'Payroll Approval', 'Awaiting Approval', 'Audit History']) assert.ok(workflowCopy.includes(value), value);
+    assert.equal(await page.$eval('#payrollPendingWorkflowRequest .employee-name', node => node.nextElementSibling.classList.contains('employee-id')), true);
+    assert.equal(await page.$$eval('#payrollPendingWorkflowAudit > li', nodes => nodes.length), 1, 'The audit history must use supplied submission data');
+    if (index === 0) {
+      for (const width of [360, 390, 450]) {
+        await page.setViewport({ width, height: 950 });
+        await snapshot(page, `payroll_pending_workflow_${category}_${theme}_${width}`);
+        assert.equal(await page.$eval('#payrollPendingWorkflow [role="dialog"]', node => node.scrollWidth > node.clientWidth + 1), false);
+        assert.equal(await page.$eval('.payroll-approval-workflow-body', node => node.scrollWidth > node.clientWidth + 1), false);
+      }
+      await page.setViewport({ width: 360, height: 720 });
+      assert.equal(await page.$eval('#payrollPendingWorkflow .payroll-approval-workflow-footer button', node => {
+        const rect = node.getBoundingClientRect();
+        const phone = node.closest('.phone-container').getBoundingClientRect();
+        return rect.top >= phone.top && rect.bottom <= phone.bottom;
+      }), true, 'The workflow close button must stay visible on shorter phones');
+      await page.focus('#payrollPendingWorkflow .payroll-approval-close');
+      await page.keyboard.down('Shift');
+      await page.keyboard.press('Tab');
+      await page.keyboard.up('Shift');
+      assert.equal(await page.$eval('#payrollPendingWorkflow .payroll-approval-workflow-footer button', node => node === document.activeElement), true);
+      await page.keyboard.press('Tab');
+      assert.equal(await page.$eval('#payrollPendingWorkflow .payroll-approval-close', node => node === document.activeElement), true);
+      await page.click('#payrollPendingWorkflow .payroll-approval-workflow-footer button');
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    assert.equal(await page.$eval('#payrollPendingWorkflow', node => node.hidden), true);
+    assert.equal(await page.$eval('.payroll-pending-content', node => node.inert), false);
+    assert.equal(await page.evaluate(() => document.activeElement.closest('.approval-request-card')?.dataset.itemId), reference);
+    await page.setViewport({ width: 450, height: 950 });
+  }
+  assert.deepEqual(await page.evaluate(() => ({ url: location.href, decisions: localStorage.getItem('pq_payroll_pending_decisions'), count: window.PayrollPendingStore.getPending().length })), before, 'Viewing workflow must keep requests and approval decisions unchanged');
 }
 
 (async () => {
@@ -78,6 +128,7 @@ async function checkDetailsPopup(page, theme, category) {
       assert.equal(await page.$$eval('#payrollPendingQueue .approval-request-card', nodes => nodes.length), 10);
       const firstTax = await page.$eval('#payrollPendingQueue .approval-request-card', node => node.textContent);
       for (const text of ['James yong xian', '#99104', 'RBT000000000032', 'TXR01', 'MEDICAL EXPENSES OF PARENTS', 'for parent', '06/09/2024', 'RM 500.00', 'Process', 'No']) assert.ok(firstTax.includes(text), text);
+      assert.equal(/Payroll Period|Payroll Cycle/.test(firstTax), false, 'Tax cards must keep the requested compact fields');
       assert.equal(await page.$eval('.employee-name', node => node.nextElementSibling.classList.contains('employee-id')), true);
       const actionColors = await page.$$eval('.approval-request-card:first-child .pending-action-grid button', nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
       assert.equal(new Set(actionColors).size, 1);
@@ -90,9 +141,25 @@ async function checkDetailsPopup(page, theme, category) {
       }
       await page.click('.approval-request-card .three-dots-btn');
       await page.click('#payrollPendingViewDetails');
-      assert.equal(await page.$eval('#payrollPendingDetailsTitle', node => node.textContent), 'Tax Relief Approval');
-      assert.equal(await page.$eval('#payrollPendingDetailsTable', node => /Payroll Period|Payroll Cycle/.test(node.textContent)), false);
+      assert.equal(await page.$eval('#payrollPendingDetailsTitle', node => node.textContent), 'Tax Relief Detail');
       await checkDetailsPopup(page, theme, 'tax');
+      await checkWorkflow(page, theme, 'tax', ['RBT000000000032', 'RBT000000000035']);
+      await page.click('[data-item-id="RBT000000000039"] .three-dots-btn');
+      await page.click('#payrollPendingViewDetails');
+      const fullTaxDetail = await page.$eval('#payrollPendingDetailsTable', table => Object.fromEntries([...table.rows].map(row => [row.cells[0].textContent, row.cells[1].textContent])));
+      for (const label of ['Reference #', 'Name', 'Emp #', 'Status', 'Submit Date', 'Rebate Item', 'Transaction Date', 'Description', 'Receipt #', 'Amount', 'Process', 'Period', 'Cycle', 'Approval Date', 'Approver Remarks', 'Attachments']) assert.ok(Object.hasOwn(fullTaxDetail, label), `Missing original Tax Relief detail: ${label}`);
+      assert.equal(fullTaxDetail['Reference #'], 'RBT000000000039');
+      assert.equal(fullTaxDetail['Receipt #'], '-');
+      assert.equal(fullTaxDetail['Approval Date'], '1 Jan 1');
+      assert.equal(fullTaxDetail['Approver Remarks'], 'Reason required');
+      assert.equal(fullTaxDetail.Attachments, 'Invoice.docx');
+      assert.equal(await page.$eval('#payrollPendingDetailsTable tr:last-child th', node => node.textContent), 'Attachments');
+      assert.equal(await page.$$eval('.payroll-approval-details-header button', nodes => nodes.length), 1, 'The reference popup has a title and one close button');
+      assert.equal(await page.$('.payroll-approval-details-body h3'), null, 'The reference popup starts directly with its detail table');
+      await page.setViewport({ width: 390, height: 950 });
+      await snapshot(page, `payroll_pending_original_tax_details_${theme}`);
+      await page.click('#payrollPendingDetails .action-btn-cancel');
+      await page.setViewport({ width: 450, height: 950 });
       await page.click('#payrollPendingFilterTrigger');
       assert.deepEqual(await page.$$eval('#payrollPendingFilter .approval-filter-fields > label, #payrollPendingFilter .approval-filter-date-row:not([data-custom-days]) label', nodes => nodes.map(node => node.textContent)), ['Search Keyword', 'Start Date', 'End Date', 'Outstanding Days']);
       await snapshot(page, `payroll_pending_filter_${theme}`);
@@ -126,6 +193,10 @@ async function checkDetailsPopup(page, theme, category) {
       assert.equal(await page.$$eval('.approval-request-card', nodes => nodes.length), 10);
       const firstDeduction = await page.$eval('.approval-request-card', node => node.textContent);
       for (const text of ['#EBB12', 'HUMAN RESOURCE', 'PDR000000000062', '+ UNIFORM ALLOWANCE', 'Start Allowance', '01/07/2025', '31/07/2025', '31.00', 'RM 0.00', '202507', 'MONTH END', '03/07/2025']) assert.ok(firstDeduction.includes(text), text);
+      assert.deepEqual(await page.$$eval('.approval-request-card:first-child .pending-action-grid button', nodes => nodes.map(node => node.textContent.trim())), ['Approve', 'Reject']);
+      await page.click('#payrollPendingSelectAll');
+      assert.deepEqual(await page.$$eval('#payrollPendingBulk button', nodes => nodes.map(node => node.textContent.trim())), ['Approve', 'Reject']);
+      await page.click('#payrollPendingSelectAll');
       for (const width of [360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
         assert.equal(await page.$eval('.phone-container', node => node.scrollWidth > node.clientWidth + 1), false);
@@ -133,11 +204,19 @@ async function checkDetailsPopup(page, theme, category) {
       }
       await page.click('.approval-request-card .three-dots-btn');
       await page.click('#payrollPendingViewDetails');
-      assert.equal(await page.$eval('#payrollPendingDetailsTitle', node => node.textContent), 'Deduction Request Approval');
-      const detail = await page.$eval('#payrollPendingDetailsTable', node => node.textContent);
-      for (const text of ['Document Reference', 'PDR000000000062', 'Department', 'HUMAN RESOURCE', 'Days', '31.00', 'Amount', 'RM 0.00']) assert.ok(detail.includes(text), text);
+      assert.equal(await page.$eval('#payrollPendingDetailsTitle', node => node.textContent), 'Deduction Request Detail');
+      const deductionRows = await page.$eval('#payrollPendingDetailsTable', table => [...table.rows].map(row => [row.cells[0].textContent, row.cells[1].textContent]));
+      assert.deepEqual(deductionRows.map(([label]) => label), ['Document Reference', 'Document Status', 'Employee', 'Deduction Type', 'Request Type', 'Stop Period', 'Stop Date', 'Stop Cycle', 'Account #', 'Remarks', 'Attachment', 'Approver Action Comments']);
+      const deductionDetail = Object.fromEntries(deductionRows);
+      assert.equal(deductionDetail['Document Reference'], 'PDR000000000062');
+      assert.equal(deductionDetail['Document Status'], 'Submitted');
+      assert.ok(deductionDetail.Employee.includes('Farhan binti rahmat') && deductionDetail.Employee.includes('#EBB12'));
+      assert.equal(await page.$eval('#payrollPendingDetailsTable .employee-name', node => node.nextElementSibling.classList.contains('employee-id')), true);
+      for (const label of ['Stop Period', 'Stop Date', 'Stop Cycle', 'Account #', 'Remarks', 'Attachment']) assert.equal(deductionDetail[label], '-', `${label}: missing values must remain unknown rather than being copied from different fields`);
+      assert.equal(await page.$eval('#payrollPendingApproverComments', node => node.tagName), 'TEXTAREA');
       await snapshot(page, `payroll_pending_details_${theme}`);
       await checkDetailsPopup(page, theme, 'deduction');
+      await checkWorkflow(page, theme, 'deduction', ['PDR000000000062', 'PDR000000000063']);
       await page.click('.approval-request-card .three-dots-btn');
       await page.click('#payrollPendingViewDetails');
       await page.keyboard.press('Escape');
@@ -149,14 +228,33 @@ async function checkDetailsPopup(page, theme, category) {
       await page.click('#payrollPendingFilterTrigger');
       await page.click('#payrollPendingFilter [data-action="reset"]');
       await page.keyboard.press('Escape');
-      for (const [action, count] of [['approve', 9], ['resubmit', 8], ['reject', 7]]) {
-        await page.click(`.approval-request-card [data-payroll-action="${action}"]`);
+      for (const [action, count] of [['approve', 9], ['reject', 8]]) {
+        await page.click('.approval-request-card .three-dots-btn');
+        await page.click('#payrollPendingViewDetails');
+        await fill(page, '#payrollPendingApproverComments', `  Reviewed deduction: ${action}  `);
+        await page.focus('#payrollPendingDetails [data-payroll-action="reject"]');
+        await page.keyboard.press('Tab');
+        assert.equal(await page.$eval('#payrollPendingDetails .payroll-approval-close', node => node === document.activeElement), true, 'Popup focus must wrap around visible controls');
+        await page.keyboard.press('Tab');
+        assert.equal(await page.$eval('#payrollPendingApproverComments', node => node === document.activeElement), true, 'The comments field must be part of the popup focus order');
+        await page.click(`#payrollPendingDetails [data-payroll-action="${action}"]`);
         assert.equal(await page.$$eval('.approval-request-card', nodes => nodes.length), count);
+        assert.equal(await page.$eval('#payrollPendingDetails', node => node.hidden), true);
+        const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('pq_payroll_pending_decisions')).at(-1));
+        assert.equal(saved.action, action);
+        assert.equal(saved.approverActionComments, `Reviewed deduction: ${action}`);
       }
       await page.reload({ waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('[data-payroll-tab="deduction"]', node => node.getAttribute('aria-selected')), 'true');
-      assert.equal(await page.$$eval('.approval-request-card', nodes => nodes.length), 7);
+      assert.equal(await page.$$eval('.approval-request-card', nodes => nodes.length), 8);
       await page.click('[data-payroll-tab="tax"]');
+      await page.click('.approval-request-card .three-dots-btn');
+      await page.click('#payrollPendingViewDetails');
+      assert.deepEqual(await page.$$eval('#payrollPendingDetails footer button', nodes => nodes.map(node => node.textContent.trim())), ['Approve', 'Resubmit', 'Cancel', 'Reject']);
+      assert.equal(await page.$('#payrollPendingApproverComments'), null);
+      await page.click('#payrollPendingDetails .action-btn-cancel');
+      await page.click('[data-item-id="RBT000000000035"] [data-payroll-action="resubmit"]');
+      assert.equal(await page.$$eval('.approval-request-card', nodes => nodes.length), 9);
       await page.click('#payrollPendingFilterTrigger');
       await fill(page, '#payrollPendingFilter-keyword', 'James');
       await page.click('#payrollPendingFilter .approval-filter-apply');
@@ -170,7 +268,7 @@ async function checkDetailsPopup(page, theme, category) {
       assert.equal(await page.$eval('#teamPendingApprovalCount', node => node.textContent), '16');
       assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
       assert.deepEqual(faults, []);
-      console.log(`${theme}: team entry, datasets, filters, centered popups, four purple actions, Cancel, short-screen scrolling, local actions and counts passed.`);
+      console.log(`${theme}: per-request workflow, both menu entries, mobile sheets, focus, details, approval buttons, comments and filters passed.`);
       await context.close();
     }
   } finally {

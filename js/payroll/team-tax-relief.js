@@ -113,13 +113,12 @@
             <span class="tax-relief-employee-id">#${escapeHtml(record.empNo.replace(/^#+/, ''))}</span>
           </span>
           <span class="tax-relief-card-status">
-            <span class="tax-relief-meta-label">Status</span>
             <span class="tax-relief-status ${escapeHtml(record.status)}">${escapeHtml(formatStatus(record.status))}</span>
           </span>
         </span>
         <span class="tax-relief-card-highlights">
           <span class="tax-relief-card-row tax-relief-card-amount"><span>Amount</span><strong class="amount">${escapeHtml(formatMoney(record.amount))}</strong></span>
-          <span class="tax-relief-card-row tax-relief-card-date"><span>Transaction Date</span><strong>${escapeHtml(formatDate(record.transactionDate))}</strong></span>
+          <span class="tax-relief-card-row tax-relief-card-date"><span>Date</span><strong>${escapeHtml(formatDate(record.transactionDate))}</strong></span>
         </span>
         <span class="tax-relief-card-rebate">
           <span class="tax-relief-meta-label">Rebate Item</span>

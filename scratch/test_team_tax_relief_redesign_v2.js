@@ -23,8 +23,27 @@ async function run() {
         references: cards.map(card => card.dataset.reference),
         statuses: cards.map(card => card.dataset.status),
         text: cards.map(card => card.innerText.replace(/\s+/g, ' ').trim()),
+        fieldLabels: cards.map(card => [...card.querySelectorAll('.tax-relief-card-row > span')].map(label => label.textContent.trim())),
         ids: cards.map(card => card.querySelector('.tax-relief-employee-id')?.textContent.trim()),
         idsBelowNames: cards.every(card => card.querySelector('.tax-relief-employee-name')?.nextElementSibling === card.querySelector('.tax-relief-employee-id')),
+        filterTriggerStyle: (() => {
+          const trigger = document.getElementById('taxReliefFilterTrigger');
+          const icon = trigger.querySelector(':scope > i');
+          const kicker = trigger.querySelector('small');
+          const summary = trigger.querySelector('strong');
+          return {
+            height: trigger.getBoundingClientRect().height,
+            padding: getComputedStyle(trigger).padding,
+            radius: getComputedStyle(trigger).borderRadius,
+            shadow: getComputedStyle(trigger).boxShadow,
+            iconWidth: getComputedStyle(icon).width,
+            iconHeight: getComputedStyle(icon).height,
+            iconRadius: getComputedStyle(icon).borderRadius,
+            iconFontSize: getComputedStyle(icon).fontSize,
+            kickerFontSize: getComputedStyle(kicker).fontSize,
+            summaryFontSize: getComputedStyle(summary).fontSize
+          };
+        })(),
         hasLegacyOverview: !!document.querySelector('.tax-relief-overview, .status-tab-group, .filter-pills-scroll, .action-btn-approve, .action-btn-reject'),
         horizontalOverflow: document.querySelector('.tax-relief-phone').scrollWidth > document.querySelector('.tax-relief-phone').clientWidth + 1
       };
@@ -35,11 +54,25 @@ async function run() {
     assert.deepEqual(initial.statuses, ['submitted', 'submitted', 'submitted']);
     assert.deepEqual(initial.ids, ['#EBB12', '#EBB12', '#EBB12']);
     assert.equal(initial.idsBelowNames, true);
+    assert.deepEqual(initial.filterTriggerStyle, {
+      height: 70,
+      padding: '13px 14px',
+      radius: '18px',
+      shadow: 'none',
+      iconWidth: '42px',
+      iconHeight: '42px',
+      iconRadius: '14px',
+      iconFontSize: '15px',
+      kickerFontSize: '10px',
+      summaryFontSize: '12.5px'
+    });
     assert.equal(initial.hasLegacyOverview, false, 'Legacy approval dashboard controls must be removed');
     assert.equal(initial.horizontalOverflow, false);
-    for (const label of ['Position', 'Transaction Date', 'Rebate Item', 'Amount', 'Status', 'Period / Cycle']) {
+    for (const label of ['Position', 'Date', 'Rebate Item', 'Amount', 'Period / Cycle']) {
       assert.ok(initial.text[0].includes(label), `Card must include ${label}`);
     }
+    assert.ok(initial.fieldLabels[0].includes('Date'));
+    assert.ok(!initial.fieldLabels[0].includes('Transaction Date'));
     assert.ok(initial.text[0].includes('GROUP HR MANAGER') && initial.text[0].includes('14 Aug 2025') && initial.text[0].includes('TXR02 – BASIC SUPPORTING EQUIPMENT') && initial.text[0].includes('RM 100.00'));
     assert.ok(initial.text[1].includes('19 Mar 2026') && initial.text[1].includes('RM 12.00'));
     assert.ok(initial.text[2].includes('TXR05 – COMPLETE MEDICAL EXAMINATION') && initial.text[2].includes('RM 14.00'));

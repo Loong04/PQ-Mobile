@@ -16,6 +16,7 @@
   <script src="../../../js/components.js"></script>
   <script src="../../../js/app.js" defer></script>
   <script src="../../../js/pending-approval-filter.js" defer></script>
+  <script src="../../../js/payroll/payroll-history-data.js" defer></script>
   <script src="../../../js/payroll/payroll-pending-data.js" defer></script>
   <script src="../../../js/payroll/payroll-pending-approval.js" defer></script>
 </head>
@@ -35,7 +36,7 @@
         <button type="button" class="filter-pill" id="payrollPendingTab-deduction" data-payroll-tab="deduction" role="tab" aria-selected="false" aria-controls="payrollPendingPanel" tabindex="-1">Deduction Request</button>
       </div>
       <div class="approval-filter-summary">
-        <div class="payroll-pending-summary-copy"><small>Current Filter</small><div class="payroll-pending-summary-value"><i class="fa-solid fa-filter" aria-hidden="true"></i><span id="payrollPendingFilterSummary">All Requests &bull; All Dates</span></div></div>
+        <div class="payroll-pending-summary-copy"><small>Current Filter</small><div class="payroll-pending-summary-value"><span id="payrollPendingFilterSummary">All Requests &bull; All Dates</span></div></div>
         <button type="button" id="payrollPendingFilterTrigger" aria-label="Open pending approval filter" aria-haspopup="dialog" aria-controls="payrollPendingFilter"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
       </div>
       <section id="payrollPendingPanel" role="tabpanel" aria-labelledby="payrollPendingTab-tax">
@@ -60,23 +61,44 @@
       <section class="payroll-approval-panel payroll-approval-menu" role="dialog" aria-modal="true" aria-labelledby="payrollPendingMenuTitle">
         <div class="payroll-approval-handle" aria-hidden="true"></div>
         <div class="payroll-approval-menu-heading"><h2 id="payrollPendingMenuTitle">Request Options</h2><button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Close request options"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
-        <button type="button" class="payroll-approval-menu-option" id="payrollPendingViewDetails"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>View Details</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        <div class="payroll-approval-menu-options">
+          <button type="button" class="payroll-approval-menu-option" id="payrollPendingViewDetails"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>View Details</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" class="payroll-approval-menu-option" id="payrollPendingViewWorkflow"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>View Workflow</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
       </section>
     </div>
     <div id="payrollPendingDetails" class="payroll-approval-overlay" hidden>
       <section class="payroll-approval-panel" role="dialog" aria-modal="true" aria-labelledby="payrollPendingDetailsTitle">
         <header class="payroll-approval-details-header">
-          <button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Back to pending approvals"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
-          <div><h2 id="payrollPendingDetailsTitle">Tax Relief Approval</h2><p>Review payroll request details</p></div>
-          <button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Close approval details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          <h2 id="payrollPendingDetailsTitle">Tax Relief Detail</h2>
+          <button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Close approval details"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
         </header>
-        <div class="payroll-approval-details-body"><h3>General</h3><div class="payroll-approval-table-wrap"><table class="payroll-approval-table" id="payrollPendingDetailsTable"><tbody></tbody></table></div></div>
-        <footer class="payroll-approval-details-footer pending-action-grid">
-          <button type="button" class="action-btn-approve" data-payroll-action="approve"><i class="fa-solid fa-check" aria-hidden="true"></i>Approve</button>
-          <button type="button" class="action-btn-resubmit" data-payroll-action="resubmit"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Resubmit</button>
-          <button type="button" class="action-btn-cancel" data-close-payroll-sheet><i class="fa-solid fa-ban" aria-hidden="true"></i>Cancel</button>
-          <button type="button" class="action-btn-reject" data-payroll-action="reject"><i class="fa-solid fa-xmark" aria-hidden="true"></i>Reject</button>
-        </footer>
+        <div class="payroll-approval-details-body"><table class="payroll-approval-table" id="payrollPendingDetailsTable"><tbody></tbody></table></div>
+        <footer class="payroll-approval-details-footer pending-action-grid"></footer>
+      </section>
+    </div>
+    <div id="payrollPendingWorkflow" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel payroll-approval-workflow" role="dialog" aria-modal="true" aria-labelledby="payrollPendingWorkflowTitle">
+        <header class="payroll-approval-workflow-header">
+          <div class="payroll-approval-handle" aria-hidden="true"></div>
+          <div class="payroll-approval-workflow-heading">
+            <i class="fa-solid fa-diagram-project payroll-approval-workflow-icon" aria-hidden="true"></i>
+            <div><h2 id="payrollPendingWorkflowTitle">Approval Workflow</h2><p>Approval status &amp; history</p></div>
+            <button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Close workflow"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+        </header>
+        <div class="payroll-approval-workflow-body">
+          <section id="payrollPendingWorkflowRequest" class="payroll-approval-workflow-request" aria-label="Workflow request"></section>
+          <section aria-labelledby="payrollPendingWorkflowStepsTitle">
+            <h3 id="payrollPendingWorkflowStepsTitle">Approval Steps</h3>
+            <ol id="payrollPendingWorkflowSteps" class="payroll-approval-workflow-steps"></ol>
+          </section>
+          <section class="payroll-approval-workflow-audit" aria-labelledby="payrollPendingWorkflowAuditTitle">
+            <h3 id="payrollPendingWorkflowAuditTitle">Audit History</h3>
+            <ul id="payrollPendingWorkflowAudit"></ul>
+          </section>
+        </div>
+        <footer class="payroll-approval-workflow-footer"><button type="button" class="action-btn-cancel" data-close-payroll-sheet><i class="fa-solid fa-xmark" aria-hidden="true"></i>Close Workflow</button></footer>
       </section>
     </div>
   </div>

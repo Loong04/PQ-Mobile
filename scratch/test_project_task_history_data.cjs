@@ -221,6 +221,12 @@ async function closeDetails(page) {
       await page.setViewport({ width: 574, height: 950 });
       await page.$eval('#openTimesheetHistoryFilter', button => button.click());
       await page.waitForSelector('#timesheetHistoryFilterOverlay.is-open');
+      await page.waitForFunction(() => {
+        const overlay = document.getElementById('timesheetHistoryFilterOverlay');
+        const sheet = overlay?.querySelector('.project-history-filter-sheet');
+        if (!overlay || !sheet) return false;
+        return Math.abs(sheet.getBoundingClientRect().bottom - overlay.getBoundingClientRect().bottom) < 1;
+      });
       assert.deepEqual(
         await page.$$eval('#timesheetHistoryFilterForm > .project-history-filter-field > label', labels => labels.map(label => label.textContent.trim())),
         ['Year', 'Month']

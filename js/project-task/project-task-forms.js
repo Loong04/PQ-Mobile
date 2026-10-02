@@ -75,12 +75,10 @@
     input.setCustomValidity(input.value.trim() ? '' : `Please enter ${label.toLowerCase()}.`);
   }
 
-  function initWorkPlan() {
-    const form = byId('workPlanForm');
-    if (!form) return;
+  function initAttachments(form, inputIds, listId) {
     const attachments = [];
     function renderAttachments() {
-      byId('workPlanAttachments').replaceChildren(...attachments.map((file, index) => {
+      byId(listId).replaceChildren(...attachments.map((file, index) => {
         const row = node('div', 'attachment-upload-item');
         const fileIcon = node('span', 'attachment-upload-icon');
         fileIcon.append(icon('fa-paperclip'));
@@ -98,7 +96,7 @@
     for (const button of form.querySelectorAll('[data-pick-file]')) {
       button.addEventListener('click', () => byId(button.dataset.pickFile).click());
     }
-    for (const id of ['workPlanFiles', 'workPlanCamera']) {
+    for (const id of inputIds) {
       byId(id).addEventListener('change', event => {
         for (const file of event.target.files) {
           if (!attachments.some(existing => existing.name === file.name && existing.size === file.size && existing.lastModified === file.lastModified)) attachments.push(file);
@@ -107,6 +105,13 @@
         event.target.value = '';
       });
     }
+    return attachments;
+  }
+
+  function initWorkPlan() {
+    const form = byId('workPlanForm');
+    if (!form) return;
+    const attachments = initAttachments(form, ['workPlanFiles', 'workPlanCamera'], 'workPlanAttachments');
     form.addEventListener('submit', event => {
       event.preventDefault();
       requireText('workPlanTitle', 'Title');
@@ -123,6 +128,77 @@
       data.attachments = attachments.map(file => ({ name: file.name, size: file.size, type: file.type }));
       if (saveRecord('pq_project_work_plans', record('WP', data), 'workPlanFeedback')) showFeedback('workPlanFeedback', 'Work plan saved.');
     });
+  }
+
+  function initWorkAssignment() {
+    const form = byId('workAssignmentForm');
+    if (!form) return;
+    const attachments = initAttachments(form, ['workAssignmentFiles', 'workAssignmentCamera'], 'workAssignmentAttachments');
+    const picker = form.querySelector('.project-assignee-picker');
+    const trigger = byId('workAssignmentAssigneeTrigger');
+    const optionsPanel = byId('workAssignmentAssigneeOptions');
+    const assigneeInputs = [...optionsPanel.querySelectorAll('input[type="checkbox"]')];
+
+    function selectedAssignees() {
+      return assigneeInputs.filter(input => input.checked);
+    }
+
+    function closeAssignees() {
+      optionsPanel.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function renderAssignees() {
+      const selected = selectedAssignees();
+      byId('workAssignmentAssigneeSummary').textContent = selected.length
+        ? `${selected.length} assignee${selected.length === 1 ? '' : 's'} selected`
+        : 'Select assignee(s)';
+      byId('workAssignmentAssigneeSelection').replaceChildren(...selected.map(input => {
+        const label = input.closest('.project-assignee-option');
+        return node('span', 'project-assignee-chip', label.querySelector('.project-assignee-name').textContent);
+      }));
+    }
+
+    trigger.addEventListener('click', () => {
+      const willOpen = optionsPanel.hidden;
+      optionsPanel.hidden = !willOpen;
+      trigger.setAttribute('aria-expanded', String(willOpen));
+    });
+    for (const input of assigneeInputs) input.addEventListener('change', renderAssignees);
+    document.addEventListener('click', event => {
+      if (!optionsPanel.hidden && !picker.contains(event.target)) closeAssignees();
+    });
+    form.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || optionsPanel.hidden) return;
+      closeAssignees();
+      trigger.focus({ preventScroll: true });
+    });
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      requireText('workAssignmentTitle', 'Title');
+      requireText('workAssignmentDescription', 'Description');
+      const scheduleFrom = byId('workAssignmentScheduleFrom').value;
+      const scheduleTo = byId('workAssignmentScheduleTo').value;
+      byId('workAssignmentScheduleTo').setCustomValidity(
+        scheduleFrom && scheduleTo && scheduleTo < scheduleFrom
+          ? 'Schedule To must be on or after Schedule From.'
+          : ''
+      );
+      if (!form.reportValidity()) return;
+
+      const data = Object.fromEntries(new FormData(form));
+      data.title = data.title.trim();
+      data.description = data.description.trim();
+      data.priority = Number(data.priority);
+      data.assignees = selectedAssignees().map(input => input.value);
+      data.attachments = attachments.map(file => ({ name: file.name, size: file.size, type: file.type }));
+      data.status = 'Assigned';
+      if (saveRecord('pq_project_work_assignments', record('WA', data), 'workAssignmentFeedback')) {
+        showFeedback('workAssignmentFeedback', 'Work assignment submitted.');
+      }
+    });
+    renderAssignees();
   }
 
   function initTimesheet() {
@@ -312,6 +388,7 @@
       });
     }
     initWorkPlan();
+    initWorkAssignment();
     initTimesheet();
   });
 })();

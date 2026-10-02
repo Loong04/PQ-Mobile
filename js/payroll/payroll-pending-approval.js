@@ -50,7 +50,7 @@
   }
   function filteredItems() {
     return window.PayrollPendingStore.getPending().filter(item => item.category === activeTab && filter.matches({
-      keyword: [tabNames[item.category], ...Object.values(item), '#' + item.empNo].join(' '),
+      keyword: [tabNames[item.category], ...Object.values(item).filter(value => typeof value !== 'object'), ...(item.attachments || []).map(file => file.name), '#' + item.empNo].join(' '),
       startDate: item.transactionDate || item.dateFrom,
       endDate: item.transactionDate || item.dateTo,
       submittedAt: item.submitDate || item.requestDate
@@ -65,12 +65,16 @@
     byId('payrollPendingBulk').hidden = selected.size === 0;
     document.querySelector('.phone-container').classList.toggle('has-selection', selected.size > 0);
   }
-  function actionButtons() {
+  function actionButtons(category, details = false) {
     const grid = node('div', 'pending-action-grid');
-    for (const [action, label, symbol] of actions) {
+    const available = actions.filter(([action]) => category !== 'deduction' || action !== 'resubmit');
+    if (details && category === 'tax') available.splice(2, 0, ['cancel', 'Cancel', 'fa-ban']);
+    grid.dataset.actionCount = available.length;
+    for (const [action, label, symbol] of available) {
       const button = node('button', 'action-btn-' + action);
       button.type = 'button';
-      button.dataset.payrollAction = action;
+      if (action === 'cancel') button.dataset.closePayrollSheet = '';
+      else button.dataset.payrollAction = action;
       button.append(icon(symbol), node('span', '', label));
       grid.append(button);
     }
@@ -130,7 +134,7 @@
     }
     const amount = node('div', 'payroll-approval-amount');
     amount.append(node('span', '', 'Amount'), node('strong', '', money(item.amount)));
-    body.append(facts, amount, actionButtons());
+    body.append(facts, amount, actionButtons(item.category));
     body.addEventListener('click', event => { if (!event.target.closest('button')) openDetails(item.id, menu); });
     card.append(header, body);
     return card;
@@ -147,6 +151,10 @@
       empty.append(icon('fa-circle-check'), node('h3', '', 'No Pending Requests'), node('p', '', 'There are no requests matching this category and filter.'));
       queue.replaceChildren(empty);
     }
+    const bulk = byId('payrollPendingBulk').querySelector('.pending-action-grid');
+    const bulkActions = actionButtons(activeTab);
+    bulk.dataset.actionCount = bulkActions.dataset.actionCount;
+    bulk.replaceChildren(...bulkActions.children);
     updateSelection();
   }
   function switchTab(tab, focus = false) {
@@ -194,24 +202,50 @@
     toggleOverlay(currentSheet, true);
     currentSheet.querySelector('button').focus({ preventScroll: true });
   }
+  function attachmentContent(item) {
+    const attachments = node('div', 'payroll-approval-files');
+    for (const file of item.attachments || []) {
+      const entry = node('span', 'payroll-approval-file');
+      entry.append(icon(/\.docx?$/i.test(file.name) ? 'fa-file-word' : /\.pdf$/i.test(file.name) ? 'fa-file-pdf' : 'fa-file-lines'), node('span', '', file.name));
+      attachments.append(entry);
+    }
+    return attachments.childElementCount ? attachments : '-';
+  }
   function openDetails(id, trigger) {
     const item = window.PayrollPendingStore.getPending().find(entry => entry.id === id);
     if (!item) return;
     currentItemId = id;
-    byId('payrollPendingDetailsTitle').textContent = tabNames[item.category] + ' Approval';
-    const employee = node('div');
-    employee.append(node('div', 'employee-name', item.employeeName), node('span', 'employee-id', '#' + item.empNo));
-    const rows = [['Document Reference', item.id], ['Status', item.status], ['Employee', employee]];
-    if (item.category === 'tax') rows.push(
-      ['Tax Relief Item', `${item.rebateCode} - ${item.rebateItem}`], ['Description', item.description || '-'],
-      ['Txn. Date', date(item.transactionDate)], ['Amount', money(item.amount)], ['Submit Date', date(item.submitDate)],
-      ['Process', item.process ? 'Yes' : 'No']
-    );
-    else rows.push(
-      ['Department', item.department], ['Deduction Type', item.deductionType], ['Request Type', item.requestType],
-      ['Date From', date(item.dateFrom)], ['Date To', date(item.dateTo)], ['Days', item.days.toFixed(2)], ['Amount', money(item.amount)],
-      ['Period', item.period], ['Cycle', item.cycle], ['Request Date', date(item.requestDate)]
-    );
+    byId('payrollPendingDetailsTitle').textContent = tabNames[item.category] + ' Detail';
+    const employeeName = node('span', 'employee-name', item.employeeName);
+    const employeeId = node('span', 'employee-id', '#' + item.empNo);
+    const rows = [];
+    if (item.category === 'tax') {
+      rows.push(
+        ['Reference #', item.id], ['Name', employeeName], ['Emp #', employeeId], ['Status', item.status],
+        ['Submit Date', date(item.submitDate)], ['Rebate Item', item.rebateItem], ['Transaction Date', date(item.transactionDate)],
+        ['Description', item.description || '-'], ['Receipt #', item.receiptNo || '-'], ['Amount', money(item.amount)],
+        ['Process', item.process ? 'Yes' : 'No'], ['Period', item.period || '-'], ['Cycle', item.cycle || '-'],
+        ['Approval Date', item.approvalDateLabel || date(item.approvalDate)], ['Approver Remarks', item.approverRemarks || '-'],
+        ['Attachments', attachmentContent(item)]
+      );
+    } else {
+      const employee = node('div');
+      employee.append(employeeName, employeeId);
+      const comments = node('textarea', 'payroll-approval-comments');
+      comments.id = 'payrollPendingApproverComments';
+      comments.rows = 2;
+      comments.maxLength = 2000;
+      comments.placeholder = 'Add comments...';
+      comments.setAttribute('aria-label', 'Approver Action Comments');
+      comments.value = item.approverActionComments || '';
+      rows.push(
+        ['Document Reference', item.id], ['Document Status', item.status], ['Employee', employee],
+        ['Deduction Type', item.deductionType], ['Request Type', item.requestType],
+        ['Stop Period', item.stopPeriod || '-'], ['Stop Date', date(item.stopDate)], ['Stop Cycle', item.stopCycle || '-'],
+        ['Account #', item.accountNo || '-'], ['Remarks', item.remarks || '-'], ['Attachment', attachmentContent(item)],
+        ['Approver Action Comments', comments]
+      );
+    }
     byId('payrollPendingDetailsTable').querySelector('tbody').replaceChildren(...rows.map(([label, value]) => {
       const row = node('tr');
       const key = node('th', '', label);
@@ -222,14 +256,53 @@
       row.append(key, content);
       return row;
     }));
+    const footer = document.querySelector('.payroll-approval-details-footer');
+    const detailActions = actionButtons(item.category, true);
+    footer.dataset.actionCount = detailActions.dataset.actionCount;
+    footer.replaceChildren(...detailActions.children);
     document.querySelector('.payroll-approval-details-body').scrollTop = 0;
     openSheet('payrollPendingDetails', trigger);
+  }
+  function openWorkflow(id, trigger) {
+    const item = window.PayrollPendingStore.getPending().find(entry => entry.id === id);
+    if (!item) return;
+    currentItemId = id;
+    byId('payrollPendingWorkflowTitle').textContent = tabNames[item.category] + ' Workflow';
+    const submittedDate = date(item.submitDate || item.requestDate);
+    const employee = node('div', 'payroll-approval-workflow-person');
+    employee.append(node('small', '', 'Employee'), node('h3', 'employee-name', item.employeeName), node('div', 'employee-id', '#' + item.empNo));
+    byId('payrollPendingWorkflowRequest').replaceChildren(
+      field('Document Reference', item.id), employee,
+      fieldGrid([['Document Status', item.status], [item.category === 'tax' ? 'Submit Date' : 'Request Date', submittedDate]])
+    );
+
+    const submitted = node('li', 'payroll-approval-workflow-step is-complete');
+    const submittedHeading = node('div', 'payroll-approval-workflow-step-heading');
+    submittedHeading.append(icon('fa-circle-check'), node('h4', '', 'Request Submitted'), node('span', 'payroll-approval-workflow-badge', 'Completed'));
+    submitted.append(submittedHeading, fieldGrid([['Submitted By', item.employeeName], ['Date', submittedDate]]));
+    const approval = node('li', 'payroll-approval-workflow-step is-active');
+    const approvalHeading = node('div', 'payroll-approval-workflow-step-heading');
+    approvalHeading.append(icon('fa-hourglass-half'), node('h4', '', 'Payroll Approval'), node('span', 'payroll-approval-workflow-badge', 'Awaiting Approval'));
+    approval.append(approvalHeading, fieldGrid([['Approver', '-'], ['Action Date', '-']]));
+    byId('payrollPendingWorkflowSteps').replaceChildren(submitted, approval);
+
+    const audit = node('li');
+    const auditHeading = node('div', 'payroll-approval-workflow-audit-heading');
+    const event = node('strong', '', 'Request Submitted');
+    const timestamp = node('time', '', submittedDate);
+    timestamp.dateTime = item.submitDate || item.requestDate || '';
+    auditHeading.append(icon('fa-file-pen'), event, timestamp);
+    audit.append(auditHeading, node('span', '', item.employeeName));
+    byId('payrollPendingWorkflowAudit').replaceChildren(audit);
+    document.querySelector('.payroll-approval-workflow-body').scrollTop = 0;
+    openSheet('payrollPendingWorkflow', trigger);
   }
   function handleAction(button) {
     const action = button.dataset.payrollAction;
     const ids = button.closest('#payrollPendingBulk') ? [...selected] : [button.closest('.approval-request-card')?.dataset.itemId || currentItemId];
     try {
-      const count = window.PayrollPendingStore.act(ids, action);
+      const comments = button.closest('#payrollPendingDetails') ? byId('payrollPendingApproverComments')?.value || '' : '';
+      const count = window.PayrollPendingStore.act(ids, action, comments);
       closeSheet(false);
       renderQueue();
       const result = { approve: 'Approved', resubmit: 'Sent for resubmission:', reject: 'Rejected' }[action];
@@ -256,6 +329,7 @@
       updateSelection();
     });
     byId('payrollPendingViewDetails').addEventListener('click', () => openDetails(currentItemId, opener));
+    byId('payrollPendingViewWorkflow').addEventListener('click', () => openWorkflow(currentItemId, opener));
     document.addEventListener('click', event => {
       const button = event.target.closest('[data-payroll-action]');
       if (button) handleAction(button);
@@ -267,7 +341,7 @@
       overlay.addEventListener('keydown', event => {
         if (event.key === 'Escape') { event.preventDefault(); closeSheet(); }
         if (event.key !== 'Tab') return;
-        const controls = [...overlay.querySelectorAll('button')].filter(button => !button.disabled);
+        const controls = [...overlay.querySelectorAll('button, input, textarea, select, a[href], [tabindex]:not([tabindex="-1"])')].filter(control => !control.disabled && control.getClientRects().length);
         const first = controls[0], last = controls[controls.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }

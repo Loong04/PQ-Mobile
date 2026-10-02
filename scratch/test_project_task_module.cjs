@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 
 const fileUrl = file => `file:///${path.resolve(__dirname, '..', file).replace(/\\/g, '/')}`;
 async function screenshotAfterTransitions(page, file) {
+  if (process.env.SKIP_SCREENSHOTS === '1') return;
   await page.mouse.move(0, 0);
   await page.evaluate(async () => {
     await Promise.all(document.getAnimations().filter(animation => animation.constructor.name === 'CSSTransition').map(animation => animation.finished.catch(() => {})));
@@ -12,7 +13,11 @@ async function screenshotAfterTransitions(page, file) {
 }
 const expected = {
   individual: [['Work Plan', 'work-plan.html'], ['Time Sheet', 'time-sheet.html'], ['History', 'history.html']],
-  team: [['Work Assignment', 'work-assignment.html'], ['Timesheet Highlight', 'timesheet-highlight.html']]
+  team: [
+    ['Pending Approval', 'pending-approval.html'],
+    ['Work Assignment', 'work-assignment.html'],
+    ['Timesheet Highlight', 'timesheet-highlight.html']
+  ]
 };
 
 (async () => {
@@ -29,28 +34,45 @@ const expected = {
         row.click();
       })]);
       await page.waitForFunction(() => location.pathname.endsWith('/modules/project-task/index.html'), { timeout: 2000 });
-      assert.equal(await page.$eval('h1', node => node.textContent.trim()), 'Project & Task');
+      assert.equal(await page.$eval('h1', node => node.textContent.trim()), 'Project & Task Dashboard');
       assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
       for (const scope of ['individual', 'team']) {
         await page.click(`#projectTab-${scope}`);
         assert.equal(await page.$eval(`#projectTab-${scope}`, node => node.getAttribute('aria-selected')), 'true');
-        const visibleOptions = await page.$$eval('.project-option', nodes => nodes.filter(node => node.getClientRects().length).map(node => [node.querySelector('.project-option-title').textContent, new URL(node.href).pathname.split('/').pop()]));
+        const linkSelector = scope === 'team'
+          ? '#projectPanel-team .project-team-action-card, #projectPanel-team .project-option'
+          : '#projectPanel-individual .project-option';
+        const visibleOptions = await page.$$eval(linkSelector, nodes => nodes.map(node => [
+          node.querySelector(node.matches('.project-team-action-card') ? '.project-team-action-title' : '.project-option-title').textContent,
+          new URL(node.href).pathname.split('/').pop()
+        ]));
         assert.deepEqual(visibleOptions, expected[scope]);
-        assert.equal(await page.$eval(`#projectPanel-${scope} .project-options-count`, node => Number(node.textContent)), expected[scope].length);
+        if (scope === 'team') {
+          assert.equal(await page.$eval('#projectTeamOptions', node => node.childElementCount), 2);
+        } else {
+          assert.equal(await page.$$eval('#projectPanel-individual .project-dashboard-status-card', cards => cards.length), 3);
+          assert.equal(await page.$$eval('#projectPanel-individual .project-calendar-day', days => days.length), 35);
+        }
         assert.equal(await page.$$eval('.project-option p', nodes => nodes.length), 0);
         for (let index = 0; index < expected[scope].length; index++) {
           const [title, file] = expected[scope][index];
-          await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click(`#projectPanel-${scope} .project-option:nth-child(${index + 1})`)]);
+          const target = scope === 'individual'
+            ? `#projectPanel-${scope} .project-option:nth-child(${index + 1})`
+            : file === 'pending-approval.html'
+              ? '#projectTeamPendingApproval'
+              : `#projectTeamOptions .project-option:nth-child(${index})`;
+          await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click(target)]);
           await page.waitForFunction(file => location.pathname.endsWith('/' + file), {}, file);
           assert.equal(await page.$eval('h1', node => node.textContent.trim()), title);
           assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
           if (file === 'work-plan.html') assert.ok(await page.$('#workPlanForm'));
+          else if (file === 'work-assignment.html') assert.ok(await page.$('#workAssignmentForm'));
           else if (file === 'time-sheet.html') assert.ok(await page.$('#timesheetForm'));
           else if (file === 'history.html') {
             assert.ok(await page.$('#workPlanHistoryPanel'));
             assert.equal(await page.$$eval('.project-history-tab', tabs => tabs.length), 2);
           }
-          else assert.equal(await page.$eval('.project-option-status', node => node.textContent.trim()), 'Coming soon');
+          else if (file === 'pending-approval.html') assert.equal(await page.$$eval('.project-approval-card', cards => cards.length), 3);
           await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('.project-back')]);
           await page.waitForSelector(`#projectTab-${scope}[aria-selected="true"]`);
         }
@@ -64,7 +86,9 @@ const expected = {
       assert.equal(await page.$eval('#projectTab-team', node => node.getAttribute('aria-selected')), 'true');
       const otherTheme = theme === 'dark' ? 'light' : 'dark';
       await page.click(`[data-set-theme="${otherTheme}"]`);
-      await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('#projectPanel-team .project-option')]);
+      await page.waitForFunction(expectedTheme => document.documentElement.dataset.theme === expectedTheme, {}, otherTheme);
+      await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('#projectTeamPendingApproval')]);
+      await page.waitForSelector('.project-back');
       assert.equal(await page.$eval('html', node => node.dataset.theme), otherTheme);
       await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('.project-back')]);
       await page.reload({ waitUntil: 'domcontentloaded' });
@@ -79,7 +103,7 @@ const expected = {
       await screenshotAfterTransitions(page, `project_task_individual_${theme}.png`);
       await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('.project-back')]);
       await page.waitForFunction(app => location.pathname.endsWith('/' + app), {}, app);
-      console.log(`${theme}: home navigation, scope switching, five entries, back navigation, keyboard controls and mobile widths passed.`);
+      console.log(`${theme}: home navigation, scope switching, dashboard entries, back navigation, keyboard controls and mobile widths passed.`);
     }
     assert.deepEqual(faults, []);
     console.log('Project & Task module passed without browser script errors.');
