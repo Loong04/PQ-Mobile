@@ -559,23 +559,6 @@
         grid-template-columns: repeat(4, 1fr);
         gap: 6px;
       }
-      .action-btn-approve {
-        padding: 9.5px 2px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: #ffffff;
-        font-weight: 800;
-        font-size: 11.5px;
-        border: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
-        transition: all 0.2s ease;
-      }
-      .action-btn-approve:active { transform: scale(0.95); }
 
       .action-btn-backup {
         padding: 9.5px 2px;
@@ -600,54 +583,13 @@
       }
       .action-btn-backup:active { transform: scale(0.95); }
 
-      .action-btn-resubmit {
-        padding: 9.5px 2px;
-        border-radius: 12px;
-        background: rgba(59, 130, 246, 0.12);
-        border: 1px solid rgba(59, 130, 246, 0.3);
-        color: #2563eb;
-        font-weight: 800;
-        font-size: 11.5px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        transition: all 0.2s ease;
-      }
-      html[data-theme="dark"] .action-btn-resubmit,
-      [data-theme="dark"] .action-btn-resubmit {
-        background: rgba(59, 130, 246, 0.18);
-        border-color: rgba(96, 165, 250, 0.35);
-        color: #93c5fd;
-      }
-      .action-btn-resubmit:active { transform: scale(0.95); }
 
-      .action-btn-reject {
-        padding: 9.5px 2px;
-        border-radius: 12px;
-        background: rgba(244, 63, 94, 0.12);
-        border: 1px solid rgba(244, 63, 94, 0.3);
-        color: #e11d48;
-        font-weight: 800;
-        font-size: 11.5px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        transition: all 0.2s ease;
-      }
-      html[data-theme="dark"] .action-btn-reject,
-      [data-theme="dark"] .action-btn-reject {
-        background: rgba(244, 63, 94, 0.18);
-        border-color: rgba(251, 113, 133, 0.35);
-        color: #fca5a5;
-      }
-      .action-btn-reject:active { transform: scale(0.95); }
     </style>
-  </head>
-  <body>
+    <link rel="stylesheet" href="../../../css/approval-actions.css">
+  <script src="../../../js/pending-approval-filter.js"></script>
+  <link rel="stylesheet" href="../../../css/pending-approval-filter.css">
+</head>
+  <body class="unified-approval-actions">
     <preview-top-bar active-page="attendance"></preview-top-bar>
 
     <div class="phone-container">
@@ -1728,7 +1670,7 @@
               justify-content: space-between;
               cursor: pointer;
             "
-            onclick="openStaffFilterModal()"
+            onclick="getAttendancePendingFilter().open()"
           >
             <div style="flex: 1; margin-right: 10px; overflow: hidden">
               <div
@@ -1757,14 +1699,14 @@
                 "
               >
                 <span style="font-size: 13px; color: var(--purple-primary, #7c3aed)">ஃ</span>
-                <span id="pendingApprovalFilterSummaryText">All Branches • All Departments</span>
+                <span id="pendingApprovalFilterSummaryText">All Requests • All Dates</span>
               </div>
             </div>
 
             <!-- Filter Trigger Button -->
             <button
               type="button"
-              onclick="event.stopPropagation(); openStaffFilterModal()"
+              onclick="event.stopPropagation(); getAttendancePendingFilter().open()"
               title="Open Filter Options"
               style="
                 width: 42px;
@@ -3976,6 +3918,31 @@
       let currentStaffApprovalCategory = 'final_ot';
       let currentViewSection = 'main';
 
+      let attendancePendingFilter = null;
+      function getAttendancePendingFilter() {
+        if (!attendancePendingFilter) {
+          attendancePendingFilter = window.PendingApprovalFilter.create('attendancePendingFilter', {
+            summaryId: 'pendingApprovalFilterSummaryText',
+            onApply: () => {
+              renderPendingApprovalList();
+              if (currentStaffType === 'pending_approval') filterStaffList();
+            }
+          });
+        }
+        return attendancePendingFilter;
+      }
+
+      function matchesAttendancePendingFilter(item) {
+        return getAttendancePendingFilter().matches({
+          keyword: [item.name, item.id, item.dept, item.type, item.reason, item.remark].join(' '),
+          startDate: item.startDate,
+          endDate: item.endDate || item.startDate,
+          // Approval details use the request start date as the submission date in the demo data.
+          submittedAt: item.submitDate || item.startDate,
+          outstandingDays: item.outstandingDays
+        });
+      }
+
       function showPendingApprovalPage(targetTab) {
         currentViewSection = 'pending_approval';
         const mainEl = document.getElementById("viewMainDashboard");
@@ -4038,6 +4005,7 @@
 
         const allList = staffDatabase.pending_approval || [];
         const filtered = allList.filter(item => {
+          if (!matchesAttendancePendingFilter(item)) return false;
           if (currentStaffApprovalCategory === 'final_ot') {
             return item.category === 'final_ot' || (item.type && item.type.toLowerCase().includes('final ot'));
           } else if (currentStaffApprovalCategory === 'ot_plan') {
@@ -4473,6 +4441,7 @@
           });
         }
         const filtered = list.filter((s) => {
+          if (currentStaffType === 'pending_approval') return matchesAttendancePendingFilter(s);
           const matchQ = !q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q) || (s.dept && s.dept.toLowerCase().includes(q)) || (s.job && s.job.toLowerCase().includes(q));
           const matchBranch = branch === "all" || !s.branch || s.branch === branch;
           const matchDept = dept === "all" || !s.dept || s.dept.toLowerCase() === dept.toLowerCase();
@@ -4554,6 +4523,7 @@
       }
 
       function openStaffFilterModal() {
+        if (currentStaffType === 'pending_approval') { getAttendancePendingFilter().open(); return; }
         const overlay = document.getElementById("staffFilterModalOverlay");
         if (!overlay) return;
         const sheet = overlay.querySelector(".staff-filter-bottom-sheet-content");

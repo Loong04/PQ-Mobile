@@ -3,9 +3,11 @@
 (() => {
   'use strict';
   const earningFields = [
+    ['taxYear', 'Tax Year', null, 'year'],
     ['normalEarning', 'Normal Earning', 100], ['additionalEarning', 'Additional Earning', 10],
     ['epf', 'EPF', 0], ['pcb', 'PCB', 0], ['socso', 'SOCSO', 0], ['zakat', 'Zakat', 0]
   ];
+  const taxYears = Array.from({ length: 57 }, (_, index) => String(2026 - index));
   const reliefFields = [
     ['medicalParents', 'Medical Expenses of Own Parents', 10],
     ['supportingEquipment', 'Basic Supporting Equipment', 10],
@@ -165,8 +167,14 @@
       </article>`).join('');
   }
   function createAmountFields(container, fields) {
-    $(container).innerHTML = fields.map(([key, label]) => `
-      <div class="prior-field"><label for="prior-${key}">${text(label)}</label><input id="prior-${key}" name="${key}" type="number" inputmode="decimal" min="0" step="0.01"></div>`).join('');
+    $(container).innerHTML = fields.map(([key, label, , fieldType]) => {
+      const year = fieldType === 'year';
+      if (year) {
+        const options = taxYears.map(value => `<option value="${value}">${value}</option>`).join('');
+        return `<div class="prior-field"><label for="prior-${key}">${text(label)}</label><select id="prior-${key}" name="${key}"><option value="">Select Tax Year</option>${options}</select></div>`;
+      }
+      return `<div class="prior-field"><label for="prior-${key}">${text(label)}</label><input id="prior-${key}" name="${key}" type="number" inputmode="decimal" min="0" step="0.01"></div>`;
+    }).join('');
   }
   function setFormValues(section, data) {
     Object.entries(data).forEach(([name, value]) => {
@@ -449,7 +457,7 @@
     objectUrls.forEach(url => URL.revokeObjectURL(url));
     objectUrls = [];
     $('priorPageTitle').textContent = 'Prior Pay Data';
-    $('priorInfo').hidden = false;
+    $('priorInfo').hidden = true;
     $('priorBack').setAttribute('aria-label', 'Back to Payroll');
     $('priorListView').hidden = false;
     $('priorDetailView').hidden = true;

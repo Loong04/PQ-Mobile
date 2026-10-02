@@ -22,7 +22,7 @@ async function run() {
     assert.ok(await page.$('#teamPayrollDashboardSearch'), 'Dashboard needs search below the selected period');
     const summaryNames = await page.$$eval('#teamPayrollSummaryItems .team-summary-item span', els => els.map(el => el.textContent.trim()));
     assert.deepEqual(summaryNames, ['Basic Pay', 'Hourly Pay', 'Employee EPF', 'Employee Tax', 'Employer EPF', 'Employer SOCSO']);
-    assert.deepEqual(await page.$$eval('#teamPayrollSummaryItems .team-summary-group-title', els => els.map(el => el.textContent.trim())), ['Payments', 'Employee Deductions', 'Employer Contributions']);
+    assert.deepEqual(await page.$$eval('#teamPayrollSummaryItems .team-summary-group-title', els => els.map(el => el.textContent.trim())), []);
     await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_dashboard_dark.png') });
     await page.type('#teamPayrollDashboardSearch', 'no such component');
     assert.match(await page.$eval('#teamPayrollSummaryItems', el => el.textContent), /No payroll components found/);
@@ -70,6 +70,7 @@ async function run() {
       })()
     }));
 
+    await page.$eval('#teamViewFullBreakdown', el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await page.click('#teamViewFullBreakdown');
     await page.waitForSelector('#teamPayrollBreakdownSection.active');
     await page.waitForFunction(() => document.activeElement?.id === 'teamPayrollBreakdownClose');
@@ -83,26 +84,21 @@ async function run() {
       teamDashboardVisible: getComputedStyle(document.getElementById('scopeTeamSection')).display !== 'none',
       dialogTitle: document.getElementById('teamPayrollBreakdownTitle')?.textContent.trim(),
       panelAnchoredToPhoneBottom: Math.abs(document.querySelector('.team-payroll-breakdown-panel').getBoundingClientRect().bottom - document.querySelector('.phone-container').getBoundingClientRect().bottom) < 2,
-      tabs: [...document.querySelectorAll('.team-breakdown-tab')].map(el => el.textContent.trim()),
-      rows: [...document.querySelectorAll('#teamBreakdownRows .team-breakdown-row')].map(row => ({
-        name: row.querySelector('.team-breakdown-name')?.textContent.trim(),
-        amount: row.querySelector('.team-breakdown-amount')?.textContent.trim()
+      groups: [...document.querySelectorAll('#teamBreakdownRows .team-summary-group-title')].map(el => el.textContent.trim()),
+      rows: [...document.querySelectorAll('#teamBreakdownRows .team-summary-item')].map(row => ({
+        name: row.querySelector('span')?.textContent.trim(),
+        amount: row.querySelector('strong')?.textContent.trim()
       }))
     }));
 
-    await page.click('[data-team-payroll-tab="deductions"]');
-    const deductionNames = await page.$$eval('#teamBreakdownRows .team-breakdown-name', els => els.map(el => el.textContent.trim()));
-
-    await page.click('[data-team-payroll-tab="payments"]');
-    await page.type('#teamPayrollSearch', 'car');
-    const filteredNames = await page.$$eval('#teamBreakdownRows .team-breakdown-name', els => els.map(el => el.textContent.trim()));
-
-    await page.$eval('#teamPayrollSearch', input => {
-      input.value = '';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-    await page.click('#teamShowZeroAmounts');
-    const namesWithZeroAmounts = await page.$$eval('#teamBreakdownRows .team-breakdown-name', els => els.map(el => el.textContent.trim()));
+    assert.deepEqual(payments.groups, [], 'Breakdown displays components directly without group headings');
+    assert.equal(payments.rows.length, 18, 'Full breakdown includes all nonzero components across all categories');
+    assert.ok(payments.rows.some(row => row.name === 'Employee EPF' && row.amount === 'RM 34,142.00'));
+    assert.ok(payments.rows.some(row => row.name === 'HRD Levy' && row.amount === 'RM 3,921.36'));
+    assert.equal(await page.$('#teamPayrollBreakdownSection input, #teamPayrollBreakdownSection .team-period-card, #teamPayrollBreakdownSection [role="tablist"]'), null, 'Breakdown is a simple list without filter controls');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'teamPayrollBreakdownClose', 'Focus stays inside the simplified dialog');
+    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_breakdown_simple_dark.png') });
 
     await page.click('#teamPayrollBreakdownClose');
     await page.waitForFunction(() => !document.getElementById('teamPayrollBreakdownSection').classList.contains('active'));
@@ -112,6 +108,7 @@ async function run() {
       switcherVisible: getComputedStyle(document.getElementById('mainScopeSwitcher')).display !== 'none',
       focusReturned: document.activeElement?.id === 'teamViewFullBreakdown'
     }));
+    await page.$eval('#teamViewFullBreakdown', el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await page.click('#teamViewFullBreakdown');
     await page.keyboard.press('Escape');
     assert.equal(await page.$eval('#teamPayrollBreakdownSection', el => el.classList.contains('active')), false, 'Escape closes the breakdown sheet');
@@ -130,6 +127,19 @@ async function run() {
     assert.ok(await page.$eval('.claim-filter-panel', el => el.scrollWidth <= el.clientWidth), 'Filter must fit a small screen');
     await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_filter_light_mobile.png') });
     await page.click('#teamPayrollFilterClose');
+    await page.$eval('#teamViewFullBreakdown', el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.click('#teamViewFullBreakdown');
+    await page.evaluate(() => Promise.all(document.getElementById('teamPayrollBreakdownSection').getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {}))));
+    assert.ok(await page.$eval('.team-payroll-breakdown-panel', el => el.scrollWidth <= el.clientWidth), 'Breakdown must fit a small screen');
+    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_breakdown_simple_light.png') });
+    await page.keyboard.press('Escape');
+    await page.click('#teamPayrollDashboardFilter');
+    await page.select('#teamPayrollFilterMonth', '08');
+    await page.click('#teamPayrollFilterApply');
+    await page.$eval('#teamViewFullBreakdown', el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.click('#teamViewFullBreakdown');
+    assert.match(await page.$eval('#teamBreakdownRows', el => el.textContent), /No payroll data for August 2026/, 'Breakdown uses the period selected on the dashboard');
+    await page.keyboard.press('Escape');
 
     const dashboardPassed = dashboard.title === 'Payroll'
       && dashboard.subtitle === 'Team'
@@ -137,7 +147,7 @@ async function run() {
       && dashboard.actionCount === '6'
       && dashboard.quickAction === 'Tax Relief'
       && dashboard.quickActionIcon.includes('fa-file-invoice-dollar')
-      && JSON.stringify(dashboard.summaryGroups) === JSON.stringify(['Payments', 'Employee Deductions', 'Employer Contributions'])
+      && dashboard.summaryGroups.length === 0
       && dashboard.hasOldInlineQueue === false
       && dashboard.headerIsCentered;
 
@@ -148,13 +158,10 @@ async function run() {
       && payments.teamDashboardVisible
       && payments.dialogTitle === 'Payroll Breakdown'
       && payments.panelAnchoredToPhoneBottom
-      && JSON.stringify(payments.tabs) === JSON.stringify(['Payments', 'Deductions', 'Employer'])
-      && payments.rows.length === 10
+      && payments.groups.length === 0
+      && payments.rows.length === 18
       && payments.rows[0].name === 'Basic Pay'
-      && payments.rows[0].amount === 'RM 392,136.02'
-      && deductionNames.includes('Employee EPF')
-      && JSON.stringify(filteredNames) === JSON.stringify(['Car Petrol Allowance'])
-      && namesWithZeroAmounts.includes('Overtime Payment');
+      && payments.rows[0].amount === 'RM 392,136.02';
 
     const returnPassed = returned.title === 'Payroll'
       && returned.subtitle === 'Team'
@@ -162,7 +169,7 @@ async function run() {
       && returned.focusReturned;
 
     const passed = dashboardPassed && breakdownPassed && returnPassed && pageErrors.length === 0;
-    console.log(JSON.stringify({ dashboard, payments, deductionNames, filteredNames, namesWithZeroAmounts, returned, pageErrors, dashboardPassed, breakdownPassed, returnPassed, passed }, null, 2));
+    console.log(JSON.stringify({ dashboard, payments, returned, pageErrors, dashboardPassed, breakdownPassed, returnPassed, passed }, null, 2));
     if (!passed) process.exitCode = 1;
   } finally {
     await browser.close();

@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
   <link rel="stylesheet" href="../../../css/payroll-documents.css">
+  <link rel="stylesheet" href="../../../css/ea-form.css">
 </head>
 <body>
   <preview-top-bar></preview-top-bar>
@@ -30,66 +31,29 @@
 
     <main class="payroll-document-content">
       <button id="eaFilterTrigger" class="payroll-filter-trigger" type="button" onclick="openEAFilter()">
-        <span><small>YEAR & TAX REFERENCE</small><strong id="eaFilterSummary">2024 · T01 (TAX)</strong></span>
+        <span><small>YEAR &amp; TAX RELIEF</small><strong id="eaFilterSummary">2024 · T01 (TAX)</strong></span>
         <i class="fa-solid fa-sliders"></i>
       </button>
 
-      <section class="ea-document-hero">
-        <div class="ea-seal"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-        <div><span class="payroll-eyebrow">MALAYSIA · INCOME TAX</span><h2>Statement of Remuneration</h2><p>Private-sector employment record</p></div>
+      <section class="ea-form-preview-card" aria-labelledby="eaFormPreviewTitle">
+        <div class="ea-form-preview-heading">
+          <div>
+            <span>Official document</span>
+            <h2 id="eaFormPreviewTitle">EA Form <b id="eaPreviewYear">2024</b></h2>
+          </div>
+          <span class="ea-form-code">C.P.8A</span>
+        </div>
+        <button class="ea-form-preview-frame" type="button" onclick="openAndPrintEA()" aria-label="Open EA form preview">
+          <img id="eaFormPreview" src="../../../assets/img/ea-form-preview.jpeg" alt="EA form preview">
+          <span class="ea-preview-corner" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
+        </button>
       </section>
 
-      <section id="eaEmployeeIdentity" class="ea-identity-card">
-        <span class="ea-avatar"><i class="fa-solid fa-user"></i></span>
-        <div><strong id="eaEmployeeName">Sarah Jenkins</strong> <small id="eaEmployeeNumber">#EBB01</small><span id="eaEmployeeRole">Senior Product Designer</span></div>
-        <span id="eaTaxReference" class="ea-reference-pill">T01 (TAX)</span>
-      </section>
-
-      <section class="payroll-summary-strip ea-summary-strip" aria-label="EA totals">
-        <div><span>Total Income</span><strong id="eaTotalIncome">RM 99,900.00</strong></div>
-        <div><span>Tax Deducted</span><strong id="eaTaxDeducted">RM 3,379.65</strong></div>
-        <div><span>EPF</span><strong id="eaEpfTotal">RM 11,660.00</strong></div>
-      </section>
-
-      <section class="payroll-data-card" data-ea-part="A">
-        <div class="ea-part-heading"><span>A</span><div><h2>Employee Information</h2><p>Identity and employment record</p></div></div>
-        <div id="eaPartA" class="payroll-data-rows"></div>
-      </section>
-
-      <section class="payroll-data-card" data-ea-part="B">
-        <div class="ea-part-heading"><span>B</span><div><h2>Employment Income</h2><p>Remuneration, benefits and accommodation</p></div></div>
-        <div id="eaPartB" class="payroll-data-rows"></div>
-      </section>
-
-      <section class="payroll-data-card" data-ea-part="C">
-        <div class="ea-part-heading"><span>C</span><div><h2>Pension &amp; Annuities</h2><p>Retirement-related income</p></div></div>
-        <div id="eaPartC" class="payroll-data-rows"></div>
-      </section>
-
-      <section class="payroll-data-card" data-ea-part="D">
-        <div class="ea-part-heading"><span>D</span><div><h2>Tax Deductions</h2><p>PCB, CP38 and zakat deductions</p></div></div>
-        <div id="eaPartD" class="payroll-data-rows"></div>
-      </section>
-
-      <section class="payroll-data-card" data-ea-part="E">
-        <div class="ea-part-heading"><span>E</span><div><h2>Statutory Contributions</h2><p>Employee contributions paid</p></div></div>
-        <div id="eaPartE" class="payroll-data-rows"></div>
-      </section>
-
-      <section class="payroll-data-card" data-ea-part="F">
-        <div class="ea-part-heading"><span>F</span><div><h2>Tax-Exempt Allowances</h2><p>Exempt benefits and perquisites</p></div></div>
-        <div id="eaPartF" class="payroll-data-rows"></div>
-      </section>
-
-      <section class="ea-certification-card">
-        <div class="ea-certification-icon"><i class="fa-solid fa-shield-check"></i></div>
-        <div><span>Employer Certification</span><strong id="eaCertifier">Authorized Payroll Officer</strong><p id="eaCertificationMeta">PEOPLE QUEST SDN BHD · 29 Aug 2025</p></div>
-      </section>
-
-      <div class="payroll-document-actions">
-        <button class="payroll-action-secondary" type="button" onclick="openAndPrintEA()"><i class="fa-solid fa-print"></i> Open &amp; Print</button>
-        <button class="payroll-action-primary" type="button" onclick="downloadEA()"><i class="fa-solid fa-download"></i> Download PDF</button>
-      </div>
+      <button class="ea-open-print-action" type="button" onclick="openAndPrintEA()">
+        <span class="ea-open-print-icon" aria-hidden="true"><i class="fa-solid fa-print"></i></span>
+        <span class="ea-open-print-copy"><strong>Open + Print</strong><small>View the official form in print layout</small></span>
+        <span class="ea-open-print-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+      </button>
     </main>
 
     <div id="eaFilterModal" class="modal-overlay standard-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="eaFilterTitle" onclick="if(event.target===this) closeEAFilter()">
@@ -105,8 +69,8 @@
         <div class="payroll-filter-body">
           <label for="eaYearSelect">Year</label>
           <select id="eaYearSelect"></select>
-          <label for="eaTaxRefSelect">Tax Reference</label>
-          <select id="eaTaxRefSelect"><option value="T01 (TAX)">T01 (TAX)</option></select>
+          <label for="eaTaxReliefSelect">Tax Relief</label>
+          <select id="eaTaxReliefSelect"></select>
         </div>
         <div class="payroll-filter-footer"><button class="standard-filter-apply" type="button" onclick="applyEAFilter()">Apply Filter</button></div>
       </div>
@@ -117,60 +81,49 @@
 
   <script>
     let selectedEAYear = 2024;
-    const eaMoney = value => `RM ${Number(value || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    let selectedTaxRelief = 'T01 (TAX)';
     const eaData = () => window.PAYROLL_DATA?.eaForms?.[selectedEAYear] || window.PAYROLL_DATA?.eaForms?.[String(selectedEAYear)] || Object.values(window.PAYROLL_DATA?.eaForms || {})[0] || {};
-
-    function eaRows(target, rows) {
-      document.getElementById(target).innerHTML = rows.map(row => `<div class="payroll-data-row"><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join('');
-    }
-
-    function findEAValue(data, label, fallback = 0) {
-      const item = [...(data.income || []), ...(data.deductions || []), ...(data.contributions || [])].find(row => String(row.description || '').toLowerCase().includes(label.toLowerCase()));
-      return item?.amount ?? fallback;
-    }
 
     function renderEA() {
       const data = eaData();
-      const taxReference = data.taxRef || 'T01 (TAX)';
-      const employeeName = data.employee?.name || 'Sarah Jenkins';
-      const employeeNumber = data.employee?.employeeId || 'EBB01';
+      selectedTaxRelief = data.taxRef || selectedTaxRelief;
       document.getElementById('headerEAYearText').textContent = `Year of Assessment ${selectedEAYear}`;
-      document.getElementById('eaFilterSummary').textContent = `${selectedEAYear} · ${taxReference}`;
-      document.getElementById('eaEmployeeName').textContent = employeeName;
-      document.getElementById('eaEmployeeNumber').textContent = `#${String(employeeNumber).replace(/^#/, '')}`;
-      document.getElementById('eaEmployeeRole').textContent = data.employee?.position || 'Employee';
-      document.getElementById('eaTaxReference').textContent = taxReference;
-      document.getElementById('eaTotalIncome').textContent = eaMoney(data.totalIncome);
-      document.getElementById('eaTaxDeducted').textContent = eaMoney(data.totalDeductions ?? findEAValue(data, 'PCB'));
-      document.getElementById('eaEpfTotal').textContent = eaMoney(findEAValue(data, 'EPF'));
-
-      eaRows('eaPartA', [
-        ['Employee Name', employeeName], ['Employee ID', `#${String(employeeNumber).replace(/^#/, '')}`], ['NRIC / Passport', data.employee?.nric || '—'],
-        ['Position', data.employee?.position || '—'], ['Employment Period', data.employee?.employmentPeriod || `01 Jan – 31 Dec ${selectedEAYear}`]
-      ]);
-      eaRows('eaPartB', (data.income || []).map(row => [row.description, eaMoney(row.amount)]).concat([['Total Gross Income', eaMoney(data.totalIncome)]]));
-      eaRows('eaPartC', (data.pensionAnnuities || [{ description: 'Pension', amount: 0 }, { description: 'Annuities', amount: 0 }]).map(row => [row.description, eaMoney(row.amount)]));
-      eaRows('eaPartD', (data.deductions || []).map(row => [row.description, eaMoney(row.amount)]).concat([['Total Tax Deductions', eaMoney(data.totalDeductions)]]));
-      eaRows('eaPartE', (data.contributions || []).map(row => [row.description, eaMoney(row.amount)]));
-      eaRows('eaPartF', (data.exemptAllowances || []).map(row => [row.description, eaMoney(row.amount)]));
-      document.getElementById('eaCertifier').textContent = data.certification?.officer || 'Authorized Payroll Officer';
-      document.getElementById('eaCertificationMeta').textContent = `${data.employer?.name || 'PEOPLE QUEST SDN BHD'} · ${data.certification?.date || '29 Aug 2025'}`;
+      document.getElementById('eaFilterSummary').textContent = `${selectedEAYear} · ${selectedTaxRelief}`;
+      document.getElementById('eaPreviewYear').textContent = selectedEAYear;
     }
 
-    function openEAFilter() { document.getElementById('eaYearSelect').value = String(selectedEAYear); document.getElementById('eaFilterModal').classList.add('is-open'); }
+    function openEAFilter() {
+      document.getElementById('eaYearSelect').value = String(selectedEAYear);
+      document.getElementById('eaTaxReliefSelect').value = selectedTaxRelief;
+      document.getElementById('eaFilterModal').classList.add('is-open');
+    }
     function closeEAFilter() { document.getElementById('eaFilterModal').classList.remove('is-open'); }
-    function resetEAFilter() { document.getElementById('eaYearSelect').value = '2024'; document.getElementById('eaTaxRefSelect').value = 'T01 (TAX)'; }
-    function applyEAFilter() { selectedEAYear = Number(document.getElementById('eaYearSelect').value); renderEA(); closeEAFilter(); }
+    function resetEAFilter() { document.getElementById('eaYearSelect').value = '2024'; document.getElementById('eaTaxReliefSelect').value = 'T01 (TAX)'; }
+    function applyEAFilter() {
+      selectedEAYear = Number(document.getElementById('eaYearSelect').value);
+      selectedTaxRelief = document.getElementById('eaTaxReliefSelect').value;
+      renderEA();
+      closeEAFilter();
+    }
     function openAndPrintEA() { window.showToast?.('EA form opened in print preview', 'success'); }
-    function downloadEA() { window.showToast?.('EA PDF is ready to download', 'success'); }
 
     document.addEventListener('DOMContentLoaded', () => {
-      const select = document.getElementById('eaYearSelect');
-      Object.keys(window.PAYROLL_DATA?.eaForms || {}).sort((a, b) => Number(b) - Number(a)).forEach(year => {
-        const option = document.createElement('option'); option.value = year; option.textContent = year; select.appendChild(option);
+      const forms = window.PAYROLL_DATA?.eaForms || {};
+      const yearSelect = document.getElementById('eaYearSelect');
+      const taxReliefSelect = document.getElementById('eaTaxReliefSelect');
+      Object.keys(forms).sort((a, b) => Number(b) - Number(a)).forEach(year => {
+        const option = document.createElement('option'); option.value = year; option.textContent = year; yearSelect.appendChild(option);
       });
-      select.value = String(selectedEAYear);
+      [...new Set(Object.values(forms).map(form => form.taxRef).filter(Boolean))].forEach(taxRelief => {
+        const option = document.createElement('option'); option.value = taxRelief; option.textContent = taxRelief; taxReliefSelect.appendChild(option);
+      });
+      yearSelect.value = String(selectedEAYear);
+      taxReliefSelect.value = selectedTaxRelief;
       renderEA();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeEAFilter();
     });
   </script>
 </body>

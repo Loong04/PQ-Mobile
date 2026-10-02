@@ -668,6 +668,21 @@
    * ==========================================
    */
   let currentPendingTab = 'all';
+  let pendingApprovalFilter = null;
+
+  function getPendingApprovalFilter() {
+    if (!pendingApprovalFilter && window.PendingApprovalFilter && document.getElementById('pendingApprovalFilterSummaryText')) {
+      pendingApprovalFilter = window.PendingApprovalFilter.create('claimPendingFilter', {
+        summaryId: 'pendingApprovalFilterSummaryText',
+        onApply: renderTeamQueue
+      });
+    }
+    return pendingApprovalFilter;
+  }
+
+  function openPendingApprovalFilter() {
+    getPendingApprovalFilter()?.open();
+  }
 
   function showTeamPendingApprovals() {
     const mainEl = document.getElementById('teamMainDashboard');
@@ -773,6 +788,20 @@
         const tabNorm = norm(currentPendingTab);
         const itemNorm = norm(item.optionName);
         return tabNorm && itemNorm && itemNorm === tabNorm;
+      });
+    }
+
+    const filter = getPendingApprovalFilter();
+    if (filter) {
+      filteredQueue = filteredQueue.filter(item => {
+        const dates = String(item.claimDate || item.date || '').split(/\s+(?:-|–|—|to)\s+/i);
+        return filter.matches({
+          keyword: [item.userName, item.empNo, `#${item.empNo || ''}`, item.dept, item.optionName, item.title, item.docRef].join(' '),
+          startDate: item.claimDateFrom || dates[0],
+          endDate: item.claimDateTo || dates[1] || dates[0],
+          submittedAt: item.submitDate || item.date,
+          outstandingDays: item.outstandingDays
+        });
       });
     }
 
@@ -1739,6 +1768,7 @@
     showTeamPendingApprovals,
     hideTeamPendingApprovals,
     switchPendingTab,
+    openPendingApprovalFilter,
     openClaimThreeDotsMenu,
     closeClaimThreeDotsMenu,
     triggerClaimViewDetails,

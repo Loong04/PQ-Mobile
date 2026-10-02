@@ -275,6 +275,8 @@
     }
     .action-btn-reject:active { transform: scale(0.96); }
   </style>
+  <script src="../../../js/pending-approval-filter.js"></script>
+  <link rel="stylesheet" href="../../../css/pending-approval-filter.css">
 </head>
 <body>
 
@@ -345,10 +347,9 @@
         </div>
       </div>
 
-      <!-- Live Search Box -->
-      <div class="search-box-wrap">
-        <i class="fa-solid fa-magnifying-glass search-box-icon"></i>
-        <input type="text" class="search-box-input" id="taxReliefSearchInput" placeholder="Search staff name, #ID or relief item..." oninput="handleSearch(this.value)">
+      <div class="approval-filter-summary">
+        <div><small>Current Filter</small><span id="taxReliefFilterSummary">All Requests • All Dates</span></div>
+        <button type="button" onclick="getTaxReliefApprovalFilter().open()" aria-label="Open pending approval filter" aria-haspopup="dialog"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
       </div>
 
       <!-- Segmented Status Tabs -->
@@ -458,13 +459,30 @@
     let activeStatusFilter = 'all';
     let activeCategoryFilter = 'all';
     let searchQuery = '';
+    let taxReliefApprovalFilter = null;
+    function getTaxReliefApprovalFilter() {
+      if (!taxReliefApprovalFilter) {
+        taxReliefApprovalFilter = window.PendingApprovalFilter.create('taxReliefPendingFilter', {
+          summaryId: 'taxReliefFilterSummary',
+          onApply: renderList
+        });
+      }
+      return taxReliefApprovalFilter;
+    }
 
     function getSubmissions() {
       return window.PAYROLL_CONFIG?.teamTaxRelief?.submissions || [];
     }
 
     function renderList() {
-      const all = getSubmissions();
+      const approvalFilter = getTaxReliefApprovalFilter();
+      const all = getSubmissions().filter(item => approvalFilter.matches({
+        keyword: [item.userName, item.empNo, '#' + item.empNo, item.itemTitle, item.category, item.id].join(' '),
+        startDate: item.claimDate || item.submitDate,
+        endDate: item.claimDate || item.submitDate,
+        submittedAt: item.submitDate,
+        outstandingDays: item.outstandingDays
+      }));
       
       // Update Tab Counts
       const pendingTotal = all.filter(i => i.status === 'pending').length;

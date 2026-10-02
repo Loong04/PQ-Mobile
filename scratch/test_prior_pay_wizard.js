@@ -57,6 +57,7 @@ const puppeteer = require('puppeteer');
     };
     await page.goto(url, { waitUntil: 'networkidle0' });
     await page.waitForSelector('[data-record="1"]');
+    assert.equal(await page.$eval('#priorInfo', el => el.hidden), true, 'Prior Pay Data header must not show the right-side info icon');
     assert.equal(await page.$$eval('[data-record="1"] .prior-audit', elements => {
       const tops = elements.map(element => Math.round(element.getBoundingClientRect().top));
       return tops.length === 2 && tops[0] === tops[1] && elements.every(element => element.closest('.prior-record-dl') && element.classList.contains('claim-summary-stat'));
@@ -144,6 +145,13 @@ const puppeteer = require('puppeteer');
     assert.equal(await page.$eval('#priorSaveStatus', el => el.textContent.trim()), 'Unsaved changes');
     await click('#priorNext');
     assert.equal(await selected(), 'tab-earnings');
+    assert.equal(await page.$eval('#earningsFields .prior-field:first-child label', el => el.textContent.trim()), 'Tax Year');
+    assert.deepEqual(await page.$eval('[name="taxYear"]', el => ({
+      tagName: el.tagName,
+      value: el.value,
+      firstOption: el.options?.[0]?.textContent.trim() || '',
+      years: el.options ? [...el.options].slice(1, 4).map(option => option.value) : []
+    })), { tagName: 'SELECT', value: '', firstOption: 'Select Tax Year', years: ['2026', '2025', '2024'] }, 'Tax Year must be the first YTD Earning Detail dropdown');
     assert.equal(await page.$$eval('#panel-earnings .prior-employee-field', els => els.length), 0, 'YTD Earning Detail must not repeat Employee ID');
     assert.equal(await page.$$eval('#panel-earnings .prior-unit, #panel-earnings .prior-money > span', els => els.length), 0, 'YTD Earning Detail must not show MYR or RM currency text');
     assert.equal(await page.$eval('#earningsAttachmentTitle', el => el.textContent.trim()), 'Upload Attachment');
@@ -165,6 +173,7 @@ const puppeteer = require('puppeteer');
     }, 'Prior Pay attachments must use the same single-row attachment design as claim forms');
     assert.equal(await page.$eval('#priorPrevious', el => el.hidden), false);
     for (const theme of ['dark', 'light']) await capture(theme, 'earnings_bottom', true);
+    await fill('taxYear', '2025');
     await fill('normalEarning', '250.50');
     await page.evaluate(() => {
       const transfer = new DataTransfer();
@@ -176,6 +185,7 @@ const puppeteer = require('puppeteer');
     assert.equal(await selected(), 'tab-general');
     assert.equal(await page.$eval('[name="notes"]', el => el.value), 'Whole form update');
     await click('#priorNext');
+    assert.equal(await page.$eval('[name="taxYear"]', el => el.value), '2025');
     assert.equal(await page.$eval('[name="normalEarning"]', el => el.value), '250.50');
     await click('#priorNext');
     assert.equal(await selected(), 'tab-reliefs');
@@ -194,9 +204,11 @@ const puppeteer = require('puppeteer');
     await page.reload({ waitUntil: 'networkidle0' });
     await open();
     assert.equal(await page.$eval('[name="notes"]', el => el.value), 'Whole form update');
+    assert.equal(await page.$eval('[name="taxYear"]', el => el.value), '2025');
     assert.equal(await page.$eval('[name="normalEarning"]', el => el.value), '250.5');
     assert.equal(await page.$eval('[name="gifts"]', el => el.value), '42');
     await click('#priorNext');
+    assert.equal(await page.$eval('[name="taxYear"]', el => el.value), '2025');
     assert.equal(await page.$eval('[name="normalEarning"]', el => el.value), '250.5');
     assert.equal(await page.$eval('#earningsAttachments a', async el => (await fetch(el.href)).text()), 'Wizard proof');
     await click('#priorNext');

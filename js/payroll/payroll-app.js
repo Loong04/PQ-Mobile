@@ -13,13 +13,10 @@
   let activeMonthKey = '2026-09';
   let activeEAYear = '2025';
   let currentReliefFilter = 'all';
-  let activeTeamPayrollTab = 'payments';
-  let teamPayrollSearchTerm = '';
   let teamPayrollSummarySearchTerm = '';
   let activeTeamPayrollMonth = '';
   let teamPayrollFilterOpener = null;
   let teamPayrollFilterBackground = [];
-  let teamShowZeroAmounts = false;
   let teamPayrollBreakdownOpener = null;
   let teamPayrollBreakdownBackground = [];
   let teamPayrollBreakdownKeydownAttached = false;
@@ -224,24 +221,14 @@
     if (!container) return;
     const groups = hasTeamPayrollPeriodData() ? window.PAYROLL_CONFIG?.teamPayroll?.summaryGroups || [] : [];
     const query = teamPayrollSummarySearchTerm.toLowerCase();
-    const filteredGroups = groups.map(group => ({
-      ...group,
-      items: group.items.filter(item => item.name.toLowerCase().includes(query))
-    })).filter(group => group.items.length);
+    const items = groups.flatMap(group => group.items)
+      .filter(item => item.name.toLowerCase().includes(query));
 
-    container.innerHTML = filteredGroups.length ? filteredGroups.map(group => `
-      <section class="team-summary-group" aria-label="${group.title}">
-        <div class="team-summary-group-title">
-          <i class="fa-solid ${group.icon}" aria-hidden="true"></i>
-          <span>${group.title}</span>
-        </div>
-        ${group.items.map(item => `
-          <div class="team-summary-item">
-            <span>${item.name}</span>
-            <strong>${formatTeamPayrollAmount(item.amount)}</strong>
-          </div>
-        `).join('')}
-      </section>
+    container.innerHTML = items.length ? items.map(item => `
+      <div class="team-summary-item">
+        <span>${item.name}</span>
+        <strong>${formatTeamPayrollAmount(item.amount)}</strong>
+      </div>
     `).join('') : `<div class="team-payroll-empty">${teamPayrollEmptyMessage()}</div>`;
   }
 
@@ -323,22 +310,16 @@
 
   function renderTeamPayrollBreakdown() {
     const rowsContainer = document.getElementById('teamBreakdownRows');
-    const items = hasTeamPayrollPeriodData() ? window.PAYROLL_CONFIG?.teamPayroll?.breakdown?.[activeTeamPayrollTab] || [] : [];
     if (!rowsContainer) return;
+    const config = window.PAYROLL_CONFIG?.teamPayroll;
+    const groups = hasTeamPayrollPeriodData() ? config?.summaryGroups || [] : [];
+    const items = groups.flatMap(group => config.breakdown?.[group.key] || [])
+      .filter(item => Number(item.amount) !== 0);
 
-    const filtered = items.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(teamPayrollSearchTerm.toLowerCase());
-      const matchesAmount = teamShowZeroAmounts || Number(item.amount) !== 0;
-      return matchesSearch && matchesAmount;
-    });
-
-    rowsContainer.innerHTML = filtered.length ? filtered.map(item => `
-      <div class="team-breakdown-row">
-        <span class="team-breakdown-name">${item.name}</span>
-        <strong class="team-breakdown-amount">${formatTeamPayrollAmount(item.amount)}</strong>
-        <button type="button" class="team-trend-btn" aria-label="View ${item.name} trend" onclick="window.PayrollEngine.previewIndividualFeature('payroll-trend', '${item.name.replace(/'/g, "\\'")} Trend')">
-          <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
-        </button>
+    rowsContainer.innerHTML = items.length ? items.map(item => `
+      <div class="team-summary-item">
+        <span>${item.name}</span>
+        <strong>${formatTeamPayrollAmount(item.amount)}</strong>
       </div>
     `).join('') : `
       <div class="team-payroll-empty">${teamPayrollEmptyMessage()}</div>
@@ -397,24 +378,6 @@
     const opener = teamPayrollBreakdownOpener;
     teamPayrollBreakdownOpener = null;
     opener?.focus();
-  }
-
-  function switchTeamPayrollBreakdownTab(tabName) {
-    activeTeamPayrollTab = tabName;
-    document.querySelectorAll('.team-breakdown-tab').forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.teamPayrollTab === tabName);
-    });
-    renderTeamPayrollBreakdown();
-  }
-
-  function filterTeamPayrollComponents(value) {
-    teamPayrollSearchTerm = String(value || '').trim();
-    renderTeamPayrollBreakdown();
-  }
-
-  function toggleTeamZeroAmounts(checked) {
-    teamShowZeroAmounts = Boolean(checked);
-    renderTeamPayrollBreakdown();
   }
 
   function renderTeamReliefList() {
@@ -672,14 +635,11 @@
     previewIndividualFeature,
     showTeamPayrollBreakdown,
     hideTeamPayrollBreakdown,
-    switchTeamPayrollBreakdownTab,
-    filterTeamPayrollComponents,
     filterTeamPayrollSummary,
     openTeamPayrollFilter,
     closeTeamPayrollFilter,
     resetTeamPayrollFilter,
-    applyTeamPayrollFilter,
-    toggleTeamZeroAmounts
+    applyTeamPayrollFilter
   };
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -7,22 +7,49 @@
     const [year, month, day] = value.slice(0, 10).split('-').map(Number);
     return new Date(year, month - 1, day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
+  const periodLabel = value => {
+    const period = String(value || '').replace('-', '');
+    if (!/^\d{6}$/.test(period)) return '—';
+    return new Date(Number(period.slice(0, 4)), Number(period.slice(4, 6)) - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+  };
   const money = value => `RM ${Number(value || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const defaults = () => ({ from: '2026-01-01', to: '2026-12-31', item: 'all', status: 'all', description: '' });
-  const filters = { tax: defaults(), deduction: defaults() };
+  const defaults = category => category === 'deduction'
+    ? { from: '2016-10', to: '2026-10', item: 'all', status: 'all', description: '' }
+    : { from: '2026-01-01', to: '2026-10-03', item: 'all', status: 'all', description: '' };
+  const filters = { tax: defaults('tax'), deduction: defaults('deduction') };
   const records = { tax: [...window.PAYROLL_HISTORY_DATA.tax], deduction: [...window.PAYROLL_HISTORY_DATA.deduction] };
   const categories = {
     tax: { title: 'Tax Relief History', detail: 'Tax Relief Detail', label: 'Rebate Item', all: 'All Rebate Items', description: 'Description', file: 'tax-relief-request.html', name: 'Tax Relief', icon: 'fa-file-circle-check' },
     deduction: { title: 'Deduction Request History', detail: 'Deduction Request Detail', label: 'Deduction Type', all: 'All Deduction Types', description: 'Remarks', file: 'deduction-request.html', name: 'Deduction Request', icon: 'fa-file-circle-minus' }
   };
   const statuses = { submitted: 'Submitted', draft: 'Draft', approved: 'Approved', rejected: 'Rejected', cancelled: 'Cancelled' };
+  const statusIcons = { submitted: 'fa-paper-plane', draft: 'fa-floppy-disk', approved: 'fa-circle-check', rejected: 'fa-circle-xmark', cancelled: 'fa-ban' };
   let kind = new URLSearchParams(location.search).get('category') === 'deduction' ? 'deduction' : 'tax';
   let currentModal = null, opener = null;
   let attachmentUrls = [];
   const typeKey = record => kind === 'tax' ? (record.rebateCode || record.rebateItem) : record.deductionType;
   const typeLabel = record => kind === 'tax' ? [record.rebateCode, record.rebateItem].filter(Boolean).join(' - ') : record.deductionType;
+  const reference = record => record.localDraft ? 'Saved draft' : (record.reference ?? record.id);
+  const deductionPeriod = record => record.period || record.stopPeriod || '';
+  const deductionCycle = record => record.cycle || record.stopCycle || '';
+  const deductionDate = record => record.deductionDate || record.stopDate || '';
   const recordDate = record => record.submitDate || record.savedDate || record.transactionDate || '';
   const row = (label, value, markup = false) => `<tr><th scope="row">${escape(label)}</th><td>${markup ? value : escape(value === '' || value == null ? '—' : value)}</td></tr>`;
+  const cardActions = record => {
+    if (record.status === 'draft') {
+      return `<div class="history-card-actions" aria-label="Draft actions"><button type="button" class="history-card-action history-card-action-primary" data-history-action="submit">Submit</button><button type="button" class="history-card-action history-card-action-danger" data-history-action="discard">Discard</button></div>`;
+    }
+    if (record.status === 'submitted') {
+      return `<div class="history-card-actions" aria-label="Submitted actions"><button type="button" class="history-card-action history-card-action-danger" data-history-action="cancel">Cancel</button></div>`;
+    }
+    return '';
+  };
+
+  function selectCardAction(event) {
+    event.stopPropagation();
+    const labels = { submit: 'Submit', discard: 'Discard', cancel: 'Cancel' };
+    window.showToast?.(`${labels[event.currentTarget.dataset.historyAction]} action selected`);
+  }
 
   function showModal(modal, button) {
     opener = document.activeElement;
@@ -54,12 +81,15 @@
     $('historyCategoryTitle').textContent = category.title;
     const selectedType = records[kind].find(record => typeKey(record) === active.item);
     $('historyFilterSummary').textContent = [
-      `${date(active.from)} – ${date(active.to)}`, selectedType ? typeLabel(selectedType) : category.all,
+      kind === 'tax' ? `${date(active.from)} – ${date(active.to)}` : `${periodLabel(active.from)} – ${periodLabel(active.to)}`,
+      selectedType ? typeLabel(selectedType) : category.all,
       active.status === 'all' ? '' : statuses[active.status], active.description ? `“${active.description}”` : ''
     ].filter(Boolean).join(' · ');
     const matching = records[kind].filter(record => {
-      const when = recordDate(record).slice(0, 10);
-      return when >= active.from && when <= active.to
+      const when = kind === 'tax' ? recordDate(record).slice(0, 10) : deductionPeriod(record).replace('-', '');
+      const from = kind === 'tax' ? active.from : active.from.replace('-', '');
+      const to = kind === 'tax' ? active.to : active.to.replace('-', '');
+      return when >= from && when <= to
         && (active.item === 'all' || active.item === typeKey(record))
         && (active.status === 'all' || active.status === record.status)
         && (record.description || record.remarks || '').toLocaleLowerCase().includes(active.description.toLocaleLowerCase());
@@ -71,24 +101,33 @@
     $('historyCreateRequest').textContent = `Create ${category.name}${kind === 'tax' ? ' Request' : ''} →`;
     $('payrollHistoryList').replaceChildren();
     matching.forEach(record => {
-      const card = document.createElement('button');
-      card.type = 'button';
+      const card = document.createElement('article');
       card.className = 'history-card-item';
       card.dataset.reference = record.id;
       card.dataset.status = record.status;
-      card.setAttribute('aria-haspopup', 'dialog');
       const fields = kind === 'tax'
         ? [['Transaction Date', date(record.transactionDate)], ['Amount', money(record.amount)], ['Process (Period/Cycle)', [record.period, record.cycle].filter(Boolean).join(' / ') || '—']]
-        : [['Request Type', record.requestType], ['Stop Period', record.stopPeriod], ['Stop Date', date(record.stopDate)], ['Stop Cycle', record.stopCycle]];
-      card.innerHTML = `<div class="history-card-header"><div class="history-card-heading"><div class="history-card-title-row"><span class="history-card-type-icon"><i class="fa-solid ${category.icon}" aria-hidden="true"></i></span><h3 class="history-card-title">${escape(typeLabel(record))}</h3></div><div class="history-card-ref">${record.localDraft ? 'Saved draft' : `Ref: ${escape(record.id)}`}</div></div><span class="status-pill ${escape(record.status)}">${escape(statuses[record.status] || record.status)}</span><i class="fa-solid fa-chevron-right history-card-arrow" aria-hidden="true"></i></div><div class="history-card-details">${fields.map(([label, value]) => `<div class="history-card-row"><span>${escape(label)}</span><strong class="${label === 'Amount' ? 'history-card-amount' : ''}">${escape(value || '—')}</strong></div>`).join('')}</div>${record.localDraft ? `<p class="history-draft-note">Saved on this device · ${escape(date(record.savedDate))}</p>` : ''}`;
-      card.addEventListener('click', () => openDetails(record));
+        : [['Period', deductionPeriod(record)], ['Submit Date', date(record.submitDate || record.savedDate)], ['Cycle', deductionCycle(record)], ['Amount', money(record.amount)]];
+      const referenceLine = kind === 'tax'
+        ? `<div class="history-card-ref">${record.localDraft ? 'Saved draft' : `Ref: ${escape(reference(record))}`}</div>`
+        : '';
+      card.innerHTML = `<div class="history-card-main" role="button" tabindex="0" aria-haspopup="dialog" aria-label="View ${escape(typeLabel(record))} details"><div class="history-card-header"><div class="history-card-heading"><div class="history-card-title-row"><span class="history-card-type-icon"><i class="fa-solid ${category.icon}" aria-hidden="true"></i></span><h3 class="history-card-title">${escape(typeLabel(record))}</h3></div>${referenceLine}</div><span class="status-pill ${escape(record.status)}"><i class="fa-solid ${statusIcons[record.status] || 'fa-circle'}" aria-hidden="true"></i>${escape(statuses[record.status] || record.status)}</span></div><div class="history-card-details">${fields.map(([label, value]) => `<div class="history-card-row"><span>${escape(label)}</span><strong class="${label === 'Amount' ? 'history-card-amount' : ''}">${escape(value || '—')}</strong></div>`).join('')}</div>${record.localDraft ? `<p class="history-draft-note">Saved on this device · ${escape(date(record.savedDate))}</p>` : ''}</div>${cardActions(record)}`;
+      const main = card.querySelector('.history-card-main');
+      main.addEventListener('click', () => openDetails(record));
+      main.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        openDetails(record);
+      });
+      card.querySelectorAll('[data-history-action]').forEach(button => button.addEventListener('click', selectCardAction));
       $('payrollHistoryList').append(card);
     });
     $('payrollHistoryList').setAttribute('aria-busy', 'false');
   }
 
   function openDetails(record) {
-    const employee = `<span class="history-employee-name">${escape(record.employeeName || '—')}</span><span class="history-employee-id">${record.empNo ? `#${escape(String(record.empNo).replace(/^#/, ''))}` : '—'}</span>`;
+    const employeeName = `<span class="history-employee-name">${escape(record.employeeName || '—')}</span>`;
+    const employeeId = `<span class="history-employee-id">${record.empNo ? `#${escape(String(record.empNo).replace(/^#/, ''))}` : '—'}</span>`;
     const attachments = (record.attachments || []).map(attachment => {
       const icon = /\.docx?$/i.test(attachment.name) ? 'fa-file-word' : 'fa-file-lines';
       if (attachment.file instanceof Blob) {
@@ -98,11 +137,39 @@
       }
       return `<span class="history-attachment"><i class="fa-solid ${icon}" aria-hidden="true"></i><span>${escape(attachment.name)}<small class="history-attachment-note">Original file unavailable</small></span></span>`;
     }).join('') || '—';
-    const body = [row('Reference #', record.localDraft ? 'Saved draft' : record.id), row('Employee', employee, true), row('Status', statuses[record.status]), row(record.localDraft ? 'Saved Date' : 'Submit Date', date(record.localDraft ? record.savedDate : record.submitDate))];
-    if (kind === 'tax') body.push(row('Rebate Item', typeLabel(record)), row('Transaction Date', date(record.transactionDate)), row('Description', record.description), row('Receipt #', record.receiptNo), row('Amount', money(record.amount)));
-    else body.push(row('Deduction Type', record.deductionType), row('Request Type', record.requestType), row('Stop Period', record.stopPeriod), row('Stop Date', date(record.stopDate)), row('Stop Cycle', record.stopCycle), row('Account #', record.accountNo), row('Remarks', record.remarks));
-    body.push(row('Attachments', attachments, true));
-    if (!record.localDraft) body.push(row('Process', record.process ? 'Yes' : 'No'), row('Period', record.period), row('Cycle', record.cycle), row('Approval Date', date(record.approvalDate)), row('Approver Remarks', record.approverRemarks));
+    const body = [
+      row('Reference #', reference(record)),
+      row('Emp #', employeeId, true),
+      row('Name', employeeName, true),
+      row('Status', statuses[record.status]),
+      row('Submit Date', date(record.submitDate || record.savedDate))
+    ];
+    if (kind === 'tax') {
+      body.push(
+        row('Rebate Item', record.rebateItem),
+        row('Transaction Date', date(record.transactionDate)),
+        row('Description', record.description),
+        row('Receipt #', record.receiptNo),
+        row('Amount', money(record.amount)),
+        row('Attachments', attachments, true),
+        row('Process', record.process ? 'Yes' : 'No'),
+        row('Period', record.period),
+        row('Cycle', record.cycle),
+        row('Approval Date', date(record.approvalDate)),
+        row('Approver Remarks', record.approverRemarks)
+      );
+    } else {
+      body.push(
+        row('Request Type', record.requestType),
+        row('Deduction Type', record.deductionType),
+        row('Period', deductionPeriod(record)),
+        row('Cycle', deductionCycle(record)),
+        row('Deduction Date', date(deductionDate(record))),
+        row('Account No', record.accountNo),
+        row('Amount', money(record.amount)),
+        row('Attachments', attachments, true)
+      );
+    }
     $('historyDetailTitle').textContent = categories[kind].detail;
     $('historyDetailBody').innerHTML = `<table class="history-detail-table"><tbody>${body.join('')}</tbody></table>${record.localDraft ? `<a class="history-edit-draft" href="${categories[kind].file}">Continue editing <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>` : ''}`;
     $('historyDetailBody').scrollTop = 0;
@@ -110,15 +177,22 @@
   }
 
   function populateFilter(values) {
+    const periodFilter = kind === 'deduction';
+    $('historyDateFrom').type = periodFilter ? 'month' : 'date';
+    $('historyDateTo').type = periodFilter ? 'month' : 'date';
+    $('historyDateFromLabel').textContent = periodFilter ? 'Start Period' : 'Date From';
+    $('historyDateToLabel').textContent = periodFilter ? 'End Period' : 'Date To';
     $('historyDateFrom').value = values.from;
     $('historyDateTo').value = values.to;
     $('historyStatus').value = values.status;
     $('historyDescription').value = values.description;
+    $('historyStatusField').hidden = periodFilter;
+    $('historyDescriptionField').hidden = periodFilter;
     const category = categories[kind];
     $('historyItemLabel').textContent = category.label;
     $('historyDescriptionLabel').textContent = category.description;
     $('historyDescription').placeholder = `Search ${category.description.toLowerCase()}`;
-    $('historyDateHelp').textContent = kind === 'tax' ? 'Uses Submit Date, or Transaction Date when no Submit Date is recorded. Saved drafts use Saved Date.' : 'Saved drafts use Saved Date.';
+    $('historyDateHelp').textContent = periodFilter ? 'Uses the deduction period in YYYYMM format.' : 'Uses Submit Date, or Transaction Date when no Submit Date is recorded. Saved drafts use Saved Date.';
     const select = $('historyRebateItem');
     select.replaceChildren(new Option(category.all, 'all'));
     const seen = new Set();
@@ -154,8 +228,16 @@
         records[category] = records[category].filter(record => !record.localDraft);
       });
       drafts.filter(draft => draft.employeeId === employee.empNo && Object.hasOwn(records, draft.kind)).forEach(draft => {
+        const values = draft.values || {};
+        const normalizedValues = draft.kind === 'deduction' ? {
+          ...values,
+          period: values.period || values.stopPeriod || '',
+          cycle: values.cycle || values.stopCycle || '',
+          deductionDate: values.deductionDate || values.stopDate || '',
+          amount: Number(values.amount || 0)
+        } : values;
         records[draft.kind].push({
-          ...draft.values, id: draft.id, localDraft: true, status: 'draft',
+          ...normalizedValues, id: draft.id, localDraft: true, status: 'draft',
           employeeName: employee.name, empNo: employee.empNo, savedDate: draft.savedAt,
           attachments: draft.attachments || []
         });
@@ -171,19 +253,25 @@
     render();
   }));
   $('historyFilterTrigger').addEventListener('click', () => { populateFilter(filters[kind]); showModal($('historyFilterModal'), $('closeHistoryFilter')); });
-  $('resetHistoryFilter').addEventListener('click', () => populateFilter(defaults()));
+  $('resetHistoryFilter').addEventListener('click', () => populateFilter(defaults(kind)));
   $('closeHistoryFilter').addEventListener('click', closeModal);
   $('closeHistoryDetails').addEventListener('click', closeModal);
   $('historyFilterForm').addEventListener('submit', event => {
     event.preventDefault();
     const from = $('historyDateFrom').value, to = $('historyDateTo').value;
     if (from > to) {
-      $('historyFilterError').textContent = 'Date To must be on or after Date From.';
+      $('historyFilterError').textContent = kind === 'deduction' ? 'End Period must be on or after Start Period.' : 'Date To must be on or after Date From.';
       $('historyFilterError').hidden = false;
       $('historyDateTo').focus();
       return;
     }
-    filters[kind] = { from, to, item: $('historyRebateItem').value, status: $('historyStatus').value, description: $('historyDescription').value.trim() };
+    filters[kind] = {
+      from,
+      to,
+      item: $('historyRebateItem').value,
+      status: kind === 'deduction' ? 'all' : $('historyStatus').value,
+      description: kind === 'deduction' ? '' : $('historyDescription').value.trim()
+    };
     render();
     closeModal();
   });

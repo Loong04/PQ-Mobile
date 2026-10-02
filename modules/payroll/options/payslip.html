@@ -26,7 +26,6 @@
         <button class="payroll-header-button" type="button" onclick="history.back()" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
         <div class="payroll-header-copy">
           <h1>Payslip</h1>
-          <p id="headerPayslipMonthText">December 2025</p>
         </div>
         <span class="payslip-header-spacer" aria-hidden="true"></span>
       </div>
@@ -47,13 +46,11 @@
               <strong id="payslipCompany">PEOPLE QUEST SDN BHD</strong>
             </div>
           </div>
-          <span id="payslipStatus" class="payslip-paid-status">Paid</span>
         </div>
 
         <div class="payslip-net-pay">
           <span>Net Pay</span>
           <strong id="netPayMainDisplay">RM 8,895.15</strong>
-          <small>Paid on <b id="payslipPayDate">31 Dec 2025</b></small>
         </div>
 
         <div class="payslip-calculation" aria-label="Net pay calculation">
@@ -70,19 +67,6 @@
         <div class="payslip-contribution-row">
           <span><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Employer Contributions</span>
           <strong id="payslipContributionsTotal">RM 1,358.65</strong>
-        </div>
-      </section>
-
-      <section class="payslip-info-card" aria-labelledby="payslipInfoTitle">
-        <div class="payslip-card-label" id="payslipInfoTitle">
-          <i class="fa-regular fa-credit-card" aria-hidden="true"></i>
-          <span>Payment Details</span>
-        </div>
-        <div class="payslip-info-grid">
-          <div><span>Payroll Period</span><strong id="payslipPayrollPeriod">December 2025</strong></div>
-          <div><span>Payroll Cycle</span><strong id="payslipPayrollCycle">MONTH END</strong></div>
-          <div><span>Bank Branch</span><strong id="payslipBankBranch">CIMB</strong></div>
-          <div><span>Account Number</span><strong id="payslipAccountNumber">10447856855254</strong></div>
         </div>
       </section>
 
@@ -131,10 +115,6 @@
         <div id="otherSectionBody" class="payslip-section-body" aria-hidden="true"><div id="otherRows" class="payroll-data-rows"></div></div>
       </section>
 
-      <div class="payslip-document-actions">
-        <button class="payslip-action-secondary" type="button" onclick="printPayslip()"><i class="fa-solid fa-print"></i><span>Print</span></button>
-        <button class="payslip-action-primary" type="button" onclick="downloadPayslip()"><i class="fa-solid fa-download"></i><span>Download PDF</span></button>
-      </div>
     </main>
 
     <div id="payslipFilterModal" class="modal-overlay standard-filter-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="payslipFilterTitle" onclick="if(event.target===this) closePayslipFilter()">
@@ -204,19 +184,8 @@
       const periodLabel = data.periodLabel || data.monthLabel || selectedPayslipPeriod;
       const contributions = data.employerContributions || [];
       const contributionsTotal = data.totalContributions ?? sumValues(contributions);
-      document.getElementById('headerPayslipMonthText').textContent = periodLabel;
       document.getElementById('payrollFilterSummary').textContent = periodLabel;
-      document.getElementById('payslipCompany').textContent = data.company || '—';
-      document.getElementById('payslipPayrollPeriod').textContent = periodLabel;
-      document.getElementById('payslipPayrollCycle').textContent = data.payrollCycle || '—';
-      document.getElementById('payslipBankBranch').textContent = data.bankBranch || '—';
-      document.getElementById('payslipAccountNumber').textContent = data.accountNumber || '—';
       document.getElementById('payslipCompany').textContent = data.company || defaults.company || '—';
-      document.getElementById('payslipPayrollCycle').textContent = data.payrollCycle || defaults.payrollCycle || '—';
-      document.getElementById('payslipBankBranch').textContent = data.bankBranch || defaults.bankBranch || '—';
-      document.getElementById('payslipAccountNumber').textContent = data.accountNumber || defaults.accountNumber || '—';
-      document.getElementById('payslipPayDate').textContent = data.payDate || '—';
-      document.getElementById('payslipStatus').textContent = data.status || 'Paid';
       document.getElementById('netPayMainDisplay').textContent = payslipMoney(data.netPay);
       document.getElementById('payslipEarningsTotal').textContent = payslipMoney(data.totalEarnings);
       document.getElementById('payslipDeductionsTotal').textContent = payslipMoney(data.totalDeductions);
@@ -287,9 +256,6 @@
       renderPayslip();
       closePayslipFilter();
     }
-
-    function downloadPayslip() { window.showToast?.('Payslip PDF is ready to download', 'success'); }
-    function printPayslip() { window.showToast?.('Payslip opened in print preview', 'success'); }
 
     const payslipFilterMetadata = [
       ['payslipCompanySelect', 'company'], ['payslipCycleSelect', 'payrollCycle'],

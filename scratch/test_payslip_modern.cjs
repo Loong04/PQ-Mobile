@@ -40,14 +40,14 @@ async function snapshot(page) {
       hasPrivacyIcon: Boolean(document.querySelector('#privacyIcon')),
       hasOverview: Boolean(document.querySelector('.payslip-overview-card')),
       hasInfoCard: Boolean(document.querySelector('.payslip-info-card')),
+      hasHeaderPeriod: Boolean(document.querySelector('#headerPayslipMonthText')),
+      hasPayStatus: Boolean(document.querySelector('#payslipStatus')),
+      hasPayDate: Boolean(document.querySelector('#payslipPayDate')),
+      hasDocumentActions: Boolean(document.querySelector('.payslip-document-actions')),
+      hasPrintAction: Boolean([...document.querySelectorAll('button')].some(button => button.textContent.trim() === 'Print')),
+      hasDownloadAction: Boolean([...document.querySelectorAll('button')].some(button => button.textContent.trim() === 'Download PDF')),
       filterSummary: text('#payrollFilterSummary'),
-      headerPeriod: text('#headerPayslipMonthText'),
       company: text('#payslipCompany'),
-      cycle: text('#payslipPayrollCycle'),
-      bank: text('#payslipBankBranch'),
-      account: text('#payslipAccountNumber'),
-      payDate: text('#payslipPayDate'),
-      status: text('#payslipStatus'),
       netPay: text('#netPayMainDisplay'),
       earnings: text('#payslipEarningsTotal'),
       deductions: text('#payslipDeductionsTotal'),
@@ -93,18 +93,18 @@ async function run() {
 
     assert.equal(september.hasPrivacyIcon, false, 'Payslip header must not include the removed eye/privacy action');
     assert.equal(september.hasOverview, true, 'Payslip must use one modern overview card');
-    assert.equal(september.hasInfoCard, true, 'Payslip must keep payroll metadata in one consistent information card');
+    assert.equal(september.hasInfoCard, false, 'Payslip must not render the removed Payment Details card');
+    assert.equal(september.hasHeaderPeriod, false, 'Payslip title must not repeat the selected payroll period');
+    assert.equal(september.hasPayStatus, false, 'Net Pay card must not render a Paid status tag');
+    assert.equal(september.hasPayDate, false, 'Net Pay card must not render a Paid on date');
+    assert.equal(september.hasDocumentActions, false, 'Payslip must not render a document action bar');
+    assert.equal(september.hasPrintAction, false, 'Payslip must not offer a Print action');
+    assert.equal(september.hasDownloadAction, false, 'Payslip must not offer a Download PDF action');
     assert.equal(september.filterSummary, 'September 2026', 'month query must select the requested payslip');
-    assert.equal(september.headerPeriod, 'September 2026');
     assert.equal(september.netPay, 'RM 6,482.50');
     assert.equal(september.earnings, 'RM 7,500.00');
     assert.equal(september.deductions, 'RM 1,017.50');
     assert.equal(september.company, 'PEOPLE QUEST SDN BHD', 'stable payroll metadata must not disappear on newer periods');
-    assert.equal(september.cycle, 'MONTH END');
-    assert.equal(september.bank, 'CIMB');
-    assert.equal(september.account, '10447856855254');
-    assert.equal(september.payDate, '25 Sep 2026');
-    assert.equal(september.status, 'Paid');
     assert.equal(september.sectionStates.length, 5);
     assert.deepEqual(september.sectionStates.map(section => section.name), [
       'Earnings',
@@ -115,6 +115,34 @@ async function run() {
     ]);
     assert.equal(september.sectionStates[0].expanded, 'true', 'first breakdown section should be open initially');
     assert.equal(september.sectionStates[1].expanded, 'false', 'later breakdown sections should be compact initially');
+
+    const purpleHeaders = await page.$$eval('.payslip-section-toggle', toggles => toggles.map(toggle => {
+      const title = toggle.querySelector('.payslip-section-title strong');
+      const subtitle = toggle.querySelector('.payslip-section-title small');
+      const icon = toggle.querySelector('.payslip-section-icon');
+      const amount = toggle.querySelector('.payslip-section-end strong');
+      const chevron = toggle.querySelector('.payslip-section-end i');
+      const toggleStyle = getComputedStyle(toggle);
+      return {
+        backgroundImage: toggleStyle.backgroundImage,
+        titleColor: title ? getComputedStyle(title).color : '',
+        subtitleColor: subtitle ? getComputedStyle(subtitle).color : '',
+        iconBackground: icon ? getComputedStyle(icon).backgroundColor : '',
+        iconColor: icon ? getComputedStyle(icon).color : '',
+        amountColor: amount ? getComputedStyle(amount).color : '',
+        chevronColor: chevron ? getComputedStyle(chevron).color : ''
+      };
+    }));
+    assert.equal(purpleHeaders.length, 5, 'all five breakdown sections must use the shared header treatment');
+    for (const header of purpleHeaders) {
+      assert.match(header.backgroundImage, /linear-gradient/, 'each breakdown header must use the purple gradient');
+      assert.equal(header.titleColor, 'rgb(255, 255, 255)', 'breakdown titles must stay white on purple');
+      assert.match(header.subtitleColor, /rgba?\(255, 255, 255/, 'item counts must stay softly white on purple');
+      assert.match(header.iconBackground, /rgba?\(255, 255, 255/, 'header icons must use a translucent white tile');
+      assert.equal(header.iconColor, 'rgb(255, 255, 255)', 'header icons must stay white');
+      if (header.amountColor) assert.equal(header.amountColor, 'rgb(255, 255, 255)', 'header amounts must stay white');
+      assert.match(header.chevronColor, /rgba?\(255, 255, 255/, 'header chevrons must stay softly white');
+    }
 
     await page.click('[data-payroll-section="Deductions"] .payslip-section-toggle');
     const deductionState = await page.$eval('[data-payroll-section="Deductions"]', section => ({
@@ -173,8 +201,8 @@ async function run() {
     const october = await snapshot(page);
     assert.equal(october.company, 'SECOND COMPANY');
     assert.equal(october.filterSummary, 'October 2026');
-    assert.equal(october.account, '00001234', 'Account filters must preserve leading zeros');
     await page.click('#payrollFilterTrigger');
+    assert.equal(await page.$eval('#payslipAccountSelect', select => select.value), '00001234', 'Account filters must preserve leading zeros');
     await page.click('[data-filter-reset]');
     assert.equal(await page.$eval('#payslipCompanySelect', select => select.value), 'PEOPLE QUEST SDN BHD');
     await page.click('.standard-filter-apply');
@@ -184,6 +212,13 @@ async function run() {
       for (const width of [360, 390, 420]) {
         await page.setViewport({ width, height: 844, deviceScaleFactor: 1 });
         await assertNoHorizontalOverflow(page, `${theme} ${width}px page`);
+        if (width === 390) {
+          await page.screenshot({ path: path.join(__dirname, `payslip_purple_headers_${theme}.png`) });
+          await page.$$eval('.payslip-section.is-expanded .payslip-section-toggle', toggles => toggles.forEach(toggle => toggle.click()));
+          await new Promise(resolve => setTimeout(resolve, 320));
+          await page.$eval('.payslip-section-label', label => label.scrollIntoView({ block: 'start' }));
+          await page.screenshot({ path: path.join(__dirname, `payslip_purple_breakdown_${theme}.png`) });
+        }
         await page.click('#payrollFilterTrigger');
         await assertNoHorizontalOverflow(page, `${theme} ${width}px filter`);
         if (width === 390) await page.screenshot({ path: path.join(__dirname, `payslip_five_filters_${theme}.png`) });
