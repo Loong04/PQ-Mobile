@@ -111,6 +111,13 @@
     else window.location.href = '../index.html?scope=individual';
   }
 
+  function cancelForm() {
+    if (busy) return;
+    dirty = false;
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = '../index.html?scope=individual';
+  }
+
   fields.forEach(field => {
     field.addEventListener('input', () => {
       validateField(field);
@@ -123,7 +130,7 @@
   $('payrollFiles').addEventListener('change', event => addFiles(event.target));
   $('payrollCamera').addEventListener('change', event => addFiles(event.target));
   $('payrollBack').addEventListener('click', leaveForm);
-  $('payrollCancel').addEventListener('click', leaveForm);
+  $('payrollCancel').addEventListener('click', cancelForm);
   $('payrollKeepEditing').addEventListener('click', () => $('payrollExitDialog').close());
   $('payrollDiscard').addEventListener('click', () => {
     fields.forEach(field => { field.value = savedValues[field.name] ?? ''; field.setCustomValidity(''); field.removeAttribute('aria-invalid'); });

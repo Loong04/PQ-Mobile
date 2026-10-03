@@ -118,14 +118,14 @@ const dashboardUrl = theme => pathToFileURL(
         await page.$eval('#projectCalendarGrid [data-date="2026-10-02"]', day => day.getAttribute('aria-pressed')),
         'true'
       );
-      assert.equal(await page.$eval('#projectCalendarDetailStatus', status => status.textContent.trim()), 'Draft');
       assert.equal(await page.$eval('#projectCalendarDetailDate', date => date.textContent.trim()), '2 Oct 2026');
-      assert.deepEqual(
-        await page.$eval('.project-calendar-detail-reference', reference => ({
-          label: reference.querySelector('span').textContent.trim(),
-          value: reference.querySelector('strong').textContent.trim()
-        })),
-        { label: 'Reference #', value: 'ETS00000002819' }
+      assert.equal(
+        await page.$eval('.project-calendar-details-heading', heading => heading.textContent.replace(/\s+/g, ' ').trim()),
+        '2 Oct 2026 Reference # ETS00000002819'
+      );
+      assert.equal(
+        await page.$eval('.project-calendar-details-body', body => body.textContent.replace(/\s+/g, ' ').trim()),
+        'Normal Hours 7.50hrs OT Hours 1.00hrs'
       );
       assert.deepEqual(
         await page.$$eval('.project-calendar-detail-metric', metrics => metrics.map(metric => ({
@@ -226,6 +226,33 @@ const dashboardUrl = theme => pathToFileURL(
 
       await page.click('#projectTab-individual');
       assert.equal(await page.$eval('#projectPanel-individual', panel => panel.hidden), false);
+
+      for (const [tone, target] of [['submitted', 'strong'], ['draft', 'small'], ['overdue', 'span']]) {
+        await page.goto(dashboardUrl(theme), { waitUntil: 'domcontentloaded' });
+        const navigation = await Promise.allSettled([
+          page.waitForFunction(() => location.pathname.endsWith('/options/history.html')
+            && document.documentElement.dataset.projectHistoryReady === 'true', { timeout: 3000 }),
+          page.click(`.project-dashboard-status-card[data-tone="${tone}"] ${target}`)
+        ]);
+        assert.equal(navigation[0].status, 'fulfilled', `${tone} status card must open History`);
+        assert.equal(new URL(page.url()).pathname.split('/').pop(), 'history.html');
+        await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+        assert.equal(await page.$eval('.project-header h1', title => title.textContent.trim()), 'History');
+        assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
+      }
+
+      await page.goto(dashboardUrl(theme), { waitUntil: 'domcontentloaded' });
+      const switchedTheme = theme === 'dark' ? 'light' : 'dark';
+      await page.click(`[data-set-theme="${switchedTheme}"]`);
+      await page.focus('.project-dashboard-status-card[data-tone="submitted"]');
+      await Promise.all([
+        page.waitForFunction(() => location.pathname.endsWith('/options/history.html')
+          && document.documentElement.dataset.projectHistoryReady === 'true'),
+        page.keyboard.press('Enter')
+      ]);
+      assert.equal(new URL(page.url()).pathname.split('/').pop(), 'history.html');
+      assert.equal(new URL(page.url()).searchParams.get('theme'), switchedTheme);
+      assert.equal(await page.$eval('html', node => node.dataset.theme), switchedTheme);
     }
 
     assert.deepEqual(faults, []);

@@ -66,21 +66,65 @@ const pageUrl = theme => pathToFileURL(
       await page.click('#projectApprovalViewDetails');
       assert.equal(await page.$eval('#projectApprovalDetails', node => node.hidden), false);
       assert.equal(await page.$eval('#projectApprovalDetailsTitle', node => node.textContent.trim()), 'Timesheet Details');
+      assert.equal(await page.$eval('#projectApprovalDetailsSubtitle', node => node.textContent.trim()), 'Review timesheet request details');
+      assert.deepEqual(
+        await page.$$eval('.project-approval-detail-section-title', titles => titles.map(title => title.textContent.trim())),
+        ['General', 'Work Activity']
+      );
       assert.deepEqual(
         await page.$$eval('#projectApprovalDetailsTable tr', rows => rows.map(row => [
           row.querySelector('th').textContent.trim(),
           row.querySelector('td').textContent.trim()
         ])),
         [
-          ['Reference #', 'ETS00000002819'],
-          ['Emp #', '#EBB12'],
-          ['Name', 'Farhan binti rahmat'],
-          ['Status', 'Pending'],
-          ['Date', '30 Sep 2026'],
-          ['Normal Hours', '7.50 hrs'],
-          ['OT Hours', '1.00 hrs']
+          ['Document Reference', 'ETS00000002819'],
+          ['Document Status', 'Pending'],
+          ['Employee', 'Farhan binti rahmat #EBB12'],
+          ['Timesheet Date', '30 Sep 2026'],
+          ['Clock Times', '08:30 – 17:30'],
+          ['Normal Work Hours', '7.50 hrs'],
+          ['Overtime Hours', '1.00 hrs'],
+          ['Remark', 'Client portal sprint progress update.']
         ]
       );
+      assert.deepEqual(
+        await page.$$eval('#projectApprovalWorkActivityTable tr', rows => rows.map(row => [
+          row.querySelector('th').textContent.trim(),
+          row.querySelector('td').textContent.trim()
+        ])),
+        [
+          ['Time', '09:00 – 12:00'],
+          ['Title', 'Portal accessibility review'],
+          ['Project', 'Client Portal Upgrade'],
+          ['Task', 'Accessibility Sprint']
+        ]
+      );
+      assert.equal(await page.$eval('#projectApprovalDetailEmployeeName + #projectApprovalDetailEmployeeId', node => node.textContent.trim()), '#EBB12');
+      assert.equal(await page.$eval('#projectApprovalCommentsTitle', node => node.textContent.trim()), 'Approver Action Comments');
+      assert.equal(await page.$eval('#projectApprovalApproverComments', node => node.tagName), 'INPUT');
+      assert.equal(await page.$eval('#projectApprovalApproverComments', node => node.placeholder), 'Add approver action comments (optional)...');
+      assert.equal(await page.$$eval('.project-approval-detail-section', sections => sections.length), 2);
+      assert.equal(await page.$eval('.project-approval-comments-card', node => getComputedStyle(node).borderRadius), '16px');
+      assert.deepEqual(
+        await page.$$eval('.project-approval-details-footer button', buttons => buttons.map(button => button.textContent.trim())),
+        ['Approve', 'Resubmit', 'Reject']
+      );
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const overlayStyle = getComputedStyle(document.querySelector('.project-approval-details-overlay'));
+          const sheetStyle = getComputedStyle(document.querySelector('.project-approval-details-sheet'));
+          return {
+            alignment: overlayStyle.alignItems,
+            topRadius: sheetStyle.borderTopLeftRadius,
+            bottomRadius: sheetStyle.borderBottomLeftRadius
+          };
+        }),
+        { alignment: 'flex-end', topRadius: '28px', bottomRadius: '0px' }
+      );
+      for (const width of [360, 390, 450]) {
+        await page.setViewport({ width, height: 950 });
+        assert.equal(await page.$eval('.project-approval-details-sheet', node => node.scrollWidth > node.clientWidth + 1), false);
+      }
       await page.click('#projectApprovalDetails [data-close-project-approval]');
       assert.equal(await page.$eval('#projectApprovalDetails', node => node.hidden), true);
       assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-project-approval-menu')), true);

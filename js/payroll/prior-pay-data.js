@@ -239,6 +239,7 @@
       $('tab-' + section).classList.toggle('completed', tabs.indexOf(section) < tabs.indexOf(tab));
     });
     const index = tabs.indexOf(tab);
+    $('priorCancel').hidden = index !== 0;
     $('priorDraft').hidden = index !== 0;
     $('priorPrevious').hidden = index === 0;
     $('priorNext').hidden = index === tabs.length - 1;
@@ -540,6 +541,7 @@
   $('priorBack').addEventListener('click', goBack);
   $('priorNext').addEventListener('click', () => switchTab(tabs[tabs.indexOf(activeTab) + 1]));
   $('priorPrevious').addEventListener('click', () => switchTab(tabs[tabs.indexOf(activeTab) - 1]));
+  $('priorCancel').addEventListener('click', goBack);
   $('priorUpdate').addEventListener('click', saveRecord);
   $('priorDraft').addEventListener('click', saveDraft);
   $('priorInfo').addEventListener('click', () => showDialog('Prior Pay Data', 'Use Next and Back to move through General, YTD Earning Detail and Tax Reliefs. Save Draft keeps your progress. Update on the final step saves all your changes. Records and drafts are stored on this device.'));

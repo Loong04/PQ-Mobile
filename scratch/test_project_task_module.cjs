@@ -49,6 +49,71 @@ const expected = {
         assert.deepEqual(visibleOptions, expected[scope]);
         if (scope === 'team') {
           assert.equal(await page.$eval('#projectTeamOptions', node => node.childElementCount), 2);
+          assert.equal(await page.$eval('#projectTeamOptions + #projectTeamProjectOverview', node => node.id), 'projectTeamProjectOverview');
+          assert.deepEqual(
+            await page.$$eval('#projectTeamProjectOverview thead th', cells => cells.map(cell => cell.textContent.trim())),
+            ['Project', 'Deadline', 'Completion %', 'Pending Tasks']
+          );
+          assert.deepEqual(
+            await page.$$eval('#projectTeamProjectOverview tbody tr', rows => rows.map(row => ({
+              project: row.querySelector('.project-team-project-name').textContent.trim(),
+              deadline: row.querySelector('.project-team-project-deadline').textContent.trim(),
+              completion: row.querySelector('.project-team-project-completion').textContent.trim(),
+              pending: row.querySelector('.project-team-project-pending').textContent.trim()
+            }))),
+            [
+              { project: 'BANGI BANGALOW', deadline: '01/01/2019', completion: '60%', pending: '1' },
+              { project: 'PAYROLL TRAINING', deadline: '31/12/2021', completion: '0%', pending: '2' },
+              { project: 'HRDF TRAINING', deadline: '31/12/2021', completion: '0%', pending: '4' },
+              { project: 'PROJECT HUMAN', deadline: '—', completion: '0%', pending: '0' },
+              { project: 'MOBILE APP FOR TIMESHEET', deadline: '31/12/2017', completion: '67%', pending: '19' },
+              { project: 'HR/ESS Project', deadline: '01/01/2011', completion: '80%', pending: '0' },
+              { project: 'ISO 9000', deadline: '31/03/2016', completion: '75%', pending: '6' },
+              { project: 'KLCC PROJECT', deadline: '31/05/2022', completion: '90%', pending: '6' },
+              { project: 'KOTA KEMUNING SEMI-D', deadline: '01/01/2017', completion: '55%', pending: '0' },
+              { project: 'PEOPLE MOBILE PROJECT', deadline: '—', completion: '0%', pending: '2' }
+            ]
+          );
+          assert.match(await page.$eval('#projectTeamProjectOverview thead', node => getComputedStyle(node).backgroundImage), /linear-gradient/);
+          assert.equal(await page.$$eval('#projectTeamProjectOverview progress', nodes => nodes.length), 0);
+          assert.equal(await page.$$eval('#projectTeamProjectOverview tbody tr[role="button"][tabindex="0"]', rows => rows.length), 10);
+          await page.click('#projectTeamProjectOverview tbody tr:nth-child(5)');
+          assert.equal(await page.$eval('#projectTeamProjectDetails', node => node.hidden), false);
+          assert.equal(await page.$eval('#projectTeamProjectDetailsTitle', node => node.textContent.trim()), 'Pending Tasks for Project');
+          assert.equal(await page.$eval('#projectTeamProjectDetailsSubtitle', node => node.textContent.trim()), 'MOBILE APP FOR TIMESHEET · 19 Tasks');
+          assert.deepEqual(
+            await page.$$eval('#projectTeamPendingTaskTable thead th', cells => cells.map(cell => cell.textContent.trim())),
+            ['Task', 'Employee#', 'Deadline', 'Completion %']
+          );
+          assert.match(await page.$eval('#projectTeamPendingTaskTable thead', node => getComputedStyle(node).backgroundImage), /linear-gradient/);
+          assert.equal(await page.$$eval('#projectTeamPendingTaskTable tbody tr:not(.project-team-task-empty-row)', rows => rows.length), 19);
+          assert.equal(await page.$$eval('#projectTeamProjectDetails .project-approval-detail-section', nodes => nodes.length), 0);
+          assert.deepEqual(
+            await page.$$eval('#projectTeamPendingTaskTable tbody tr', rows => [rows[0], rows.at(-1)].map(row => ({
+              task: row.querySelector('.project-team-task-title').textContent.trim(),
+              employee: row.querySelector('.project-team-task-employee').textContent.trim(),
+              deadline: row.querySelector('.project-team-task-deadline').textContent.trim(),
+              completion: row.querySelector('.project-team-task-completion').textContent.trim()
+            }))),
+            [
+              { task: 'RISDA HR DEMO', employee: 'Farhan binti rahmat', deadline: '25/02/2016', completion: '0' },
+              { task: 'Test', employee: 'Asmawi idris', deadline: '31/01/2023', completion: '0' }
+            ]
+          );
+          assert.equal(await page.$$eval('#projectTeamProjectDetails .project-approval-details-footer', nodes => nodes.length), 0);
+          for (const width of [360, 390, 450]) {
+            await page.setViewport({ width, height: 950 });
+            assert.equal(await page.$eval('#projectTeamProjectDetails .project-approval-details-sheet', node => node.scrollWidth > node.clientWidth + 1), false);
+          }
+          await page.click('#projectTeamProjectDetails [data-close-project-detail]');
+          assert.equal(await page.$eval('#projectTeamProjectDetails', node => node.hidden), true);
+          assert.equal(await page.evaluate(() => document.activeElement.matches('#projectTeamProjectOverview tbody tr:nth-child(5)')), true);
+          await page.focus('#projectTeamProjectOverview tbody tr:first-child');
+          await page.keyboard.press('Enter');
+          assert.equal(await page.$eval('#projectTeamProjectDetailsSubtitle', node => node.textContent.trim()), 'BANGI BANGALOW · 1 Task');
+          await page.keyboard.press('Escape');
+          assert.equal(await page.$eval('#projectTeamProjectDetails', node => node.hidden), true);
+          assert.equal(await page.evaluate(() => document.activeElement.matches('#projectTeamProjectOverview tbody tr:first-child')), true);
         } else {
           assert.equal(await page.$$eval('#projectPanel-individual .project-dashboard-status-card', cards => cards.length), 3);
           assert.equal(await page.$$eval('#projectPanel-individual .project-calendar-day', days => days.length), 35);
@@ -63,6 +128,7 @@ const expected = {
               : `#projectTeamOptions .project-option:nth-child(${index})`;
           await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click(target)]);
           await page.waitForFunction(file => location.pathname.endsWith('/' + file), {}, file);
+          await page.waitForSelector('h1');
           assert.equal(await page.$eval('h1', node => node.textContent.trim()), title);
           assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
           if (file === 'work-plan.html') assert.ok(await page.$('#workPlanForm'));
@@ -97,6 +163,7 @@ const expected = {
       for (const width of [360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
         assert.equal(await page.$eval('.phone-container', node => node.scrollWidth > node.clientWidth + 1), false);
+        assert.equal(await page.$eval('#projectTeamProjectOverview', node => node.scrollWidth > node.clientWidth + 1), false);
         await screenshotAfterTransitions(page, `project_task_team_${theme}_${width}.png`);
       }
       await page.click('#projectTab-individual');

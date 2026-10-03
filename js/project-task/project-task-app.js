@@ -10,11 +10,33 @@
   const individualTimesheetDetails = new Map([
     ['2026-10-02', {
       reference: 'ETS00000002819',
-      status: 'Draft',
       dateLabel: '2 Oct 2026',
       normalHours: '7.50',
       otHours: '1.00'
     }]
+  ]);
+  const teamProjectPendingTasks = new Map([
+    ['MOBILE APP FOR TIMESHEET', [
+      { task: 'RISDA HR DEMO', employee: 'Farhan binti rahmat', deadline: '25/02/2016', completion: '0%' },
+      { task: 'Meeting with POS', employee: 'Farhan binti rahmat', deadline: '16/03/2016', completion: '0%' },
+      { task: 'Meeting ZACKLIM', employee: 'Farhan binti rahmat', deadline: '08/04/2016', completion: '0%' },
+      { task: 'Meeting at FSA', employee: 'Farhan binti rahmat', deadline: '22/04/2016', completion: '0%' },
+      { task: 'MEETING WITH EQUINAS', employee: 'Farhan binti rahmat', deadline: '11/05/2016', completion: '0%' },
+      { task: 'MEETING WITH SHAFIZA', employee: 'Farhan binti rahmat', deadline: '21/05/2016', completion: '0%' },
+      { task: 'Meeting at Teleflex', employee: 'Farhan binti rahmat', deadline: '24/05/2016', completion: '0%' },
+      { task: 'Meeting at Cheng & Co', employee: 'Farhan binti rahmat', deadline: '24/06/2016', completion: '0%' },
+      { task: 'TSH Meeting', employee: 'Farhan binti rahmat', deadline: '04/08/2016', completion: '0%' },
+      { task: 'MBMR', employee: 'Farhan binti rahmat', deadline: '05/08/2016', completion: '0%' },
+      { task: 'OM Materials', employee: 'Farhan binti rahmat', deadline: '10/10/2016', completion: '0%' },
+      { task: 'Parkson', employee: 'Farhan binti rahmat', deadline: '11/10/2016', completion: '0%' },
+      { task: 'Mitsui Soko', employee: 'Farhan binti rahmat', deadline: '11/10/2016', completion: '0%' },
+      { task: 'HR Demo at EPSON', employee: 'Farhan binti rahmat', deadline: '07/12/2016', completion: '0%' },
+      { task: 'Install PeopleHCM at Acme Corporation', employee: 'Farhan binti rahmat', deadline: '19/10/2017', completion: '0%' },
+      { task: 'TRAINING', employee: 'Kathleen lee chee dee', deadline: '31/12/2017', completion: '0%' },
+      { task: 'Meeting Pan Intl', employee: 'Farhan binti rahmat', deadline: '14/03/2018', completion: '0%' },
+      { task: 'Test', employee: 'Kathleen lee chee dee', deadline: '31/01/2023', completion: '0%' },
+      { task: 'Test', employee: 'Asmawi idris', deadline: '31/01/2023', completion: '0%' }
+    ]]
   ]);
   let calendarYear = 2026;
   let calendarMonth = 9;
@@ -100,7 +122,6 @@
     if (!details || !selectedMonthIsVisible) return;
 
     document.getElementById('projectCalendarDetailReference').textContent = details.reference;
-    document.getElementById('projectCalendarDetailStatus').textContent = details.status;
     document.getElementById('projectCalendarDetailDate').textContent = details.dateLabel;
     document.getElementById('projectCalendarDetailNormalHours').textContent = details.normalHours;
     document.getElementById('projectCalendarDetailOtHours').textContent = details.otHours;
@@ -119,7 +140,7 @@
     const url = new URL(window.location.href);
     url.searchParams.set('theme', theme);
     window.history.replaceState(null, '', url);
-    for (const link of document.querySelectorAll('.project-option, .project-team-action-card')) {
+    for (const link of document.querySelectorAll('.project-option, .project-team-action-card, .project-dashboard-status-card')) {
       const target = new URL(link.href);
       target.searchParams.set('theme', theme);
       link.href = target.href;
@@ -191,17 +212,24 @@
     const value = key => currentCard?.dataset[key] || '—';
     const fillDetails = () => {
       const fields = {
-        projectApprovalDetailReference: 'reference',
-        projectApprovalDetailEmployeeId: 'employeeId',
+        projectApprovalDetailDocumentReference: 'documentReference',
+        projectApprovalDetailDocumentStatus: 'documentStatus',
         projectApprovalDetailEmployeeName: 'employeeName',
-        projectApprovalDetailStatus: 'status',
-        projectApprovalDetailDate: 'date',
-        projectApprovalDetailNormalHours: 'normalHours',
-        projectApprovalDetailOtHours: 'otHours'
+        projectApprovalDetailEmployeeId: 'employeeId',
+        projectApprovalDetailTimesheetDate: 'timesheetDate',
+        projectApprovalDetailClockTimes: 'clockTimes',
+        projectApprovalDetailNormalWorkHours: 'normalWorkHours',
+        projectApprovalDetailOvertimeHours: 'otHours',
+        projectApprovalDetailRemark: 'remark',
+        projectApprovalActivityTime: 'activityTime',
+        projectApprovalActivityTitle: 'activityTitle',
+        projectApprovalActivityProject: 'activityProject',
+        projectApprovalActivityTask: 'activityTask'
       };
       Object.entries(fields).forEach(([id, key]) => {
         document.getElementById(id).textContent = value(key);
       });
+      document.getElementById('projectApprovalApproverComments').value = '';
     };
     document.querySelectorAll('[data-project-approval-menu]').forEach(button => {
       button.addEventListener('click', () => {
@@ -235,13 +263,99 @@
     });
   }
 
+  function initTeamProjectDetails() {
+    const phone = document.querySelector('.phone-container');
+    const overlay = document.getElementById('projectTeamProjectDetails');
+    const taskList = document.getElementById('projectTeamPendingTaskList');
+    const rows = [...document.querySelectorAll('#projectTeamProjectOverview tbody tr')];
+    if (!phone || !overlay || !taskList || !rows.length) return;
+
+    let activeRow = null;
+    let inertElements = [];
+    const setText = (id, value) => { document.getElementById(id).textContent = value; };
+    const createTaskItem = task => {
+      const row = document.createElement('tr');
+      const values = [
+        ['project-team-task-title', task.task],
+        ['project-team-task-employee', task.employee],
+        ['project-team-task-deadline', task.deadline],
+        ['project-team-task-completion', task.completion.replace('%', '')]
+      ];
+      values.forEach(([className, value]) => {
+        const cell = document.createElement('td');
+        cell.className = className;
+        cell.textContent = value;
+        row.appendChild(cell);
+      });
+      return row;
+    };
+    const renderTasks = row => {
+      const tasks = teamProjectPendingTasks.get(row.dataset.project) || [];
+      const pendingCount = Number(row.dataset.pending || 0);
+      if (tasks.length) {
+        taskList.replaceChildren(...tasks.map(createTaskItem));
+        return;
+      }
+      const empty = document.createElement('tr');
+      empty.className = 'project-team-task-empty-row';
+      const cell = document.createElement('td');
+      cell.colSpan = 4;
+      const title = document.createElement('strong');
+      title.textContent = pendingCount ? `${pendingCount} pending tasks` : 'No pending tasks';
+      const description = document.createElement('span');
+      description.textContent = pendingCount
+        ? 'Detailed task records are not available in this preview.'
+        : 'This project has no outstanding tasks.';
+      cell.append(title, description);
+      empty.appendChild(cell);
+      taskList.replaceChildren(empty);
+    };
+    const closeDetails = () => {
+      if (overlay.hidden) return;
+      overlay.classList.remove('is-open');
+      overlay.hidden = true;
+      inertElements.forEach(element => { element.inert = false; });
+      inertElements = [];
+      activeRow?.focus({ preventScroll: true });
+    };
+    const openDetails = row => {
+      activeRow = row;
+      const pendingCount = Number(row.dataset.pending || 0);
+      setText('projectTeamProjectDetailsSubtitle', `${row.dataset.project} · ${pendingCount} ${pendingCount === 1 ? 'Task' : 'Tasks'}`);
+      renderTasks(row);
+      overlay.querySelector('.project-approval-details-body').scrollTop = 0;
+      inertElements = [...phone.children].filter(element => element !== overlay && !element.inert);
+      inertElements.forEach(element => { element.inert = true; });
+      overlay.hidden = false;
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+      overlay.querySelector('button')?.focus({ preventScroll: true });
+    };
+
+    rows.forEach(row => {
+      row.addEventListener('click', () => openDetails(row));
+      row.addEventListener('keydown', event => {
+        if (!['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        openDetails(row);
+      });
+    });
+    overlay.querySelectorAll('[data-close-project-detail]').forEach(button => button.addEventListener('click', closeDetails));
+    overlay.addEventListener('click', event => { if (event.target === overlay) closeDetails(); });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || overlay.hidden) return;
+      event.preventDefault();
+      closeDetails();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     setTheme(getCurrentTheme());
     syncThemeNavigation();
     initPendingApprovalSelection();
     initPendingApprovalSheets();
+    initTeamProjectDetails();
     document.addEventListener('click', event => {
-      if (event.target.closest('[data-set-theme], .project-option, .project-team-action-card')) syncThemeNavigation();
+      if (event.target.closest('[data-set-theme], .project-option, .project-team-action-card, .project-dashboard-status-card')) syncThemeNavigation();
     });
     if (!document.getElementById('projectTab-individual')) return;
     document.getElementById('projectCalendarPrevious')?.addEventListener('click', () => changeCalendarMonth(-1));

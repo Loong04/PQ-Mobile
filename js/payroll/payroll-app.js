@@ -24,6 +24,13 @@
   function initPayroll() {
     renderIndividualPayrollHub();
     renderTeamPayrollHub();
+    document.querySelectorAll('.request-metric[href]').forEach(link => {
+      link.addEventListener('click', () => {
+        const target = new URL(link.href);
+        target.searchParams.set('theme', getCurrentTheme());
+        link.href = target.href;
+      });
+    });
     const pendingLink = document.getElementById('teamPendingApprovalCard');
     pendingLink?.addEventListener('click', () => {
       const target = new URL(pendingLink.href);
