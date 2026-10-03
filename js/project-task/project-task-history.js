@@ -422,15 +422,11 @@
     return badge;
   }
 
-  function createCardTop(title, reference, status, typeIcon) {
+  function createCardTop(title, reference, status) {
     const top = createNode('div', 'project-history-card-top');
     const copy = createNode('div', 'project-history-card-copy');
     const titleRow = createNode('div', 'project-history-card-title-row');
-    const iconWrap = createNode('span', 'project-history-card-type-icon');
-    const icon = createNode('i', 'fa-solid ' + typeIcon);
-    icon.setAttribute('aria-hidden', 'true');
-    iconWrap.append(icon);
-    titleRow.append(iconWrap, createNode('h3', '', title));
+    titleRow.append(createNode('h3', '', title));
     copy.append(
       titleRow,
       createNode('span', 'project-history-card-reference', 'Ref: ' + reference)
@@ -480,7 +476,7 @@
       createDataRow('Scheduled', formatSchedule(record)),
       createDataRow('Deadline', formatDate(record.deadline))
     );
-    card.append(createCardTop(record.title, record.id, record.status, 'fa-list-check'), details);
+    card.append(createCardTop(record.title, record.id, record.status), details);
     const actions = createCardActions(record);
     if (actions) card.append(actions);
     makeCardInteractive(card, () => openWorkPlanDetails(record));
@@ -498,7 +494,7 @@
       createDataRow('Normal Hours', formatMinutes(record.normalMinutes)),
       createDataRow('OT Hours', formatMinutes(record.overtimeMinutes))
     );
-    card.append(createCardTop(formatDate(record.date), record.id, record.status, 'fa-clock'), details);
+    card.append(createCardTop(formatDate(record.date), record.id, record.status), details);
     const actions = createCardActions(record);
     if (actions) card.append(actions);
     makeCardInteractive(card, () => openTimesheetDetails(record));
@@ -590,7 +586,6 @@
       .filter(record => matchesTimesheetFilters(record, filters))
       .sort((first, second) => second.date.localeCompare(first.date));
     byId('timesheetHistoryList').replaceChildren(...records.map(createTimesheetCard));
-    byId('timesheetHistoryEmpty').hidden = records.length !== 0;
     byId('timesheetHistoryCount').textContent = records.length + (records.length === 1 ? ' Record' : ' Records');
     updateTimesheetFilterSummary(filters);
   }

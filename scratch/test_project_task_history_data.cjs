@@ -63,6 +63,7 @@ async function closeDetails(page) {
       );
       assert.equal(await page.$eval('#workPlanHistoryCount', count => count.textContent.trim()), '2 Records');
       assert.equal(await page.$('#workPlanHistoryEmpty'), null);
+      assert.equal(await page.$('#timesheetHistoryEmpty'), null);
       assert.deepEqual(
         await page.$$eval('#workPlanHistoryList .project-history-status-badge', badges => [...new Set(badges.map(badge => badge.textContent.trim()))].sort()),
         ['Draft', 'Submitted']

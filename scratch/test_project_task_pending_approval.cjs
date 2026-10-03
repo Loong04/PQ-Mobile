@@ -25,9 +25,10 @@ const pageUrl = theme => pathToFileURL(
       assert.equal(await page.$eval('body', node => node.classList.contains('unified-approval-actions')), true);
       assert.equal(await page.$$eval('.project-approval-tab', tabs => tabs.length), 0);
       assert.equal(await page.$$eval('.project-approval-card:not([data-type="timesheet"])', cards => cards.length), 0);
+      assert.equal(await page.$$eval('.project-approval-employee-copy small', labels => labels.filter(label => label.textContent.trim() === 'Timesheet Request').length), 0);
+      assert.equal(await page.$$eval('.project-approval-reference', rows => rows.length), 0);
       assert.deepEqual(
         await page.$$eval('.project-approval-card', cards => cards.map(card => ({
-          reference: card.querySelector('.project-approval-reference').textContent.trim(),
           name: card.querySelector('.project-approval-employee-name').textContent.trim(),
           employeeId: card.querySelector('.project-approval-employee-name + .project-approval-employee-id').textContent.trim(),
           status: card.querySelector('.project-approval-status').textContent.trim(),
@@ -37,9 +38,9 @@ const pageUrl = theme => pathToFileURL(
           actions: [...card.querySelectorAll('.project-approval-actions button')].map(button => button.textContent.trim())
         }))),
         [
-          { reference: 'Reference # ETS00000002819', name: 'Farhan binti rahmat', employeeId: '#EBB12', status: 'Pending', date: '30 Sep 2026', normalHours: '7.50 hrs', otHours: '1.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] },
-          { reference: 'Reference # ETS00000002820', name: 'Aina Rahman', employeeId: '#EBB27', status: 'Pending', date: '29 Sep 2026', normalHours: '8.00 hrs', otHours: '0.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] },
-          { reference: 'Reference # ETS00000002821', name: 'Daniel Lee', employeeId: '#EBB41', status: 'Pending', date: '28 Sep 2026', normalHours: '6.50 hrs', otHours: '2.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] }
+          { name: 'Farhan binti rahmat', employeeId: '#EBB12', status: 'Pending', date: '30 Sep 2026', normalHours: '7.50 hrs', otHours: '1.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] },
+          { name: 'Aina Rahman', employeeId: '#EBB27', status: 'Pending', date: '29 Sep 2026', normalHours: '8.00 hrs', otHours: '0.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] },
+          { name: 'Daniel Lee', employeeId: '#EBB41', status: 'Pending', date: '28 Sep 2026', normalHours: '6.50 hrs', otHours: '2.00 hrs', actions: ['Approve', 'Resubmit', 'Reject'] }
         ]
       );
 

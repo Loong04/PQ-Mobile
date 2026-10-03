@@ -4,6 +4,20 @@
    ======================================================== */
 
 // 1. Desktop Preview Top Bar Component (Only Dark Mode & Light Mode buttons outside the phone)
+// Resolve shared detail assets from this script so nested module pages and file:// previews work alike.
+{
+  const source = document.currentScript?.src;
+  if (source) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = new URL('../css/detail-popout.css', source).href;
+    document.head.append(stylesheet);
+    const presentation = document.createElement('script');
+    presentation.src = new URL('detail-popout.js', source).href;
+    presentation.defer = true;
+    document.head.append(presentation);
+  }
+}
 class PreviewTopBar extends HTMLElement {
   connectedCallback() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';

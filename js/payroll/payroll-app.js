@@ -13,7 +13,6 @@
   let activeMonthKey = '2026-09';
   let activeEAYear = '2025';
   let currentReliefFilter = 'all';
-  let teamPayrollSummarySearchTerm = '';
   let activeTeamPayrollMonth = '';
   let teamPayrollFilterOpener = null;
   let teamPayrollFilterBackground = [];
@@ -201,9 +200,12 @@
     const config = window.PAYROLL_CONFIG?.teamPayroll;
     const summaryContainer = document.getElementById('teamPayrollSummaryItems');
     const pendingCount = document.getElementById('teamPendingApprovalCount');
+    const actionCount = document.getElementById('payrollTeamActionRequiredCount');
     if (!config || !summaryContainer) return;
 
-    if (pendingCount) pendingCount.textContent = String(window.PayrollPendingStore ? window.PayrollPendingStore.getPending().length : config.pendingApprovalCount || 0);
+    const pendingTotal = window.PayrollPendingStore ? window.PayrollPendingStore.getPending().length : config.pendingApprovalCount || 0;
+    if (pendingCount) pendingCount.textContent = String(pendingTotal);
+    if (actionCount) actionCount.textContent = pendingTotal + ' ' + (pendingTotal === 1 ? 'Task' : 'Tasks');
     if (!activeTeamPayrollMonth) activeTeamPayrollMonth = config.monthKey;
     updateTeamPayrollPeriodLabels();
     renderTeamPayrollSummary();
@@ -233,9 +235,7 @@
     const container = document.getElementById('teamPayrollSummaryItems');
     if (!container) return;
     const groups = hasTeamPayrollPeriodData() ? window.PAYROLL_CONFIG?.teamPayroll?.summaryGroups || [] : [];
-    const query = teamPayrollSummarySearchTerm.toLowerCase();
-    const items = groups.flatMap(group => group.items)
-      .filter(item => item.name.toLowerCase().includes(query));
+    const items = groups.flatMap(group => group.items);
 
     container.innerHTML = items.length ? items.map(item => `
       <div class="team-summary-item">
@@ -243,11 +243,6 @@
         <strong>${formatTeamPayrollAmount(item.amount)}</strong>
       </div>
     `).join('') : `<div class="team-payroll-empty">${teamPayrollEmptyMessage()}</div>`;
-  }
-
-  function filterTeamPayrollSummary(value) {
-    teamPayrollSummarySearchTerm = String(value || '').trim();
-    renderTeamPayrollSummary();
   }
 
   function setTeamPayrollFilterFields(monthKey) {
@@ -323,19 +318,52 @@
 
   function renderTeamPayrollBreakdown() {
     const rowsContainer = document.getElementById('teamBreakdownRows');
-    if (!rowsContainer) return;
+    const metricsContainer = document.getElementById('teamBreakdownMetrics');
+    if (!rowsContainer || !metricsContainer) return;
     const config = window.PAYROLL_CONFIG?.teamPayroll;
     const groups = hasTeamPayrollPeriodData() ? config?.summaryGroups || [] : [];
-    const items = groups.flatMap(group => config.breakdown?.[group.key] || [])
-      .filter(item => Number(item.amount) !== 0);
+    const metricLabels = { payments: 'Payments', deductions: 'Deductions', employer: 'Employer' };
+    const populatedGroups = groups.map(group => {
+      const items = (config.breakdown?.[group.key] || []).filter(item => Number(item.amount) !== 0);
+      return {
+        ...group,
+        items,
+        total: items.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+      };
+    }).filter(group => group.items.length);
 
-    rowsContainer.innerHTML = items.length ? items.map(item => `
-      <div class="team-summary-item">
-        <span>${item.name}</span>
-        <strong>${formatTeamPayrollAmount(item.amount)}</strong>
+    metricsContainer.hidden = !populatedGroups.length;
+    metricsContainer.innerHTML = populatedGroups.map(group => `
+      <div class="team-breakdown-metric">
+        <i class="fa-solid ${group.icon}" aria-hidden="true"></i>
+        <span>${metricLabels[group.key] || group.title}</span>
+        <strong>${formatTeamPayrollAmount(group.total)}</strong>
       </div>
+    `).join('');
+
+    rowsContainer.innerHTML = populatedGroups.length ? populatedGroups.map(group => `
+      <section class="team-breakdown-group" data-payroll-group="${group.key}" aria-labelledby="teamBreakdownGroup-${group.key}">
+        <header class="team-breakdown-group-header">
+          <div class="team-breakdown-group-title">
+            <span class="team-breakdown-group-icon" aria-hidden="true"><i class="fa-solid ${group.icon}"></i></span>
+            <div>
+              <small>Category</small>
+              <h3 id="teamBreakdownGroup-${group.key}" class="team-summary-group-title">${group.title}</h3>
+            </div>
+          </div>
+          <strong class="team-breakdown-group-total">${formatTeamPayrollAmount(group.total)}</strong>
+        </header>
+        <div class="team-breakdown-group-rows">
+          ${group.items.map(item => `
+            <div class="team-summary-item team-breakdown-row">
+              <span>${item.name}</span>
+              <strong>${formatTeamPayrollAmount(item.amount)}</strong>
+            </div>
+          `).join('')}
+        </div>
+      </section>
     `).join('') : `
-      <div class="team-payroll-empty">${teamPayrollEmptyMessage()}</div>
+      <div class="team-breakdown-empty">${teamPayrollEmptyMessage()}</div>
     `;
   }
 
@@ -648,7 +676,6 @@
     previewIndividualFeature,
     showTeamPayrollBreakdown,
     hideTeamPayrollBreakdown,
-    filterTeamPayrollSummary,
     openTeamPayrollFilter,
     closeTeamPayrollFilter,
     resetTeamPayrollFilter,
@@ -660,6 +687,11 @@
   });
   window.addEventListener('pageshow', () => {
     const count = document.getElementById('teamPendingApprovalCount');
-    if (count && window.PayrollPendingStore) count.textContent = String(window.PayrollPendingStore.getPending().length);
+    const actionCount = document.getElementById('payrollTeamActionRequiredCount');
+    if (window.PayrollPendingStore) {
+      const pendingTotal = window.PayrollPendingStore.getPending().length;
+      if (count) count.textContent = String(pendingTotal);
+      if (actionCount) actionCount.textContent = pendingTotal + ' ' + (pendingTotal === 1 ? 'Task' : 'Tasks');
+    }
   });
 })();

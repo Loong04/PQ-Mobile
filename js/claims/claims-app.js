@@ -794,6 +794,7 @@
     const totalVal = document.getElementById('teamPendingTotalVal');
     const badgeCount = document.getElementById('teamPendingCountBadge');
     const dashCount = document.getElementById('teamDashboardPendingCount');
+    const actionCount = document.getElementById('claimTeamActionRequiredCount');
     if (!container) return;
 
     container.innerHTML = '';
@@ -803,6 +804,7 @@
     if (countVal) countVal.textContent = `${pendingCount} Requests`;
     if (totalVal) totalVal.textContent = `Total: RM ${totalAmt.toFixed(2)}`;
     if (dashCount) dashCount.textContent = pendingCount;
+    if (actionCount) actionCount.textContent = pendingCount + ' ' + (pendingCount === 1 ? 'Task' : 'Tasks');
 
     let filteredQueue = teamQueue;
     if (currentPendingTab !== 'all') {

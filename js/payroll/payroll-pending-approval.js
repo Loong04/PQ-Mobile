@@ -95,7 +95,8 @@
     });
     const employee = node('div', 'payroll-employee-copy');
     employee.append(node('h3', 'employee-name', item.employeeName), node('div', 'employee-id', '#' + item.empNo));
-    if (item.department) employee.append(node('div', 'payroll-employee-dept', item.department));
+    const employeeMeta = item.position || item.department;
+    if (employeeMeta) employee.append(node('div', 'payroll-employee-dept', employeeMeta));
     const menu = node('button', 'three-dots-btn');
     menu.type = 'button';
     menu.title = 'Request Options';
@@ -118,9 +119,7 @@
     dateCopy.append(document.createTextNode(item.category === 'tax' ? 'Submit Date: ' : 'Request Date: '), node('strong', '', date(item.submitDate || item.requestDate)));
     submitted.append(icon('fa-calendar-check'), dateCopy);
     statusRow.append(status, submitted);
-    const reference = node('div', 'payroll-approval-reference');
-    reference.append(node('span', '', 'Reference #'), node('strong', '', item.id));
-    body.append(statusRow, reference);
+    body.append(statusRow);
     const facts = node('div', 'payroll-approval-facts');
     if (item.category === 'tax') {
       body.append(fieldGrid([['Tax Relief Item', `${item.rebateCode} - ${item.rebateItem}`], ['Description', item.description || '-']]));
@@ -219,6 +218,13 @@
     const employeeName = node('span', 'employee-name', item.employeeName);
     const employeeId = node('span', 'employee-id', '#' + item.empNo);
     const rows = [];
+    const comments = node('textarea', 'payroll-approval-comments');
+    comments.id = 'payrollPendingApproverComments';
+    comments.rows = 2;
+    comments.maxLength = 2000;
+    comments.placeholder = 'Add comments...';
+    comments.setAttribute('aria-label', 'Approver Action Comments');
+    comments.value = item.approverActionComments || '';
     if (item.category === 'tax') {
       rows.push(
         ['Reference #', item.id], ['Name', employeeName], ['Emp #', employeeId], ['Status', item.status],
@@ -231,21 +237,14 @@
     } else {
       const employee = node('div');
       employee.append(employeeName, employeeId);
-      const comments = node('textarea', 'payroll-approval-comments');
-      comments.id = 'payrollPendingApproverComments';
-      comments.rows = 2;
-      comments.maxLength = 2000;
-      comments.placeholder = 'Add comments...';
-      comments.setAttribute('aria-label', 'Approver Action Comments');
-      comments.value = item.approverActionComments || '';
       rows.push(
         ['Document Reference', item.id], ['Document Status', item.status], ['Employee', employee],
         ['Deduction Type', item.deductionType], ['Request Type', item.requestType],
         ['Stop Period', item.stopPeriod || '-'], ['Stop Date', date(item.stopDate)], ['Stop Cycle', item.stopCycle || '-'],
-        ['Account #', item.accountNo || '-'], ['Remarks', item.remarks || '-'], ['Attachment', attachmentContent(item)],
-        ['Approver Action Comments', comments]
+        ['Account #', item.accountNo || '-'], ['Remarks', item.remarks || '-'], ['Attachment', attachmentContent(item)]
       );
     }
+    rows.push(['Approver Action Comments', comments]);
     byId('payrollPendingDetailsTable').querySelector('tbody').replaceChildren(...rows.map(([label, value]) => {
       const row = node('tr');
       const key = node('th', '', label);

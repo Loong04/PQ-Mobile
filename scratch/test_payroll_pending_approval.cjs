@@ -127,7 +127,10 @@ async function checkWorkflow(page, theme, category, references) {
       assert.deepEqual(await page.$$eval('[data-payroll-tab]', nodes => nodes.map(node => node.textContent.trim())), ['Tax Relief', 'Deduction Request']);
       assert.equal(await page.$$eval('#payrollPendingQueue .approval-request-card', nodes => nodes.length), 10);
       const firstTax = await page.$eval('#payrollPendingQueue .approval-request-card', node => node.textContent);
-      for (const text of ['James yong xian', '#99104', 'RBT000000000032', 'TXR01', 'MEDICAL EXPENSES OF PARENTS', 'for parent', '06/09/2024', 'RM 500.00', 'Process', 'No']) assert.ok(firstTax.includes(text), text);
+      for (const text of ['James yong xian', '#99104', 'TXR01', 'MEDICAL EXPENSES OF PARENTS', 'for parent', '06/09/2024', 'RM 500.00', 'Process', 'No']) assert.ok(firstTax.includes(text), text);
+      assert.equal(firstTax.includes('Reference #'), false, 'Tax Relief cards must not show a reference field');
+      assert.equal(firstTax.includes('RBT000000000032'), false, 'Tax Relief cards must keep their reference internal');
+      assert.equal(await page.$('.payroll-approval-reference'), null);
       assert.equal(/Payroll Period|Payroll Cycle/.test(firstTax), false, 'Tax cards must keep the requested compact fields');
       assert.equal(await page.$eval('.employee-name', node => node.nextElementSibling.classList.contains('employee-id')), true);
       const actionColors = await page.$$eval('.approval-request-card:first-child .pending-action-grid button', nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
@@ -192,7 +195,10 @@ async function checkWorkflow(page, theme, category, references) {
       await page.click('[data-payroll-tab="deduction"]');
       assert.equal(await page.$$eval('.approval-request-card', nodes => nodes.length), 10);
       const firstDeduction = await page.$eval('.approval-request-card', node => node.textContent);
-      for (const text of ['#EBB12', 'HUMAN RESOURCE', 'PDR000000000062', '+ UNIFORM ALLOWANCE', 'Start Allowance', '01/07/2025', '31/07/2025', '31.00', 'RM 0.00', '202507', 'MONTH END', '03/07/2025']) assert.ok(firstDeduction.includes(text), text);
+      for (const text of ['#EBB12', 'HUMAN RESOURCE', '+ UNIFORM ALLOWANCE', 'Start Allowance', '01/07/2025', '31/07/2025', '31.00', 'RM 0.00', '202507', 'MONTH END', '03/07/2025']) assert.ok(firstDeduction.includes(text), text);
+      assert.equal(firstDeduction.includes('Reference #'), false, 'Deduction Request cards must not show a reference field');
+      assert.equal(firstDeduction.includes('PDR000000000062'), false, 'Deduction Request cards must keep their reference internal');
+      assert.equal(await page.$('.payroll-approval-reference'), null);
       assert.deepEqual(await page.$$eval('.approval-request-card:first-child .pending-action-grid button', nodes => nodes.map(node => node.textContent.trim())), ['Approve', 'Reject']);
       await page.click('#payrollPendingSelectAll');
       assert.deepEqual(await page.$$eval('#payrollPendingBulk button', nodes => nodes.map(node => node.textContent.trim())), ['Approve', 'Reject']);

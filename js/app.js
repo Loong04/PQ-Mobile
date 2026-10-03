@@ -29,7 +29,7 @@ const APP_ROUTES = {
   'sign_out': 'index.html',
 
   // V1 Quick Actions
-  'apply_leave': 'modules/leave/index.html',
+  'apply_leave': 'leave.html',
   'payslip': 'modules/payroll/index.html',
   'payroll': 'modules/payroll/index.html',
   'claim': 'modules/claims/index.html',
@@ -48,7 +48,7 @@ const APP_ROUTES = {
 
   // Explore PeopleHCM Modules
   'time_attendance': 'modules/attendance/index.html',
-  'leave_holidays': 'modules/leave/index.html',
+  'leave_holidays': 'leave.html',
   'claims_expenses': 'modules/claims/index.html',
   'project_task': () => `modules/project-task/index.html?theme=${getCurrentTheme()}`,
   'payroll': 'modules/payroll/index.html',

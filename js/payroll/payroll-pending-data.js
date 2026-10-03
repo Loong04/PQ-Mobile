@@ -32,7 +32,7 @@
       const id = reference('RBT', number);
       const detail = taxDetails.get(id);
       return {
-        id, category: 'tax', empNo, employeeName, rebateCode, rebateItem, description, transactionDate, amount, submitDate,
+        id, category: 'tax', empNo, employeeName, position: 'HUMAN RESOURCE', rebateCode, rebateItem, description, transactionDate, amount, submitDate,
         process: false, status: 'Submitted', receiptNo: detail?.receiptNo || '', period: detail?.period || '', cycle: detail?.cycle || '',
         approvalDate: detail?.approvalDate || '', approvalDateLabel: detail?.approvalDateLabel || '', approverRemarks: detail?.approverRemarks || '',
         attachments: (detail?.attachments || []).map(attachment => ({ ...attachment }))

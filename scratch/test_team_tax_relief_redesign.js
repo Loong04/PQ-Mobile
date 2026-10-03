@@ -78,11 +78,13 @@ async function run() {
     const passed = initial.title === 'Team Tax Relief'
       && initial.cardCount > 0
       && initial.firstCardText.includes('Position')
-      && initial.firstCardText.includes('Transaction Date')
+      && initial.firstCardText.includes('Date')
+      && !initial.firstCardText.includes('Transaction Date')
       && initial.firstCardText.includes('Rebate Item')
       && initial.firstCardText.includes('Amount')
-      && initial.firstCardText.includes('Status')
+      && initial.firstCardText.includes('Submitted')
       && initial.firstCardText.includes('Period / Cycle')
+      && !initial.firstCardText.includes('View details')
       && initial.idDirectlyAfterName
       && initial.employeeId.startsWith('#')
       && /linear-gradient/.test(initial.headerBackground)
@@ -90,7 +92,7 @@ async function run() {
       && details.open && details.title === 'Tax Relief Detail'
       && requiredRows.every(row => details.rows.includes(row))
       && details.text.includes('Farhan binti rahmat') && details.text.includes('#EBB12')
-      && details.attachmentInsideTable
+      && !details.attachmentInsideTable
       && filtered.count === 1 && filtered.text.includes('Farhan binti rahmat')
       && pageErrors.length === 0;
 

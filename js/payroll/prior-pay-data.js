@@ -325,7 +325,9 @@
   function setBusy(value) {
     busy = value;
     document.querySelectorAll('#priorDetailView input, #priorDetailView select, #priorDetailView textarea, #priorDetailView button, #priorUpdate, #priorBack, .prior-tabs button').forEach(el => { el.disabled = value; });
-    $('priorUpdate').innerHTML = value ? '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>Saving' : '<span>Update</span>';
+    $('priorUpdate').innerHTML = value
+      ? '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Saving</span>'
+      : '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span>Update</span>';
   }
   function collectChanges() {
     return Object.fromEntries([...dirty].map(section => [section, sectionValues(section)]));

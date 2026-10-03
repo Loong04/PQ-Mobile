@@ -20,7 +20,7 @@ const dashboardUrl = theme => pathToFileURL(
 
       assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
       assert.equal(await page.$eval('.project-header h1', node => node.textContent.trim()), 'Project & Task Dashboard');
-      assert.equal(await page.$('#projectHeaderScope'), null);
+      assert.equal(await page.$eval('#projectHeaderScope', node => node.textContent.trim()), 'Individual');
       assert.deepEqual(
         await page.$$eval('.project-scope-tab', tabs => tabs.map(tab => tab.textContent.trim())),
         ['Individual', 'Team']
@@ -149,6 +149,79 @@ const dashboardUrl = theme => pathToFileURL(
       assert.equal(detailCardStyle.metricIcons, 2);
       assert.deepEqual(detailCardStyle.metricUnits, ['hrs', 'hrs']);
       assert.equal(detailCardStyle.metricColumns, 2);
+      assert.equal(await page.$eval('#projectCalendarDetails', card => card.getAttribute('role')), 'button');
+      const dashboardAddress = page.url();
+      await page.click('#projectCalendarDetailNormalHours');
+      await page.waitForSelector('#projectCalendarTimesheetOverlay:not([hidden])');
+      assert.equal(page.url(), dashboardAddress, 'Calendar details must open on the dashboard');
+      assert.equal(await page.$eval('#projectCalendarTimesheetSummary', summary => {
+        const body = summary.parentElement.getBoundingClientRect();
+        const bounds = summary.getBoundingClientRect();
+        return bounds.height > 0 && bounds.top >= body.top && bounds.bottom <= body.bottom;
+      }), true, 'All summary fields must be visible when the details open');
+      assert.deepEqual(
+        await page.$$eval('#projectCalendarTimesheetSummary .project-history-detail-row', rows => rows.map(row => [
+          row.querySelector('span').textContent.trim(), row.querySelector('strong').textContent.trim()
+        ])),
+        [
+          ['Reference #', 'ETS00000002819'],
+          ['Date', '2 Oct 2026'],
+          ['Remark', 'Client portal accessibility sprint.'],
+          ['Status', 'Draft'],
+          ['Normal Hours', '7.50 hrs'],
+          ['OT Hours', '1.00 hrs']
+        ]
+      );
+      assert.equal(await page.$eval('#projectCalendarTimesheetDetailsHeading', heading => heading.textContent.trim()), 'Details');
+      assert.equal(await page.$('#projectCalendarTimesheetOverlay [role="tab"]'), null);
+      assert.equal(await page.$('#projectCalendarTimesheetActivities .project-history-detail-activity-header'), null);
+      assert.deepEqual(
+        await page.$$eval('#projectCalendarTimesheetActivities .project-history-detail-activity', items => items.map(item => [...item.querySelectorAll('.project-history-detail-row > span')].map(label => label.textContent.trim()))),
+        Array.from({ length: 2 }, () => ['Title', 'Description', 'Project', 'Is AdHoc Task?', 'Task', 'Is Overtime?', 'Time From', 'Completion %', 'Time To'])
+      );
+      assert.deepEqual(
+        await page.$$eval('#projectCalendarTimesheetActivities .project-history-detail-activity', items => items.map(item => [...item.querySelectorAll('.project-history-detail-row > strong')].map(value => value.textContent.trim()))),
+        [
+          ['Responsive accessibility review', 'Verified navigation, focus states and mobile layouts.', 'Client Portal Upgrade', 'No', 'Portal Upgrade', 'No', '09:00', '75%', '16:30'],
+          ['Regression fixes', 'Resolved issues found during review.', 'Client Portal Upgrade', 'Yes', 'Portal Upgrade', 'Yes', '18:00', '100%', '19:00']
+        ]
+      );
+      const timesheetTableStyles = await page.$eval('#projectCalendarTimesheetOverlay', modal => {
+        const presentation = element => {
+          const style = getComputedStyle(element);
+          return {
+            backgroundColor: style.backgroundColor,
+            borderRadius: style.borderRadius,
+            borderTopWidth: style.borderTopWidth
+          };
+        };
+        return {
+          summary: presentation(modal.querySelector('#projectCalendarTimesheetSummary')),
+          activities: [...modal.querySelectorAll('.project-history-detail-activity')].map(presentation)
+        };
+      });
+      assert.ok(
+        timesheetTableStyles.activities.every(style => JSON.stringify(style) === JSON.stringify(timesheetTableStyles.summary)),
+        'Details tables must use the same presentation as the summary table'
+      );
+      assert.equal(await page.$eval('.main-content', main => main.inert), true);
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'closeProjectCalendarTimesheet');
+      await page.keyboard.down('Shift');
+      await page.keyboard.press('Tab');
+      await page.keyboard.up('Shift');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'closeProjectCalendarTimesheet');
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'closeProjectCalendarTimesheet');
+      await page.keyboard.press('Escape');
+      assert.equal(await page.$eval('#projectCalendarTimesheetOverlay', overlay => overlay.hidden), true);
+      assert.equal(await page.$eval('.main-content', main => main.inert), false);
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'projectCalendarDetails');
+      for (const key of ['Enter', 'Space']) {
+        await page.keyboard.press(key);
+        await page.waitForSelector('#projectCalendarTimesheetOverlay:not([hidden])');
+        await page.click('#closeProjectCalendarTimesheet');
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'projectCalendarDetails');
+      }
       await page.click('#projectCalendarGrid [data-date="2026-10-08"]');
       assert.equal(
         await page.$eval('#projectCalendarGrid [data-date="2026-10-08"]', day => day.getAttribute('aria-pressed')),
@@ -184,18 +257,24 @@ const dashboardUrl = theme => pathToFileURL(
       assert.equal(dashboardLayout.overflow, false);
 
       await page.click('#projectTab-team');
+      assert.equal(await page.$eval('#projectHeaderScope', node => node.textContent.trim()), 'Team');
       assert.equal(await page.$eval('#projectPanel-team', panel => panel.hidden), false);
       assert.deepEqual(
         await page.$$eval('#projectPanel-team .project-dashboard-section-title', titles => titles.map(title => title.textContent.replace(/\s+/g, ' ').trim())),
-        ['QUICK ACTION', 'OPTIONS']
+        ['OPTIONS', 'CURRENT PROJECT']
       );
+      assert.equal(
+        await page.$eval('#projectCurrentProjectTitle', title => title.nextElementSibling?.id),
+        'projectTeamProjectOverview'
+      );
+      assert.equal(await page.$eval('#projectTeamQuickActionTitle', title => title.textContent.trim()), 'Action Required');
       assert.equal(await page.$('#projectPanel-team .project-dashboard-status-grid'), null);
       assert.equal(await page.$('#projectPanel-team .project-dashboard-calendar-card'), null);
       assert.deepEqual(
         await page.$eval('#projectTeamPendingApproval', card => ({
-          title: card.querySelector('.project-team-action-title').textContent.trim(),
-          description: card.querySelector('.project-team-action-description').textContent.trim(),
-          count: card.querySelector('.project-team-action-count').textContent.trim(),
+          title: card.querySelector('.team-pending-approval-title').textContent.trim(),
+          description: card.querySelector('.team-pending-approval-description').textContent.trim(),
+          count: card.querySelector('.team-pending-approval-count').textContent.trim(),
           file: new URL(card.href).pathname.split('/').pop()
         })),
         {
@@ -225,6 +304,7 @@ const dashboardUrl = theme => pathToFileURL(
       );
 
       await page.click('#projectTab-individual');
+      assert.equal(await page.$eval('#projectHeaderScope', node => node.textContent.trim()), 'Individual');
       assert.equal(await page.$eval('#projectPanel-individual', panel => panel.hidden), false);
 
       for (const [tone, target] of [['submitted', 'strong'], ['draft', 'small'], ['overdue', 'span']]) {

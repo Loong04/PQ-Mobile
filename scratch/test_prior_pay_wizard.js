@@ -194,7 +194,11 @@ const puppeteer = require('puppeteer');
     assert.equal(await page.$eval('#reliefsAttachmentTitle', el => el.textContent.trim()), 'Upload Attachment');
     assert.equal(await page.$eval('#priorNext', el => el.hidden), true);
     assert.equal(await page.$eval('#priorUpdate', el => el.hidden), false);
-    assert.equal(await page.$$eval('#priorUpdate i', icons => icons.length), 0, 'Update must not show a check icon');
+    assert.deepEqual(
+      await page.$$eval('#priorUpdate i', icons => icons.map(icon => icon.className)),
+      ['fa-solid fa-rotate'],
+      'Update must show the update icon without using a check icon'
+    );
     assert.equal(await page.$$eval('#reliefsFields input', els => els.length), 23);
     await fill('gifts', '42');
     await click('#priorPrevious');

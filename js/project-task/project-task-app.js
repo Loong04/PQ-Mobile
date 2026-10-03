@@ -11,8 +11,34 @@
     ['2026-10-02', {
       reference: 'ETS00000002819',
       dateLabel: '2 Oct 2026',
+      remark: 'Client portal accessibility sprint.',
+      status: 'Draft',
       normalHours: '7.50',
-      otHours: '1.00'
+      otHours: '1.00',
+      activities: [
+        {
+          title: 'Responsive accessibility review',
+          description: 'Verified navigation, focus states and mobile layouts.',
+          project: 'Client Portal Upgrade',
+          adhoc: false,
+          task: 'Portal Upgrade',
+          overtime: false,
+          timeFrom: '09:00',
+          completion: 75,
+          timeTo: '16:30'
+        },
+        {
+          title: 'Regression fixes',
+          description: 'Resolved issues found during review.',
+          project: 'Client Portal Upgrade',
+          adhoc: true,
+          task: 'Portal Upgrade',
+          overtime: true,
+          timeFrom: '18:00',
+          completion: 100,
+          timeTo: '19:00'
+        }
+      ]
     }]
   ]);
   const teamProjectPendingTasks = new Map([
@@ -38,6 +64,14 @@
       { task: 'Test', employee: 'Asmawi idris', deadline: '31/01/2023', completion: '0%' }
     ]]
   ]);
+  const teamProjectTaskTemplates = [
+    { task: 'Requirements review', employee: 'Farhan binti rahmat' },
+    { task: 'Project setup', employee: 'Kathleen lee chee dee' },
+    { task: 'Data preparation', employee: 'Asmawi idris' },
+    { task: 'Configuration check', employee: 'Farhan binti rahmat' },
+    { task: 'User acceptance review', employee: 'Kathleen lee chee dee' },
+    { task: 'Handover preparation', employee: 'Asmawi idris' }
+  ];
   let calendarYear = 2026;
   let calendarMonth = 9;
   let selectedCalendarDate = '2026-10-02';
@@ -125,6 +159,99 @@
     document.getElementById('projectCalendarDetailDate').textContent = details.dateLabel;
     document.getElementById('projectCalendarDetailNormalHours').textContent = details.normalHours;
     document.getElementById('projectCalendarDetailOtHours').textContent = details.otHours;
+    detailsCard.setAttribute('aria-label', `View timesheet details for ${details.dateLabel}, ${details.reference}`);
+  }
+
+  function initCalendarTimesheetDetails() {
+    const card = document.getElementById('projectCalendarDetails');
+    const overlay = document.getElementById('projectCalendarTimesheetOverlay');
+    const summary = document.getElementById('projectCalendarTimesheetSummary');
+    const activities = document.getElementById('projectCalendarTimesheetActivities');
+    const closeButton = document.getElementById('closeProjectCalendarTimesheet');
+    const phone = document.querySelector('.phone-container');
+    if (!card || !overlay || !summary || !activities || !closeButton || !phone) return;
+    let inertElements = [];
+
+    const createRow = (label, value) => {
+      const row = document.createElement('div');
+      row.className = 'project-history-detail-row';
+      const name = document.createElement('span');
+      name.textContent = label;
+      const content = document.createElement('strong');
+      content.textContent = value === '' || value == null ? '—' : String(value);
+      if (label === 'Status') content.className = 'project-history-detail-status';
+      row.append(name, content);
+      return row;
+    };
+    const closeDetails = () => {
+      if (overlay.hidden) return;
+      overlay.classList.remove('is-open');
+      overlay.hidden = true;
+      card.setAttribute('aria-expanded', 'false');
+      inertElements.forEach(element => { element.inert = false; });
+      inertElements = [];
+      card.focus({ preventScroll: true });
+    };
+    const openDetails = () => {
+      const record = individualTimesheetDetails.get(selectedCalendarDate);
+      if (!record || card.hidden || !overlay.hidden) return;
+      summary.replaceChildren(...[
+        ['Reference #', record.reference],
+        ['Date', record.dateLabel],
+        ['Remark', record.remark],
+        ['Status', record.status],
+        ['Normal Hours', `${record.normalHours} hrs`],
+        ['OT Hours', `${record.otHours} hrs`]
+      ].map(([label, value]) => createRow(label, value)));
+      activities.replaceChildren(...record.activities.map(activity => {
+        const item = document.createElement('section');
+        item.className = 'project-history-detail-activity';
+        item.append(...[
+          ['Title', activity.title],
+          ['Description', activity.description],
+          ['Project', activity.project],
+          ['Is AdHoc Task?', activity.adhoc ? 'Yes' : 'No'],
+          ['Task', activity.task],
+          ['Is Overtime?', activity.overtime ? 'Yes' : 'No'],
+          ['Time From', activity.timeFrom],
+          ['Completion %', `${activity.completion}%`],
+          ['Time To', activity.timeTo]
+        ].map(([label, value]) => createRow(label, value)));
+        return item;
+      }));
+      overlay.hidden = false;
+      overlay.classList.add('is-open');
+      overlay.querySelector('.project-history-detail-content').scrollTop = 0;
+      card.setAttribute('aria-expanded', 'true');
+      inertElements = [...phone.children].filter(element => element !== overlay && !element.inert);
+      inertElements.forEach(element => { element.inert = true; });
+      closeButton.focus({ preventScroll: true });
+    };
+    card.addEventListener('click', openDetails);
+    card.addEventListener('keydown', event => {
+      if (!['Enter', ' '].includes(event.key)) return;
+      event.preventDefault();
+      openDetails();
+    });
+    closeButton.addEventListener('click', closeDetails);
+    overlay.addEventListener('click', event => { if (event.target === overlay) closeDetails(); });
+    document.addEventListener('keydown', event => {
+      if (overlay.hidden) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeDetails();
+      } else if (event.key === 'Tab') {
+        const controls = [...overlay.querySelectorAll('button')].filter(button => !button.disabled && button.getClientRects().length);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
   }
 
   function changeCalendarMonth(monthOffset) {
@@ -149,6 +276,8 @@
 
   function switchScope(scope, focusTab = false) {
     const selected = scope === 'team' ? 'team' : 'individual';
+    const headerScope = document.getElementById('projectHeaderScope');
+    if (headerScope) headerScope.textContent = selected === 'team' ? 'Team' : 'Individual';
     for (const name of ['individual', 'team']) {
       const tab = document.getElementById(`projectTab-${name}`);
       const panel = document.getElementById(`projectPanel-${name}`);
@@ -273,6 +402,20 @@
     let activeRow = null;
     let inertElements = [];
     const setText = (id, value) => { document.getElementById(id).textContent = value; };
+    const getProjectTasks = row => {
+      const storedTasks = teamProjectPendingTasks.get(row.dataset.project);
+      if (storedTasks?.length) return storedTasks;
+      const taskCount = Math.max(Number(row.dataset.pending || 0), 1);
+      return Array.from({ length: taskCount }, (_, index) => {
+        const template = teamProjectTaskTemplates[index % teamProjectTaskTemplates.length];
+        return {
+          task: template.task,
+          employee: template.employee,
+          deadline: row.dataset.deadline || 'TBC',
+          completion: row.dataset.completion || '0%'
+        };
+      });
+    };
     const createTaskItem = task => {
       const row = document.createElement('tr');
       const values = [
@@ -290,25 +433,9 @@
       return row;
     };
     const renderTasks = row => {
-      const tasks = teamProjectPendingTasks.get(row.dataset.project) || [];
-      const pendingCount = Number(row.dataset.pending || 0);
-      if (tasks.length) {
-        taskList.replaceChildren(...tasks.map(createTaskItem));
-        return;
-      }
-      const empty = document.createElement('tr');
-      empty.className = 'project-team-task-empty-row';
-      const cell = document.createElement('td');
-      cell.colSpan = 4;
-      const title = document.createElement('strong');
-      title.textContent = pendingCount ? `${pendingCount} pending tasks` : 'No pending tasks';
-      const description = document.createElement('span');
-      description.textContent = pendingCount
-        ? 'Detailed task records are not available in this preview.'
-        : 'This project has no outstanding tasks.';
-      cell.append(title, description);
-      empty.appendChild(cell);
-      taskList.replaceChildren(empty);
+      const tasks = getProjectTasks(row);
+      taskList.replaceChildren(...tasks.map(createTaskItem));
+      return tasks;
     };
     const closeDetails = () => {
       if (overlay.hidden) return;
@@ -320,9 +447,8 @@
     };
     const openDetails = row => {
       activeRow = row;
-      const pendingCount = Number(row.dataset.pending || 0);
-      setText('projectTeamProjectDetailsSubtitle', `${row.dataset.project} · ${pendingCount} ${pendingCount === 1 ? 'Task' : 'Tasks'}`);
-      renderTasks(row);
+      const tasks = renderTasks(row);
+      setText('projectTeamProjectDetailsSubtitle', `${row.dataset.project} · ${tasks.length} ${tasks.length === 1 ? 'Task' : 'Tasks'}`);
       overlay.querySelector('.project-approval-details-body').scrollTop = 0;
       inertElements = [...phone.children].filter(element => element !== overlay && !element.inert);
       inertElements.forEach(element => { element.inert = true; });
@@ -354,6 +480,7 @@
     initPendingApprovalSelection();
     initPendingApprovalSheets();
     initTeamProjectDetails();
+    initCalendarTimesheetDetails();
     document.addEventListener('click', event => {
       if (event.target.closest('[data-set-theme], .project-option, .project-team-action-card, .project-dashboard-status-card')) syncThemeNavigation();
     });

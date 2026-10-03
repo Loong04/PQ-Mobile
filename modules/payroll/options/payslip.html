@@ -68,6 +68,12 @@
           <span><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Employer Contributions</span>
           <strong id="payslipContributionsTotal">RM 1,358.65</strong>
         </div>
+
+        <button id="payslipPdfTrigger" class="payslip-pdf-trigger" type="button" onclick="openPayslipPdfPreview()">
+          <span class="payslip-pdf-trigger-icon" aria-hidden="true"><i class="fa-solid fa-file-pdf"></i></span>
+          <span>View Payslip PDF</span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
       </section>
 
       <div class="payslip-section-label">
@@ -144,6 +150,73 @@
       </div>
     </div>
 
+    <div id="payslipPdfModal" class="payslip-pdf-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="payslipPdfTitle" onclick="if(event.target===this) closePayslipPdfPreview()">
+      <section class="payslip-pdf-dialog">
+        <header class="payslip-pdf-header">
+          <div>
+            <small>DOCUMENT PREVIEW</small>
+            <h2 id="payslipPdfTitle">Payslip PDF</h2>
+          </div>
+          <button id="payslipPdfClose" type="button" onclick="closePayslipPdfPreview()" aria-label="Close payslip PDF preview"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+
+        <div class="payslip-pdf-filebar">
+          <span class="payslip-pdf-file-icon" aria-hidden="true"><i class="fa-solid fa-file-pdf"></i></span>
+          <span class="payslip-pdf-file-copy">
+            <strong id="payslipPdfFileName">Payslip.pdf</strong>
+            <small id="payslipPdfFilePeriod">Payroll document</small>
+          </span>
+          <span class="payslip-pdf-badge">PDF</span>
+        </div>
+
+        <div class="payslip-pdf-viewport">
+          <article class="payslip-pdf-page" aria-label="Rendered payslip document">
+            <div class="payslip-pdf-document-head">
+              <div>
+                <span>PAYROLL DOCUMENT</span>
+                <strong id="payslipPdfCompany">PEOPLE QUEST SDN BHD</strong>
+              </div>
+              <span class="payslip-pdf-document-type">PAYSLIP</span>
+            </div>
+
+            <div class="payslip-pdf-employee-row">
+              <div class="payslip-pdf-employee">
+                <small>Employee</small>
+                <strong id="payslipPdfEmployeeName">Sarah Jenkins</strong>
+                <span id="payslipPdfEmployeeId">#EBB01</span>
+              </div>
+              <div class="payslip-pdf-period-block">
+                <small>Payroll Period</small>
+                <strong id="payslipPdfPeriod">December 2025</strong>
+              </div>
+            </div>
+
+            <div class="payslip-pdf-summary">
+              <div><small>Total Earnings</small><strong id="payslipPdfEarnings">RM 10,618.00</strong></div>
+              <div><small>Total Deductions</small><strong id="payslipPdfDeductions">RM 1,722.85</strong></div>
+              <div class="payslip-pdf-net"><small>Net Pay</small><strong id="payslipPdfNetPay">RM 8,895.15</strong></div>
+            </div>
+
+            <div class="payslip-pdf-breakdown">
+              <section>
+                <h3>Earnings</h3>
+                <div id="payslipPdfEarningRows"></div>
+              </section>
+              <section>
+                <h3>Deductions</h3>
+                <div id="payslipPdfDeductionRows"></div>
+              </section>
+            </div>
+
+            <footer class="payslip-pdf-document-footer">
+              <span>Computer-generated payslip</span>
+              <span id="payslipPdfCycle">MONTH END</span>
+            </footer>
+          </article>
+        </div>
+      </section>
+    </div>
+
     <app-bottom-nav active="hub"></app-bottom-nav>
   </div>
 
@@ -155,6 +228,7 @@
       ? requestedPayslipPeriod
       : (payslipCollection[PAYSLIP_DEFAULT_PERIOD] ? PAYSLIP_DEFAULT_PERIOD : Object.keys(payslipCollection)[0]);
     let payslipFilterOpener = null;
+    let payslipPdfOpener = null;
 
     const payslipMoney = value => `RM ${Number(value || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const payslipData = () => payslipCollection[selectedPayslipPeriod] || {};
@@ -176,6 +250,32 @@
     function renderItemCount(targetId, rows) {
       const count = rows?.length || 0;
       document.getElementById(targetId).textContent = count + (count === 1 ? ' item' : ' items');
+    }
+
+    function renderPayslipPdfRows(targetId, rows) {
+      document.getElementById(targetId).innerHTML = (rows || [])
+        .map(row => `<div><span>${row.description}</span><strong>${payslipMoney(row.amount)}</strong></div>`)
+        .join('');
+    }
+
+    function renderPayslipPdf() {
+      const data = payslipData();
+      const defaults = payslipDefaults();
+      const employee = window.PAYROLL_DATA?.employee || {};
+      const periodLabel = data.periodLabel || data.monthLabel || selectedPayslipPeriod;
+      const fileName = data.pdfFile || `Payslip_${selectedPayslipPeriod}.pdf`;
+      document.getElementById('payslipPdfFileName').textContent = fileName;
+      document.getElementById('payslipPdfFilePeriod').textContent = periodLabel;
+      document.getElementById('payslipPdfCompany').textContent = data.company || defaults.company || '—';
+      document.getElementById('payslipPdfEmployeeName').textContent = employee.name || 'Employee';
+      document.getElementById('payslipPdfEmployeeId').textContent = `#${String(employee.empNo || '—').replace(/^#/, '')}`;
+      document.getElementById('payslipPdfPeriod').textContent = periodLabel;
+      document.getElementById('payslipPdfEarnings').textContent = payslipMoney(data.totalEarnings);
+      document.getElementById('payslipPdfDeductions').textContent = payslipMoney(data.totalDeductions);
+      document.getElementById('payslipPdfNetPay').textContent = payslipMoney(data.netPay);
+      document.getElementById('payslipPdfCycle').textContent = data.payrollCycle || defaults.payrollCycle || '—';
+      renderPayslipPdfRows('payslipPdfEarningRows', data.earnings);
+      renderPayslipPdfRows('payslipPdfDeductionRows', data.deductions);
     }
 
     function renderPayslip() {
@@ -203,6 +303,7 @@
       renderItemCount('contributionsItemCount', contributions);
       renderItemCount('statutoryItemCount', data.statutoryBase);
       renderItemCount('otherItemCount', data.otherInfo);
+      renderPayslipPdf();
     }
 
     function togglePayslipSection(button) {
@@ -214,8 +315,10 @@
       section?.classList.toggle('is-expanded', expanded);
     }
 
-    function setPayslipPageInert(inert) {
-      document.querySelectorAll('.phone-container > :not(#payslipFilterModal)').forEach(node => { node.inert = inert; });
+    function setPayslipPageInert(inert, activeModalId) {
+      document.querySelectorAll('.phone-container > *').forEach(node => {
+        node.inert = inert && node.id !== activeModalId;
+      });
     }
 
     function payslipFilterFocusable() {
@@ -229,7 +332,7 @@
       populatePayslipFilter(selectedPayslipPeriod);
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
-      setPayslipPageInert(true);
+      setPayslipPageInert(true, 'payslipFilterModal');
       requestAnimationFrame(() => modal.querySelector('[data-filter-close]')?.focus());
     }
 
@@ -239,6 +342,24 @@
       modal.setAttribute('aria-hidden', 'true');
       setPayslipPageInert(false);
       payslipFilterOpener?.focus?.();
+    }
+
+    function openPayslipPdfPreview() {
+      const modal = document.getElementById('payslipPdfModal');
+      payslipPdfOpener = document.activeElement;
+      renderPayslipPdf();
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      setPayslipPageInert(true, 'payslipPdfModal');
+      document.getElementById('payslipPdfClose')?.focus();
+    }
+
+    function closePayslipPdfPreview() {
+      const modal = document.getElementById('payslipPdfModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      setPayslipPageInert(false);
+      payslipPdfOpener?.focus?.();
     }
 
     function resetPayslipFilter(event) {
@@ -289,15 +410,20 @@
     }
 
     document.addEventListener('keydown', event => {
-      const modal = document.getElementById('payslipFilterModal');
+      const pdfModal = document.getElementById('payslipPdfModal');
+      const filterModal = document.getElementById('payslipFilterModal');
+      const modal = pdfModal.classList.contains('is-open') ? pdfModal : filterModal;
       if (!modal.classList.contains('is-open')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
-        closePayslipFilter();
+        if (modal === pdfModal) closePayslipPdfPreview();
+        else closePayslipFilter();
         return;
       }
       if (event.key !== 'Tab') return;
-      const focusable = payslipFilterFocusable();
+      const focusable = modal === pdfModal
+        ? [...modal.querySelectorAll('button:not([disabled])')].filter(node => node.getClientRects().length)
+        : payslipFilterFocusable();
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];

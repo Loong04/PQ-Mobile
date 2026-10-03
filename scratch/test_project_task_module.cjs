@@ -40,16 +40,17 @@ const expected = {
         await page.click(`#projectTab-${scope}`);
         assert.equal(await page.$eval(`#projectTab-${scope}`, node => node.getAttribute('aria-selected')), 'true');
         const linkSelector = scope === 'team'
-          ? '#projectPanel-team .project-team-action-card, #projectPanel-team .project-option'
+          ? '#projectTeamPendingApproval, #projectPanel-team .project-option'
           : '#projectPanel-individual .project-option';
         const visibleOptions = await page.$$eval(linkSelector, nodes => nodes.map(node => [
-          node.querySelector(node.matches('.project-team-action-card') ? '.project-team-action-title' : '.project-option-title').textContent,
+          node.querySelector(node.id === 'projectTeamPendingApproval' ? '.team-pending-approval-title' : '.project-option-title').textContent,
           new URL(node.href).pathname.split('/').pop()
         ]));
         assert.deepEqual(visibleOptions, expected[scope]);
         if (scope === 'team') {
           assert.equal(await page.$eval('#projectTeamOptions', node => node.childElementCount), 2);
-          assert.equal(await page.$eval('#projectTeamOptions + #projectTeamProjectOverview', node => node.id), 'projectTeamProjectOverview');
+          assert.equal(await page.$eval('#projectTeamOptions + #projectCurrentProjectTitle', node => node.id), 'projectCurrentProjectTitle');
+          assert.equal(await page.$eval('#projectCurrentProjectTitle + #projectTeamProjectOverview', node => node.id), 'projectTeamProjectOverview');
           assert.deepEqual(
             await page.$$eval('#projectTeamProjectOverview thead th', cells => cells.map(cell => cell.textContent.trim())),
             ['Project', 'Deadline', 'Completion %', 'Pending Tasks']
@@ -65,18 +66,31 @@ const expected = {
               { project: 'BANGI BANGALOW', deadline: '01/01/2019', completion: '60%', pending: '1' },
               { project: 'PAYROLL TRAINING', deadline: '31/12/2021', completion: '0%', pending: '2' },
               { project: 'HRDF TRAINING', deadline: '31/12/2021', completion: '0%', pending: '4' },
-              { project: 'PROJECT HUMAN', deadline: '—', completion: '0%', pending: '0' },
+              { project: 'PROJECT HUMAN', deadline: 'TBC', completion: '0%', pending: '1' },
               { project: 'MOBILE APP FOR TIMESHEET', deadline: '31/12/2017', completion: '67%', pending: '19' },
-              { project: 'HR/ESS Project', deadline: '01/01/2011', completion: '80%', pending: '0' },
+              { project: 'HR/ESS Project', deadline: '01/01/2011', completion: '80%', pending: '1' },
               { project: 'ISO 9000', deadline: '31/03/2016', completion: '75%', pending: '6' },
               { project: 'KLCC PROJECT', deadline: '31/05/2022', completion: '90%', pending: '6' },
-              { project: 'KOTA KEMUNING SEMI-D', deadline: '01/01/2017', completion: '55%', pending: '0' },
-              { project: 'PEOPLE MOBILE PROJECT', deadline: '—', completion: '0%', pending: '2' }
+              { project: 'KOTA KEMUNING SEMI-D', deadline: '01/01/2017', completion: '55%', pending: '1' },
+              { project: 'PEOPLE MOBILE PROJECT', deadline: 'TBC', completion: '0%', pending: '2' }
             ]
           );
           assert.match(await page.$eval('#projectTeamProjectOverview thead', node => getComputedStyle(node).backgroundImage), /linear-gradient/);
           assert.equal(await page.$$eval('#projectTeamProjectOverview progress', nodes => nodes.length), 0);
           assert.equal(await page.$$eval('#projectTeamProjectOverview tbody tr[role="button"][tabindex="0"]', rows => rows.length), 10);
+          const overviewBodyColors = await page.evaluate(() => {
+            const probe = document.createElement('span');
+            probe.style.color = 'var(--purple-text)';
+            document.body.appendChild(probe);
+            const purple = getComputedStyle(probe).color;
+            probe.remove();
+            return {
+              colors: [...new Set([...document.querySelectorAll('#projectTeamProjectOverview tbody td')].map(cell => getComputedStyle(cell).color))],
+              purple
+            };
+          });
+          assert.equal(overviewBodyColors.colors.length, 1);
+          assert.notEqual(overviewBodyColors.colors[0], overviewBodyColors.purple);
           await page.click('#projectTeamProjectOverview tbody tr:nth-child(5)');
           assert.equal(await page.$eval('#projectTeamProjectDetails', node => node.hidden), false);
           assert.equal(await page.$eval('#projectTeamProjectDetailsTitle', node => node.textContent.trim()), 'Pending Tasks for Project');
@@ -87,6 +101,53 @@ const expected = {
           );
           assert.match(await page.$eval('#projectTeamPendingTaskTable thead', node => getComputedStyle(node).backgroundImage), /linear-gradient/);
           assert.equal(await page.$$eval('#projectTeamPendingTaskTable tbody tr:not(.project-team-task-empty-row)', rows => rows.length), 19);
+          const taskBodyColors = await page.evaluate(() => {
+            const probe = document.createElement('span');
+            probe.style.color = 'var(--purple-text)';
+            document.body.appendChild(probe);
+            const purple = getComputedStyle(probe).color;
+            probe.remove();
+            return {
+              colors: [...new Set([...document.querySelectorAll('#projectTeamPendingTaskTable tbody td')].map(cell => getComputedStyle(cell).color))],
+              purple
+            };
+          });
+          assert.equal(taskBodyColors.colors.length, 1);
+          assert.notEqual(taskBodyColors.colors[0], taskBodyColors.purple);
+          assert.equal(
+            await page.$$eval('#projectTeamPendingTaskTable tbody tr', rows => rows.every(row => {
+              const cells = [...row.cells];
+              return cells.length === 4 && cells.every(cell => cell.textContent.trim().length > 0);
+            })),
+            true
+          );
+          assert.deepEqual(
+            await page.$eval('#projectTeamPendingTaskTable', table => {
+              const header = table.querySelector('th');
+              const task = table.querySelector('.project-team-task-title');
+              const deadline = table.querySelector('.project-team-task-deadline');
+              const completionHeader = table.querySelector('th:nth-child(4)');
+              const scroll = table.parentElement;
+              return {
+                headerFontSize: getComputedStyle(header).fontSize,
+                bodyFontSize: getComputedStyle(task).fontSize,
+                deadlineFontSize: getComputedStyle(deadline).fontSize,
+                deadlineWhiteSpace: getComputedStyle(deadline).whiteSpace,
+                completionOverflowWrap: getComputedStyle(completionHeader).overflowWrap,
+                completionLines: completionHeader.querySelectorAll('span').length,
+                horizontalOverflow: scroll.scrollWidth > scroll.clientWidth + 1
+              };
+            }),
+            {
+              headerFontSize: '9.5px',
+              bodyFontSize: '9.5px',
+              deadlineFontSize: '9px',
+              deadlineWhiteSpace: 'nowrap',
+              completionOverflowWrap: 'normal',
+              completionLines: 2,
+              horizontalOverflow: false
+            }
+          );
           assert.equal(await page.$$eval('#projectTeamProjectDetails .project-approval-detail-section', nodes => nodes.length), 0);
           assert.deepEqual(
             await page.$$eval('#projectTeamPendingTaskTable tbody tr', rows => [rows[0], rows.at(-1)].map(row => ({
@@ -104,6 +165,7 @@ const expected = {
           for (const width of [360, 390, 450]) {
             await page.setViewport({ width, height: 950 });
             assert.equal(await page.$eval('#projectTeamProjectDetails .project-approval-details-sheet', node => node.scrollWidth > node.clientWidth + 1), false);
+            assert.equal(await page.$eval('.project-team-task-table-scroll', node => node.scrollWidth > node.clientWidth + 1), false);
           }
           await page.click('#projectTeamProjectDetails [data-close-project-detail]');
           assert.equal(await page.$eval('#projectTeamProjectDetails', node => node.hidden), true);
@@ -114,6 +176,21 @@ const expected = {
           await page.keyboard.press('Escape');
           assert.equal(await page.$eval('#projectTeamProjectDetails', node => node.hidden), true);
           assert.equal(await page.evaluate(() => document.activeElement.matches('#projectTeamProjectOverview tbody tr:first-child')), true);
+          for (let rowIndex = 1; rowIndex <= 10; rowIndex += 1) {
+            await page.$eval(`#projectTeamProjectOverview tbody tr:nth-child(${rowIndex})`, row => row.click());
+            const taskState = await page.evaluate(() => {
+              const rows = [...document.querySelectorAll('#projectTeamPendingTaskList tr')];
+              return {
+                count: rows.length,
+                emptyRows: rows.filter(row => row.classList.contains('project-team-task-empty-row')).length,
+                completeRows: rows.every(row => row.cells.length === 4 && [...row.cells].every(cell => cell.textContent.trim().length > 0))
+              };
+            });
+            assert.ok(taskState.count > 0);
+            assert.equal(taskState.emptyRows, 0);
+            assert.equal(taskState.completeRows, true);
+            await page.$eval('#projectTeamProjectDetails [data-close-project-detail]', button => button.click());
+          }
         } else {
           assert.equal(await page.$$eval('#projectPanel-individual .project-dashboard-status-card', cards => cards.length), 3);
           assert.equal(await page.$$eval('#projectPanel-individual .project-calendar-day', days => days.length), 35);

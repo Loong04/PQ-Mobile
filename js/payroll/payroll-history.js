@@ -19,8 +19,8 @@
   const filters = { tax: defaults('tax'), deduction: defaults('deduction') };
   const records = { tax: [...window.PAYROLL_HISTORY_DATA.tax], deduction: [...window.PAYROLL_HISTORY_DATA.deduction] };
   const categories = {
-    tax: { title: 'Tax Relief History', detail: 'Tax Relief Detail', label: 'Rebate Item', all: 'All Rebate Items', description: 'Description', file: 'tax-relief-request.html', name: 'Tax Relief', icon: 'fa-file-circle-check' },
-    deduction: { title: 'Deduction Request History', detail: 'Deduction Request Detail', label: 'Deduction Type', all: 'All Deduction Types', description: 'Remarks', file: 'deduction-request.html', name: 'Deduction Request', icon: 'fa-file-circle-minus' }
+    tax: { title: 'Tax Relief History', detail: 'Tax Relief Detail', label: 'Rebate Item', all: 'All Rebate Items', description: 'Description', file: 'tax-relief-request.html', name: 'Tax Relief' },
+    deduction: { title: 'Deduction Request History', detail: 'Deduction Request Detail', label: 'Deduction Type', all: 'All Deduction Types', description: 'Remarks', file: 'deduction-request.html', name: 'Deduction Request' }
   };
   const statuses = { submitted: 'Submitted', draft: 'Draft', approved: 'Approved', rejected: 'Rejected', cancelled: 'Cancelled' };
   const statusIcons = { submitted: 'fa-paper-plane', draft: 'fa-floppy-disk', approved: 'fa-circle-check', rejected: 'fa-circle-xmark', cancelled: 'fa-ban' };
@@ -111,7 +111,7 @@
       const referenceLine = kind === 'tax'
         ? `<div class="history-card-ref">${record.localDraft ? 'Saved draft' : `Ref: ${escape(reference(record))}`}</div>`
         : '';
-      card.innerHTML = `<div class="history-card-main" role="button" tabindex="0" aria-haspopup="dialog" aria-label="View ${escape(typeLabel(record))} details"><div class="history-card-header"><div class="history-card-heading"><div class="history-card-title-row"><span class="history-card-type-icon"><i class="fa-solid ${category.icon}" aria-hidden="true"></i></span><h3 class="history-card-title">${escape(typeLabel(record))}</h3></div>${referenceLine}</div><span class="status-pill ${escape(record.status)}"><i class="fa-solid ${statusIcons[record.status] || 'fa-circle'}" aria-hidden="true"></i>${escape(statuses[record.status] || record.status)}</span></div><div class="history-card-details">${fields.map(([label, value]) => `<div class="history-card-row"><span>${escape(label)}</span><strong class="${label === 'Amount' ? 'history-card-amount' : ''}">${escape(value || '—')}</strong></div>`).join('')}</div>${record.localDraft ? `<p class="history-draft-note">Saved on this device · ${escape(date(record.savedDate))}</p>` : ''}</div>${cardActions(record)}`;
+      card.innerHTML = `<div class="history-card-main" role="button" tabindex="0" aria-haspopup="dialog" aria-label="View ${escape(typeLabel(record))} details"><div class="history-card-header"><div class="history-card-heading"><div class="history-card-title-row"><h3 class="history-card-title">${escape(typeLabel(record))}</h3></div>${referenceLine}</div><span class="status-pill ${escape(record.status)}"><i class="fa-solid ${statusIcons[record.status] || 'fa-circle'}" aria-hidden="true"></i>${escape(statuses[record.status] || record.status)}</span></div><div class="history-card-details">${fields.map(([label, value]) => `<div class="history-card-row"><span>${escape(label)}</span><strong class="${label === 'Amount' ? 'history-card-amount' : ''}">${escape(value || '—')}</strong></div>`).join('')}</div>${record.localDraft ? `<p class="history-draft-note">Saved on this device · ${escape(date(record.savedDate))}</p>` : ''}</div>${cardActions(record)}`;
       const main = card.querySelector('.history-card-main');
       main.addEventListener('click', () => openDetails(record));
       main.addEventListener('keydown', event => {

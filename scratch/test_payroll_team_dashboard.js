@@ -19,20 +19,12 @@ async function run() {
     await page.waitForSelector('#scopeTeamSection', { visible: true });
     assert.equal(await page.$('#dynamic-header .privacy-toggle-icon'), null, 'Payroll header must not show the salary eye icon');
     assert.equal(await page.$('#scopeTeamSection .team-month-nav'), null, 'Month arrows must be replaced by Filter');
-    assert.ok(await page.$('#teamPayrollDashboardSearch'), 'Dashboard needs search below the selected period');
+    assert.equal(await page.$('#teamPayrollDashboardSearch, .team-dashboard-search'), null, 'Payroll Summary must not show a search bar');
     const summaryNames = await page.$$eval('#teamPayrollSummaryItems .team-summary-item span', els => els.map(el => el.textContent.trim()));
     assert.deepEqual(summaryNames, ['Basic Pay', 'Hourly Pay', 'Employee EPF', 'Employee Tax', 'Employer EPF', 'Employer SOCSO']);
     assert.deepEqual(await page.$$eval('#teamPayrollSummaryItems .team-summary-group-title', els => els.map(el => el.textContent.trim())), []);
-    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_dashboard_dark.png') });
-    await page.type('#teamPayrollDashboardSearch', 'no such component');
-    assert.match(await page.$eval('#teamPayrollSummaryItems', el => el.textContent), /No payroll components found/);
-    await page.$eval('#teamPayrollDashboardSearch', el => { el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); });
-    await page.type('#teamPayrollDashboardSearch', 'employee');
-    assert.deepEqual(await page.$$eval('#teamPayrollSummaryItems .team-summary-item span', els => els.map(el => el.textContent.trim())), ['Employee EPF', 'Employee Tax']);
-    await page.$eval('#teamPayrollDashboardSearch', el => { el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); });
     await page.click('#teamPayrollDashboardFilter');
     await page.waitForSelector('#teamPayrollFilterSheet.active');
-    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_filter_dark.png') });
     await page.$eval('#teamPayrollFilterApply', el => el.focus());
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'teamPayrollFilterReset');
@@ -57,11 +49,12 @@ async function run() {
     const dashboard = await page.evaluate(() => ({
       title: document.getElementById('globalTopTitle')?.textContent.trim(),
       subtitle: document.getElementById('headerSubtitleText')?.textContent.trim(),
-      actionTitle: document.querySelector('#teamPendingApprovalCard .team-row-title')?.textContent.trim(),
+      actionTitle: document.querySelector('#teamPendingApprovalCard .team-pending-approval-title')?.textContent.trim(),
       actionCount: document.getElementById('teamPendingApprovalCount')?.textContent.trim(),
       quickAction: document.querySelector('#teamTaxReliefQuickAction .team-row-title')?.textContent.trim(),
       quickActionIcon: document.querySelector('#teamTaxReliefQuickAction .team-row-icon i')?.className,
       summaryGroups: [...document.querySelectorAll('#teamPayrollSummaryCard .team-summary-group-title')].map(el => el.textContent.trim()),
+      hasSearch: Boolean(document.querySelector('#teamPayrollDashboardSearch, .team-dashboard-search')),
       hasOldInlineQueue: Boolean(document.querySelector('#scopeTeamSection #teamTaxReliefQueue')),
       headerIsCentered: (() => {
         const title = document.getElementById('globalTopTitle').getBoundingClientRect();
@@ -83,23 +76,45 @@ async function run() {
       sheetOpen: document.getElementById('teamPayrollBreakdownSection').getAttribute('aria-hidden') === 'false',
       teamDashboardVisible: getComputedStyle(document.getElementById('scopeTeamSection')).display !== 'none',
       dialogTitle: document.getElementById('teamPayrollBreakdownTitle')?.textContent.trim(),
+      period: document.getElementById('teamPayrollBreakdownPeriod')?.textContent.trim(),
       panelAnchoredToPhoneBottom: Math.abs(document.querySelector('.team-payroll-breakdown-panel').getBoundingClientRect().bottom - document.querySelector('.phone-container').getBoundingClientRect().bottom) < 2,
       groups: [...document.querySelectorAll('#teamBreakdownRows .team-summary-group-title')].map(el => el.textContent.trim()),
+      metrics: [...document.querySelectorAll('#teamBreakdownMetrics .team-breakdown-metric')].map(metric => ({
+        label: metric.querySelector('span')?.textContent.trim(),
+        amount: metric.querySelector('strong')?.textContent.trim()
+      })),
+      highContrast: (() => {
+        const hero = document.querySelector('.team-breakdown-hero');
+        const group = document.querySelector('.team-breakdown-group');
+        const row = document.querySelector('.team-breakdown-row');
+        const groupBackground = getComputedStyle(group).backgroundColor;
+        const rowColor = getComputedStyle(row).color;
+        const amountColor = getComputedStyle(row.querySelector('strong')).color;
+        return getComputedStyle(hero).backgroundImage !== 'none'
+          && !['rgba(0, 0, 0, 0)', 'transparent'].includes(groupBackground)
+          && rowColor !== groupBackground
+          && amountColor !== groupBackground;
+      })(),
       rows: [...document.querySelectorAll('#teamBreakdownRows .team-summary-item')].map(row => ({
         name: row.querySelector('span')?.textContent.trim(),
         amount: row.querySelector('strong')?.textContent.trim()
       }))
     }));
 
-    assert.deepEqual(payments.groups, [], 'Breakdown displays components directly without group headings');
+    assert.deepEqual(payments.groups, ['Payments', 'Employee Deductions', 'Employer Contributions']);
+    assert.deepEqual(payments.metrics, [
+      { label: 'Payments', amount: 'RM 574,834.69' },
+      { label: 'Deductions', amount: 'RM 82,654.53' },
+      { label: 'Employer', amount: 'RM 46,209.36' }
+    ]);
+    assert.equal(payments.period, 'September 2026');
+    assert.equal(payments.highContrast, true, 'Breakdown must use strong themed surfaces and readable text');
     assert.equal(payments.rows.length, 18, 'Full breakdown includes all nonzero components across all categories');
     assert.ok(payments.rows.some(row => row.name === 'Employee EPF' && row.amount === 'RM 34,142.00'));
     assert.ok(payments.rows.some(row => row.name === 'HRD Levy' && row.amount === 'RM 3,921.36'));
     assert.equal(await page.$('#teamPayrollBreakdownSection input, #teamPayrollBreakdownSection .team-period-card, #teamPayrollBreakdownSection [role="tablist"]'), null, 'Breakdown is a simple list without filter controls');
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'teamPayrollBreakdownClose', 'Focus stays inside the simplified dialog');
-    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_breakdown_simple_dark.png') });
-
     await page.click('#teamPayrollBreakdownClose');
     await page.waitForFunction(() => !document.getElementById('teamPayrollBreakdownSection').classList.contains('active'));
     const returned = await page.evaluate(() => ({
@@ -116,22 +131,20 @@ async function run() {
     await page.setViewport({ width: 360, height: 800 });
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
     assert.ok(await page.$eval('#scopeTeamSection', el => el.scrollWidth <= el.clientWidth), 'Dashboard must fit a small screen');
-    const searchBelowMonth = await page.evaluate(() => {
+    const summaryBelowMonth = await page.evaluate(() => {
       const period = document.querySelector('#scopeTeamSection .team-period-card').getBoundingClientRect();
-      const search = document.getElementById('teamPayrollDashboardSearch').getBoundingClientRect();
-      return search.top >= period.bottom;
+      const summary = document.getElementById('teamPayrollSummaryCard').getBoundingClientRect();
+      return summary.top >= period.bottom;
     });
-    assert.ok(searchBelowMonth, 'Search must sit below the month');
-    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_dashboard_light_mobile.png') });
+    assert.ok(summaryBelowMonth, 'Payroll Summary card must sit directly below the selected period');
     await page.click('#teamPayrollDashboardFilter');
     assert.ok(await page.$eval('.claim-filter-panel', el => el.scrollWidth <= el.clientWidth), 'Filter must fit a small screen');
-    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_filter_light_mobile.png') });
     await page.click('#teamPayrollFilterClose');
     await page.$eval('#teamViewFullBreakdown', el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await page.click('#teamViewFullBreakdown');
     await page.evaluate(() => Promise.all(document.getElementById('teamPayrollBreakdownSection').getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {}))));
     assert.ok(await page.$eval('.team-payroll-breakdown-panel', el => el.scrollWidth <= el.clientWidth), 'Breakdown must fit a small screen');
-    await page.screenshot({ path: path.resolve(__dirname, 'payroll_team_breakdown_simple_light.png') });
+    assert.equal(await page.$eval('.team-breakdown-group', el => getComputedStyle(el).backgroundColor === 'rgb(255, 255, 255)'), true, 'Light mode breakdown groups must use a clear white surface');
     await page.keyboard.press('Escape');
     await page.click('#teamPayrollDashboardFilter');
     await page.select('#teamPayrollFilterMonth', '08');
@@ -148,6 +161,7 @@ async function run() {
       && dashboard.quickAction === 'Tax Relief'
       && dashboard.quickActionIcon.includes('fa-file-invoice-dollar')
       && dashboard.summaryGroups.length === 0
+      && dashboard.hasSearch === false
       && dashboard.hasOldInlineQueue === false
       && dashboard.headerIsCentered;
 
@@ -157,8 +171,11 @@ async function run() {
       && payments.sheetOpen
       && payments.teamDashboardVisible
       && payments.dialogTitle === 'Payroll Breakdown'
+      && payments.period === 'September 2026'
       && payments.panelAnchoredToPhoneBottom
-      && payments.groups.length === 0
+      && payments.groups.length === 3
+      && payments.metrics.length === 3
+      && payments.highContrast
       && payments.rows.length === 18
       && payments.rows[0].name === 'Basic Pay'
       && payments.rows[0].amount === 'RM 392,136.02';

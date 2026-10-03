@@ -1,0 +1,290 @@
+/* Shared Leave Detail presentation. Business content and open/close state stay with each page. */
+.detail-popout-overlay {
+  --detail-surface: rgba(22, 21, 46, 0.65);
+  --detail-label-surface: rgba(255, 255, 255, 0.06);
+  --detail-border: rgba(255, 255, 255, 0.08);
+  --detail-text: #fff;
+  --detail-muted: #cbd5e1;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1200 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: inherit !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+[data-theme="light"] .detail-popout-overlay {
+  --detail-surface: #fff;
+  --detail-label-surface: #f1f5f9;
+  --detail-border: #e2e8f0;
+  --detail-text: #0f172a;
+  --detail-muted: #64748b;
+}
+.detail-popout-overlay[hidden] { display: none !important; }
+.detail-popout-panel {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: 380px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border: 1px solid var(--detail-border) !important;
+  border-radius: 18px !important;
+  background: var(--detail-surface) !important;
+  color: var(--detail-text) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+  box-sizing: border-box !important;
+}
+.detail-popout-header {
+  flex: 0 0 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 22px !important;
+  align-content: center !important;
+  align-items: center !important;
+  column-gap: 12px !important;
+  row-gap: 0 !important;
+  margin: 0 !important;
+  padding: 8px 16px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+.detail-popout-header .detail-popout-header-contents { display: contents !important; }
+.detail-popout-header .detail-popout-title {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  color: #fff !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 20px !important;
+  letter-spacing: 0.3px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.detail-popout-header .detail-popout-subtitle {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: rgba(255,255,255,.85) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  line-height: 12px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.detail-popout-header .detail-popout-close {
+  grid-column: 2 !important;
+  grid-row: 1 / span 2 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  color: #7c3aed !important;
+  font-family: sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+.detail-popout-header .detail-popout-close { font-size: 0 !important; }
+.detail-popout-header .detail-popout-close > * { display: none !important; }
+.detail-popout-header .detail-popout-close::before { content: "×"; font-size: 16px; line-height: 1; }
+.detail-popout-decoration, .detail-popout-back, .detail-popout-legacy-backup { display: none !important; }
+.detail-popout-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  gap: 12px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: var(--detail-surface) !important;
+  color: var(--detail-text) !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, .9) transparent !important;
+  overscroll-behavior: contain;
+  box-sizing: border-box !important;
+}
+.detail-popout-body::-webkit-scrollbar { width: 8px !important; }
+.detail-popout-body::-webkit-scrollbar-track { background: transparent !important; }
+.detail-popout-body::-webkit-scrollbar-thumb { background: rgba(148,163,184,.9) !important; border-radius: 8px !important; }
+.detail-popout-body .detail-popout-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 11.5px !important;
+  line-height: 1.35 !important;
+}
+.detail-popout-body .detail-popout-label,
+.detail-popout-body .detail-popout-value {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 7px 10px !important;
+  border: 1px solid var(--detail-border) !important;
+  border-radius: 0 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 11.5px !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  overflow-wrap: anywhere !important;
+  box-sizing: border-box !important;
+}
+.detail-popout-body .detail-popout-label { width: 42% !important; background: var(--detail-label-surface) !important; color: var(--detail-muted) !important; font-weight: 700 !important; }
+.detail-popout-body .detail-popout-value { width: 58% !important; background: var(--detail-surface) !important; color: var(--detail-text) !important; font-weight: 600 !important; }
+.detail-popout-body .detail-popout-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr) !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.detail-popout-body .detail-popout-row > :is(.detail-popout-label,.detail-popout-value) { width: auto !important; }
+.detail-popout-body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),textarea,select) {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 8px 10px !important;
+  border: 1px solid var(--detail-border) !important;
+  border-radius: 8px !important;
+  background: var(--detail-label-surface) !important;
+  color: var(--detail-text) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 11.5px !important;
+  box-sizing: border-box !important;
+}
+.detail-popout-body .detail-popout-group {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.detail-popout-body .detail-popout-comment-source { display: none !important; }
+.detail-popout-body .detail-popout-comments {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  margin: var(--detail-comments-margin, 12px) 0 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid var(--detail-border) !important;
+  border-radius: 16px !important;
+  background: var(--detail-surface) !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+.detail-popout-body .detail-popout-comments[hidden] { display: none !important; }
+.detail-popout-body .detail-popout-comments label {
+  display: block !important;
+  margin: 0 !important;
+  color: var(--detail-muted) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  line-height: 16px !important;
+}
+.detail-popout-overlay .detail-popout-body .detail-popout-comments :is(input,textarea).detail-popout-comment-control {
+  display: block !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  margin: 8px 0 0 !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 16px !important;
+  resize: none !important;
+}
+.detail-popout-footer {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  border: 0 !important;
+  border-top: 1px solid var(--detail-border) !important;
+  background: var(--detail-surface) !important;
+  box-shadow: none !important;
+}
+.detail-popout-actions {
+  display: grid !important;
+  grid-template-columns: repeat(var(--detail-action-count, 3), minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.detail-popout-footer.detail-popout-actions { padding: 12px !important; }
+.detail-popout-actions button:not(.detail-popout-legacy-backup) {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 5px 2px !important;
+  border: 1px solid #7c3aed !important;
+  border-radius: 10px !important;
+  background: #7c3aed !important;
+  color: #fff !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 12px !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+.detail-popout-actions button i { color: #fff !important; font-size: 11px !important; }
+.detail-popout-close:focus-visible, .detail-popout-actions button:focus-visible { outline: 2px solid #c084fc !important; outline-offset: 3px !important; }
+.detail-popout-actions button:active { filter: brightness(.9); }
+/* Override legacy theme selectors without changing surfaces outside the audited overlays. */
+:root .detail-popout-overlay .detail-popout-panel,
+:root .detail-popout-overlay .detail-popout-panel .detail-popout-body,
+:root .detail-popout-overlay .detail-popout-panel .detail-popout-footer { background: var(--detail-surface) !important; }
+@media (prefers-reduced-motion: reduce) { .detail-popout-panel { transition: none !important; } }

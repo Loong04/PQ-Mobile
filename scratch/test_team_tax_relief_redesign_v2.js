@@ -23,9 +23,22 @@ async function run() {
         references: cards.map(card => card.dataset.reference),
         statuses: cards.map(card => card.dataset.status),
         text: cards.map(card => card.innerText.replace(/\s+/g, ' ').trim()),
-        fieldLabels: cards.map(card => [...card.querySelectorAll('.tax-relief-card-row > span')].map(label => label.textContent.trim())),
+        fieldLabels: cards.map(card => [...card.querySelectorAll('.tax-relief-stat-label')].map(label => label.textContent.trim())),
         ids: cards.map(card => card.querySelector('.tax-relief-employee-id')?.textContent.trim()),
         idsBelowNames: cards.every(card => card.querySelector('.tax-relief-employee-name')?.nextElementSibling === card.querySelector('.tax-relief-employee-id')),
+        hasViewDetailsCopy: cards.some(card => /view details/i.test(card.textContent)),
+        hasLegacyFooter: cards.some(card => card.querySelector('.tax-relief-card-foot')),
+        headerChevrons: cards.map(card => card.querySelectorAll('.tax-relief-card-head > .tax-relief-card-chevron').length),
+        cardGeometry: (() => {
+          const card = cards[0];
+          const head = card.querySelector('.tax-relief-card-head');
+          const stat = card.querySelector('.tax-relief-stat');
+          return {
+            radius: getComputedStyle(card).borderRadius,
+            headPadding: getComputedStyle(head).padding,
+            statRadius: stat ? getComputedStyle(stat).borderRadius : null
+          };
+        })(),
         filterTriggerStyle: (() => {
           const trigger = document.getElementById('taxReliefFilterTrigger');
           const icon = trigger.querySelector(':scope > i');
@@ -54,6 +67,14 @@ async function run() {
     assert.deepEqual(initial.statuses, ['submitted', 'submitted', 'submitted']);
     assert.deepEqual(initial.ids, ['#EBB12', '#EBB12', '#EBB12']);
     assert.equal(initial.idsBelowNames, true);
+    assert.equal(initial.hasViewDetailsCopy, false);
+    assert.equal(initial.hasLegacyFooter, false);
+    assert.deepEqual(initial.headerChevrons, [1, 1, 1]);
+    assert.deepEqual(initial.cardGeometry, {
+      radius: '20px',
+      headPadding: '15px 16px',
+      statRadius: '12px'
+    });
     assert.deepEqual(initial.filterTriggerStyle, {
       height: 70,
       padding: '13px 14px',
@@ -111,7 +132,7 @@ async function run() {
     });
     assert.equal(detail.open, true);
     assert.equal(detail.title, 'Tax Relief Detail');
-    assert.deepEqual(detail.keys, ['Reference #', 'Emp #', 'Name', 'Status', 'Submit Date', 'Rebate Item', 'Transaction Date', 'Description', 'Receipt #', 'Amount', 'Attachments', 'Process', 'Period', 'Cycle', 'Approval Date', 'Approver Remarks']);
+    assert.deepEqual(detail.keys, ['Reference #', 'Emp #', 'Name', 'Status', 'Submit Date', 'Rebate Item', 'Transaction Date', 'Description', 'Receipt #', 'Amount', 'Process', 'Period', 'Cycle', 'Approval Date', 'Approver Remarks', 'Attachments']);
     assert.equal(detail.values['Reference #'], 'RBT000000000039');
     assert.equal(detail.values['Emp #'], '#EBB12');
     assert.equal(detail.values.Name, 'Farhan binti rahmat');

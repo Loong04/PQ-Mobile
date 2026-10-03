@@ -68,6 +68,8 @@ add('Attendance — Similar table', 'Work Hour Violation', 'modules/attendance/o
   `document.querySelector('.violation-card').click();`, '#detailModal', '#detailModal > div', true);
 
 const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+module.exports = { cases };
+if (require.main === module) {
 (async () => {
   await fs.mkdir(output, { recursive: true });
   const browser = await puppeteer.launch({ headless: true });
@@ -136,3 +138,4 @@ const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;
   await fs.writeFile(path.join(output, 'gallery.html'), `<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>View Details 页面清单</title><style>*{box-sizing:border-box}body{margin:0;padding:24px;font-family:system-ui,sans-serif;background:#0b0b14;color:#eee}h1{font-size:26px}header{margin-bottom:24px}header p{color:#b4b4c8}main{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}article{padding:16px;border:1px solid #333344;border-radius:14px;background:#151523}h2{font-size:15px;line-height:1.5}p,a{font-size:12px;overflow-wrap:anywhere}a{color:#c2a8ff}img{display:block;margin-top:14px;width:100%;height:auto;border-radius:10px}button{padding:9px 16px;border:1px solid #675285;border-radius:8px;background:#27203b;color:white;cursor:pointer}</style><header><h1>View Details 页面清单</h1><p>扫描 88 个 HTML 页面。按入口及类型去重展示；不同员工、记录、状态共用同一详情模板。截图使用现有示例记录。</p><p>${results.filter(x => !x.error).length} 个已打开的详情入口；${results.filter(x => x.error).length} 个待核对入口。两列字段表格与类似字段行均已标记。</p><button onclick="document.querySelectorAll('[data-related=true]').forEach(card=>card.hidden=!card.hidden)">显示 / 隐藏相近字段行样式</button></header><main>${cards}</main></html>`);
   console.log('Gallery: scratch/detail-dialog-audit/gallery.html');
 })().catch(error => { console.error(error); process.exitCode = 1; });
+}
