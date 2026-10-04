@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PeopleHCM - Claims Options Schema & Configuration
  * Full datasets matching Individual & Team dashboard screenshots.
  */
@@ -100,7 +100,7 @@ window.TEAM_TRAVEL_DATA = {
   selectedDayLabel: 'Monday 28 September - 4 staff',
   staffTrips: [
     {
-      name: 'Aisha Tan',
+      name: 'Sarah Jenkins',
       empNo: 'EBB01',
       dept: 'Marketing Manager',
       trip: 'Penang • Client visit',
@@ -124,7 +124,7 @@ window.TEAM_TRAVEL_DATA = {
       status: 'Pending'
     },
     {
-      name: 'Sarah Chen',
+      name: 'Aisha Omar',
       empNo: '0000101',
       dept: 'Lead Designer',
       trip: 'Penang • Client visit',
@@ -138,7 +138,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'benefit',
     name: 'Benefit Claim',
-    icon: '🎁',
+    icon: '<i class="fa-solid fa-gift" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'car_maint', name: 'CAR MAINTENANCE', entitled: 1000.00, claimed: 0.00, pending: 197.00, usable: 803.00 },
@@ -150,7 +150,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'medical',
     name: 'Medical Claim',
-    icon: '🏥',
+    icon: '<i class="fa-solid fa-briefcase-medical" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'gp_clinic', name: 'OUTPATIENT GP CLINIC', entitled: 800.00, claimed: 300.00, pending: 0.00, usable: 500.00 },
@@ -161,7 +161,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'ot',
     name: 'OT Claim',
-    icon: '⏰',
+    icon: '<i class="fa-solid fa-clock" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'ot_meal', name: 'OVERTIME MEAL ALLOWANCE', entitled: 400.00, claimed: 180.00, pending: 35.00, usable: 185.00 },
@@ -171,7 +171,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'travel',
     name: 'Travel Mileage',
-    icon: '🚗',
+    icon: '<i class="fa-solid fa-car" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'mileage', name: 'MILEAGE (RM0.80/KM)', entitled: 1000.00, claimed: 420.00, pending: 45.00, usable: 535.00 },
@@ -181,7 +181,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'travel_request',
     name: 'Travel Request',
-    icon: '✈️',
+    icon: '<i class="fa-solid fa-plane" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'travel_req', name: 'TRAVEL REQUEST', entitled: 5000.00, claimed: 1200.00, pending: 0.00, usable: 3800.00 }
@@ -190,7 +190,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'entertainment',
     name: 'Entertainment',
-    icon: '🍽️',
+    icon: '<i class="fa-solid fa-utensils" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'client_dining', name: 'CLIENT DINING & LUNCH', entitled: 500.00, claimed: 110.00, pending: 0.00, usable: 390.00 }
@@ -199,7 +199,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'advance',
     name: 'Advance',
-    icon: '💵',
+    icon: '<i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'travel_adv', name: 'OVERSEAS TRAVEL ADVANCE', entitled: 2000.00, claimed: 500.00, pending: 0.00, usable: 1500.00 }
@@ -208,7 +208,7 @@ window.CLAIM_OPTIONS = [
   {
     id: 'expenses',
     name: 'Expenses Claim',
-    icon: '🧾',
+    icon: '<i class="fa-solid fa-receipt" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: [
       { id: 'office_supplies', name: 'OFFICE SUPPLIES & PRINTING', entitled: 400.00, claimed: 120.00, pending: 0.00, usable: 280.00 }
@@ -217,30 +217,30 @@ window.CLAIM_OPTIONS = [
   {
     id: 'history',
     name: 'Claim History',
-    icon: '⏳',
+    icon: '<i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: []
   },
   {
     id: 'summary',
     name: 'Claim Summary',
-    icon: '📊',
+    icon: '<i class="fa-solid fa-chart-pie" aria-hidden="true"></i>',
     entitlementYear: '2026',
     subCategories: []
   }
 ];
 
 window.MANAGER_OPTIONS = [
-  { id: 'benefit_highlight', name: 'Benefit Highlight', icon: '🌟', link: 'options/benefit-highlight.html' },
-  { id: 'staff_entitlement', name: 'Staff Benefit Entitlement', icon: '💳', link: 'options/staff-entitlement.html' },
-  { id: 'expenses_highlight', name: 'Expense Highlight', icon: '📈', link: 'options/expenses-highlight.html' },
-  { id: 'staff_summary', name: 'Staff Claim Summary', icon: '📋', link: 'options/staff-summary.html' }
+  { id: 'benefit_highlight', name: 'Benefit Highlight', icon: '<i class="fa-solid fa-star" aria-hidden="true"></i>', link: 'options/benefit-highlight.html' },
+  { id: 'staff_entitlement', name: 'Staff Benefit Entitlement', icon: '<i class="fa-solid fa-id-card" aria-hidden="true"></i>', link: 'options/staff-entitlement.html' },
+  { id: 'expenses_highlight', name: 'Expense Highlight', icon: '<i class="fa-solid fa-chart-line" aria-hidden="true"></i>', link: 'options/expenses-highlight.html' },
+  { id: 'staff_summary', name: 'Staff Claim Summary', icon: '<i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>', link: 'options/staff-summary.html' }
 ];
 
 window.MOCK_STAFF_ENTITLEMENTS = [
-  { name: 'Sarah Chen', empNo: 'EBB01', dept: 'Marketing Lead', entitlement: 3800.00, used: 1250.00, balance: 2550.00, pct: '32.9%' },
+  { name: 'Sarah Jenkins', empNo: 'EBB01', dept: 'Marketing Lead', entitlement: 3800.00, used: 1250.00, balance: 2550.00, pct: '32.9%' },
   { name: 'Marcus Tan', empNo: '004177', dept: 'Senior Engineer', entitlement: 3800.00, used: 950.00, balance: 2850.00, pct: '25.0%' },
-  { name: 'Aisha Tan', empNo: '0000101', dept: 'Product Designer', entitlement: 3800.00, used: 680.00, balance: 3120.00, pct: '17.8%' },
+  { name: 'Aisha Omar', empNo: '0000101', dept: 'Product Designer', entitlement: 3800.00, used: 680.00, balance: 3120.00, pct: '17.8%' },
   { name: 'Daniel Lee', empNo: '000582', dept: 'Operations Specialist', entitlement: 3800.00, used: 1420.00, balance: 2380.00, pct: '37.4%' },
   { name: 'Ahmad Razali', empNo: '001290', dept: 'Account Manager', entitlement: 4500.00, used: 1890.00, balance: 2610.00, pct: '42.0%' }
 ];
@@ -368,7 +368,7 @@ window.MOCK_TEAM_APPROVALS = [
   {
     id: 4,
     docRef: 'CBF000000000029',
-    userName: 'Sarah Chen',
+    userName: 'Sarah Jenkins',
     empNo: 'EBB01',
     dept: 'Marketing Lead • Digital Team',
     avatar: 'SC',
@@ -817,6 +817,159 @@ window.MOCK_MY_SUBMISSIONS = [
     rejectReason: 'Exceeded maximum entertainment limit without pre-approval.'
   }
 ];
+
+
+
+
+window.CLAIM_STATUS_RECORDS = window.MOCK_MY_SUBMISSIONS;
+
+/* Shared Claims domain data. All current mobile routes derive identity, totals and drill-downs from these records. */
+window.CLAIM_EMPLOYEES = {
+  EBB01: { name: 'Sarah Jenkins', empNo: 'EBB01' },
+  '004177': { name: 'Marcus Tan', empNo: '004177' },
+  '0000101': { name: 'Aisha Omar', empNo: '0000101' },
+  '000582': { name: 'Daniel Lee', empNo: '000582' },
+  '001290': { name: 'Ahmad Razali', empNo: '001290' },
+  EBB12: { name: 'Farhan binti rahmat', empNo: 'EBB12' },
+  EBB05: { name: 'Low chin hao', empNo: 'EBB05' },
+  '003891': { name: 'Jessica Wong', empNo: '003891' },
+  EBB15: { name: 'Asmawi idris', empNo: 'EBB15' },
+  '007216': { name: 'Hailizam Bin Mohamed Ikhsan', empNo: '007216' },
+  '006611': { name: 'Por Suat Bee', empNo: '006611' },
+  '008004': { name: 'Nurfarhana Binti Mohamad', empNo: '008004' },
+  '009102': { name: 'Alex Tan Chin Hock', empNo: '009102' }
+};
+
+const claimEmployee = empNo => window.CLAIM_EMPLOYEES[String(empNo).replace(/^#/, '')];
+window.MOCK_STAFF_ENTITLEMENTS.forEach(record => {
+  const employee = claimEmployee(record.empNo);
+  if (employee) record.name = employee.name;
+});
+window.MOCK_TEAM_APPROVALS.forEach(record => {
+  const employee = claimEmployee(record.empNo);
+  if (employee) record.userName = employee.name;
+});
+
+window.CLAIM_HIGHLIGHT_DATA = {
+  benefit: [
+    { empNo: 'EBB01', details: [
+      { period: '202105', type: 'ENTERTAINMENT', amount: 3588 },
+      { period: '202105', type: 'PERSONAL ALLOWANCE', amount: 1400 },
+      { period: '202106', type: 'HAND PHONE SUBSIDY', amount: 299.99 },
+      { period: '202106', type: 'CAR MAINTENANCE', amount: 146 },
+      { period: '202107', type: 'MOBILE PHONE', amount: 20.34 },
+      { period: '202103', type: 'CAR MAINTENANCE', amount: 4.99 }
+    ] },
+    { empNo: '004177', details: [
+      { period: '202609', type: 'CAR MAINTENANCE', amount: 1850 },
+      { period: '202609', type: 'PERSONAL ALLOWANCE', amount: 850 },
+      { period: '202608', type: 'MOBILE PHONE', amount: 340 },
+      { period: '202608', type: 'ENTERTAINMENT', amount: 200 }
+    ] },
+    { empNo: '007216', details: [
+      { period: '202609', type: 'OPTICAL & DENTAL', amount: 1200 },
+      { period: '202607', type: 'OUTPATIENT GP CLINIC', amount: 450 },
+      { period: '202605', type: 'MOBILE PHONE', amount: 300 }
+    ] },
+    { empNo: '006611', details: [
+      { period: '202608', type: 'CAR MAINTENANCE', amount: 950 },
+      { period: '202606', type: 'PERSONAL ALLOWANCE', amount: 500 }
+    ] },
+    { empNo: '008004', details: [
+      { period: '202609', type: 'OUTPATIENT GP CLINIC', amount: 580 },
+      { period: '202607', type: 'MOBILE PHONE', amount: 300 }
+    ] },
+    { empNo: '009102', details: [
+      { period: '202609', type: 'SPECIALIST CONSULTATION', amount: 450 },
+      { period: '202608', type: 'MOBILE PHONE', amount: 200 }
+    ] }
+  ],
+  expense: [
+    { empNo: '004177', details: [
+      { period: '202609', type: 'CLIENT DINING & ENTERTAINMENT', amount: 2450 },
+      { period: '202609', type: 'TRAVEL MILEAGE & TOLLS', amount: 1200 },
+      { period: '202608', type: 'OFFICE SUPPLIES & PRINTING', amount: 600 }
+    ] },
+    { empNo: 'EBB01', details: [
+      { period: '202105', type: 'CLIENT DINING', amount: 1850 },
+      { period: '202105', type: 'NIGHT TRANSPORT & TAXI', amount: 830 },
+      { period: '202106', type: 'TRAVEL MILEAGE', amount: 500 }
+    ] },
+    { empNo: '007216', details: [
+      { period: '202609', type: 'TRAVEL MILEAGE & TOLLS', amount: 1620 },
+      { period: '202607', type: 'OFFICE SUPPLIES & PRINTING', amount: 800 }
+    ] },
+    { empNo: '006611', details: [
+      { period: '202608', type: 'CLIENT ENTERTAINMENT', amount: 750 },
+      { period: '202606', type: 'NIGHT TRANSPORT & TAXI', amount: 400 }
+    ] },
+    { empNo: '008004', details: [
+      { period: '202609', type: 'OFFICE SUPPLIES & PRINTING', amount: 620 },
+      { period: '202607', type: 'TRAVEL MILEAGE', amount: 300 }
+    ] },
+    { empNo: '009102', details: [
+      { period: '202609', type: 'NIGHT TRANSPORT & TAXI', amount: 410 },
+      { period: '202608', type: 'TRAVEL MILEAGE', amount: 300 }
+    ] }
+  ]
+};
+Object.values(window.CLAIM_HIGHLIGHT_DATA).flat().forEach(record => {
+  const employee = claimEmployee(record.empNo);
+  record.name = employee ? employee.name : record.empNo;
+  record.amount = record.details.reduce((sum, detail) => sum + detail.amount, 0);
+});
+
+const benefitTypes = window.CLAIM_OPTIONS.find(option => option.id === 'benefit').subCategories;
+const medicalTypes = window.CLAIM_OPTIONS.find(option => option.id === 'medical').subCategories;
+window.CLAIM_STAFF_ENTITLEMENT_RECORDS = [
+  { empNo: 'EBB01', category: benefitTypes[0] },
+  { empNo: 'EBB01', category: benefitTypes[2] },
+  { empNo: '004177', category: benefitTypes[3] },
+  { empNo: '0000101', category: medicalTypes[0] },
+  { empNo: '000582', category: medicalTypes[1] }
+].map(record => ({ empNo: record.empNo, employeeName: claimEmployee(record.empNo).name, categoryName: record.category.name, id: record.category.id, entitled: record.category.entitled, claimed: record.category.claimed, pending: record.category.pending, usable: record.category.usable }));
+
+window.CLAIM_SUMMARY_RECORDS = [
+  { id: 'SUM-2026-0501', tab: 'medical', dateRange: '01/05/2026 - 09/05/2026', isoDate: '2026-05-01', period: '202605', expense: 'PHARMACY', empNo: 'EBB12', merchant: 'Guardian Pharmacy KLCC', amount: 69.90, status: 'approved', statusText: 'Approved' },
+  { id: 'SUM-2026-0510', tab: 'medical', dateRange: '10/05/2026 - 20/05/2026', isoDate: '2026-05-10', period: '202605', expense: 'PHARMACY', empNo: 'EBB12', merchant: 'Guardian Pharmacy KLCC', amount: 350, status: 'pending', statusText: 'Pending Approval' },
+  { id: 'SUM-2026-0521', tab: 'medical', dateRange: '21/05/2026 - 25/05/2026', isoDate: '2026-05-21', period: '202605', expense: 'PHARMACY', empNo: 'EBB01', merchant: 'Watsons Mid Valley', amount: 70, status: 'rejected', statusText: 'Rejected' },
+  { id: 'SUM-2026-0502', tab: 'benefit', dateRange: '01/05/2026 - 01/05/2026', isoDate: '2026-05-01', period: '202605', expense: 'MOBILE PHONE', empNo: 'EBB12', merchant: 'Maxis Mobile MY', amount: 120, status: 'approved', statusText: 'Approved' },
+  { id: 'SUM-2026-0511', tab: 'benefit', dateRange: '10/05/2026 - 20/05/2026', isoDate: '2026-05-10', period: '202605', expense: 'CAR MAINTENANCE', empNo: 'EBB12', merchant: 'Teo Seng Car Workshop', amount: 350, status: 'pending', statusText: 'Pending Approval' },
+  { id: 'SUM-2026-0512', tab: 'entertainment', dateRange: '12/05/2026 - 18/05/2026', isoDate: '2026-05-12', period: '202605', expense: 'CLIENT ENTERTAINMENT', empNo: 'EBB12', merchant: 'Naughty Nuri’s Pavilion', amount: 270.60, status: 'approved', statusText: 'Approved' },
+  { id: 'SUM-2026-0520', tab: 'entertainment', dateRange: '20/05/2026 - 25/05/2026', isoDate: '2026-05-20', period: '202605', expense: 'CLIENT ENTERTAINMENT', empNo: 'EBB12', merchant: 'Chili’s KLCC', amount: 220, status: 'submitted', statusText: 'Submitted' }
+].map(record => ({ ...record, empName: claimEmployee(record.empNo).name }));
+window.CLAIM_HISTORY_RECORDS = window.CLAIM_SUMMARY_RECORDS.reduce((groups, record) => {
+  (groups[record.tab] ||= []).push(record);
+  return groups;
+}, {});
+
+const sharedTravelTrips = [
+  { empNo: 'EBB01', dept: 'Senior Product Designer', trip: 'Melaka • Product workshop', dates: '7-7 Sep 2026', status: 'Approved' },
+  { empNo: '004177', dept: 'Senior Engineer', trip: 'Johor Bahru • Site inspection', dates: '8-8 Sep 2026', status: 'Approved' },
+  { empNo: '0000101', dept: 'Product Designer', trip: 'Penang • User research', dates: '10-11 Sep 2026', status: 'Approved' },
+  { empNo: '000582', dept: 'Operations Specialist', trip: 'Ipoh • Vendor audit', dates: '14-16 Sep 2026', status: 'Pending' },
+  { empNo: '001290', dept: 'Account Manager', trip: 'Kuantan • Client meeting', dates: '25-26 Sep 2026', status: 'Approved' },
+  { empNo: '007216', dept: 'Finance Executive', trip: 'Penang • Branch review', dates: '28-28 Sep 2026', status: 'Approved' },
+  { empNo: 'EBB01', dept: 'Senior Product Designer', trip: 'Penang • Client visit', dates: '28-30 Sep 2026', status: 'Approved' },
+  { empNo: '004177', dept: 'Senior Engineer', trip: 'Singapore • Tech conference', dates: '28-30 Sep 2026', status: 'Pending' }
+].map(record => ({ ...record, name: claimEmployee(record.empNo).name }));
+window.TEAM_TRAVEL_DATA.staffTrips = sharedTravelTrips;
+window.TEAM_TRAVEL_DATA.staffCount = new Set(sharedTravelTrips.map(record => record.empNo)).size;
+window.TEAM_TRAVEL_DATA.tripsCount = sharedTravelTrips.length;
+window.TEAM_TRAVEL_DATA.travelBadges = {};
+sharedTravelTrips.forEach(record => {
+  const match = record.dates.match(/(\d{1,2})\s*-\s*(\d{1,2})\s+Sep/i);
+  if (!match) return;
+  for (let day = Number(match[1]); day <= Number(match[2]); day += 1) {
+    window.TEAM_TRAVEL_DATA.travelBadges[day] = (window.TEAM_TRAVEL_DATA.travelBadges[day] || 0) + 1;
+  }
+});
+
+for (const scope of ['individual', 'team']) {
+  window.CLAIM_BREAKDOWN_DATA[scope].benefits.items.forEach(item => { item.color = '#7c3aed'; });
+}
+
+
 
 
 

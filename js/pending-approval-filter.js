@@ -1,4 +1,4 @@
-/* Shared filtering for pending approval lists. Dates are calendar dates, not timestamps. */
+﻿/* Shared filtering for pending approval lists. Dates are calendar dates, not timestamps. */
 (function () {
   const emptyState = () => ({ keyword: '', startDate: '', endDate: '', days: 'all', minDays: '', maxDays: '' });
 
@@ -77,20 +77,20 @@
       <form class="approval-filter-panel" role="dialog" aria-modal="true" aria-labelledby="${id}-title">
         <div class="approval-filter-handle" aria-hidden="true"></div>
         <div class="approval-filter-header">
-          <h2 id="${id}-title">Pending Approval Filter</h2>
-          <button type="button" data-action="reset">Reset</button>
+          <h2 id="${id}-title">Filter</h2>
+          <button type="button" data-action="reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reset</button>
           <button type="button" data-action="close" aria-label="Close filter">&times;</button>
         </div>
         <div class="approval-filter-fields">
-          <label for="${id}-keyword">Search Keyword</label>
+          <label for="${id}-keyword">Search keyword</label>
           <input id="${id}-keyword" name="keyword" type="search" placeholder="Employee name, ID or request type">
           <div class="approval-filter-date-row">
-            <div><label for="${id}-startDate">Start Date</label><input id="${id}-startDate" name="startDate" type="date"></div>
-            <div><label for="${id}-endDate">End Date</label><input id="${id}-endDate" name="endDate" type="date"></div>
+            <div><label for="${id}-startDate">Start date</label><input id="${id}-startDate" name="startDate" type="date"></div>
+            <div><label for="${id}-endDate">End date</label><input id="${id}-endDate" name="endDate" type="date"></div>
           </div>
-          <label for="${id}-days">Outstanding Days</label>
+          <label for="${id}-days">Outstanding days</label>
           <select id="${id}-days" name="days">
-            <option value="all">All Outstanding Days</option>
+            <option value="all">All Outstanding days</option>
             <option value="1">1 Day</option>
             <option value="2-3">2 – 3 Days</option>
             <option value="4-5">4 – 5 Days</option>
@@ -98,8 +98,8 @@
             <option value="custom">Custom Days Range</option>
           </select>
           <div class="approval-filter-date-row" data-custom-days hidden>
-            <div><label for="${id}-minDays">Min Days</label><input id="${id}-minDays" name="minDays" type="number" min="0" step="1"></div>
-            <div><label for="${id}-maxDays">Max Days</label><input id="${id}-maxDays" name="maxDays" type="number" min="0" step="1"></div>
+            <div><label for="${id}-minDays">Min days</label><input id="${id}-minDays" name="minDays" type="number" min="0" step="1"></div>
+            <div><label for="${id}-maxDays">Max days</label><input id="${id}-maxDays" name="maxDays" type="number" min="0" step="1"></div>
           </div>
           <p class="approval-filter-error" role="alert" hidden></p>
         </div>
@@ -141,8 +141,8 @@
       event.preventDefault();
       const draft = Object.fromEntries(Object.keys(applied).map(key => [key, controls[key].value]));
       let message = '';
-      if (draft.startDate && draft.endDate && draft.startDate > draft.endDate) message = 'End Date must be on or after Start Date.';
-      if (draft.days === 'custom' && draft.minDays !== '' && draft.maxDays !== '' && Number(draft.minDays) > Number(draft.maxDays)) message = 'Max Days must be at least Min Days.';
+      if (draft.startDate && draft.endDate && draft.startDate > draft.endDate) message = 'End date must be on or after Start date.';
+      if (draft.days === 'custom' && draft.minDays !== '' && draft.maxDays !== '' && Number(draft.minDays) > Number(draft.maxDays)) message = 'Max days must be at least Min days.';
       if (message) {
         error.textContent = message;
         error.hidden = false;
@@ -171,3 +171,4 @@
 
   window.PendingApprovalFilter = { parseDate, toISO, outstandingDays, matches, summary, create };
 })();
+

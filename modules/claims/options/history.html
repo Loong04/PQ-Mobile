@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PeopleHCM - Claim History</title>
   <script src="../../../js/components.js"></script>
+  <script src="../../../js/claims/claims-config.js"></script>
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -208,7 +209,7 @@
             CURRENT FILTER
           </div>
           <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <span style="font-size: 14px; opacity: 0.85;">ஃ</span>
+            <i class="filter-summary-icon fa-solid fa-filter" aria-hidden="true" style="color: var(--purple-primary);"></i>
             <span id="currentFilterTextDisplay">01/01/2026 – 31/12/2026 &bull; All Benefit Types</span>
           </div>
         </div>
@@ -304,6 +305,7 @@
     let activeStartPeriod = '202601';
     let activeEndPeriod = '202612';
     let activeBenefitType = 'all';
+    let activeStatusFilter = new URLSearchParams(window.location.search).get('status') || '';
 
     const FILTER_YEARS = Array.from({ length: 11 }, (_, index) => String(2016 + index));
     const FILTER_MONTHS = [
@@ -720,6 +722,37 @@
       return `${year}${String(monthNumber).padStart(2, '0')}`;
     }
 
+    const toHistoryRecord = record => {
+      const date = new Date(`${record.isoDate}T00:00:00`);
+      const dateParts = record.dateRange.split(' - ');
+      return {
+        ...record,
+        title: record.expense,
+        subtype: record.expense,
+        date: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
+        day: String(date.getDate()).padStart(2, '0'),
+        month: date.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase(),
+        dayName: date.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(),
+        amount: Number(record.amount || 0).toFixed(2),
+        quantity: '1.00',
+        claimPeriod: record.period,
+        dateFrom: dateParts[0],
+        dateTo: dateParts[1] || dateParts[0],
+        benefitYear: String(record.period).slice(0, 4),
+        currency: 'MYR'
+      };
+    };
+    Object.entries(window.CLAIM_HISTORY_RECORDS || {}).forEach(([tab, records]) => {
+      if (!HISTORY_DATA[tab]) HISTORY_DATA[tab] = [];
+      const knownIds = new Set(HISTORY_DATA[tab].map(record => record.id));
+      records.forEach(record => { if (!knownIds.has(record.id)) HISTORY_DATA[tab].push(toHistoryRecord(record)); });
+    });
+    const STATUS_HISTORY_RECORDS = (window.CLAIM_STATUS_RECORDS || []).map(record => {
+      const isoMatch = String(record.date).match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
+      const monthMap = { Jan:'01', Feb:'02', Mar:'03', Apr:'04', May:'05', Jun:'06', Jul:'07', Aug:'08', Sep:'09', Oct:'10', Nov:'11', Dec:'12' };
+      const isoDate = isoMatch ? `${isoMatch[3]}-${monthMap[isoMatch[2]]}-${String(isoMatch[1]).padStart(2, '0')}` : '2026-01-01';
+      return toHistoryRecord({ ...record, tab: 'status', expense: record.category, isoDate, period: isoDate.slice(0, 7).replace('-', ''), dateRange: record.date, empName: 'Sarah Jenkins', empNo: 'EBB01' });
+    });
     // Normalize the source once so cards, filters and detail tables share YYYYMM.
     Object.values(HISTORY_DATA).flat().forEach(item => {
       item.claimPeriod = normalizeHistoryPeriod(item.claimPeriod, item.isoDate);
@@ -732,9 +765,12 @@
       const allowedStatuses = {
         approved: 'Approved',
         submitted: 'Submitted',
-        draft: 'Draft'
+        draft: 'Draft',
+        pending: 'Pending Approval',
+        rejected: 'Rejected'
       };
-      const key = allowedStatuses[item.status] ? item.status : 'submitted';
+      const normalizedStatus = item.status === 'pending' ? 'submitted' : item.status;
+      const key = allowedStatuses[normalizedStatus] ? normalizedStatus : 'submitted';
       return { key, text: allowedStatuses[key] };
     }
 
@@ -785,7 +821,8 @@
       setOptions(document.getElementById('filterEndMonthInput'), FILTER_MONTHS, endMonth);
     }
 
-    function switchClaimTab(tabKey) {
+    function switchClaimTab(tabKey, preserveStatus = false) {
+      if (!preserveStatus) activeStatusFilter = '';
       activeTabKey = tabKey;
       activeBenefitType = 'all';
 
@@ -810,12 +847,15 @@
       const countBadge = document.getElementById('categoryRecordsCountBadge');
 
       const catMeta = CATEGORIES.find(c => c.id === activeTabKey) || CATEGORIES[0];
-      if (headerTitle) headerTitle.textContent = catMeta.title;
+      if (headerTitle) headerTitle.textContent = activeStatusFilter ? `${activeStatusFilter.charAt(0).toUpperCase() + activeStatusFilter.slice(1)} Claim History` : catMeta.title;
 
-      let items = HISTORY_DATA[activeTabKey] || [];
+      let items = activeStatusFilter ? STATUS_HISTORY_RECORDS : (HISTORY_DATA[activeTabKey] || []);
+      if (activeStatusFilter) {
+        items = items.filter(item => activeStatusFilter === 'submitted' ? ['submitted', 'pending'].includes(item.status) : item.status === activeStatusFilter);
+      }
 
       // 1. Filter by Benefit Type
-      if (activeBenefitType !== 'all') {
+      if (!activeStatusFilter && activeBenefitType !== 'all') {
         const selectedType = activeBenefitType.toUpperCase();
         items = items.filter(i => [i.title, i.subtype, i.benefitType]
           .filter(Boolean)
@@ -966,7 +1006,9 @@
         const statusIconMap = {
           approved: 'fa-square-check',
           submitted: 'fa-paper-plane',
-          draft: 'fa-floppy-disk'
+          draft: 'fa-floppy-disk',
+          pending: 'fa-clock',
+          rejected: 'fa-circle-xmark'
         };
         const statusIcon = statusIconMap[displayStatus.key];
         const canCancel = ['submitted', 'approved', 'draft'].includes(displayStatus.key);
@@ -1661,8 +1703,12 @@
 
     // Initialize Page
     document.addEventListener('DOMContentLoaded', () => {
-      switchClaimTab('benefit');
+      switchClaimTab('benefit', true);
     });
   </script>
 </body>
 </html>
+
+
+
+

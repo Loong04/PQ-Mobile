@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PeopleHCM - Claims Application Engine
  * Renders Individual & Team Dashboards matching screenshots 1 & 2.
  * Adheres strictly to AGENTS.md rules & DESIGN.md guidelines.
@@ -69,6 +69,12 @@
    * ==========================================
    */
   function renderIndividualDashboard() {
+    document.querySelectorAll('.work-status-card[data-status]').forEach(card => {
+      const status = card.dataset.status;
+      const count = (window.CLAIM_STATUS_RECORDS || window.MOCK_MY_SUBMISSIONS || []).filter(item => item.status === status || (status === 'submitted' && item.status === 'pending')).length;
+      const value = card.querySelector('strong');
+      if (value) value.textContent = count;
+    });
     renderBreakdownDonutChart('individual', activeBreakdownCategory);
     renderIndividualCalendar();
     renderOptionSquareGrid();
@@ -433,7 +439,7 @@
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           ${staffList.map(s => `
-            <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <div class="team-trip-record" style="background: var(--bg-input); border-radius: 14px; padding: 10px 12px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${s.name}</div>
                 <!-- AGENTS.md Employee ID Presentation Standard: Directly below name, leading # -->
@@ -924,7 +930,7 @@
 
       item = {
         id: itemId || card.getAttribute('item-id') || 1,
-        userName: card.getAttribute('user-name') || 'Sarah Chen',
+        userName: card.getAttribute('user-name') || 'Sarah Jenkins',
         empNo: (card.getAttribute('emp-id') || '#EBB01').replace(/^#+/, ''),
         dept: card.getAttribute('dept') || 'Marketing Lead • Digital Team',
         optionName: claimType,
@@ -1076,7 +1082,7 @@
       const claimTotalFormatted = totalText ? (/^RM\s/i.test(totalText) ? totalText : `RM ${totalText}`) : amountFormatted;
       const periodStart = d.claimPeriodStart || d.period || '-';
       const periodEnd = d.claimPeriodEnd || periodStart;
-      const claimPeriod = periodStart === periodEnd ? periodStart : `${periodStart} â€“ ${periodEnd}`;
+      const claimPeriod = periodStart === periodEnd ? periodStart : `${periodStart} – ${periodEnd}`;
       const generalRows = `
         ${makeTableRow('Document Reference', `<span style="font-family: monospace; font-weight: 800;">${docRef}</span>`)}
         ${makeTableRow('Status', docStatus)}
@@ -1809,3 +1815,5 @@
   }
   window.addEventListener('load', initClaimsApp);
 })();
+
+

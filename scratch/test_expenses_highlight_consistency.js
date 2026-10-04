@@ -1,4 +1,4 @@
-const path = require('path');
+﻿const path = require('path');
 const puppeteer = require('puppeteer');
 
 function inspectCards(page, viewId, chartSelector, detailsSelector) {
@@ -21,6 +21,7 @@ function inspectCards(page, viewId, chartSelector, detailsSelector) {
 (async () => {
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
@@ -96,7 +97,7 @@ function inspectCards(page, viewId, chartSelector, detailsSelector) {
       }));
     }
 
-    await page.evaluate(() => openExpenseDetailsModal('#004177', 'AHMAD RAFY BIN ZULKIPLE'));
+    await page.evaluate(() => openExpenseDetailsModal('#004177', 'Marcus Tan'));
     const modal = await page.evaluate(() => {
       const name = document.getElementById('modalExpenseEmpNameText');
       const id = document.getElementById('modalExpenseEmpIdBadge');
@@ -107,7 +108,10 @@ function inspectCards(page, viewId, chartSelector, detailsSelector) {
         id: id?.textContent.trim() || '',
         idBelowName: Boolean(name && id && id.getBoundingClientRect().top >= name.getBoundingClientRect().bottom),
         headerBackground: header ? getComputedStyle(header).backgroundImage : '',
-        firstRecord: firstRecord?.textContent.replace(/\s+/g, ' ').trim() || ''
+        firstRecord: firstRecord?.textContent.replace(/\s+/g, ' ').trim() || '',
+        period: firstRecord?.querySelector('.expense-detail-period-value')?.textContent.trim() || '',
+        expense: firstRecord?.querySelector('.expense-detail-type')?.textContent.trim() || '',
+        amount: firstRecord?.querySelector('.expense-detail-amount')?.textContent.trim() || ''
       };
     });
 
@@ -140,19 +144,20 @@ function inspectCards(page, viewId, chartSelector, detailsSelector) {
       !analysisFilter.hasShareDescription &&
       analysisFilter.title === 'Expense Spend by Category' &&
       analysisFilter.column === 'CATEGORY' &&
-      analysisFilter.firstDetail.includes('Client Dining & Entertainment') &&
+      analysisFilter.firstDetail.includes('CLIENT DINING & ENTERTAINMENT') &&
       branchSelection?.title === 'Expense Spend by Branch' &&
       branchSelection?.column === 'BRANCH' &&
-      branchSelection?.firstDetail.includes('Headquarters (HQ)') &&
-      modal.name === 'AHMAD RAFY BIN ZULKIPLE' &&
+      branchSelection?.firstDetail.includes('CLIENT DINING & ENTERTAINMENT') &&
+      branchSelection?.firstDetail.includes('RM 2,450.00') &&
+      modal.name === 'Marcus Tan' &&
       modal.id === '#004177' &&
       modal.idBelowName &&
       modal.headerBackground.includes('rgb(76, 29, 149)') &&
       modal.headerBackground.includes('rgb(109, 40, 217)') &&
       modal.headerBackground.includes('rgb(124, 58, 237)') &&
-      modal.firstRecord.includes('Expense') &&
-      modal.firstRecord.includes('Amount 2,450.00') &&
-      !modal.firstRecord.includes('Amount RM') &&
+      modal.period === '202609' &&
+      modal.expense === 'CLIENT DINING & ENTERTAINMENT' &&
+      modal.amount === '2,450.00' &&
       pageErrors.length === 0;
 
     console.log(JSON.stringify(result, null, 2));
@@ -161,3 +166,6 @@ function inspectCards(page, viewId, chartSelector, detailsSelector) {
     await browser.close();
   }
 })();
+
+
+

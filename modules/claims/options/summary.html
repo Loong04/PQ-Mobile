@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PeopleHCM - Claim Summary</title>
   <script src="../../../js/components.js"></script>
+  <script src="../../../js/claims/claims-config.js"></script>
   <script src="../../../js/app.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -169,7 +170,7 @@
             Filter
           </div>
           <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
-            <span style="color: var(--purple-primary);">ஃ</span>
+            <i class="filter-summary-icon fa-solid fa-filter" aria-hidden="true" style="color: var(--purple-primary);"></i>
             <span id="claimSummaryFilterText">Period: 202605 &bull; Include Pending</span>
           </div>
         </div>
@@ -261,67 +262,23 @@
   </div>
 
   <script>
-    const SUMMARY_CATEGORIES = [
-      {
-        id: 'PHARMACY', title: 'PHARMACY', icon: '💊', period: '202605',
-        currentAmount: 489.80, lastAmount: 450.00, averageAmount: 225.98, ytdAmount: 1129.90,
-        records: [
-          {
-            dateRange: '01/05/2026 - 09/05/2026', period: '202605', expense: 'PHARMACY',
-            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Guardian Pharmacy KLCC',
-            amount: 69.90, status: 'approved', statusText: 'Approved'
-          },
-          {
-            dateRange: '10/05/2026 - 20/05/2026', period: '202605', expense: 'PHARMACY',
-            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Teo Seng Car Workshop',
-            amount: 350.00, status: 'pending', statusText: 'Pending Approval'
-          },
-          {
-            dateRange: '21/05/2026 - 25/05/2026', period: '202605', expense: 'PHARMACY',
-            empName: 'Sarah Chen', empNo: 'EBB01', merchant: 'Watsons Mid Valley',
-            amount: 70.00, status: 'rejected', statusText: 'Rejected'
-          }
-        ]
-      },
-      {
-        id: 'MOBILE_PHONE', title: 'MOBILE PHONE', icon: '📱', period: '202605',
-        currentAmount: 120.00, lastAmount: 120.00, averageAmount: 120.00, ytdAmount: 600.00,
-        records: [
-          {
-            dateRange: '01/05/2026 - 01/05/2026', period: '202605', expense: 'MOBILE PHONE',
-            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Maxis Mobile MY',
-            amount: 120.00, status: 'approved', statusText: 'Approved'
-          }
-        ]
-      },
-      {
-        id: 'CAR_MAINTENANCE', title: 'CAR MAINTENANCE', icon: '🚗', period: '202605',
-        currentAmount: 350.00, lastAmount: 200.00, averageAmount: 170.00, ytdAmount: 850.00,
-        records: [
-          {
-            dateRange: '10/05/2026 - 20/05/2026', period: '202605', expense: 'CAR MAINTENANCE',
-            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Teo Seng Car Workshop',
-            amount: 350.00, status: 'pending', statusText: 'Pending Approval'
-          }
-        ]
-      },
-      {
-        id: 'CLIENT_ENTERTAINMENT', title: 'CLIENT ENTERTAINMENT', icon: '🍽️', period: '202605',
-        currentAmount: 490.60, lastAmount: 650.00, averageAmount: 284.00, ytdAmount: 1420.00,
-        records: [
-          {
-            dateRange: '12/05/2026 - 18/05/2026', period: '202605', expense: 'CLIENT ENTERTAINMENT',
-            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Naughty Nuri’s Pavilion',
-            amount: 270.60, status: 'approved', statusText: 'Approved'
-          },
-          {
-            dateRange: '20/05/2026 - 25/05/2026', period: '202605', expense: 'CLIENT ENTERTAINMENT',
-            empName: 'Farhan binti rahmat', empNo: 'EBB12', merchant: 'Chili’s KLCC',
-            amount: 220.00, status: 'submitted', statusText: 'Submitted'
-          }
-        ]
+    const SUMMARY_CATEGORIES = Object.values((window.CLAIM_SUMMARY_RECORDS || []).reduce((groups, record) => {
+      const key = record.expense;
+      if (!groups[key]) {
+        groups[key] = { id: key.replace(/[^A-Z0-9]+/g, '_'), title: key, icon: '•', period: record.period, records: [] };
       }
-    ];
+      groups[key].records.push(record);
+      return groups;
+    }, {})).map(category => {
+      const currentAmount = category.records.reduce((sum, record) => sum + Number(record.amount || 0), 0);
+      return {
+        ...category,
+        currentAmount,
+        lastAmount: currentAmount,
+        averageAmount: currentAmount / category.records.length,
+        ytdAmount: currentAmount
+      };
+    });
 
     let currentPeriod = '2026-05';
 
@@ -549,3 +506,6 @@
   </script>
 </body>
 </html>
+
+
+

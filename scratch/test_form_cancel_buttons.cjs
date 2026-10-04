@@ -15,6 +15,7 @@ const cancelStyle = appCss.match(/\.form-cancel-btn:not\(\[disabled\]\)\s*\{([\s
 expect(cancelStyle.includes('background: #171529'), 'Form Cancel must use the approved dark neutral background');
 expect(cancelStyle.includes('border: 1px solid #302d46'), 'Form Cancel must use the approved dark neutral border');
 expect(cancelStyle.includes('color: #f8fafc'), 'Form Cancel must use the approved light text color');
+expect(!/margin-right\s*:\s*auto/i.test(cancelStyle), 'Form Cancel must stay grouped beside Draft and primary actions');
 expect(!/(#f43f5e|251, 113, 133|190, 24, 93)/i.test(cancelStyle), 'Form Cancel must not use the red or pink danger palette');
 const lightCancelSelector = '[data-theme="light"] .form-cancel-btn:not([disabled])';
 const lightCancelStart = appCss.indexOf(lightCancelSelector);

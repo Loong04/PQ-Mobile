@@ -1,4 +1,4 @@
-const path = require('path');
+﻿const path = require('path');
 const puppeteer = require('puppeteer');
 
 const highlights = [
@@ -8,7 +8,7 @@ const highlights = [
 ];
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+  const browser = await puppeteer.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--no-sandbox'] });
   try {
     const page = await browser.newPage();
     const errors = [];
@@ -45,3 +45,4 @@ const highlights = [
     await browser.close();
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+

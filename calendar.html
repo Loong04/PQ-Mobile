@@ -334,78 +334,34 @@
       const grid = document.getElementById('calDaysGrid');
       const titleEl = document.getElementById('calMonthTitleText');
       const subEl = document.getElementById('calActiveFilterSub');
-
-      if (!grid) return;
       grid.innerHTML = '';
-
-      const subNameMap = {
-        all: 'All Summary',
-        leave: 'Leave',
-        roster: 'Roster',
-        booking: 'Book',
-        training: 'Train',
-        meeting: 'Meet',
-        subordinate: 'Staff'
-      };
-
-      titleEl.innerText = `${filterState.month} ${filterState.year}`;
-      subEl.innerText = `${subNameMap[activeSubCalendar]} • Status: ${filterState.status} • ${filterState.month} ${filterState.year}`;
-
-      let daysList = (filterState.month === 'August') ? AUGUST_2026_DAYS : SEPTEMBER_2026_DAYS;
-
-      let displayDays = daysList;
-      let leadCount = 0;
-
-      if (viewMode === 'month') {
-        leadCount = (filterState.month === 'August') ? 6 : 2;
-      } else {
-        displayDays = daysList.slice(15, 22);
-        leadCount = 0;
+      const subNameMap = { all: 'All Summary', leave: 'Leave', roster: 'Roster', booking: 'Book', training: 'Train', meeting: 'Meet', subordinate: 'Staff' };
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const monthIndex = monthNames.indexOf(filterState.month);
+      const year = Number(filterState.year);
+      const dayCount = new Date(year, monthIndex + 1, 0).getDate();
+      titleEl.innerText = filterState.month + ' ' + filterState.year;
+      subEl.innerText = subNameMap[activeSubCalendar] + ' ? Status: ' + filterState.status + ' ? ' + filterState.month + ' ' + filterState.year;
+      const source = year === 2026 && filterState.month === 'August' ? AUGUST_2026_DAYS : year === 2026 && filterState.month === 'September' ? SEPTEMBER_2026_DAYS : [];
+      const events = new Map(source.map(item => [item.day, item]));
+      let displayDays = Array.from({ length: dayCount }, (_, index) => index + 1);
+      const leadCount = viewMode === 'month' ? new Date(year, monthIndex, 1).getDay() : 0;
+      if (viewMode === 'week') displayDays = displayDays.slice(15, 22);
+      for (let index = 0; index < leadCount; index++) {
+        const emptyCell = document.createElement('div'); emptyCell.className = 'cal-day-cell other-month'; grid.appendChild(emptyCell);
       }
-
-      for (let i = 0; i < leadCount; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'cal-day-cell other-month';
-        grid.appendChild(emptyCell);
-      }
-
-      displayDays.forEach(item => {
+      displayDays.forEach(day => {
+        const item = events.get(day) || { day, type: 'work', cat: 'roster', full: 'Working Shift (09:00 - 18:00)' };
+        const dateStr = String(year) + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+        const categoryMatches = activeSubCalendar === 'all' || item.cat === activeSubCalendar;
+        const statusMatches = filterState.status === 'All' || item.status === filterState.status;
+        const highlighted = categoryMatches && statusMatches;
         const cellEl = document.createElement('div');
-        const dateStr = `2026-${filterState.month === 'August' ? '08' : '09'}-${String(item.day).padStart(2, '0')}`;
-
-        let isCatMatch = false;
-        if (activeSubCalendar === 'all') {
-          isCatMatch = (item.type === 'al' || item.type === 'ph' || item.type === 'event' || item.type === 'meeting' || item.type === 'mc' || item.cat === 'booking');
-        } else {
-          isCatMatch = (item.cat === activeSubCalendar);
-        }
-
-        let isStatusMatch = false;
-        if (filterState.status === 'All') {
-          isStatusMatch = true;
-        } else {
-          isStatusMatch = (item.status === filterState.status);
-        }
-
-        const isHighlighted = isCatMatch && isStatusMatch;
-
-        cellEl.className = isHighlighted ? `cal-day-cell status-${item.type}` : 'cal-day-cell status-work';
+        cellEl.className = highlighted ? 'cal-day-cell status-' + item.type : 'cal-day-cell';
         if (dateStr === selectedDateStr) cellEl.classList.add('selected');
-
-        let displayTag = isHighlighted ? item.label : '';
-        let statusDotHTML = '';
-        if (isHighlighted && item.status) {
-          const stLower = item.status.toLowerCase();
-          statusDotHTML = `<span class="cal-status-dot dot-${stLower}" title="Status: ${item.status}"></span>`;
-        }
-
-        cellEl.innerHTML = `
-          <span class="cal-date-num">${item.day}</span>
-          ${displayTag ? `<span class="cal-cell-tag">${displayTag}</span>` : ''}
-          ${statusDotHTML}
-        `;
-
-        cellEl.onclick = () => selectDate(dateStr, isHighlighted ? item : { day: item.day, type: 'work', full: 'Working Shift (09:00 - 18:00)' });
+        const statusDot = highlighted && item.status ? '<span class="cal-status-dot dot-' + item.status.toLowerCase() + '" title="Status: ' + item.status + '"></span>' : '';
+        cellEl.innerHTML = '<span class="cal-date-num">' + day + '</span>' + (highlighted && item.label ? '<span class="cal-cell-tag">' + item.label + '</span>' : '') + statusDot;
+        cellEl.onclick = () => selectDate(dateStr, item);
         grid.appendChild(cellEl);
       });
     }
@@ -690,12 +646,19 @@
 
     // Shift period stepper arrows (< >)
     function shiftPeriod(delta) {
-      if (filterState.month === 'August' && delta > 0) {
-        filterState.month = 'September';
-      } else if (filterState.month === 'September' && delta < 0) {
-        filterState.month = 'August';
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      let index = monthNames.indexOf(filterState.month) + delta;
+      let year = Number(filterState.year);
+      if (index < 0) { index = 11; year -= 1; }
+      if (index > 11) { index = 0; year += 1; }
+      filterState.month = monthNames[index];
+      filterState.year = String(year);
+      const monthSelect = document.getElementById('selectFilterMonth');
+      if (![...monthSelect.options].some(option => option.value === filterState.month)) {
+        const option = document.createElement('option'); option.value = filterState.month; option.textContent = filterState.month; monthSelect.appendChild(option);
       }
-      document.getElementById('selectFilterMonth').value = filterState.month;
+      document.getElementById('selectFilterYear').value = filterState.year;
+      monthSelect.value = filterState.month;
       renderCalendar();
     }
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PeopleHCM - EBB12 Change Request</title>
+  <title>PeopleHCM - EBB01 Change Request</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -95,7 +95,7 @@
             <label class="change-field-label">Full Name <span class="change-field-req">*</span></label>
             <span class="change-modified-badge">MODIFIED</span>
           </div>
-          <input type="text" class="change-input-box" data-field-id="name" data-original="Farhan binti rahmat" value="Farhan binti rahmat" oninput="handleFieldInput(this)">
+          <input type="text" class="change-input-box" data-field-id="name" data-original="Sarah Jenkins" value="Sarah Jenkins" oninput="handleFieldInput(this)">
         </div>
 
         <div class="change-field-card" id="card-nric">
@@ -127,7 +127,7 @@
             <label class="change-field-label">Personal Email <span class="change-field-req">*</span></label>
             <span class="change-modified-badge">MODIFIED</span>
           </div>
-          <input type="email" class="change-input-box" data-field-id="email" data-original="ebb12@gmail.com" value="ebb12@gmail.com" oninput="handleFieldInput(this)">
+          <input type="email" class="change-input-box" data-field-id="email" data-original="sarah.jenkins@gmail.com" value="ebb12@gmail.com" oninput="handleFieldInput(this)">
         </div>
 
         <div class="change-field-card" id="card-marital">
@@ -533,7 +533,7 @@
           <!-- Action Pills -->
           <div style="display: flex; gap: 8px;">
             <button class="change-attach-btn" style="flex: 1; padding: 8px; font-size: 11px; justify-content: center;" onclick="editFamilyRecord('ABU KARUDDIN BIN MAHMUD')">✏️ Edit Details</button>
-            <button class="change-btn-cancel" style="padding: 8px 14px; font-size: 11px; border-radius: 10px;" onclick="deleteFamilyRecord('ABU KARUDDIN BIN MAHMUD')">🗑️ Delete</button>
+            <button class="change-btn-cancel" style="padding: 8px 14px; font-size: 11px; border-radius: 10px;" onclick="deleteFamilyRecord('ABU KARUDDIN BIN MAHMUD', this)">🗑️ Delete</button>
           </div>
         </div>
 
@@ -562,7 +562,7 @@
           <!-- Action Pills -->
           <div style="display: flex; gap: 8px;">
             <button class="change-attach-btn" style="flex: 1; padding: 8px; font-size: 11px; justify-content: center;" onclick="editFamilyRecord('SITI AISHAH BINTI FARHAN')">✏️ Edit Details</button>
-            <button class="change-btn-cancel" style="padding: 8px 14px; font-size: 11px; border-radius: 10px;" onclick="deleteFamilyRecord('SITI AISHAH BINTI FARHAN')">🗑️ Delete</button>
+            <button class="change-btn-cancel" style="padding: 8px 14px; font-size: 11px; border-radius: 10px;" onclick="deleteFamilyRecord('SITI AISHAH BINTI FARHAN', this)">🗑️ Delete</button>
           </div>
         </div>
 
@@ -867,7 +867,7 @@
           <button class="sheet-close-btn" onclick="toggleHistoryModal(false)">✕</button>
         </div>
 
-        <div style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div id="changeRequestHistoryList" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
           
           <!-- Submission 1 (Pending) -->
           <div class="change-history-item" style="cursor: pointer; transition: all 0.2s ease;" onclick="toggleHistoryDetail('hist-detail-1')">
@@ -884,7 +884,7 @@
               <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
                 <div style="background: var(--bg-input); padding: 8px 10px; border-radius: 8px;">
                   <div style="font-weight: 800; color: var(--text-primary);">Personal Email</div>
-                  <div style="color: var(--text-muted);">Original: ebb12@gmail.com ➔ <strong style="color: #10b981;">farhan.rahmat@gmail.com</strong></div>
+                  <div style="color: var(--text-muted);">Original: ebb12@gmail.com ➔ <strong style="color: #10b981;">sarah.jenkins@peoplehcm.com</strong></div>
                 </div>
                 <div style="background: var(--bg-input); padding: 8px 10px; border-radius: 8px;">
                   <div style="font-weight: 800; color: var(--text-primary);">Passport Expiry Date</div>
@@ -1003,6 +1003,10 @@
 
   <script>
     const modifiedFields = new Map();
+    const familyRecords = {
+      'ABU KARUDDIN BIN MAHMUD': { relation: 'HUSBAND', status: 'Married', birthdate: '18/07/1984', rank: '- Select Rank-', nric: '880412-14-5589', taxstatus: 'Non-Deductible', allocation: '50.00', beneficiary: true },
+      'SITI AISHAH BINTI FARHAN': { relation: 'DAUGHTER', status: 'Single', birthdate: '12/09/2014', rank: 'First Child', nric: '140912-14-5588', taxstatus: 'Deductible Child', allocation: '50.00', beneficiary: true }
+    };
 
     // Scroll Handler for Right Fade Mask
     function handleCatScrollerScroll(el) {
@@ -1087,14 +1091,32 @@
     }
 
     function editFamilyRecord(name) {
-      toggleFamilyForm(true, `✏️ Edit Family Member (${name})`);
-      showToast('✏️', `Editing family member: ${name}`);
+      const record = familyRecords[name];
+      if (!record) return;
+      const values = { name, relation: record.relation, status: record.status, birthdate: record.birthdate, rank: record.rank, nric: record.nric, taxstatus: record.taxstatus, allocation: record.allocation };
+      Object.entries(values).forEach(([field, value]) => {
+        const input = document.getElementById('input_fam_' + field);
+        if (!input) return;
+        input.value = value;
+        input.dataset.original = value;
+        const card = input.closest('.change-field-card');
+        if (card) card.classList.remove('modified');
+        modifiedFields.delete('fam_' + field);
+      });
+      const beneficiary = document.getElementById('fam_beneficiary');
+      if (beneficiary) { beneficiary.checked = record.beneficiary; beneficiary.dataset.original = String(record.beneficiary); }
+      updateDraftBar();
+      toggleFamilyForm(true, 'Edit Family Member (' + name + ')');
+      showToast('Edit', 'Editing family member: ' + name);
     }
 
-    function deleteFamilyRecord(name) {
-      showToast('🗑️', `Marked ${name} for deletion.`);
+    function deleteFamilyRecord(name, button) {
+      modifiedFields.set('family_delete_' + name, { element: null, label: 'Delete family member', oldVal: name, newVal: 'Removed' });
+      const card = button ? button.closest('.change-record-card, .change-family-card, [style*="border-radius"]') : null;
+      if (card) card.classList.add('modified');
+      updateDraftBar();
+      showToast('Delete', 'Marked ' + name + ' for deletion.');
     }
-
     // Input Change Handler
     function handleFieldInput(el) {
       const fieldId = el.getAttribute('data-field-id');
@@ -1125,10 +1147,15 @@
 
     // Toggle Switch Change Handler
     function triggerToggleChange(el, labelName) {
-      const isChecked = el.checked;
-      showToast('⚙️', `${labelName} set to ${isChecked ? 'YES' : 'NO'}`);
+      const fieldId = el.id || ('toggle_' + labelName.toLowerCase().replace(/\s+/g, '_'));
+      const original = el.dataset.original === undefined ? !el.checked : el.dataset.original === 'true';
+      el.dataset.original = String(original);
+      if (el.checked !== original) {
+        modifiedFields.set(fieldId, { element: el, label: labelName, oldVal: original ? 'YES' : 'NO', newVal: el.checked ? 'YES' : 'NO' });
+      } else { modifiedFields.delete(fieldId); }
+      updateDraftBar();
+      showToast('Setting', labelName + ' set to ' + (el.checked ? 'YES' : 'NO'));
     }
-
     // Attachment Handlers
     function triggerFileUpload() {
       showToast('📄', 'Opening file picker...');
@@ -1244,23 +1271,34 @@
 
     // Confirm Submission
     function confirmSubmitRequest() {
-      closeReviewModal();
-      showToast('🚀', `Change Request (${modifiedFields.size} fields) routed to HR!`);
-      
-      setTimeout(() => {
-        // Reset modified
-        modifiedFields.forEach((val) => {
-          val.element.setAttribute('data-original', val.newVal);
-          const card = val.element.closest('.change-field-card');
-          if (card) {
-            card.classList.remove('modified');
-          }
-        });
-        modifiedFields.clear();
-        updateDraftBar();
-      }, 1000);
+      if (modifiedFields.size === 0) return;
+      const changes = Array.from(modifiedFields.values()).map(item => ({ label: item.label, oldVal: item.oldVal, newVal: item.newVal }));
+      const request = { id: 'REQ-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6), submittedAt: new Date().toISOString(), status: 'Pending HR Approval', changes };
+      const history = JSON.parse(localStorage.getItem('pq_change_request_history') || '[]');
+      history.unshift(request);
+      localStorage.setItem('pq_change_request_history', JSON.stringify(history));
+      const list = document.getElementById('changeRequestHistoryList');
+      if (list) {
+        const row = document.createElement('div');
+        row.className = 'change-history-item';
+        row.innerHTML = '<div class="change-history-top"><span class="change-history-id"></span><span class="change-history-status pending">Pending HR Approval</span></div><div class="change-history-title"></div><div class="change-history-date"></div>';
+        row.querySelector('.change-history-id').textContent = request.id;
+        row.querySelector('.change-history-title').textContent = changes.map(item => item.label).join(', ');
+        row.querySelector('.change-history-date').textContent = 'Submitted just now (' + changes.length + ' modified fields)';
+        list.prepend(row);
+      }
+      modifiedFields.forEach(item => {
+        if (!item.element) return;
+        if (item.element.type === 'checkbox') item.element.dataset.original = String(item.element.checked);
+        else item.element.dataset.original = item.newVal;
+        const card = item.element.closest('.change-field-card');
+        if (card) card.classList.remove('modified');
+      });
+      modifiedFields.clear();
+      updateDraftBar();
+      toggleOverlay('reviewOverlay', false);
+      showToast('Submitted', 'Change request routed to HR approval.');
     }
-
     function showToast(icon, msg) {
       const toast = document.getElementById('bonusToast');
       const iconEl = document.getElementById('toastIcon');

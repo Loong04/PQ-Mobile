@@ -1,10 +1,10 @@
-const puppeteer = require('puppeteer');
+﻿const puppeteer = require('puppeteer');
 const path = require('path');
 
 const fileUrl = relativePath => 'file:///' + path.resolve(__dirname, '..', relativePath).replace(/\\/g, '/');
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+  const browser = await puppeteer.launch({ headless: 'new', executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--no-sandbox'] });
   const page = await browser.newPage();
   await page.setViewport({ width: 430, height: 900 });
   const pageErrors = [];
@@ -65,7 +65,7 @@ const fileUrl = relativePath => 'file:///' + path.resolve(__dirname, '..', relat
 
   const usesBrandPurple = value => value.includes('rgb(124, 58, 237)') && value.includes('rgb(109, 40, 217)');
   const passed =
-    staff.employeeName === 'Sarah Chen' &&
+    staff.employeeName === 'Sarah Jenkins' &&
     staff.employeeId === '#EBB01' &&
     JSON.stringify(staff.labels) === JSON.stringify(['Period', 'Expense', 'Amount']) &&
     staff.detailCardCount === 1 &&
@@ -104,3 +104,5 @@ const fileUrl = relativePath => 'file:///' + path.resolve(__dirname, '..', relat
   console.error(error);
   process.exit(1);
 });
+
+

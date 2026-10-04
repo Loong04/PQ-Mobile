@@ -53,9 +53,9 @@ async function run() {
     await page.evaluate(() => switchHistoryTab('offtime'));
     const timeOff = await firstCardSnapshot(page);
     assert.equal(timeOff.hasStatusBadge, true, 'Time Off cards must retain the current status badge design');
-    assert.equal(timeOff.employeeName, 'Farhan binti rahmat');
-    assert.equal(timeOff.employeeId, '#EBB12');
-    assert.equal(timeOff.employeeIdDirectlyBelowName, true);
+    assert.equal(timeOff.employeeName, '');
+    assert.equal(timeOff.employeeId, '');
+    assert.doesNotMatch(timeOff.cardText, /Farhan binti rahmat|#EBB12/);
     assert.match(timeOff.cardText, /Ref: OT-2026-0008/);
     assert.doesNotMatch(timeOff.cardText, /Late Start|Early Leave|Outstation/);
     assert.match(timeOff.detailsText, /Event Date/);

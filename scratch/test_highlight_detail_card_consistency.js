@@ -1,4 +1,4 @@
-const path = require('path');
+﻿const path = require('path');
 const puppeteer = require('puppeteer');
 
 const PURPLE_START = 'rgb(76, 29, 149)';
@@ -23,15 +23,24 @@ async function inspectClaimHighlight(page, config) {
   await new Promise(resolve => setTimeout(resolve, 60));
 
   return page.evaluate(config => {
+    const clean = value => String(value || '').replace(/\s+/g, ' ').trim();
     const modal = document.getElementById(config.modalId);
     const records = [...document.querySelectorAll(config.recordSelector)];
     const firstRecord = records[0];
     const periodHeader = firstRecord?.querySelector(config.periodSelector);
     const periodStyle = periodHeader ? getComputedStyle(periodHeader) : null;
     const detailsList = document.querySelector(config.listSelector);
+    const name = document.getElementById(config.nameId);
+    const id = document.getElementById(config.idId);
 
     return {
       modalOpen: modal?.style.display === 'flex',
+      name: clean(name?.textContent),
+      id: clean(id?.textContent),
+      idBelowName: Boolean(name && id && id.getBoundingClientRect().top >= name.getBoundingClientRect().bottom),
+      period: clean(firstRecord?.querySelector(config.periodValueSelector)?.textContent),
+      type: clean(firstRecord?.querySelector(config.typeSelector)?.textContent),
+      amount: clean(firstRecord?.querySelector(config.amountSelector)?.textContent),
       firstRecordText: (firstRecord?.textContent || '').replace(/\s+/g, ' ').trim(),
       allRecordsUseOneBorder: records.length > 0 && records.every(record => {
         const style = getComputedStyle(record);
@@ -50,6 +59,7 @@ async function inspectClaimHighlight(page, config) {
 (async () => {
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
@@ -62,22 +72,32 @@ async function inspectClaimHighlight(page, config) {
       file: '../modules/claims/options/benefit-highlight.html',
       openFunction: 'openBenefitDetailsModal',
       employeeId: '#EBB01',
-      employeeName: 'MUHAMMAD ALI BIN MAN',
+      employeeName: 'Sarah Jenkins',
+      nameId: 'modalEmpNameText',
+      idId: 'modalEmpIdBadge',
       modalId: 'benefitDetailsModal',
       listSelector: '.benefit-details-list',
       recordSelector: '.benefit-detail-record',
-      periodSelector: '.benefit-detail-period-row'
+      periodSelector: '.benefit-detail-period-row',
+      periodValueSelector: '.benefit-detail-period-value',
+      typeSelector: '.benefit-detail-type',
+      amountSelector: '.benefit-detail-amount'
     });
 
     const expense = await inspectClaimHighlight(page, {
       file: '../modules/claims/options/expenses-highlight.html',
       openFunction: 'openExpenseDetailsModal',
       employeeId: '#004177',
-      employeeName: 'AHMAD RAFY BIN ZULKIPLE',
+      employeeName: 'Marcus Tan',
+      nameId: 'modalExpenseEmpNameText',
+      idId: 'modalExpenseEmpIdBadge',
       modalId: 'expenseDetailsModal',
       listSelector: '.expense-details-list',
       recordSelector: '.expense-detail-record',
-      periodSelector: '.expense-detail-period-row'
+      periodSelector: '.expense-detail-period-row',
+      periodValueSelector: '.expense-detail-period-value',
+      typeSelector: '.expense-detail-type',
+      amountSelector: '.expense-detail-amount'
     });
 
     await page.goto('file://' + path.resolve(__dirname, '../leave.html'), {
@@ -120,6 +140,11 @@ async function inspectClaimHighlight(page, config) {
       };
     });
 
+    const isReadableLightText = value => {
+      const channels = (value.match(/\d+/g) || []).slice(0, 3).map(Number);
+      return channels.length === 3 && channels.every(channel => channel >= 180);
+    };
+
     const isPurpleHeader = value =>
       value.includes(PURPLE_START) &&
       value.includes(PURPLE_MIDDLE) &&
@@ -129,18 +154,28 @@ async function inspectClaimHighlight(page, config) {
     result.passed =
       benefit.modalOpen &&
       benefit.recordCount === 6 &&
-      benefit.firstRecordText === '202105 Benefit Type ENTERTAINMENT Amount 3,588.00' &&
+      benefit.name === 'Sarah Jenkins' &&
+      benefit.id === '#EBB01' &&
+      benefit.idBelowName &&
+      benefit.period === '202105' &&
+      benefit.type === 'ENTERTAINMENT' &&
+      benefit.amount === '3,588.00' &&
       benefit.allRecordsUseOneBorder &&
       isPurpleHeader(benefit.periodHeaderBackground) &&
-      benefit.periodHeaderColor === 'rgb(255, 255, 255)' &&
+      isReadableLightText(benefit.periodHeaderColor) &&
       benefit.detailsBackground === LIGHT_BACKGROUND &&
       benefit.recordBackgrounds.every(color => color === LIGHT_CARD) &&
       expense.modalOpen &&
       expense.recordCount === 3 &&
-      expense.firstRecordText === '202609 Expense CLIENT DINING & ENTERTAINMENT Amount 2,450.00' &&
+      expense.name === 'Marcus Tan' &&
+      expense.id === '#004177' &&
+      expense.idBelowName &&
+      expense.period === '202609' &&
+      expense.type === 'CLIENT DINING & ENTERTAINMENT' &&
+      expense.amount === '2,450.00' &&
       expense.allRecordsUseOneBorder &&
       isPurpleHeader(expense.periodHeaderBackground) &&
-      expense.periodHeaderColor === 'rgb(255, 255, 255)' &&
+      isReadableLightText(expense.periodHeaderColor) &&
       expense.detailsBackground === LIGHT_BACKGROUND &&
       expense.recordBackgrounds.every(color => color === LIGHT_CARD) &&
       leave.modalOpen &&
@@ -168,3 +203,6 @@ async function inspectClaimHighlight(page, config) {
   console.error(error);
   process.exitCode = 1;
 });
+
+
+

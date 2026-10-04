@@ -487,7 +487,7 @@
     .btn-approve {
       flex: 1;
       padding: 7px 0;
-      background: #10b981;
+      background: #7c3aed;
       color: #ffffff;
       border: none;
       border-radius: 10px;
@@ -733,8 +733,8 @@
 
   <!-- Top Switcher: Themes & Designs -->
   <div class="theme-switch-bar">
-    <a class="mode-btn" href="home-v1.html">📊 Insights V1</a>
-    <a class="mode-btn" href="home-v2.html">📱 Shortcuts V2</a>
+    <a class="mode-btn" href="index.html">📊 Insights V1</a>
+    <a class="mode-btn" href="app.html">📱 Shortcuts V2</a>
     <div class="bar-divider"></div>
     <a class="mode-btn design-badge active" href="team.html">👥 My Team</a>
     <a class="mode-btn design-badge" href="leave.html">🌴 Leave</a>
@@ -827,7 +827,7 @@
 
       <!-- Segmented Tab Switch (My Team is ACTIVE) -->
       <div class="tab-switch">
-        <a class="tab-btn" href="home-v1.html">
+        <a class="tab-btn" href="index.html">
           <i class="fa-solid fa-user"></i>
           My Work
         </a>
@@ -1065,7 +1065,7 @@
 
     <!-- Bottom Navigation Bar (With 4-dots Apps FAB Icon) -->
     <div class="bottom-nav">
-      <a class="nav-item" href="home-v1.html">
+      <a class="nav-item" href="index.html">
         <div class="nav-icon">
           <i class="fa-solid fa-house"></i>
         </div>
@@ -1105,6 +1105,29 @@
       <div class="home-bar"></div>
     </div>
   </div>
+
+  <script>
+    (() => {
+      const key = 'pq_team_approval_decisions';
+      const read = () => { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } };
+      const handled = new Set(read().map(item => item.reference));
+      document.querySelectorAll('.approval-card').forEach((card, index) => {
+        const reference = 'TEAM-' + (index + 1);
+        card.dataset.reference = reference;
+        if (handled.has(reference)) card.remove();
+      });
+      document.addEventListener('click', event => {
+        const button = event.target.closest('.approval-card .btn-approve, .approval-card .btn-reject');
+        if (!button) return;
+        const card = button.closest('.approval-card');
+        const action = button.classList.contains('btn-approve') ? 'approved' : 'reviewed';
+        const decisions = read().filter(item => item.reference !== card.dataset.reference);
+        decisions.push({ reference: card.dataset.reference, action, decidedAt: new Date().toISOString() });
+        localStorage.setItem(key, JSON.stringify(decisions));
+        card.remove();
+      });
+    })();
+  </script>
 
 </body>
 </html>

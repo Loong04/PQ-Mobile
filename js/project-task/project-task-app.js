@@ -308,6 +308,43 @@
     boxes.forEach(box => box.addEventListener('change', syncSelectAll));
   }
 
+  function initPendingApprovalActions() {
+    const storageKey = 'pq_project_pending_decisions';
+    const read = () => {
+      try { const value = JSON.parse(localStorage.getItem(storageKey)); return Array.isArray(value) ? value : []; }
+      catch { return []; }
+    };
+    const updateCount = () => {
+      const count = document.querySelectorAll('#projectTimesheetApprovalList .project-approval-card').length;
+      const label = document.getElementById('projectTimesheetApprovalCount');
+      if (label) label.textContent = count + (count === 1 ? ' Record' : ' Records');
+    };
+    const handled = new Set(read().map(item => item.reference));
+    document.querySelectorAll('#projectTimesheetApprovalList .project-approval-card').forEach(card => {
+      if (handled.has(card.dataset.reference)) card.remove();
+    });
+    updateCount();
+    document.addEventListener('click', event => {
+      const button = event.target.closest('[data-project-approval-action]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const card = button.closest('.project-approval-card');
+      const details = document.getElementById('projectApprovalDetails');
+      const reference = card?.dataset.reference || details?.dataset.reference;
+      if (!reference) return;
+      const action = button.dataset.projectApprovalAction;
+      const comments = document.getElementById('projectApprovalApproverComments')?.value.trim() || '';
+      const decisions = read().filter(item => item.reference !== reference);
+      decisions.push({ reference, action, comments, decidedAt: new Date().toISOString() });
+      localStorage.setItem(storageKey, JSON.stringify(decisions));
+      document.querySelector(`[data-reference="${CSS.escape(reference)}"]`)?.remove();
+      if (details) { details.classList.remove('is-open'); details.hidden = true; }
+      updateCount();
+      window.showToast?.(`Request ${action}d`);
+    });
+  }
+
   function initPendingApprovalSheets() {
     const phone = document.querySelector('.phone-container');
     const menu = document.getElementById('projectApprovalMenu');
@@ -359,6 +396,7 @@
         document.getElementById(id).textContent = value(key);
       });
       document.getElementById('projectApprovalApproverComments').value = '';
+      details.dataset.reference = value('reference');
     };
     document.querySelectorAll('[data-project-approval-menu]').forEach(button => {
       button.addEventListener('click', () => {
@@ -479,6 +517,7 @@
     syncThemeNavigation();
     initPendingApprovalSelection();
     initPendingApprovalSheets();
+    initPendingApprovalActions();
     initTeamProjectDetails();
     initCalendarTimesheetDetails();
     document.addEventListener('click', event => {

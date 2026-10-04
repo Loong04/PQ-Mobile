@@ -219,6 +219,7 @@
 
   const byId = id => document.getElementById(id);
   let lastFocusedElement = null;
+  const historyActions = new Map();
 
   function createNode(tag, className, text) {
     const element = document.createElement(tag);
@@ -236,6 +237,14 @@
     }
   }
 
+  function readStoredObject(key) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key));
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    } catch {
+      return null;
+    }
+  }
   function statusKey(value) {
     return String(value || 'Draft')
       .trim()
@@ -313,9 +322,14 @@
 
   function selectStatusSamples(records) {
     const unique = records.filter((record, index) => records.findIndex(candidate => candidate.id === record.id) === index);
-    return ['submitted', 'draft']
-      .map(status => unique.find(record => statusKey(record.status) === status))
-      .filter(Boolean);
+    return unique
+      .filter(record => historyActions.get(record.id) !== 'discard')
+      .map(record => {
+        const action = historyActions.get(record.id);
+        if (action === 'submit') return { ...record, status: 'Submitted' };
+        if (action === 'cancel') return { ...record, status: 'Cancelled' };
+        return record;
+      });
   }
 
   function calculateActivityMinutes(activity) {
@@ -363,7 +377,11 @@
     const demoSamples = demoTimesheets
       .filter(record => ['TS-2026-0102', 'TS-2026-0094'].includes(record.id))
       .map(normalizeTimesheet);
-    const records = [...stored, ...demoSamples];
+    const draft = readStoredObject('pq_project_timesheet_draft');
+    const draftRecord = draft && typeof draft === 'object'
+      ? [normalizeTimesheet({ ...draft, id: 'TS-DRAFT-LOCAL', status: 'Draft' })]
+      : [];
+    const records = [...draftRecord, ...stored, ...demoSamples];
     return selectStatusSamples(records);
   }
 
@@ -435,31 +453,43 @@
     return top;
   }
 
-  function createCardAction(label, variant) {
+  function createCardAction(label, variant, record, kind) {
     const button = createNode('button', 'project-history-card-action project-history-card-action-' + variant, label);
     button.type = 'button';
     button.dataset.historyAction = label.toLowerCase();
     button.addEventListener('click', event => {
       event.stopPropagation();
-      window.showToast?.(label + ' action selected');
+      const action = label.toLowerCase();
+      historyActions.set(record.id, action);
+      if (record.id === 'TS-DRAFT-LOCAL' && (action === 'submit' || action === 'discard')) {
+        if (action === 'submit') {
+          const stored = readStored('pq_project_timesheets');
+          stored.push({ ...record, status: 'Submitted' });
+          localStorage.setItem('pq_project_timesheets', JSON.stringify(stored));
+        }
+        localStorage.removeItem('pq_project_timesheet_draft');
+      }
+      if (kind === 'work-plan') renderWorkPlans();
+      else renderTimesheets();
+      window.showToast?.(label + ' completed');
     });
     return button;
   }
 
-  function createCardActions(record) {
+  function createCardActions(record, kind) {
     const state = statusKey(record.status);
     const actions = createNode('div', 'project-history-card-actions');
     if (state === 'draft') {
       actions.setAttribute('aria-label', 'Draft actions');
       actions.append(
-        createCardAction('Submit', 'primary'),
-        createCardAction('Discard', 'danger')
+        createCardAction('Submit', 'primary', record, kind),
+        createCardAction('Discard', 'danger', record, kind)
       );
       return actions;
     }
     if (state === 'submitted') {
       actions.setAttribute('aria-label', record.status + ' actions');
-      actions.append(createCardAction('Cancel', 'danger'));
+      actions.append(createCardAction('Cancel', 'danger', record, kind));
       return actions;
     }
     return null;
@@ -477,7 +507,7 @@
       createDataRow('Deadline', formatDate(record.deadline))
     );
     card.append(createCardTop(record.title, record.id, record.status), details);
-    const actions = createCardActions(record);
+    const actions = createCardActions(record, 'work-plan');
     if (actions) card.append(actions);
     makeCardInteractive(card, () => openWorkPlanDetails(record));
     return card;
@@ -495,7 +525,7 @@
       createDataRow('OT Hours', formatMinutes(record.overtimeMinutes))
     );
     card.append(createCardTop(formatDate(record.date), record.id, record.status), details);
-    const actions = createCardActions(record);
+    const actions = createCardActions(record, 'timesheet');
     if (actions) card.append(actions);
     makeCardInteractive(card, () => openTimesheetDetails(record));
     return card;

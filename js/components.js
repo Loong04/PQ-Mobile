@@ -154,6 +154,7 @@ class LeftProfileDrawer extends HTMLElement {
             </div>
             <div class="drawer-user-info">
               <div class="drawer-user-name">Sarah Jenkins</div>
+              <div class="drawer-employee-id">#EBB01</div>
               <div class="drawer-user-role">Senior Product Designer</div>
               <div class="drawer-user-email">sarah.j@peoplequest.com</div>
             </div>
@@ -161,7 +162,6 @@ class LeftProfileDrawer extends HTMLElement {
 
           <div class="drawer-badge-row">
             <span class="drawer-dept-badge">Product & Design</span>
-            <span class="drawer-id-badge">ID: PQ-8042</span>
           </div>
 
           <div class="drawer-divider"></div>

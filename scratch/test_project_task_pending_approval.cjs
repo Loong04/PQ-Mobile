@@ -120,13 +120,13 @@ const pageUrl = theme => pathToFileURL(
             bottomRadius: sheetStyle.borderBottomLeftRadius
           };
         }),
-        { alignment: 'flex-end', topRadius: '28px', bottomRadius: '0px' }
+        { alignment: 'center', topRadius: '18px', bottomRadius: '18px' }
       );
       for (const width of [360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
         assert.equal(await page.$eval('.project-approval-details-sheet', node => node.scrollWidth > node.clientWidth + 1), false);
       }
-      await page.click('#projectApprovalDetails [data-close-project-approval]');
+      await page.click('#projectApprovalDetails .detail-popout-close');
       assert.equal(await page.$eval('#projectApprovalDetails', node => node.hidden), true);
       assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-project-approval-menu')), true);
       await page.click('[data-project-approval-menu]');

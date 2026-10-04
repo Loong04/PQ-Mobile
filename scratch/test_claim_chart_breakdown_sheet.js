@@ -1,4 +1,4 @@
-const path = require('path');
+﻿const path = require('path');
 const puppeteer = require('puppeteer');
 
 const dashboardUrl = 'file://' + path.resolve(__dirname, '../modules/claims/index.html');
@@ -40,6 +40,7 @@ async function openBreakdown(page, scope, category) {
 (async () => {
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
@@ -83,19 +84,19 @@ async function openBreakdown(page, scope, category) {
 
     result.passed =
       commonChecks(individualBenefits) &&
-      individualBenefits.context === 'Individual • Benefits' &&
+      individualBenefits.context === 'Individual â€¢ Benefits' &&
       individualBenefits.rows.length === 6 &&
       individualBenefits.rows[0] === 'Consultation RM600 40%' &&
       commonChecks(individualClaims) &&
-      individualClaims.context === 'Individual • Claims' &&
+      individualClaims.context === 'Individual â€¢ Claims' &&
       individualClaims.rows.length === 5 &&
       individualClaims.rows[0] === 'Travel Mileage RM750 40.5%' &&
       commonChecks(teamBenefits) &&
-      teamBenefits.context === 'Team • Benefits' &&
+      teamBenefits.context === 'Team â€¢ Benefits' &&
       teamBenefits.rows.length === 6 &&
       teamBenefits.rows[0] === 'Consultation RM3,000 42.3%' &&
       commonChecks(teamClaims) &&
-      teamClaims.context === 'Team • Claims' &&
+      teamClaims.context === 'Team â€¢ Claims' &&
       teamClaims.rows.length === 5 &&
       teamClaims.rows[0] === 'Overseas Travel RM5,200 41.8%' &&
       closes &&
@@ -110,3 +111,5 @@ async function openBreakdown(page, scope, category) {
   console.error(error);
   process.exitCode = 1;
 });
+
+

@@ -165,7 +165,7 @@ async function closeDetails(page) {
         };
       });
       assert.equal(detailModalLayout.alignItems, 'center');
-      assert.equal(detailModalLayout.zIndex, '200');
+      assert.equal(detailModalLayout.zIndex, '1200');
       assert.equal(detailModalLayout.overlayOpacity, '1');
       assert.equal(detailModalLayout.sheetOpacity, '1');
       assert.ok(detailModalLayout.topGap >= 16);

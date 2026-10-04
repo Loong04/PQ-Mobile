@@ -977,11 +977,42 @@
       </div>
     </div>
 
+    <div id="dailyManpowerChartModal" onclick="closeDailyManpowerChart(event)" style="position:absolute;inset:0;z-index:1000;display:none;align-items:flex-end;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);border-radius:44px;overflow:hidden;">
+      <div onclick="event.stopPropagation()" style="width:100%;background:var(--bg-card);border-top-left-radius:26px;border-top-right-radius:26px;padding:20px 18px 24px;box-shadow:0 -12px 40px rgba(0,0,0,.4);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><div><div style="font-size:17px;font-weight:900;color:var(--text-primary);">Daily Manpower Distribution</div><div id="dailyManpowerChartTotal" style="font-size:11.5px;color:var(--text-muted);margin-top:3px;"></div></div><button type="button" onclick="closeDailyManpowerChart()" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border-subtle);background:var(--bg-input);color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button></div>
+        <div id="dailyManpowerChartRows" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+    </div>
 
 
   </div>
 
   <script>
+    function openChartModal() {
+      const items = [
+        { label: 'Work Shift', value: Number(document.getElementById('kpiWorkShift').textContent) || 0, color: '#7c3aed' },
+        { label: 'No Work', value: Number(document.getElementById('kpiNoWork').textContent) || 0, color: '#f59e0b' },
+        { label: 'OT Plan', value: Number(document.getElementById('kpiOtPlan').textContent) || 0, color: '#06b6d4' },
+        { label: 'On Leave', value: Number(document.getElementById('kpiOnLeave').textContent) || 0, color: '#ec4899' }
+      ];
+      const total = items.reduce((sum, item) => sum + item.value, 0);
+      const modal = document.getElementById('dailyManpowerChartModal');
+      modal.dataset.total = total;
+      document.getElementById('dailyManpowerChartTotal').textContent = `${total} total records`;
+      document.getElementById('dailyManpowerChartRows').innerHTML = items.map(item => `
+        <div data-chart-value="${item.value}">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text-primary);margin-bottom:6px;"><span>${item.label}</span><span>${item.value}</span></div>
+          <div style="height:9px;border-radius:999px;background:var(--bg-input);overflow:hidden;"><div style="height:100%;width:${total ? (item.value / total * 100) : 0}%;background:${item.color};border-radius:999px;"></div></div>
+        </div>`).join('');
+      modal.style.display = 'flex';
+    }
+
+    function closeDailyManpowerChart(event) {
+      if (event && event.target && event.target.id !== 'dailyManpowerChartModal') return;
+      const modal = document.getElementById('dailyManpowerChartModal');
+      if (modal) modal.style.display = 'none';
+    }
+
     // Master Dataset of Daily Manpower Groups
     const masterManpowerDataset = [
       {

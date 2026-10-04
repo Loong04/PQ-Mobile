@@ -141,7 +141,7 @@
     if (appliedFilters.keyword.trim()) parts.push(appliedFilters.keyword.trim());
     if (appliedFilters.item !== 'all') parts.push(appliedFilters.item);
     if (appliedFilters.status !== 'all') parts.push(formatStatus(appliedFilters.status));
-    if (parts.length === 1) parts.push('01 Jan–03 Oct 2026');
+    if (appliedFilters.startDate || appliedFilters.endDate) parts.push(formatDate(appliedFilters.startDate) + '\u2013' + formatDate(appliedFilters.endDate));
     return parts.join(' · ');
   }
 

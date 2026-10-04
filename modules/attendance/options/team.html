@@ -14,6 +14,9 @@
 
       function openAttendanceThreeDotsMenu(btn, id) {
         const card = btn ? btn.closest('.approval-request-card') : null;
+        const selectedRecord = (typeof staffDatabase !== 'undefined' && staffDatabase.pending_approval)
+          ? staffDatabase.pending_approval.find(item => String(item.id) === String(id))
+          : null;
         let name = 'Afifah Nasir';
         let empId = id || '#004177';
         let dept = 'Quality Assurance • TIMES SQUARE BRANCH';
@@ -51,7 +54,14 @@
           if (remarkEl) remark = remarkEl.textContent.trim();
         }
 
-        currentAttendanceSelectedData = {
+        currentAttendanceSelectedData = selectedRecord ? {
+          ...selectedRecord,
+          empId: selectedRecord.id && selectedRecord.id.startsWith('#') ? selectedRecord.id : '#' + selectedRecord.id,
+          dates: selectedRecord.startDate === selectedRecord.endDate
+            ? selectedRecord.startDate
+            : `${selectedRecord.startDate} - ${selectedRecord.endDate}`,
+          docRef: selectedRecord.docRef || 'VAT' + Math.floor(10000000 + Math.random() * 90000000)
+        } : {
           name: name,
           empId: empId.startsWith('#') ? empId : '#' + empId,
           dept: dept,
@@ -255,6 +265,29 @@
             if (sheet) sheet.style.transform = 'translateY(0)';
           }
         }, 200);
+      }
+
+      let currentAttendanceBackupLevel = 'Level 1';
+
+      function openSelectBackupApproverModal(level) {
+        currentAttendanceBackupLevel = level || 'Level 1';
+        const levelEl = document.getElementById('attendanceBackupApproverLevel');
+        if (levelEl) levelEl.textContent = currentAttendanceBackupLevel;
+        const overlay = document.getElementById('attendanceBackupApproverModalOverlay');
+        if (overlay) { overlay.style.display = 'flex'; overlay.style.pointerEvents = 'auto'; }
+      }
+
+      function closeAttendanceBackupApproverModal(event) {
+        if (event && event.target && event.target.id !== 'attendanceBackupApproverModalOverlay' && !event.target.classList.contains('sheet-close-btn')) return;
+        const overlay = document.getElementById('attendanceBackupApproverModalOverlay');
+        if (overlay) { overlay.style.display = 'none'; overlay.style.pointerEvents = 'none'; }
+      }
+
+      function selectAttendanceBackupApprover(name, role) {
+        const assigned = document.getElementById('attendanceLevel1Approvers');
+        if (assigned) assigned.textContent = `Assigned Approvers Pool: Sarah Jenkins, Farhan Rahmat, Benjamin Lee • Backup: ${name} (${role})`;
+        closeAttendanceBackupApproverModal();
+        if (typeof showToast === 'function') showToast(`${name} assigned as ${currentAttendanceBackupLevel} backup approver`);
       }
 
       function closeAttendanceWorkflowModal(event) {
@@ -1413,7 +1446,7 @@
                 <span class="team-action-required-description">Items that require your action</span>
               </span>
             </div>
-            <span class="team-action-required-badge">26 Tasks</span>
+            <span class="team-action-required-badge" id="attendanceTeamActionRequiredCount">21 Tasks</span>
           </div>
 
           <!-- Action Items List -->
@@ -1435,7 +1468,7 @@
                 <span class="team-pending-approval-description">OT plans &amp; leave requests awaiting review</span>
               </span>
               <span class="team-pending-approval-end">
-                <span class="team-pending-approval-count">18</span>
+                <span class="team-pending-approval-count" id="attendancePendingApprovalDashboardCount">13</span>
                 <i class="fa-solid fa-chevron-right team-pending-approval-chevron"></i>
               </span>
             </div>
@@ -3347,7 +3380,7 @@
               <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Level 1: Line Manager Approval</span>
               <span style="font-size: 10.5px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 10px;">Active Step</span>
             </div>
-            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">Assigned Approvers Pool: Sarah Jenkins, Farhan Rahmat, Benjamin Lee</div>
+            <div id="attendanceLevel1Approvers" style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">Assigned Approvers Pool: Sarah Jenkins, Farhan Rahmat, Benjamin Lee</div>
             <button type="button" onclick="openSelectBackupApproverModal('Level 1')" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; border: none; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
               <i class="fa-solid fa-shield-halved"></i> Assign Backup Approver
             </button>
@@ -3381,6 +3414,19 @@
           <button type="button" onclick="closeAttendanceWorkflowModal()" style="width: 100%; padding: 13px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; font-weight: 800; font-size: 13.5px; border: none; cursor: pointer; margin-top: 4px; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);">
             Close Workflow
           </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="indicators-overlay" id="attendanceBackupApproverModalOverlay" onclick="closeAttendanceBackupApproverModal(event)" style="position: absolute; inset: 0; z-index: 1005; display: none; align-items: flex-end; justify-content: center; background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(6px); border-radius: 44px; overflow: hidden;">
+      <div class="indicators-sheet" onclick="event.stopPropagation()" style="width: 100%; background: var(--bg-card); border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 18px; box-shadow: 0 -12px 40px rgba(0,0,0,.4);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <div><div style="font-size:16px; font-weight:800; color:var(--text-primary);">Assign Backup Approver</div><div id="attendanceBackupApproverLevel" style="font-size:11px; color:var(--text-muted); margin-top:2px;">Level 1</div></div>
+          <button type="button" class="sheet-close-btn" onclick="closeAttendanceBackupApproverModal()" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border-subtle);background:var(--bg-input);color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button type="button" data-backup-name="Nur Aisyah" data-backup-role="HR Business Partner" onclick="selectAttendanceBackupApprover(this.dataset.backupName, this.dataset.backupRole)" style="padding:12px; border-radius:14px; border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-primary); text-align:left; font-weight:800;">Nur Aisyah <span style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);margin-top:3px;">HR Business Partner</span></button>
+          <button type="button" data-backup-name="Daniel Wong" data-backup-role="Operations Lead" onclick="selectAttendanceBackupApprover(this.dataset.backupName, this.dataset.backupRole)" style="padding:12px; border-radius:14px; border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-primary); text-align:left; font-weight:800;">Daniel Wong <span style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);margin-top:3px;">Operations Lead</span></button>
         </div>
       </div>
     </div>
@@ -3797,6 +3843,15 @@
         ],
       };
 
+      function syncAttendanceActionCounts() {
+        const pending = staffDatabase.pending_approval.length;
+        const verification = staffDatabase.attendance_verification.length;
+        const pendingEl = document.getElementById('attendancePendingApprovalDashboardCount');
+        const totalEl = document.getElementById('attendanceTeamActionRequiredCount');
+        if (pendingEl) pendingEl.textContent = pending;
+        if (totalEl) totalEl.textContent = `${pending + verification} Tasks`;
+      }
+
       let currentStaffType = "scheduled";
       let currentStaffApprovalCategory = 'final_ot';
       let currentViewSection = 'main';
@@ -3982,7 +4037,8 @@
                   </div>
                   <div>
                     <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.name}</div>
-                    <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.85); font-family: monospace, sans-serif;">#${(item.id || '').replace(/^#/, '')} • ${item.dept || 'Staff'}</div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, 0.85); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#${(item.id || '').replace(/^#+/, '')}</div>
+                    <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">${item.dept || 'Staff'}</div>
                   </div>
                 </div>
 
@@ -4119,7 +4175,7 @@
           noshow: 7,
           ot: 12,
           attention: 43,
-          pending_approval: 14,
+          pending_approval: staffDatabase.pending_approval.length,
           attendance_verification: 8,
           late_departure: 12,
           work_compliance: 5,
@@ -4190,7 +4246,8 @@
                     </div>
                     <div>
                       <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;">${item.name}</div>
-                      <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.85); font-family: monospace, sans-serif;">#${(item.id || '').replace(/^#/, '')} • ${item.dept || 'Staff'}</div>
+                      <div style="font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, 0.85); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">#${(item.id || '').replace(/^#+/, '')}</div>
+                    <div style="font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85);">${item.dept || 'Staff'}</div>
                     </div>
                   </div>
 
@@ -4283,8 +4340,11 @@
             <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">
               ${item.name}
             </div>
-            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">
-              ${item.id} • ${item.dept}${item.branch ? ` • ${item.branch}` : ''}
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 2px;">
+              #${(item.id || '').replace(/^#+/, '')}
+            </div>
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">
+              ${item.dept}${item.branch ? ` • ${item.branch}` : ''}
             </div>
             <div style="font-size: 12px; font-weight: 800; color: var(--purple-primary, #7c3aed); margin-top: 3px;">
               ${item.statusText}
@@ -4385,7 +4445,7 @@
           noshow: 7,
           ot: 12,
           attention: 43,
-          pending_approval: 18,
+          pending_approval: staffDatabase.pending_approval.length,
           attendance_verification: 8,
           late_departure: 12,
           work_compliance: 5,
@@ -4489,6 +4549,7 @@
       }
 
       document.addEventListener("DOMContentLoaded", function() {
+        syncAttendanceActionCounts();
         const urlParams = new URLSearchParams(window.location.search);
         const view = urlParams.get('view');
         const tab = urlParams.get('tab') || urlParams.get('cat');

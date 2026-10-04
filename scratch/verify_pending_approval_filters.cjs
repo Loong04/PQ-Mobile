@@ -1,4 +1,4 @@
-const assert = require('node:assert/strict');
+﻿const assert = require('node:assert/strict');
 const path = require('node:path');
 const puppeteer = require('puppeteer');
 
@@ -25,7 +25,7 @@ async function checkSharedPanel(page, id, open) {
     await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
     await open();
     const labels = await page.$$eval(`#${id} label`, nodes => nodes.filter(node => node.getClientRects().length).map(node => node.textContent.trim()));
-    assert.deepEqual(labels, ['Search Keyword', 'Start Date', 'End Date', 'Outstanding Days']);
+    assert.deepEqual(labels, ['Search keyword', 'Start date', 'End date', 'Outstanding days']);
     const overflow = await page.$eval(`#${id} form`, node => node.scrollWidth > node.clientWidth + 1);
     assert.equal(overflow, false);
     await page.screenshot({ path: `scratch/${id}_${theme}.png` });
@@ -34,7 +34,7 @@ async function checkSharedPanel(page, id, open) {
 }
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 390, height: 920 });
@@ -132,28 +132,75 @@ async function checkSharedPanel(page, id, open) {
     assert.equal(await countCards(page, leaveCards), 3);
     console.log('Leave: all three categories have four fields; keyword, inclusive dates, pending age, category persistence and reset passed.');
 
+    await openPage(page, 'modules/payroll/options/pending-approval.html');
+    await page.evaluate(() => localStorage.removeItem('pq_payroll_pending_decisions'));
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#payrollPendingQueue .approval-request-card');
+    const payrollCards = '#payrollPendingQueue .approval-request-card';
+    assert.equal(await countCards(page, payrollCards), 10);
+    await page.click('#payrollPendingFilterTrigger');
+    const payrollFilterContract = await page.$eval('#payrollPendingFilter .approval-filter-panel', panel => {
+      const inputStyle = getComputedStyle(panel.querySelector('input'));
+      return {
+        title: panel.querySelector('h2').textContent.trim(),
+        hasResetIcon: Boolean(panel.querySelector('[data-action="reset"] .fa-rotate-left')),
+        controlHeight: inputStyle.minHeight,
+        controlRadius: inputStyle.borderRadius
+      };
+    });
+    assert.deepEqual(payrollFilterContract, { title: 'Filter', hasResetIcon: true, controlHeight: '48px', controlRadius: '16px' });
+    await setShared(page, 'payrollPendingFilter', { keyword: '#EBB01' });
+    assert.equal(await countCards(page, payrollCards), 1);
+    assert.equal(await page.$eval('#payrollPendingCount', node => node.textContent), '1');
+    await page.click('#payrollPendingFilterTrigger');
+    await setShared(page, 'payrollPendingFilter', { startDate: '2024-09-06', endDate: '2024-09-06' });
+    assert.equal(await countCards(page, payrollCards), 1);
+    await page.click('#payrollPendingFilterTrigger');
+    await page.click('#payrollPendingFilter [data-action="reset"]');
+    assert.equal(await countCards(page, payrollCards), 10);
+    await page.click('#payrollPendingFilter [data-action="close"]');
+    await checkSharedPanel(page, 'payrollPendingFilter', () => page.click('#payrollPendingFilterTrigger'));
+    await page.click('#payrollPendingTab-deduction');
+    assert.equal(await countCards(page, payrollCards), 10);
+    await page.click('#payrollPendingFilterTrigger');
+    await setShared(page, 'payrollPendingFilter', { keyword: 'BACKPAY' });
+    assert.equal(await countCards(page, payrollCards), 1);
+    assert.equal(await page.$eval('#payrollPendingCount', node => node.textContent), '1');
+    await page.click('#payrollPendingFilterTrigger');
+    await page.click('#payrollPendingFilter [data-action="reset"]');
+    await page.click('#payrollPendingFilter [data-action="close"]');
+    console.log('Payroll: maintained Pending Approval route uses the Filter/reset/48px/16px contract; tax and deduction keyword/date filters and counts passed.');
+
     await openPage(page, 'modules/payroll/options/tax-relief.html');
-    await page.waitForSelector('.team-relief-card');
-    await page.evaluate(() => switchStatusTab('pending'));
-    const payrollCards = '#fullTaxReliefList .team-relief-card';
-    assert.equal(await countCards(page, payrollCards), 4);
-    await page.click('[aria-label="Open pending approval filter"]');
-    await setShared(page, 'taxReliefPendingFilter', { keyword: '#0000101' });
-    assert.equal(await countCards(page, payrollCards), 1);
-    assert.equal(await page.$eval('#countTabPending', node => node.textContent), '(1)');
-    await page.evaluate(() => getTaxReliefApprovalFilter().open());
-    await setShared(page, 'taxReliefPendingFilter', { startDate: '2026-09-18', endDate: '2026-09-18' });
-    assert.equal(await countCards(page, payrollCards), 1);
-    await page.evaluate(() => getTaxReliefApprovalFilter().open());
-    await setShared(page, 'taxReliefPendingFilter', { days: 'custom', minDays: '13', maxDays: '13' });
-    assert.equal(await countCards(page, payrollCards), 1);
-    await page.evaluate(() => getTaxReliefApprovalFilter().reset());
-    assert.equal(await countCards(page, payrollCards), 4);
-    await checkSharedPanel(page, 'taxReliefPendingFilter', () => page.evaluate(() => getTaxReliefApprovalFilter().open()));
-    console.log('Payroll: four fields, employee-ID search, dates, custom days, accurate counts and reset passed.');
+    await page.waitForSelector('#taxReliefFilterSummary');
+    const taxReliefSummary = await page.$eval('#taxReliefFilterSummary', node => node.textContent);
+    assert.equal(taxReliefSummary.includes('\u00b7'), true);
+    assert.equal(taxReliefSummary.includes('\u2013'), true);
+    const remediatedRoutes = [
+      'modules/payroll/options/tax-relief.html',
+      'modules/payroll/options/pending-approval.html',
+      'modules/payroll/options/ea-form.html',
+      'modules/payroll/options/history.html',
+      'modules/project-task/options/pending-approval.html',
+      'modules/project-task/options/history.html',
+      'me.html', 'bonus-history.html', 'salary-history.html', 'change-request.html', 'work-behaviour.html'
+    ];
+    for (const route of remediatedRoutes) {
+      await openPage(page, route);
+      const corrupt = await page.$eval('body', node => {
+        const text = node.innerText;
+        const markers = ['\u00c2', '\u00c3', '\ufffd', '\u00e2\u20ac', '\u00f0\u0178'];
+        return markers.filter(value => text.includes(value));
+      });
+      assert.deepEqual(corrupt, [], route + ' must not render mojibake markers');
+    }
+    console.log('Payroll/Project/Me: remediated formal routes render without mojibake markers.');
     assert.deepEqual(faults, []);
     console.log('No browser script errors. Mobile panels fit in dark and light themes.');
   } finally {
     await browser.close();
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+
+
+

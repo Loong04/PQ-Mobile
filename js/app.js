@@ -59,6 +59,10 @@ const APP_ROUTES = {
   'performance_goals': '#performance-goals',
   'learning_dev': '#learning-development',
   'people_documents': 'team.html',
+  'work_behaviour': 'work-behaviour.html',
+  'change_request': 'change-request.html',
+  'bonus_history': 'bonus-history.html',
+  'subordinates': 'subordinates.html',
 
   // Bottom Navigation & Favourite Shortcut
   'calendar': 'calendar.html',
@@ -160,6 +164,9 @@ function setTheme(theme) {
   // For other pages (or in-place switches)
   const html = document.documentElement;
   html.setAttribute('data-theme', theme);
+  const themeUrl = new URL(window.location.href);
+  themeUrl.searchParams.set('theme', theme);
+  window.history.replaceState(null, '', themeUrl);
 
   // Update top switcher bar buttons (Dark Mode / Light Mode only)
   document.querySelectorAll('.theme-btn').forEach(btn => {
@@ -1119,7 +1126,7 @@ const SYSTEM_FAV_CATALOG = [
   { id: 'shift_swap', category: '📝 Apply Module', name: 'Shift Exchange Request', icon: '🔄', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.16)', target: 'work_behaviour' },
 
   // 🧾 Claim & Expense Module
-  { id: 'claims', category: '🧾 Claim & Expense Module', name: 'Medical & Outpatient Claim', icon: '🧾', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.16)', target: 'change_request' },
+  { id: 'claims', category: '🧾 Claim & Expense Module', name: 'Medical & Outpatient Claim', icon: '🧾', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.16)', target: 'claims_expenses' },
   { id: 'travel_claim', category: '🧾 Claim & Expense Module', name: 'Travel & Allowance Expense', icon: '✈️', color: '#0284c7', bg: 'rgba(2, 132, 199, 0.16)', target: 'change_request' },
 
   // 💰 Payroll & Personal Module
@@ -1440,6 +1447,7 @@ function initStandardFilterSheets() {
     }));
 
     panel.querySelectorAll('label').forEach((label) => {
+      if (label.querySelector('input, select, textarea')) return;
       const labelText = label.textContent.replace(/\s+/g, ' ').trim();
       if (labelText) label.textContent = formatStandardFilterLabel(labelText);
     });
@@ -1593,14 +1601,226 @@ function initInlineFilterSheet() {
   makeTrigger(open);
 }
 
+const STANDARD_FILTER_SUMMARY_SELECTOR = [
+  '.filter-summary-bar',
+  '.staff-filter-summary-bar',
+  '.approval-filter-summary',
+  '.claim-filter-bar',
+  '.payroll-filter-trigger',
+  '.project-history-filter-bar',
+  '.timesheet-filter-summary',
+  '.enterprise-toast-bar'
+].join(',');
+
+function getStandardFilterLabel(card) {
+  const labelPattern = /^(current filter|payroll period|years*(?:&|and)s*tax relief)$/i;
+  return Array.from(card.querySelectorAll('small, span, div'))
+    .find((element) => labelPattern.test(element.textContent.replace(/s+/g, ' ').trim())) || null;
+}
+
+function findStandardFilterCard(label) {
+  const knownCard = label.closest(STANDARD_FILTER_SUMMARY_SELECTOR);
+  if (knownCard) return knownCard;
+
+  let current = label.parentElement;
+  for (let depth = 0; current && current !== document.body && depth < 6; depth += 1) {
+    const directTrigger = current.querySelector(':scope > button, :scope > [role="button"]');
+    if (directTrigger && directTrigger.querySelector('.fa-sliders')) return current;
+    current = current.parentElement;
+  }
+  return null;
+}
+
+function findStandardFilterValue(card, label) {
+  const explicitValue = card.querySelector([
+    '.filter-bar-value',
+    '.claim-filter-value',
+    '.payroll-pending-summary-value',
+    '.enterprise-toast-value',
+    '[id*="filterSummary" i]',
+    '[id*="currentFilterText" i]'
+  ].join(','));
+  if (explicitValue) return explicitValue;
+
+  let current = label;
+  while (current && current !== card) {
+    const sibling = current.nextElementSibling;
+    if (sibling && !sibling.matches('button, [role="button"]')) return sibling;
+    current = current.parentElement;
+  }
+
+  if (card.matches('.payroll-filter-trigger')) return card.querySelector('strong');
+  return null;
+}
+
+function normalizeStandardFilterValue(value) {
+  if (!value) return;
+  value.classList.add('standard-filter-summary-value');
+
+  const valueRow = value.parentElement;
+  if (valueRow) {
+    Array.from(valueRow.children).forEach((element) => {
+      if (element === value || element.matches('button, [role="button"]')) return;
+
+      const isDirectIcon = element.matches('i, svg, img');
+      const isCompactGlyph = element.tagName === 'SPAN' && !element.id && (() => {
+        const glyph = element.textContent.replace(/\s+/g, '');
+        const hasOnlyIconChild = element.children.length === 1
+          && element.firstElementChild.matches('i, svg, img');
+        return hasOnlyIconChild || (glyph.length > 0 && Array.from(glyph).length <= 3);
+      })();
+
+      if (isDirectIcon || isCompactGlyph) element.remove();
+    });
+  }
+
+  let icon = value.querySelector(':scope > .standard-filter-summary-icon');
+  if (icon) {
+    icon.className = 'fa-solid fa-filter standard-filter-summary-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    return;
+  }
+
+  value.querySelectorAll(':scope > i').forEach((legacyIcon) => legacyIcon.remove());
+  const firstChild = value.firstElementChild;
+  if (
+    firstChild &&
+    firstChild.tagName === 'SPAN' &&
+    !firstChild.id &&
+    value.children.length > 1 &&
+    firstChild.textContent.replace(/s+/g, '').length <= 3
+  ) {
+    firstChild.remove();
+  }
+
+  icon = document.createElement('i');
+  icon.className = 'fa-solid fa-filter standard-filter-summary-icon';
+  icon.setAttribute('aria-hidden', 'true');
+  value.prepend(icon);
+}
+
+function normalizeStandardFilterTrigger(card, value) {
+  const triggerCandidates = Array.from(card.querySelectorAll('button, .claim-icon-button, .filter-trigger-btn'));
+  let trigger = triggerCandidates.find((element) => !value?.contains(element) && element.querySelector('i'));
+  let triggerIcon = trigger?.querySelector('i') || null;
+
+  if (!triggerIcon) {
+    const directIcon = Array.from(card.children).find((element) => element.matches?.('i'));
+    if (directIcon) triggerIcon = directIcon;
+  }
+
+  if (!triggerIcon) {
+    if (card.matches('button')) {
+      triggerIcon = document.createElement('i');
+      card.appendChild(triggerIcon);
+    } else {
+      trigger = document.createElement('span');
+      trigger.className = 'standard-filter-summary-trigger';
+      trigger.setAttribute('aria-hidden', 'true');
+      triggerIcon = document.createElement('i');
+      trigger.appendChild(triggerIcon);
+      card.appendChild(trigger);
+    }
+  }
+
+  triggerIcon.className = 'fa-solid fa-sliders standard-filter-summary-trigger-glyph';
+  triggerIcon.setAttribute('aria-hidden', 'true');
+  if (trigger && trigger !== card) trigger.classList.add('standard-filter-summary-trigger');
+}
+
+function initStandardFilterSummaries(root = document) {
+  const cards = new Set();
+  const queryRoot = root.nodeType === Node.DOCUMENT_NODE ? root : root.ownerDocument || document;
+
+  if (root.matches?.(STANDARD_FILTER_SUMMARY_SELECTOR)) cards.add(root);
+  root.querySelectorAll?.(STANDARD_FILTER_SUMMARY_SELECTOR).forEach((card) => cards.add(card));
+
+  queryRoot.querySelectorAll('small, span, div').forEach((label) => {
+    if (!/^current filter$/i.test(label.textContent.replace(/s+/g, ' ').trim())) return;
+    const card = findStandardFilterCard(label);
+    if (card && (root === document || root.contains?.(card) || card.contains(root))) cards.add(card);
+  });
+
+  cards.forEach((card) => {
+    const label = getStandardFilterLabel(card);
+    if (!label && !card.matches('.payroll-filter-trigger')) return;
+    const value = findStandardFilterValue(card, label || card.querySelector('small'));
+    if (!value) return;
+
+    card.classList.add('standard-filter-summary-card');
+    card.dataset.standardFilterSummary = 'true';
+    normalizeStandardFilterValue(value);
+    normalizeStandardFilterTrigger(card, value);
+  });
+}
+
+function observeStandardFilterSummaries() {
+  if (document.documentElement.dataset.filterSummaryObserver === 'true') return;
+  document.documentElement.dataset.filterSummaryObserver = 'true';
+  let updateQueued = false;
+  const observer = new MutationObserver(() => {
+    if (updateQueued) return;
+    updateQueued = true;
+    requestAnimationFrame(() => {
+      updateQueued = false;
+      initStandardFilterSummaries();
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+const PENDING_APPROVAL_ACTION_BUTTON_SELECTOR = '.pending-action-grid button[class*=action-btn-]';
+const PENDING_APPROVAL_ICON_GLYPH_PATTERN = /[✓✔☑✕×↩⟳↻]/gu;
+
+function normalizePendingApprovalActionButtons(root = document) {
+  const buttons = new Set();
+
+  if (root.matches?.(PENDING_APPROVAL_ACTION_BUTTON_SELECTOR)) buttons.add(root);
+  root.querySelectorAll?.(PENDING_APPROVAL_ACTION_BUTTON_SELECTOR).forEach((button) => buttons.add(button));
+
+  buttons.forEach((button) => {
+    button.querySelectorAll('i, svg, img').forEach((icon) => icon.remove());
+
+    const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+    textNodes.forEach((textNode) => {
+      textNode.nodeValue = textNode.nodeValue.replace(PENDING_APPROVAL_ICON_GLYPH_PATTERN, '').replace(/\s+/g, ' ');
+    });
+
+    button.classList.add('pending-action-text-only');
+  });
+}
+
+function observePendingApprovalActionButtons() {
+  if (document.documentElement.dataset.pendingActionObserver === 'true') return;
+  document.documentElement.dataset.pendingActionObserver = 'true';
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) normalizePendingApprovalActionButtons(node);
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initExploreScrollListener);
   document.addEventListener('DOMContentLoaded', initStandardFilterSheets);
   document.addEventListener('DOMContentLoaded', initInlineFilterSheet);
+  document.addEventListener('DOMContentLoaded', initStandardFilterSummaries);
+  document.addEventListener('DOMContentLoaded', observeStandardFilterSummaries);
+  document.addEventListener('DOMContentLoaded', normalizePendingApprovalActionButtons);
+  document.addEventListener('DOMContentLoaded', observePendingApprovalActionButtons);
 } else {
   initExploreScrollListener();
   initStandardFilterSheets();
   initInlineFilterSheet();
+  initStandardFilterSummaries();
+  observeStandardFilterSummaries();
+  normalizePendingApprovalActionButtons();
+  observePendingApprovalActionButtons();
 }
 window.addEventListener('load', initExploreScrollListener);
-

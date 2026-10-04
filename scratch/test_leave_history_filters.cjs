@@ -41,6 +41,15 @@ async function run() {
     await page.goto(pageUrl, { waitUntil: 'networkidle0' });
     await page.evaluate(() => showLeaveSection('viewMyLeaveHistory'));
 
+    await page.evaluate(() => filterMyHistory('rejected'));
+    assert.deepEqual(await visibleReferences(page), ['LV-2026-0032'], 'Rejected dashboard status must show its matching leave card');
+    const rejectedCardText = await page.$eval('[data-ref="LV-2026-0032"]', card => card.textContent.replace(/\s+/g, ' ').trim());
+    assert.match(rejectedCardText, /Annual Leave/);
+    assert.match(rejectedCardText, /Rejected/);
+    assert.match(rejectedCardText, /03 Sep 2026/);
+    assert.match(rejectedCardText, /1\.0 Days \/ 0\.0 Hours/);
+    assert.match(rejectedCardText, /Rejection Reason: Insufficient team coverage/);
+
     await switchTab(page, 'leave');
     assert.deepEqual(await visibleLabels(page), ['Reference #', 'Start Date', 'End Date', 'Leave Type', 'Status']);
     assert.deepEqual(await page.$$eval('#modalHistoryBranchGroup, #modalHistoryDeptGroup, #modalHistoryCostCenterGroup, #modalHistoryJobGroup', groups => groups.map(group => getComputedStyle(group).display)), ['none', 'none', 'none', 'none']);

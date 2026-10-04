@@ -15,6 +15,10 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
     await page.goto(leaveUrl, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof window.openApprovalThreeDotsMenu === 'function' && typeof window.triggerViewDetailsFromMenu === 'function');
 
+    await page.evaluate(() => showLeaveSection('viewTeamApprovals'));
+    const firstApprovalCardText = await page.$eval('#approvalCard1', card => card.textContent.replace(/\s+/g, ' ').trim());
+    assert.doesNotMatch(firstApprovalCardText, /Requested On Behalf By|Benjamin Lee|Business Development Executive/);
+
     await page.evaluate(() => {
       window.openApprovalThreeDotsMenu(
         'Kathleen lee chee dee',
@@ -51,8 +55,8 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
     const expectedLabels = [
       'Document Reference', 'Document Status', 'Employee', 'Branch', 'Department',
       'Leave Year', 'Leave Type', 'Cutoff Period', 'Submitter', 'Submit Date',
-      'From Date', 'To Date', 'Duration', 'Leave Days/Hours', 'MC Chit No',
-      'Reliever', 'Reason', 'Advance Leave', 'Short Notice Leave'
+      'Start Date', 'End Date', 'Duration', 'Leave Days/Hours', 'MC Chit No',
+      'Reliever', 'Reason', 'Advance Leave', 'Short Notice Leave', 'Attachment'
     ];
     const labels = await page.$$eval(
       '#standardLeaveDetailsView [data-leave-approval-general] tr > td:first-child',
@@ -87,7 +91,8 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
       actions: [...document.querySelectorAll('#approvalDetailsFooter button')]
         .filter(button => getComputedStyle(button).display !== 'none')
         .map(button => button.textContent.replace(/\s+/g, ' ').trim()),
-      attachmentSeparate: !document.getElementById('detailsAttachmentName')?.closest('[data-leave-approval-general]')
+      attachmentSeparate: !document.getElementById('detailsAttachmentName')?.closest('[data-leave-approval-general]'),
+      attachmentButtonCount: document.getElementById('detailsAttachmentName')?.closest('td')?.querySelectorAll('button').length
     }));
 
     assert.deepEqual(detail, {
@@ -115,8 +120,53 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
       commentsTitle: 'Approver Action Comments',
       commentsPlaceholder: 'Add approver action comments (optional)...',
       actions: ['Approve', 'Resubmit', 'Cancel', 'Reject'],
-      attachmentSeparate: true
+      attachmentSeparate: false,
+      attachmentButtonCount: 0
     });
+
+    await page.evaluate(() => {
+      window.openApprovalThreeDotsMenu(
+        'Siti Nurhaliza',
+        'Personal Time Off',
+        '23 Sep 2026',
+        '2.5 Hours (14:30 - 17:00)',
+        'Urgent Family Care',
+        {
+          docRef: 'VOT000000000281',
+          fromDate: '23 Sep 2026',
+          duration: '2.5 Hours',
+          remark: 'Emergency visit to school clinic for child health concern.',
+          approverRemarks: 'Pending supervisor review'
+        }
+      );
+      window.triggerViewDetailsFromMenu();
+    });
+    await page.waitForFunction(() => document.getElementById('approvalDetailsModalHeaderTitle')?.textContent.trim() === 'Time Off Approval');
+
+    assert.deepEqual(
+      await page.$$eval(
+        '#timeOffDetailsView [data-time-off-approval-general] tr > td:first-child',
+        cells => cells.map(cell => cell.textContent.replace(/\s+/g, ' ').trim())
+      ),
+      ['Date', 'Start Time', 'End Time', 'Hours', 'Reason', 'Remarks', 'Approver Remarks']
+    );
+    assert.deepEqual(
+      await page.$$eval(
+        '#timeOffDetailsView [data-time-off-approval-general] tr > td:last-child',
+        cells => cells.map(cell => cell.textContent.replace(/\s+/g, ' ').trim())
+      ),
+      [
+        '23 Sep 2026',
+        '14:30',
+        '17:00',
+        '2.5 Hours',
+        'Urgent Family Care',
+        'Emergency visit to school clinic for child health concern.',
+        'Pending supervisor review'
+      ]
+    );
+    assert.equal(await page.$eval('#standardLeaveDetailsView', node => getComputedStyle(node).display), 'none');
+    assert.equal(await page.$eval('#timeOffDetailsView', node => getComputedStyle(node).display), 'flex');
 
     await page.evaluate(() => {
       window.openApprovalThreeDotsMenu(
@@ -148,6 +198,8 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
       standardDisplay: getComputedStyle(document.getElementById('standardLeaveDetailsView')).display,
       creditDisplay: getComputedStyle(document.getElementById('leaveCreditDetailsView')).display,
       footerDisplay: getComputedStyle(document.getElementById('approvalDetailsFooter')).display,
+      statusHasInlineStyle: document.getElementById('lcDetailsDocStatus').hasAttribute('style'),
+      attachmentButtonCount: document.getElementById('lcDetailsAttachment').closest('td').querySelectorAll('button').length,
       actions: [...document.querySelectorAll('#approvalDetailsFooter button')]
         .filter(button => getComputedStyle(button).display !== 'none')
         .map(button => button.textContent.replace(/\s+/g, ' ').trim())
@@ -155,6 +207,8 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
     assert.equal(creditState.standardDisplay, 'none');
     assert.equal(creditState.creditDisplay, 'flex');
     assert.notEqual(creditState.footerDisplay, 'none');
+    assert.equal(creditState.statusHasInlineStyle, false);
+    assert.equal(creditState.attachmentButtonCount, 0);
     assert.deepEqual(creditState.actions, ['Approve', 'Resubmit', 'Cancel', 'Reject']);
     assert.deepEqual(pageErrors, []);
     console.log('PASS: Leave Pending Approval exposes the required leave application details.');

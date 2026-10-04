@@ -125,7 +125,7 @@ window.PAYROLL_CONFIG = {
       otherInformation: [
         { name: 'WORK DAYS', value: '23.00' }
       ],
-      pdfFile: 'Payslip_Dec_2025_Farhan_Binti_Rahmat.pdf'
+      pdfFile: 'Payslip_Dec_2025_Sarah_Jenkins.pdf'
     },
     '2026-09': {
       monthKey: '2026-09',

@@ -47,8 +47,14 @@
 
   function selectCardAction(event) {
     event.stopPropagation();
-    const labels = { submit: 'Submit', discard: 'Discard', cancel: 'Cancel' };
-    window.showToast?.(`${labels[event.currentTarget.dataset.historyAction]} action selected`);
+    const action = event.currentTarget.dataset.historyAction;
+    const referenceId = event.currentTarget.closest('.history-card-item')?.dataset.reference;
+    const index = records[kind].findIndex(record => record.id === referenceId);
+    if (index < 0) return;
+    if (action === 'discard') records[kind].splice(index, 1);
+    else records[kind][index].status = action === 'submit' ? 'submitted' : 'cancelled';
+    render();
+    window.showToast?.(action === 'discard' ? 'Draft discarded' : action === 'submit' ? 'Request submitted' : 'Request cancelled');
   }
 
   function showModal(modal, button) {

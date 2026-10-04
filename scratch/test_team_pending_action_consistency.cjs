@@ -11,7 +11,7 @@ const dashboards = [
     name: 'Attendance',
     url: pageUrl('modules/attendance/options/team.html'),
     prepare: async () => {},
-    expectedCount: '26 Tasks',
+    expectedCount: async page => page.evaluate(() => String(staffDatabase.pending_approval.length + staffDatabase.attendance_verification.length) + ' Tasks'),
     preserve: async page => {
       assert.equal(
         await page.$eval('.team-action-required-items', node => node.textContent.includes('Attendance Verification')),
@@ -38,7 +38,11 @@ const dashboards = [
     prepare: async page => {
       await page.waitForSelector('#hubSectionTeam', { visible: true });
     },
-    expectedCount: '6 Tasks',
+    expectedCount: async page => page.evaluate(() => {
+      const total = [...document.querySelectorAll('#teamApprovalsListContainer .approval-request-card')]
+        .filter(card => card.dataset.handled !== 'true').length;
+      return String(total) + ' Tasks';
+    }),
     preserve: async page => {
       assert.ok(await page.$('#teamOnLeaveCount'), 'Leave team overview must remain');
     }
@@ -93,7 +97,7 @@ const dashboards = [
       );
       assert.equal(
         await page.$eval('.team-action-required-badge', node => node.textContent.replace(/\s+/g, ' ').trim()),
-        dashboard.expectedCount,
+        typeof dashboard.expectedCount === 'function' ? await dashboard.expectedCount(page) : dashboard.expectedCount,
         dashboard.name + ' task badge is incorrect'
       );
       assert.equal(
