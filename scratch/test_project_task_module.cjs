@@ -192,7 +192,7 @@ const expected = {
             await page.$eval('#projectTeamProjectDetails [data-close-project-detail]', button => button.click());
           }
         } else {
-          assert.equal(await page.$$eval('#projectPanel-individual .project-dashboard-status-card', cards => cards.length), 3);
+          assert.equal(await page.$$eval('#projectPanel-individual .project-dashboard-status-card', cards => cards.length), 4);
           assert.equal(await page.$$eval('#projectPanel-individual .project-calendar-day', days => days.length), 35);
         }
         assert.equal(await page.$$eval('.project-option p', nodes => nodes.length), 0);

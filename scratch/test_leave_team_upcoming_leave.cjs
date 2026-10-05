@@ -42,6 +42,7 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
       dateHeader: card.querySelector('.leave-highlight-detail-date')?.textContent.trim().replace(/\s+/g, ' '),
       dateLabel: card.querySelector('.team-upcoming-leave-date-label')?.textContent.trim(),
       dateBelow: card.querySelector('.team-upcoming-leave-date')?.textContent.trim(),
+      contentOrder: [...card.querySelector('.cal-calendar-highlight-content').children].map(node => node.className),
       dateHeaderBackground: getComputedStyle(card.querySelector('.leave-highlight-detail-date')).backgroundImage,
       labels: [...card.querySelectorAll('.cal-leave-detail-label')].map(node => node.textContent.trim()),
       values: [...card.querySelectorAll('.cal-leave-detail-value')].map(node => node.textContent.trim())
@@ -57,11 +58,16 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
       dateHeader: 'Hailizam Bin Mohamed Ikhsan #007216',
       dateLabel: 'Leave Date',
       dateBelow: '12 Sep 2026',
+      contentOrder: ['cal-leave-detail-heading', 'team-upcoming-leave-date-row', 'leave-highlight-detail-body'],
       dateHeaderBackground: 'linear-gradient(135deg, rgb(76, 29, 149) 0%, rgb(109, 40, 217) 50%, rgb(124, 58, 237) 100%)',
       labels: ['Submitted Date', 'Duration'],
       values: ['10/09/2026', 'Full Day']
     });
     assert.ok(cards.every(card => card.empNo?.startsWith('#')));
+    assert.ok(await page.$$eval('#teamUpcomingLeaveList .team-upcoming-leave-card', cards => cards.every(card => {
+      const widths = [...card.querySelectorAll('.leave-highlight-detail-field')].map(field => field.getBoundingClientRect().width);
+      return widths.length === 2 && Math.abs(widths[0] - widths[1]) <= 1;
+    })));
     assert.equal(await page.$eval('#teamUpcomingLeaveList', node => node.scrollWidth > node.clientWidth + 1), false);
 
     await page.click('#teamUpcomingLeaveSheetClose');

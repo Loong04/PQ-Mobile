@@ -106,7 +106,12 @@ const styleOf = (element) => {
 };
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+  const chrome = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || (fs.existsSync(chrome) ? chrome : undefined),
+    args: ['--no-sandbox']
+  });
   try {
     for (const dashboard of dashboards) {
       const page = await browser.newPage();
@@ -149,7 +154,9 @@ const styleOf = (element) => {
 
       expect(result.statusTitle?.fontSize === 11.5, `${dashboard.name}: status heading must be 11.5px`);
       expect(result.statusTitle?.marginBottom === 10, `${dashboard.name}: status heading spacing must be 10px`);
-      expect(result.statusCards.length === 3, `${dashboard.name}: must show three status cards`);
+      expect(result.statusCards.length === 4, `${dashboard.name}: must show four status cards`);
+      expect(result.statusCards[0].text.includes('Submitted'), `${dashboard.name}: Submitted must be first`);
+      expect(result.statusCards[1].text.includes('Pending Resubmit'), `${dashboard.name}: Pending Resubmit must be beside Submitted`);
       for (const card of result.statusCards) {
         expect(near(card.height, 80), `${dashboard.name}: status cards must be 80px high`);
         expect(card.radius === 16, `${dashboard.name}: status cards must use a 16px radius`);
@@ -174,8 +181,66 @@ const styleOf = (element) => {
         expect(result.statusCards[0].text.startsWith('2 Submitted'), 'Attendance: first status must read Submitted');
       }
       if (dashboard.name === 'Payroll') {
-        expect(result.statusCards[1].text.endsWith('Confirmed'), 'Payroll: approved helper must read Confirmed');
-        expect(result.statusCards[2].text.endsWith('Declined'), 'Payroll: rejected helper must read Declined');
+        expect(result.statusCards[2].text.endsWith('Confirmed'), 'Payroll: approved helper must read Confirmed');
+        expect(result.statusCards[3].text.endsWith('Declined'), 'Payroll: rejected helper must read Declined');
+      }
+      if (dashboard.name === 'Leave') {
+        await page.click('#hubSectionIndividual [data-status="resubmit"]');
+        expect(await page.$eval('#modalHistoryStatusSelect', node => node.value) === 'resubmit', 'Leave: Pending Resubmit opens the matching History filter');
+        expect(await page.$eval('#historyFilterSummaryText', node => node.textContent.includes('Pending Resubmit')), 'Leave: History summary shows Pending Resubmit');
+      }
+      if (dashboard.name.startsWith('Attendance')) {
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+          page.click('[data-status="resubmit"]')
+        ]);
+        expect(await page.$eval('#filterStatusSelect', node => node.value) === 'resubmit', `${dashboard.name}: matching History status filter`);
+        expect(await page.$$eval('.history-card-item', nodes => nodes.every(node => getComputedStyle(node).display === 'none')), `${dashboard.name}: other statuses are excluded`);
+      }
+      await page.close();
+    }
+
+    const statusDashboards = [...dashboards, {
+      name: 'Attendance alternate Individual page',
+      file: 'modules/attendance/options/individual.html',
+      statusCards: '.work-status-card'
+    }];
+    for (const dashboard of statusDashboards) {
+      const page = await browser.newPage();
+      for (const theme of ['dark', 'light']) {
+        await page.goto(pathToFileURL(path.join(root, dashboard.file)).href + `?theme=${theme}`, {
+          waitUntil: 'domcontentloaded'
+        });
+        await page.evaluate(theme => { document.documentElement.dataset.theme = theme; }, theme);
+        await page.evaluate(() => document.fonts.ready);
+        for (const width of [320, 360, 390]) {
+          await page.setViewport({ width, height: 900, deviceScaleFactor: 1 });
+          const cards = await page.$$eval(dashboard.statusCards, nodes => nodes.map(node => {
+            const rect = node.getBoundingClientRect();
+            return {
+              label: node.querySelector('span').textContent.trim(),
+              x: rect.x, y: rect.y, right: rect.right,
+              contentSizes: [...node.children].map(child => ({ text: child.textContent, width: child.clientWidth, scrollWidth: child.scrollWidth })),
+              childrenFit: [...node.children].every(child => {
+                const box = child.getBoundingClientRect();
+                return child.scrollWidth <= child.clientWidth + 1
+                  && box.left >= rect.left && box.right <= rect.right
+                  && box.top >= rect.top && box.bottom <= rect.bottom;
+              })
+            };
+          }));
+          const context = `${dashboard.name}, ${theme}, ${width}px`;
+          expect(cards.length === 4, `${context}: four status cards`);
+          expect(cards[0].label === 'Submitted' && cards[1].label === 'Pending Resubmit', `${context}: status order`);
+          expect(near(cards[1].y, cards[0].y) && cards[1].x > cards[0].x, `${context}: Pending Resubmit is beside Submitted`);
+          if (width >= 360) expect(cards.every(card => near(card.y, cards[0].y)), `${context}: all status cards stay in one row`);
+          else expect(cards[2].y > cards[0].y && near(cards[2].y, cards[3].y), `${context}: narrow screens use two rows`);
+          expect(cards.every(card => card.childrenFit), `${context}: status labels must not clip or overflow: ${JSON.stringify(cards)}`);
+          expect(cards[0].x >= 0 && cards[3].right <= width, `${context}: cards fit the viewport`);
+          if (dashboard.name === 'Attendance' && width === 390) {
+            await page.screenshot({ path: path.join(root, `scratch/pending_resubmit_attendance_${theme}.png`) });
+          }
+        }
       }
       await page.close();
     }

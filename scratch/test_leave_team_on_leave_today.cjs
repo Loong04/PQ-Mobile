@@ -52,6 +52,10 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
         { usesHighlightRecord: true, status: 'approved', name: 'Kavitha Murugan', empNo: '#007452', position: 'Compliance Officer', department: 'Legal & Compliance', hasVisibleStatus: false, headerBackground: 'linear-gradient(135deg, rgb(76, 29, 149) 0%, rgb(109, 40, 217) 50%, rgb(124, 58, 237) 100%)' }
       ]
     );
+    assert.ok(await page.$$eval('#staffOnLeaveSheetOverlay .staff-on-leave-card', cards => cards.every(card => {
+      const widths = [...card.querySelectorAll('.leave-highlight-detail-field')].map(field => field.getBoundingClientRect().width);
+      return widths.length === 2 && Math.abs(widths[0] - widths[1]) <= 1;
+    })));
     assert.equal(await page.$eval('#staffOnLeaveList', node => node.scrollWidth > node.clientWidth + 1), false);
 
     await page.click('#staffOnLeaveSheetClose');

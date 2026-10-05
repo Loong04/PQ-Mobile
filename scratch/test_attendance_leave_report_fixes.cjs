@@ -133,6 +133,190 @@ async function check(name, fn) {
 
     await page.goto(url('modules/attendance/options/hours-summary.html'), { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => setView('list'));
+    await check('hours summary section headings stay text only', async () => {
+      const headings = await page.$$eval('.dashboard-section-header', nodes => nodes.map(node => ({
+        title: node.querySelector('h2')?.textContent.replace(/\s+/g, ' ').trim(),
+        iconCount: node.querySelectorAll('.section-title-icon, h2 i').length,
+        badgeCount: node.querySelectorAll('.section-badge').length
+      })));
+      assert.deepEqual(headings, [
+        { title: 'Work & Attendance', iconCount: 0, badgeCount: 0 },
+        { title: 'Overtime Analytics', iconCount: 0, badgeCount: 0 },
+        { title: 'Exceptions & Leave', iconCount: 0, badgeCount: 0 }
+      ]);
+    });
+    await check('hours summary records use History Cards and open populated attendance details', async () => {
+      await page.evaluate(() => openListDetails('Scheduled Work Days'));
+      const scheduled = await page.evaluate(() => ({
+        title: document.getElementById('headerTitle').textContent.trim(),
+        count: document.getElementById('list-record-count').textContent.trim(),
+        totalHours: document.getElementById('list-total-hours')?.textContent.trim(),
+        summary: (() => {
+          const overview = document.querySelector('.summary-list-overview');
+          const rows = [...overview.querySelectorAll('.summary-list-row')];
+          const chart = document.getElementById('btn-chart-toggle');
+          const count = document.getElementById('list-record-count');
+          const total = document.getElementById('list-total-hours');
+          const overviewStyle = getComputedStyle(overview);
+          const labelStyle = getComputedStyle(rows[0].querySelector('.summary-list-stat span'));
+          const countStyle = getComputedStyle(count);
+          const totalStyle = getComputedStyle(total);
+          return {
+            labels: rows.map(row => row.querySelector('.summary-list-stat span')?.textContent.trim()),
+            chartInsideFirstRow: rows[0]?.contains(chart) || false,
+            chartAfterCount: chart.getBoundingClientRect().left > count.getBoundingClientRect().right,
+            secondRowBelowFirst: rows[1]?.getBoundingClientRect().top >= rows[0]?.getBoundingClientRect().bottom,
+            headerHasChart: Boolean(document.querySelector('.cal-top-header #btn-chart-toggle')),
+            exportButtons: overview.querySelectorAll('.fa-file-pdf, .fa-file-excel, [data-export]').length,
+            radius: overviewStyle.borderRadius,
+            padding: overviewStyle.padding,
+            gap: overviewStyle.gap,
+            marginBottom: overviewStyle.marginBottom,
+            background: overviewStyle.backgroundImage,
+            labelSize: labelStyle.fontSize,
+            labelWeight: labelStyle.fontWeight,
+            labelTransform: labelStyle.textTransform,
+            countSize: countStyle.fontSize,
+            countWeight: countStyle.fontWeight,
+            countColor: countStyle.color,
+            totalSize: totalStyle.fontSize,
+            totalWeight: totalStyle.fontWeight,
+            totalColor: totalStyle.color
+          };
+        })(),
+        cards: [...document.querySelectorAll('#details-list-container .summary-history-card')].map(card => ({
+          hasHistoryClass: card.classList.contains('history-card-item'),
+          radius: getComputedStyle(card).borderRadius,
+          hasDateBadge: Boolean(card.querySelector('.date-badge, .history-date-badge')),
+          role: card.getAttribute('role'),
+          tabIndex: card.tabIndex,
+          title: card.querySelector('.history-time-row')?.textContent.replace(/\s+/g, ' ').trim(),
+          date: card.querySelector('.summary-history-date')?.textContent.trim(),
+          background: getComputedStyle(card).backgroundImage,
+          borderTopColor: getComputedStyle(card).borderTopColor,
+          borderLeftColor: getComputedStyle(card).borderLeftColor,
+          detailsBackground: getComputedStyle(card.querySelector('.summary-history-details')).backgroundColor,
+          labels: [...card.querySelectorAll('.summary-history-detail > span')].map(node => node.textContent.trim())
+        }))
+      }));
+      assert.equal(scheduled.title, 'Scheduled Work Days');
+      assert.equal(scheduled.count, '22');
+      assert.equal(scheduled.totalHours, '176.00');
+      assert.deepEqual(scheduled.summary, {
+        labels: ['Total Records', 'Total Hours'],
+        chartInsideFirstRow: true,
+        chartAfterCount: true,
+        secondRowBelowFirst: true,
+        headerHasChart: false,
+        exportButtons: 0,
+        radius: '18px',
+        padding: '16px',
+        gap: '12px',
+        marginBottom: '20px',
+        background: scheduled.summary.background,
+        labelSize: '13px',
+        labelWeight: '700',
+        labelTransform: 'none',
+        countSize: '18px',
+        countWeight: '800',
+        countColor: scheduled.summary.countColor,
+        totalSize: '15px',
+        totalWeight: '800',
+        totalColor: scheduled.summary.totalColor
+      });
+      assert.match(scheduled.summary.background, /124, 58, 237/, 'Summary uses the Leave Highlight lavender surface');
+      assert.notEqual(scheduled.summary.countColor, scheduled.summary.totalColor, 'Total Records keeps the purple highlight value');
+      assert.equal(scheduled.cards.length, 22);
+      assert.ok(scheduled.cards.every(card => card.hasHistoryClass && card.radius === '18px' && !card.hasDateBadge));
+      assert.ok(scheduled.cards.every(card => card.role === 'button' && card.tabIndex === 0));
+      assert.equal(scheduled.cards[0].title, 'W01: 8.30AM\u20135.30PM');
+      assert.doesNotMatch(scheduled.cards[0].title, /\uFFFD/, 'Shift time does not contain a broken encoding character');
+      assert.match(scheduled.cards[0].date, /^Date:/);
+      assert.match(scheduled.cards[0].background, /16, 185, 129/, 'Normal attendance matches the Approved Leave History surface');
+      assert.equal(scheduled.cards[0].borderLeftColor, 'rgb(16, 185, 129)', 'Category color stays on the left accent');
+      assert.notEqual(scheduled.cards[0].borderTopColor, scheduled.cards[0].borderLeftColor, 'Category accent does not recolor the full border');
+      assert.match(scheduled.cards[0].detailsBackground, /16, 185, 129/, 'Inner details panel matches Approved Leave History');
+      assert.deepEqual(scheduled.cards[0].labels, ['Clock Times', 'Scheduled Hours']);
+
+      await page.click('#details-list-container .summary-history-card');
+      await page.waitForFunction(() => getComputedStyle(document.getElementById('modal-attendance-details')).display === 'flex');
+      const details = await page.evaluate(() => ({
+        title: document.querySelector('#modal-attendance-details .modal-header-purple h3').textContent.trim(),
+        employee: document.getElementById('ad-emp-no').textContent.trim(),
+        name: document.getElementById('ad-name').textContent.trim(),
+        date: document.getElementById('ad-date').textContent.trim(),
+        shift: document.getElementById('ad-shift').textContent.trim(),
+        clockTimes: document.getElementById('ad-clock-times').textContent.trim(),
+        normalHours: document.getElementById('ad-normal-hours').textContent.trim(),
+        approvedOt: document.getElementById('ad-approved-ot').textContent.trim(),
+        otCode: document.getElementById('ad-ot-code').textContent.trim()
+      }));
+      assert.deepEqual(details, {
+        title: 'Attendance Details',
+        employee: 'EBB12',
+        name: 'Farhan binti rahmat',
+        date: '14 Sep 2026',
+        shift: '8.30AM\u20135.30PM (W01)',
+        clockTimes: '0745 1750',
+        normalHours: '08:00',
+        approvedOt: '0.50',
+        otCode: 'OB1'
+      });
+      const emptyLeaveSection = await page.evaluate(() => ({
+        title: document.querySelector('[data-attendance-detail-section="leave"]')?.textContent.trim(),
+        tableHidden: document.getElementById('ad-leave-info-table')?.hidden,
+        valueInsideSeparatedTable: Boolean(document.getElementById('ad-leave-info-table')?.contains(document.getElementById('ad-leave-info')))
+      }));
+      assert.deepEqual(emptyLeaveSection, {
+        title: 'Leave Info',
+        tableHidden: true,
+        valueInsideSeparatedTable: true
+      });
+      const overtimeTable = await page.evaluate(() => {
+        const ids = ['ad-ot-code', 'ad-ot-desc', 'ad-ot-hours', 'ad-uot'];
+        const nodes = ids.map(id => document.getElementById(id));
+        const parents = nodes.map(node => node?.closest('.attendance-detail-subtable'));
+        return {
+          parentCount: new Set(parents).size,
+          rows: parents[0]?.querySelectorAll('.attendance-detail-subrow').length,
+          labels: [...(parents[0]?.querySelectorAll('.attendance-detail-subrow > :first-child') || [])]
+            .map(node => node.textContent.trim())
+        };
+      });
+      assert.deepEqual(overtimeTable, {
+        parentCount: 1,
+        rows: 4,
+        labels: ['OT Code', 'Description', 'OT Hours', 'UOT']
+      });
+
+      await page.evaluate(() => openAttendanceDetails({
+        ...sampleWorkDays[0],
+        leaveInfo: 'Annual Leave � 1.00 Day'
+      }));
+      const populatedLeaveSection = await page.evaluate(() => ({
+        tableHidden: document.getElementById('ad-leave-info-table').hidden,
+        value: document.getElementById('ad-leave-info').textContent.trim()
+      }));
+      assert.deepEqual(populatedLeaveSection, {
+        tableHidden: false,
+        value: 'Annual Leave � 1.00 Day'
+      });
+      await page.evaluate(() => closeAttendanceDetails(true));
+      await page.waitForFunction(() => getComputedStyle(document.getElementById('modal-attendance-details')).display === 'none');
+
+      await page.evaluate(() => openListDetails('Normal Present Days'));
+      const present = await page.evaluate(() => ({
+        count: document.getElementById('list-record-count').textContent.trim(),
+        totalHours: document.getElementById('list-total-hours').textContent.trim(),
+        labels: [...document.querySelector('.summary-history-card').querySelectorAll('.summary-history-detail > span')]
+          .map(node => node.textContent.trim())
+      }));
+      assert.deepEqual(present, {
+        count: '21',
+        totalHours: '168.00',
+        labels: ['Clock Times', 'Normal Hours', 'Exception']
+      });
+    });
     await check('hours summary View Chart is a compliant labeled pill', async () => {
       const button = await page.$eval('#btn-chart-toggle', node => {
         const rect = node.getBoundingClientRect();

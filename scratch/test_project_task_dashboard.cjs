@@ -54,7 +54,7 @@ const dashboardUrl = theme => pathToFileURL(
 
       assert.deepEqual(
         await page.$$eval('#projectPanel-individual .project-dashboard-section-title', titles => titles.map(title => title.textContent.replace(/\s+/g, ' ').trim())),
-        ['MY WORK STATUS', 'QUICK OPTIONS', 'MY WORK CALENDAR']
+        ['MY DOCUMENT STATUS', 'QUICK OPTIONS', 'MY WORK CALENDAR']
       );
       assert.deepEqual(
         await page.$$eval('#projectPanel-individual .project-dashboard-status-card', cards => cards.map(card => ({
@@ -64,6 +64,7 @@ const dashboardUrl = theme => pathToFileURL(
         }))),
         [
           { value: '3', label: 'Submitted', note: 'In Review' },
+          { value: '0', label: 'Pending Resubmit', note: 'Needs Action' },
           { value: '1', label: 'Draft', note: 'Saved' },
           { value: '1', label: 'Overdue', note: 'Needs Action' }
         ]
@@ -252,7 +253,7 @@ const dashboardUrl = theme => pathToFileURL(
           overflow: document.querySelector('.phone-container').scrollWidth > document.querySelector('.phone-container').clientWidth + 1
         };
       });
-      assert.equal(dashboardLayout.statusColumns, 3);
+      assert.equal(dashboardLayout.statusColumns, 4);
       assert.equal(dashboardLayout.quickColumns, 3);
       assert.equal(dashboardLayout.overflow, false);
 

@@ -92,7 +92,7 @@ async function closeDetails(page) {
       );
       assert.deepEqual(
         await page.$$eval(draftCardSelector + ' .project-history-card-action', buttons => buttons.map(button => button.textContent.trim())),
-        ['Submit', 'Discard']
+        ['Submit', 'Cancel']
       );
       const actionStyles = await page.evaluate(selector => {
         const card = document.querySelector(selector);

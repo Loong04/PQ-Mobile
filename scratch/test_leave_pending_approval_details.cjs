@@ -148,7 +148,7 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
         '#timeOffDetailsView [data-time-off-approval-general] tr > td:first-child',
         cells => cells.map(cell => cell.textContent.replace(/\s+/g, ' ').trim())
       ),
-      ['Date', 'Start Time', 'End Time', 'Hours', 'Reason', 'Remarks', 'Approver Remarks']
+      ['Document Status', 'Date', 'Start Time', 'End Time', 'Hours', 'Reason', 'Remarks', 'Approver Remarks']
     );
     assert.deepEqual(
       await page.$$eval(
@@ -156,6 +156,7 @@ const leaveUrl = pathToFileURL(path.resolve(__dirname, '..', 'leave.html')).href
         cells => cells.map(cell => cell.textContent.replace(/\s+/g, ' ').trim())
       ),
       [
+        'Pending Approval',
         '23 Sep 2026',
         '14:30',
         '17:00',

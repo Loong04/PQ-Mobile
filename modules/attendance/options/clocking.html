@@ -56,13 +56,14 @@
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(124, 58, 237, 0); } 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); } }
     .map-refresh { position: absolute; bottom: 12px; left: 12px; background: var(--bg-card); border: 1px solid var(--border-color); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--purple-primary); box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 2; cursor: pointer; }
     
-    .section-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 24px 0 16px; }
-    
-    .punch-list { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; }
-    .punch-item { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px; border-bottom: 1px solid var(--border-color); align-items: center; }
+    .punch-list { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; margin-top: 24px; }
+    .punch-header { display: grid; grid-template-columns: 1.25fr 1fr 0.75fr 0.5fr; gap: 8px; padding: 12px 14px; background: linear-gradient(135deg, #6d28d9, #8b5cf6); color: #ffffff; }
+    .punch-header span { font-size: 10.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+    .punch-header span:last-child { text-align: right; }
+    .punch-item { display: grid; grid-template-columns: 1.25fr 1fr 0.75fr 0.5fr; gap: 8px; padding: 16px 14px; border-bottom: 1px solid var(--border-color); align-items: center; }
     .punch-item:last-child { border-bottom: none; }
-    .punch-col-title { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
     .punch-val { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .punch-date { font-size: 11.5px; white-space: nowrap; }
     .punch-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
     .badge-in { background: rgba(16, 185, 129, 0.15); color: #10b981; }
     .badge-out { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
@@ -73,7 +74,7 @@
     .action-btn span { font-size: 14px; font-weight: 700; }
     
     .btn-clock-in { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-    .btn-break-out { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .btn-break-out { background: rgba(124, 58, 237, 0.14); border: 1px solid rgba(124, 58, 237, 0.28); color: var(--purple-primary); }
     .btn-break-in { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.2); color: #f59e0b; }
     .btn-clock-out { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
     
@@ -110,6 +111,18 @@
         </div>
       </div>
       
+      <!-- Map Card -->
+      <div class="map-card">
+        <img src="../../../assets/img/map_placeholder.jpg" class="map-image" alt="Map">
+        <div class="map-overlay"></div>
+        <div class="map-pin">
+          <div class="map-pin-inner"></div>
+        </div>
+        <div class="map-refresh">
+          <i class="fa-solid fa-rotate-left" style="font-size: 14px;"></i>
+        </div>
+      </div>
+
       <!-- Action Grid -->
       <div class="action-grid">
         <button class="action-btn btn-clock-in">
@@ -130,66 +143,58 @@
         </button>
       </div>
       
-      <!-- Map Card -->
-      <div class="map-card">
-        <img src="../../../assets/img/map_placeholder.jpg" class="map-image" alt="Map">
-        <div class="map-overlay"></div>
-        <div class="map-pin">
-          <div class="map-pin-inner"></div>
+      <div class="punch-list" role="table" aria-label="Clocking logs">
+        <div class="punch-header" role="row">
+          <span role="columnheader">Date</span>
+          <span role="columnheader">Type</span>
+          <span role="columnheader">Time</span>
+          <span role="columnheader">Location</span>
         </div>
-        <div class="map-refresh">
-          <i class="fa-solid fa-rotate-left" style="font-size: 14px;"></i>
-        </div>
-      </div>
-      
-      <h2 class="section-title">Today's Logs</h2>
-      
-      <div class="punch-list">
-        <div class="punch-item">
-          <div>
-            <div class="punch-col-title">Type</div>
+        <div class="punch-item" role="row">
+          <div role="cell">
+            <div class="punch-val punch-date" data-punch-date>15/09/2026</div>
+          </div>
+          <div role="cell">
             <div class="punch-badge badge-out">Out</div>
           </div>
-          <div>
-            <div class="punch-col-title">Time</div>
+          <div role="cell">
             <div class="punch-val">10:05</div>
           </div>
-          <div style="text-align: right;">
-            <div class="punch-col-title">Location</div>
+          <div role="cell" style="text-align: right;">
             <div style="color: var(--purple-primary);">
               <i class="fa-solid fa-location-dot" style="font-size: 18px;"></i>
             </div>
           </div>
         </div>
         
-        <div class="punch-item">
-          <div>
-            <div class="punch-col-title">Type</div>
+        <div class="punch-item" role="row">
+          <div role="cell">
+            <div class="punch-val punch-date" data-punch-date>15/09/2026</div>
+          </div>
+          <div role="cell">
             <div class="punch-badge badge-in">In</div>
           </div>
-          <div>
-            <div class="punch-col-title">Time</div>
+          <div role="cell">
             <div class="punch-val">10:04</div>
           </div>
-          <div style="text-align: right;">
-            <div class="punch-col-title">Location</div>
+          <div role="cell" style="text-align: right;">
             <div style="color: var(--purple-primary);">
               <i class="fa-solid fa-location-dot" style="font-size: 18px;"></i>
             </div>
           </div>
         </div>
         
-        <div class="punch-item">
-          <div>
-            <div class="punch-col-title">Type</div>
+        <div class="punch-item" role="row">
+          <div role="cell">
+            <div class="punch-val punch-date" data-punch-date>15/09/2026</div>
+          </div>
+          <div role="cell">
             <div class="punch-badge badge-in">In</div>
           </div>
-          <div>
-            <div class="punch-col-title">Time</div>
+          <div role="cell">
             <div class="punch-val">07:38</div>
           </div>
-          <div style="text-align: right;">
-            <div class="punch-col-title">Location</div>
+          <div role="cell" style="text-align: right;">
             <div style="color: var(--purple-primary);">
               <i class="fa-solid fa-location-dot" style="font-size: 18px;"></i>
             </div>

@@ -37,7 +37,7 @@
   const row = (label, value, markup = false) => `<tr><th scope="row">${escape(label)}</th><td>${markup ? value : escape(value === '' || value == null ? '—' : value)}</td></tr>`;
   const cardActions = record => {
     if (record.status === 'draft') {
-      return `<div class="history-card-actions" aria-label="Draft actions"><button type="button" class="history-card-action history-card-action-primary" data-history-action="submit">Submit</button><button type="button" class="history-card-action history-card-action-danger" data-history-action="discard">Discard</button></div>`;
+      return `<div class="history-card-actions" aria-label="Draft actions"><button type="button" class="history-card-action history-card-action-primary" data-history-action="submit">Submit</button><button type="button" class="history-card-action history-card-action-danger" data-history-action="discard">Cancel</button></div>`;
     }
     if (record.status === 'submitted') {
       return `<div class="history-card-actions" aria-label="Submitted actions"><button type="button" class="history-card-action history-card-action-danger" data-history-action="cancel">Cancel</button></div>`;

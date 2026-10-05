@@ -50,6 +50,7 @@ const APP_ROUTES = {
   'time_attendance': 'modules/attendance/index.html',
   'leave_holidays': 'leave.html',
   'claims_expenses': 'modules/claims/index.html',
+  'employee_career': () => `modules/employee-career/index.html?scope=individual&theme=${getCurrentTheme()}`,
   'project_task': () => `modules/project-task/index.html?theme=${getCurrentTheme()}`,
   'payroll': 'modules/payroll/index.html',
   'payroll_compensation': 'modules/payroll/index.html',

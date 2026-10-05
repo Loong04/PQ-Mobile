@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/history-cards.css">
+  <link rel="stylesheet" href="../../../css/attendance-history.css">
+  <link rel="stylesheet" href="../../../css/attendance-pending-feedback.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
@@ -109,7 +112,7 @@
     .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
-<body>
+<body class="attendance-history-page pending-feedback-page">
 
   <preview-top-bar active-page="attendance"></preview-top-bar>
 
@@ -145,113 +148,65 @@
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: rgba(124, 58, 237, 0.1); padding: 14px 18px; border-radius: 20px; border: 1px solid rgba(124, 58, 237, 0.15);">
           <div style="display: flex; flex-direction: column; gap: 4px;">
               <span style="font-size: 11px; font-weight: 700; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Pending Feedback</span>
-              <div style="font-size: 17px; font-weight: 800; color: var(--text-primary); line-height: 1;">
-                  2 <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Records Pending Review</span>
-              </div>
+              <div id="pendingFeedbackTotal" style="font-size: 15px; font-weight: 800; color: var(--text-primary); line-height: 1.3;">Total 2 Records</div>
           </div>
-          <div class="verify-btn-all" onclick="toggleVerifyAll()" id="verifyAllBtn" title="Verify all attendance records">
+          <button type="button" class="verify-btn-all" onclick="toggleVerifyAll()" id="verifyAllBtn" title="Verify all attendance records" aria-pressed="false">
               <div class="verify-all-box" id="verifyAllIcon">
                  <i class="fa-solid fa-check" style="color: #ffffff; font-size: 12px;"></i>
               </div>
               <span id="verifyAllText" style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.3px;">Verify All</span>
+          </button>
+      </div>
+
+      <article class="history-card-item pending-feedback-record" data-status="unapproved-ot" role="button" tabindex="0" aria-label="View attendance for 14 Sep 2026" onclick="openModal('attendanceDetailsModalOverlay')" onkeydown="if(event.target === this &amp;&amp; (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); this.click(); }">
+        <div class="history-card-header">
+          <div class="history-card-heading">
+            <h3 class="history-card-title">8.30AM&ndash;5.30PM (W01)</h3>
+            <div class="history-card-ref">Mon 14 SEP</div>
           </div>
-      </div>
+          <div class="attendance-history-card-end">
+            <button type="button" class="pending-feedback-verify" data-verify-record aria-label="Verify attendance for 14 Sep 2026" aria-pressed="false" onclick="event.stopPropagation(); toggleSingleVerify(this)" title="Verify this record">
+              <span class="verify-checkbox-box"><i class="fa-solid fa-check" style="color: #ffffff; font-size: 11px;" aria-hidden="true"></i></span>
+              <span>Verify</span>
+            </button>
+            <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Unapproved OT</span>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="history-card-details">
+          <div class="attendance-history-detail"><span>Clocked Times</span><strong>08:09 &middot; 19:40</strong></div>
+          <div class="attendance-history-detail"><span>Normal Hours</span><strong>8.00</strong></div>
+          <div class="attendance-history-detail"><span>Overtime</span><strong>2.00</strong></div>
+        </div>
+        <div class="history-card-actions">
+          <button type="button" onclick="event.stopPropagation(); openFeedbackModal('14 Sep 2026', '8.30AM-5.30PM (W01)', 'Unapproved OT')" class="card-action-btn btn-feedback"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i><span>Feedback</span></button>
+        </div>
+      </article>
 
-      <!-- Attendance Record Card 1 (Unapproved OT / Pending Feedback) -->
-      <div class="card" style="margin-bottom: 12px; padding: 16px; border-radius: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 16px; cursor: pointer; background: var(--bg-card);" onclick="openModal('attendanceDetailsModalOverlay')">
-           <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; gap: 14px; align-items: center;">
-                 <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mon</div>
-                    <div style="font-size: 18px; font-weight: 800; line-height: 1; margin-top: 2px;">14</div>
-                 </div>
-                 <div>
-                    <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">W01: 8.30AM – 5.30PM</div>
-                 </div>
-              </div>
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;" onclick="event.stopPropagation(); toggleSingleVerify(this);" title="Verify this record">
-                  <div class="verify-checkbox-box">
-                    <i class="fa-solid fa-check" style="color: #ffffff; font-size: 11px;"></i>
-                  </div>
-                  <span style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">VERIFY</span>
-              </div>
-           </div>
-
-           <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-               <div style="display: flex; flex-direction: column; gap: 4px;">
-                   <span style="color: var(--text-secondary); font-size: 11.5px; font-weight: 600;">Clocked Times</span>
-                   <span style="color: var(--text-primary); font-weight: 800; font-size: 15px;">08:09 <span style="color:var(--text-muted); font-weight:600;">•</span> 19:40</span>
-               </div>
-               <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
-                   <span style="color: var(--text-secondary); font-size: 11.5px; font-weight: 600;">Normal Hours</span>
-                   <span style="color: var(--text-primary); font-weight: 800; font-size: 15px;">8.00</span>
-               </div>
-               <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
-                   <span style="color: var(--text-secondary); font-size: 11.5px; font-weight: 600;">Overtime</span>
-                   <span style="color: #ef4444; font-weight: 800; font-size: 15px;">2.00</span>
-               </div>
-           </div>
-           
-           <div style="margin-top: -6px; padding: 0 4px;">
-               <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px;">UNAPPROVED OT</span>
-           </div>
-
-           <!-- NO CHANGE SHIFT BUTTON - ONLY FEEDBACK BUTTON -->
-           <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
-               <button onclick="event.stopPropagation(); openFeedbackModal('14 Sep 2026', '8.30AM–5.30PM (W01)', 'Unapproved OT')" class="card-action-btn btn-feedback" style="width: 100%;">
-                 <i class="fa-solid fa-comment-dots" style="font-size: 13px;"></i>
-                 Feedback
-               </button>
-           </div>
-      </div>
-
-      <!-- Attendance Record Card 2 (Missing Clock Out / Pending Feedback) -->
-      <div class="card" style="margin-bottom: 12px; padding: 16px; border-radius: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 16px; cursor: pointer; background: var(--bg-card);" onclick="openModal('attendanceDetailsModalOverlay')">
-           <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; gap: 14px; align-items: center;">
-                 <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Tue</div>
-                    <div style="font-size: 18px; font-weight: 800; line-height: 1; margin-top: 2px;">15</div>
-                 </div>
-                 <div>
-                    <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">W01: 8.30AM – 5.30PM</div>
-                 </div>
-              </div>
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;" onclick="event.stopPropagation(); toggleSingleVerify(this);" title="Verify this record">
-                  <div class="verify-checkbox-box">
-                    <i class="fa-solid fa-check" style="color: #ffffff; font-size: 11px;"></i>
-                  </div>
-                  <span style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">VERIFY</span>
-              </div>
-           </div>
-
-           <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-               <div style="display: flex; flex-direction: column; gap: 4px;">
-                   <span style="color: var(--text-secondary); font-size: 11.5px; font-weight: 600;">Clocked Times</span>
-                   <span style="color: var(--text-primary); font-weight: 800; font-size: 15px;">07:38</span>
-               </div>
-               <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
-                   <span style="color: var(--text-secondary); font-size: 11.5px; font-weight: 600;">Normal Hours</span>
-                   <span style="color: var(--text-primary); font-weight: 800; font-size: 15px;">0.00</span>
-               </div>
-               <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
-                   <span style="color: var(--text-secondary); font-size: 11.5px; font-weight: 600;">Overtime</span>
-                   <span style="color: var(--text-primary); font-weight: 800; font-size: 15px;">0.00</span>
-               </div>
-           </div>
-
-           <div style="margin-top: -6px; padding: 0 4px;">
-               <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px;">MISSING CLOCK OUT</span>
-           </div>
-
-           <!-- NO CHANGE SHIFT BUTTON - ONLY FEEDBACK BUTTON -->
-           <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
-               <button onclick="event.stopPropagation(); openFeedbackModal('15 Sep 2026', '8.30AM–5.30PM (W01)', 'Missing Clock Out')" class="card-action-btn btn-feedback" style="width: 100%;">
-                 <i class="fa-solid fa-comment-dots" style="font-size: 13px;"></i>
-                 Feedback
-               </button>
-           </div>
-      </div>
+      <article class="history-card-item pending-feedback-record" data-status="missing-clock-out" role="button" tabindex="0" aria-label="View attendance for 15 Sep 2026" onclick="openModal('attendanceDetailsModalOverlay')" onkeydown="if(event.target === this &amp;&amp; (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); this.click(); }">
+        <div class="history-card-header">
+          <div class="history-card-heading">
+            <h3 class="history-card-title">8.30AM&ndash;5.30PM (W01)</h3>
+            <div class="history-card-ref">Tue 15 SEP</div>
+          </div>
+          <div class="attendance-history-card-end">
+            <button type="button" class="pending-feedback-verify" data-verify-record aria-label="Verify attendance for 15 Sep 2026" aria-pressed="false" onclick="event.stopPropagation(); toggleSingleVerify(this)" title="Verify this record">
+              <span class="verify-checkbox-box"><i class="fa-solid fa-check" style="color: #ffffff; font-size: 11px;" aria-hidden="true"></i></span>
+              <span>Verify</span>
+            </button>
+            <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Missing Clock Out</span>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="history-card-details">
+          <div class="attendance-history-detail"><span>Clocked Times</span><strong>07:38</strong></div>
+          <div class="attendance-history-detail"><span>Normal Hours</span><strong>0.00</strong></div>
+          <div class="attendance-history-detail"><span>Overtime</span><strong>0.00</strong></div>
+        </div>
+        <div class="history-card-actions">
+          <button type="button" onclick="event.stopPropagation(); openFeedbackModal('15 Sep 2026', '8.30AM-5.30PM (W01)', 'Missing Clock Out')" class="card-action-btn btn-feedback"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i><span>Feedback</span></button>
+        </div>
+      </article>
 
     </div>
 
@@ -359,11 +314,14 @@
           checkboxes.forEach(c => c.classList.add('checked'));
           showToast('<i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>All Records Verified');
         }
+        document.getElementById('verifyAllBtn').setAttribute('aria-pressed', String(!isChecked));
+        document.querySelectorAll('[data-verify-record]').forEach(button => button.setAttribute('aria-pressed', String(!isChecked)));
       }
 
       function toggleSingleVerify(el) {
         const box = el.querySelector('.verify-checkbox-box');
         box.classList.toggle('checked');
+        el.setAttribute('aria-pressed', String(box.classList.contains('checked')));
         if (box.classList.contains('checked')) {
           showToast('<i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>Attendance Record Verified');
         } else {

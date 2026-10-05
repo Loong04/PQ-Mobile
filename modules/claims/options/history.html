@@ -847,7 +847,8 @@
       const countBadge = document.getElementById('categoryRecordsCountBadge');
 
       const catMeta = CATEGORIES.find(c => c.id === activeTabKey) || CATEGORIES[0];
-      if (headerTitle) headerTitle.textContent = activeStatusFilter ? `${activeStatusFilter.charAt(0).toUpperCase() + activeStatusFilter.slice(1)} Claim History` : catMeta.title;
+      const statusTitle = activeStatusFilter === 'resubmit' ? 'Pending Resubmit' : activeStatusFilter.charAt(0).toUpperCase() + activeStatusFilter.slice(1);
+      if (headerTitle) headerTitle.textContent = activeStatusFilter ? `${statusTitle} Claim History` : catMeta.title;
 
       let items = activeStatusFilter ? STATUS_HISTORY_RECORDS : (HISTORY_DATA[activeTabKey] || []);
       if (activeStatusFilter) {
@@ -1012,7 +1013,7 @@
         };
         const statusIcon = statusIconMap[displayStatus.key];
         const canCancel = ['submitted', 'approved', 'draft'].includes(displayStatus.key);
-        const actionLabel = displayStatus.key === 'draft' ? 'Discard' : 'Cancel';
+        const actionLabel = 'Cancel';
         const actionHtml = displayStatus.key === 'draft'
           ? `<div class="history-card-actions">
               <button type="button" class="history-submit-btn" onclick="handleHistorySubmit(event, '${item.id}')">Submit</button>

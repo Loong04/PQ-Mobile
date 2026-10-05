@@ -18,7 +18,7 @@ const history = pathToFileURL(path.resolve(__dirname, '../modules/payroll/option
       await page.setViewport({ width: theme === 'dark' ? 360 : 390, height: 950 });
       for (const status of ['submitted', 'approved', 'rejected']) {
         await page.goto(index + '?theme=' + theme, { waitUntil: 'load' });
-        assert.equal(await page.$eval('#myWorkStatusTitle', node => node.textContent.trim()), 'MY WORK STATUS');
+        assert.equal(await page.$eval('#myWorkStatusTitle', node => node.textContent.trim()), 'MY DOCUMENT STATUS');
         assert.equal(await page.$('.request-overview-head p'), null);
         assert.equal(await page.$('.request-overview-head button'), null);
         assert.equal(await page.$('.request-overview-card p'), null);

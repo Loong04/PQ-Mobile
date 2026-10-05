@@ -192,7 +192,7 @@ async function run() {
     const deduction = await page.$eval('[data-reference="EBB01:deduction"]', node => node.textContent);
     for (const expected of ['HOUSING LOAN', 'Draft', '202610', 'MONTH END', 'RM 0.00']) assert.ok(deduction.includes(expected));
     const draftActions = await page.$eval('[data-reference="EBB01:deduction"]', card => [...card.querySelectorAll('.history-card-action')].map(button => button.textContent.trim()));
-    assert.deepEqual(draftActions, ['Submit', 'Discard'], 'Draft history cards must expose Submit and Discard actions');
+    assert.deepEqual(draftActions, ['Submit', 'Cancel'], 'Draft history cards must expose Submit and Cancel actions');
     await page.click('[data-reference="EBB01:deduction"] .history-card-main');
     const savedDetail = await page.$eval('#historyDetailBody', node => node.textContent);
     for (const expected of ['Sarah Jenkins', '#EBB01', 'Stop Deduction', '202610', '1 Oct 2026', 'MONTH END', '001235', 'deduction.txt']) assert.ok(savedDetail.includes(expected));

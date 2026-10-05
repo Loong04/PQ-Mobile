@@ -453,13 +453,12 @@
     return top;
   }
 
-  function createCardAction(label, variant, record, kind) {
+  function createCardAction(label, variant, record, kind, action = label.toLowerCase()) {
     const button = createNode('button', 'project-history-card-action project-history-card-action-' + variant, label);
     button.type = 'button';
-    button.dataset.historyAction = label.toLowerCase();
+    button.dataset.historyAction = action;
     button.addEventListener('click', event => {
       event.stopPropagation();
-      const action = label.toLowerCase();
       historyActions.set(record.id, action);
       if (record.id === 'TS-DRAFT-LOCAL' && (action === 'submit' || action === 'discard')) {
         if (action === 'submit') {
@@ -483,7 +482,7 @@
       actions.setAttribute('aria-label', 'Draft actions');
       actions.append(
         createCardAction('Submit', 'primary', record, kind),
-        createCardAction('Discard', 'danger', record, kind)
+        createCardAction('Cancel', 'danger', record, kind, 'discard')
       );
       return actions;
     }
