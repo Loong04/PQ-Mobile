@@ -1,8 +1,8 @@
 window.EMPLOYEE_CAREER_OPTIONS = {
   individual: [
-    { id: 'onboard-activity', title: 'Onboard Activity', icon: 'fa-clipboard-check', tone: 'violet', href: 'options/individual/onboard-activity.html' },
     { id: 'feedback', title: 'Feedback', icon: 'fa-message', tone: 'rose', href: 'options/individual/feedback.html' },
-    { id: 'whereabout', title: 'Whereabout', icon: 'fa-location-dot', tone: 'cyan', href: 'options/individual/whereabout.html' }
+    { id: 'whereabout', title: 'Whereabout', icon: 'fa-location-dot', tone: 'cyan', href: 'options/individual/whereabout.html' },
+    { id: 'my-event', title: 'My Event', icon: 'fa-calendar-days', tone: 'blue', href: 'options/individual/my-event.html' }
   ],
   team: [
     { id: 'confirm-new-user', title: 'Confirm New User', icon: 'fa-user-check', tone: 'violet', href: 'options/team/confirm-new-user.html' },

@@ -7,9 +7,9 @@ const puppeteer = require('puppeteer');
 const root = path.resolve(__dirname, '..');
 const chrome = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const individual = [
-  ['Onboard Activity', 'onboard-activity.html'],
   ['Feedback', 'feedback.html'],
-  ['Whereabout', 'whereabout.html']
+  ['Whereabout', 'whereabout.html'],
+  ['My Event', 'my-event.html']
 ];
 const team = [
   ['Confirm New User', 'confirm-new-user.html'],
@@ -95,7 +95,7 @@ async function open(page, relative, query = '') {
         const relative = `modules/employee-career/options/${scope}/${filename}`;
         assert.ok(fs.existsSync(path.join(root, relative)), `${relative} exists as its own file`);
         await open(page, relative, '?theme=dark');
-        assert.equal(await page.$eval('h1', node => node.textContent.trim()), title);
+        assert.equal(await page.$eval('h1', node => node.textContent.trim()), title === 'Manpower Stats' ? 'Manpower Statistics' : title);
         const backHref = await page.$eval('[data-option-back]', node => node.href);
         assert.ok(backHref.includes(`scope=${scope}`));
         assert.ok(backHref.includes('theme=dark'), `${relative} preserves the current theme when returning`);
@@ -210,7 +210,7 @@ async function open(page, relative, query = '') {
     }
 
     assert.deepEqual(pageErrors, [], `Pages should have no JavaScript errors: ${pageErrors.join('; ')}`);
-    console.log('PASS: Employee & Career dashboard, 17 option files, forms, themes and responsive layouts.');
+    console.log('PASS: Employee & Career dashboard, active options, forms, themes and responsive layouts.');
   } finally {
     await browser.close();
   }

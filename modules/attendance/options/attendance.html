@@ -220,6 +220,12 @@
       background: rgba(0, 0, 0, 0.5);
       transform: scale(1.05);
     }
+    .attendance-details-empty-label {
+      margin: 10px 0 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 700;
+    }
 
     /* Details Table */
     .details-table {
@@ -1374,7 +1380,7 @@
         
         <!-- Non-transparent Solid Scrollable Content -->
         <div class="sheet-content" style="padding: 18px 20px 24px; overflow-y: auto; background: var(--bg-sheet); flex: 1;">
-           <div style="display: flex; flex-direction: column;">
+           <div class="attendance-details-main" style="display: flex; flex-direction: column;">
               <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
                  <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Employee #</span>
                  <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">EBB12</span>
@@ -1443,15 +1449,9 @@
                  <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Document #</span>
                  <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
               </div>
-              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
-                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Leave Info</span>
-                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding: 13px 0;">
-                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Overtime Info</span>
-                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
-              </div>
            </div>
+           <p class="attendance-details-empty-label">Leave Info</p>
+           <p class="attendance-details-empty-label">Overtime Info</p>
         </div>
       </div>
     </div>
@@ -1480,8 +1480,8 @@
           <form class="attendance-form" id="shiftChangeRequestForm" onsubmit="submitShiftChangeRequest(event)">
             <div class="attendance-form-card">
               <section class="attendance-form-summary" aria-label="Current shift details">
-                <div class="attendance-form-summary-row"><span>Date</span><strong>15 Sep 2026</strong></div>
-                <div class="attendance-form-summary-row"><span>Original Shift</span><strong>8.30AM–5.30PM (W01)</strong></div>
+                <div class="attendance-form-summary-row"><span>Date</span><strong id="shiftMetaDate">15 Sep 2026</strong></div>
+                <div class="attendance-form-summary-row"><span>Original Shift</span><strong id="shiftMetaOriginal">8.30AM–5.30PM (W01)</strong></div>
                 <div class="attendance-form-summary-row"><span>New Shift Start</span><strong id="shiftChangeStart">–</strong></div>
                 <div class="attendance-form-summary-row"><span>New Shift End</span><strong id="shiftChangeEnd">–</strong></div>
               </section>
@@ -1850,11 +1850,19 @@
       
       setTimeout(() => {
         overlay.style.display = 'none';
-        if (overlayId === 'feedbackModalOverlay' && new URLSearchParams(window.location.search).get('feedbackFrom') === 'hours-summary') {
+        const routeParams = new URLSearchParams(window.location.search);
+        if (overlayId === 'feedbackModalOverlay' && routeParams.get('feedbackFrom') === 'hours-summary') {
           const returnUrl = new URL('hours-summary.html', window.location.href);
-          const requestedSummary = new URLSearchParams(window.location.search).get('feedbackSummary');
-          const summary = requestedSummary === 'Unapproved OT Hours' ? requestedSummary : 'Odd Clocking Days';
+          const requestedSummary = routeParams.get('feedbackSummary');
+          const summary = ['Odd Clocking Days', 'Unapproved OT Hours', 'Absent Days', 'Lost Hours'].includes(requestedSummary) ? requestedSummary : 'Odd Clocking Days';
           returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme, summary });
+          window.location.replace(returnUrl.href);
+        } else if (
+          (overlayId === 'feedbackModalOverlay' && routeParams.get('feedbackFrom') === 'pending-feedback') ||
+          (overlayId === 'shiftChangeModalOverlay' && routeParams.get('shiftFrom') === 'pending-feedback')
+        ) {
+          const returnUrl = new URL('feedback-history.html', window.location.href);
+          returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme });
           window.location.replace(returnUrl.href);
         }
       }, 300);
@@ -2012,7 +2020,8 @@
         });
       });
       renderFeedbackClockCards();
-      openHoursSummaryFeedback();
+      openLinkedFeedback();
+      openLinkedShiftChange();
     });
 
     /* ================= Attendance Feedback Logic ================= */
@@ -2025,10 +2034,10 @@
     let selectedClockCardIndex = 1; // Card 2 selected initially
     let editingCardTarget = null; // { cardIndex, field: 'inTime'|'outTime' }
 
-    // Reuse this form for Feedback actions in Hours Summary.
-    function openHoursSummaryFeedback() {
+    // Reuse this form for linked Feedback actions.
+    function openLinkedFeedback() {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('feedbackFrom') !== 'hours-summary') return;
+      if (!['hours-summary', 'pending-feedback'].includes(params.get('feedbackFrom'))) return;
       const dateStr = params.get('feedbackDate');
       const recordDate = new Date(dateStr);
       if (!dateStr || Number.isNaN(recordDate.getTime())) return;
@@ -2056,6 +2065,16 @@
       document.getElementById('fbMetaEmployeeNo').textContent = `#${(params.get('feedbackEmployeeNo') || 'EBB12').replace(/^#+/, '')}`;
       document.getElementById('fbAmendReasonSelect').value = '';
       openFeedbackModal(dateStr, params.get('feedbackShift') || '', '');
+    }
+
+    function openLinkedShiftChange() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('shiftFrom') !== 'pending-feedback') return;
+      document.getElementById('shiftChangeRequestForm').reset();
+      document.getElementById('shiftMetaDate').textContent = params.get('shiftDate') || '15 Sep 2026';
+      document.getElementById('shiftMetaOriginal').textContent = params.get('shiftOriginal') || '8.30AM–5.30PM (W01)';
+      updateShiftChangeSummary('');
+      openModal('shiftChangeModalOverlay');
     }
 
     function renderFeedbackClockCards() {

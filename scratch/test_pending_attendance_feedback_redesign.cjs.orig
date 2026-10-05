@@ -1,0 +1,231 @@
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const { pathToFileURL } = require('node:url');
+const puppeteer = require('puppeteer');
+
+const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/options/feedback-history.html')).href;
+
+async function waitForOverlay(page, selector, visible) {
+  await page.waitForFunction(
+    ({ selector, visible }) => {
+      const node = document.querySelector(selector);
+      return !!node && (getComputedStyle(node).display !== 'none') === visible;
+    },
+    {},
+    { selector, visible }
+  );
+}
+
+async function assertOverlayFitsAtWidths(page, selector) {
+  for (const width of [360, 390, 420]) {
+    await page.setViewport({ width, height: 950 });
+    const fits = await page.$eval(selector, overlay => {
+      const panel = overlay.querySelector('.detail-popout-panel');
+      const phone = document.querySelector('.phone-container');
+      const panelRect = panel.getBoundingClientRect();
+      const phoneRect = phone.getBoundingClientRect();
+      return panel.scrollWidth <= panel.clientWidth + 1 &&
+        panelRect.left >= phoneRect.left - 1 &&
+        panelRect.right <= phoneRect.right + 1 &&
+        panelRect.top >= phoneRect.top - 1 &&
+        panelRect.bottom <= phoneRect.bottom + 1;
+    });
+    assert.equal(fits, true, selector + ' must fit at ' + width + 'px');
+  }
+}
+
+(async () => {
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    args: ['--no-sandbox', '--allow-file-access-from-files']
+  });
+
+  try {
+    for (const theme of ['light', 'dark']) {
+      const page = await browser.newPage();
+      const errors = [];
+      page.on('pageerror', error => errors.push(error.message));
+      await page.setViewport({ width: 390, height: 950 });
+      await page.goto(pageUrl + '?theme=' + theme, { waitUntil: 'networkidle0' });
+
+      assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
+      assert.equal(await page.$eval('#pendingFeedbackTotal', node => node.textContent.trim()), 'Total 2 Records');
+
+      for (const width of [360, 390, 420]) {
+        await page.setViewport({ width, height: 950 });
+        const layout = await page.evaluate(() => ({
+          pageFits: document.querySelector('.main-content').scrollWidth <= document.querySelector('.main-content').clientWidth + 1,
+          hasVerifyControls: document.querySelector('#verifyAllBtn, [data-verify-record]') !== null,
+          cards: [...document.querySelectorAll('.pending-feedback-record')].map(card => {
+            const cardRect = card.getBoundingClientRect();
+            const actions = [...card.querySelectorAll('.history-card-actions button')];
+            return {
+              radius: getComputedStyle(card).borderRadius,
+              padding: getComputedStyle(card).padding,
+              date: card.querySelector('.history-card-ref')?.textContent.trim(),
+              title: card.querySelector('.history-card-title')?.textContent.trim(),
+              labels: [...card.querySelectorAll('.attendance-history-detail > span')].map(node => node.textContent.trim()),
+              status: card.querySelector('.card-status-badge')?.textContent.trim(),
+              actions: actions.map(node => node.textContent.trim()),
+              detailGap: getComputedStyle(card.querySelector('.history-card-details')).rowGap,
+              detailRadius: getComputedStyle(card.querySelector('.history-card-details')).borderRadius,
+              detailRowsAreBorderless: [...card.querySelectorAll('.attendance-history-detail')].every(row => getComputedStyle(row).borderBottomStyle === 'none'),
+              actionsLayout: getComputedStyle(card.querySelector('.history-card-actions')).display,
+              actionsAlignment: getComputedStyle(card.querySelector('.history-card-actions')).justifyContent,
+              actionRadii: actions.map(button => getComputedStyle(button).borderRadius),
+              compactActions: actions.every(button => button.getBoundingClientRect().width < 140),
+              actionsStayOnOneRow: new Set(actions.map(button => Math.round(button.getBoundingClientRect().top))).size === 1,
+              titleStaysOnOneLine: card.querySelector('.history-card-title').scrollHeight < parseFloat(getComputedStyle(card.querySelector('.history-card-title')).lineHeight) * 1.5,
+              chevronVisible: getComputedStyle(card.querySelector('.fa-chevron-right')).display !== 'none',
+              semanticDetailsButton: !card.hasAttribute('role') && card.querySelector('.pending-feedback-details-trigger')?.tagName === 'BUTTON',
+              fits: card.scrollWidth <= card.clientWidth + 1 && actions.every(button => {
+                const rect = button.getBoundingClientRect();
+                return rect.left >= cardRect.left - 1 && rect.right <= cardRect.right + 1;
+              })
+            };
+          })
+        }));
+
+        assert.equal(layout.pageFits, true, theme + '/' + width + 'px page must not overflow');
+        assert.equal(layout.hasVerifyControls, false, 'Pending Attendance Feedback must not expose Verify controls');
+        assert.equal(layout.cards.length, 2);
+        assert.deepEqual(layout.cards.map(card => card.date), ['Mon 14 SEP', 'Tue 15 SEP']);
+        assert.deepEqual(layout.cards.map(card => card.status), ['Unapproved OT', 'Missing Clock Out']);
+        layout.cards.forEach((card, cardIndex) => {
+          assert.equal(card.radius, '20px');
+          assert.equal(card.padding, '16px 18px');
+          assert.ok(card.title);
+          assert.deepEqual(card.labels, ['Times', 'Normal Hours', 'OT Hours', 'Exception']);
+          assert.deepEqual(card.actions, ['Change Shift', 'Feedback']);
+          assert.equal(card.detailGap, '7px');
+          assert.equal(card.detailRadius, '14px');
+          assert.equal(card.detailRowsAreBorderless, true);
+          assert.equal(card.actionsLayout, 'flex');
+          assert.equal(card.actionsAlignment, 'flex-end');
+          assert.equal(card.actionsStayOnOneRow, true);
+          assert.equal(card.titleStaysOnOneLine, true, theme + '/' + width + 'px card ' + cardIndex + ' title must stay on one line');
+          assert.deepEqual(card.actionRadii, ['20px', '20px']);
+          assert.equal(card.compactActions, true);
+          assert.equal(card.chevronVisible, true);
+          assert.equal(card.semanticDetailsButton, true);
+          assert.equal(card.fits, true);
+        });
+      }
+
+      await page.click('.pending-feedback-record:nth-of-type(2) .pending-feedback-details-trigger');
+      await waitForOverlay(page, '#attendanceDetailsModalOverlay', true);
+      await assertOverlayFitsAtWidths(page, '#attendanceDetailsModalOverlay');
+      const details = await page.evaluate(() => ({
+        title: document.querySelector('#attendanceDetailsModalOverlay h3')?.textContent.trim(),
+        classes: document.querySelector('#attendanceDetailsModalOverlay').className,
+        labels: [...document.querySelectorAll('#attendanceDetailsModalOverlay .detail-popout-label')].map(node => node.textContent.trim()),
+        values: [...document.querySelectorAll('#attendanceDetailsModalOverlay .detail-popout-value')].map(node => node.textContent.trim()),
+        employee: [...document.querySelectorAll('#attendanceDetailsModalOverlay .pending-feedback-employee span')].map(node => node.textContent.trim())
+      }));
+      assert.equal(details.title, 'Attendance Advice Approval');
+      assert.match(details.classes, /detail-popout-overlay/);
+      assert.deepEqual(details.labels, ['Employee', 'Date', 'Original Shift', 'Times', 'Normal Hours', 'OT Hours', 'Exception', 'Status']);
+      assert.deepEqual(details.employee, ['Farhan binti rahmat', '#EBB12']);
+      assert.ok(details.values.includes('15 Sep 2026'));
+      assert.ok(details.values.includes('Missing Clock Out'));
+      await page.keyboard.down('Shift');
+      await page.keyboard.press('Tab');
+      await page.keyboard.up('Shift');
+      assert.equal(await page.$eval('#attendanceDetailsModalOverlay', overlay => overlay.contains(document.activeElement)), true);
+      await page.click('#attendanceDetailsModalOverlay .detail-popout-close');
+      await waitForOverlay(page, '#attendanceDetailsModalOverlay', false);
+      await page.waitForFunction(() => document.activeElement.classList.contains('pending-feedback-details-trigger'));
+      assert.equal(await page.evaluate(() => document.activeElement.classList.contains('pending-feedback-details-trigger') && document.activeElement.closest('.pending-feedback-record').dataset.date === '15 Sep 2026'), true);
+
+      await page.click('.pending-feedback-record:first-of-type .btn-feedback');
+      await waitForOverlay(page, '#feedbackModalOverlay', true);
+      await assertOverlayFitsAtWidths(page, '#feedbackModalOverlay');
+      const feedback = await page.evaluate(() => ({
+        classes: document.querySelector('#feedbackModalOverlay').className,
+        date: document.querySelector('#fbMetaDate')?.textContent.trim(),
+        shift: document.querySelector('#fbMetaShift')?.textContent.trim(),
+        title: document.querySelector('#feedbackModalOverlay h3')?.textContent.trim(),
+        sections: [...document.querySelectorAll('#feedbackModalOverlay h4')].map(node => node.textContent.trim()),
+        hasAmendedShift: !!document.querySelector('#fbAmendedShiftSelect'),
+        hasReason: !!document.querySelector('#fbAmendReasonSelect'),
+        hasRemarks: !!document.querySelector('#fbRemarksInput'),
+        hasFiles: !!document.querySelector('#fbFileInput[multiple]'),
+        hasCamera: !!document.querySelector('#fbCameraInput[accept="image/*"][capture]'),
+        actions: [...document.querySelectorAll('#feedbackModalOverlay .detail-popout-footer button')].map(node => node.textContent.trim()),
+        clockCards: document.querySelectorAll('#fbClockCardsTrack .pending-feedback-clock-card').length,
+        validClockMarkup: [...document.querySelectorAll('#fbClockCardsTrack .pending-feedback-clock-card')].every(node => node.tagName === 'DIV' && !node.hasAttribute('role') && !!node.querySelector('input[type="time"]') && !!node.querySelector('button.pending-feedback-clock-select')),
+        selectedClocks: [...document.querySelectorAll('#fbClockCardsTrack .pending-feedback-clock-select')].map(node => node.getAttribute('aria-pressed'))
+      }));
+      assert.match(feedback.classes, /detail-popout-overlay/);
+      assert.equal(feedback.title, 'Attendance Feedback');
+      assert.equal(feedback.date, '14 Sep 2026');
+      assert.equal(feedback.shift, '8.30AM\u20135.30PM (W01)');
+      assert.deepEqual(feedback.sections, ['Clock In/Out Data', 'Feedback Details', 'Upload Attachments']);
+      assert.equal(feedback.hasAmendedShift && feedback.hasReason && feedback.hasRemarks, true);
+      assert.equal(feedback.hasFiles && feedback.hasCamera, true);
+      assert.deepEqual(feedback.actions, ['Cancel', 'Save Draft', 'Submit']);
+      assert.equal(feedback.clockCards, 2);
+
+      assert.equal(feedback.validClockMarkup, true);
+      assert.deepEqual(feedback.selectedClocks, ['true', 'false']);
+      assert.equal(await page.evaluate(() => [...document.querySelector('.phone-container').children].filter(node => !node.classList.contains('pending-feedback-modal')).every(node => node.inert)), true);
+      await page.keyboard.down('Shift');
+      await page.keyboard.press('Tab');
+      await page.keyboard.up('Shift');
+      assert.equal(await page.$eval('#feedbackModalOverlay', overlay => overlay.contains(document.activeElement)), true);
+      await page.click('#fbAddPreviousDay');
+      assert.equal(await page.$$eval('#fbClockCardsTrack .pending-feedback-clock-card', nodes => nodes.length), 3);
+      await page.click('#feedbackModalOverlay .detail-popout-close');
+      await waitForOverlay(page, '#feedbackModalOverlay', false);
+      await page.waitForFunction(() => document.activeElement.classList.contains('btn-feedback'));
+      assert.equal(await page.evaluate(() => document.activeElement.classList.contains('btn-feedback')), true);
+
+      await page.click('.pending-feedback-record:first-of-type .btn-feedback');
+      await waitForOverlay(page, '#feedbackModalOverlay', true);
+      await page.click('#feedbackModalOverlay .detail-popout-footer button:nth-child(2)');
+      await waitForOverlay(page, '#feedbackModalOverlay', false);
+      await page.click('.pending-feedback-record:first-of-type .btn-feedback');
+      await waitForOverlay(page, '#feedbackModalOverlay', true);
+      await page.click('#feedbackModalOverlay button[type="submit"]');
+      await waitForOverlay(page, '#feedbackModalOverlay', false);
+
+      await page.$$eval('.pending-feedback-record .btn-shift-change', nodes => nodes[1].click());
+      await waitForOverlay(page, '#shiftChangeModalOverlay', true);
+      await assertOverlayFitsAtWidths(page, '#shiftChangeModalOverlay');
+      const shiftForm = await page.evaluate(() => ({
+        title: document.querySelector('#shiftChangeModalOverlay h3')?.textContent.trim(),
+        date: document.querySelector('#shiftMetaDate')?.textContent.trim(),
+        shift: document.querySelector('#shiftMetaOriginal')?.textContent.trim(),
+        fields: [...document.querySelectorAll('#shiftChangeModalOverlay .pending-feedback-form-field > label')].map(node => node.textContent.trim()),
+        actions: [...document.querySelectorAll('#shiftChangeModalOverlay .detail-popout-footer button')].map(node => node.textContent.trim())
+      }));
+      assert.equal(shiftForm.title, 'Shift Change Request');
+      assert.equal(shiftForm.date, '15 Sep 2026');
+      assert.equal(shiftForm.shift, '8.30AM\u20135.30PM (W01)');
+      assert.deepEqual(shiftForm.fields, ['New Shift', 'Reason', 'Remarks']);
+      assert.deepEqual(shiftForm.actions, ['Cancel', 'Submit']);
+      await page.select('#shiftChangeNewShift', 'W02');
+      assert.deepEqual(
+        await page.evaluate(() => [
+          document.querySelector('#shiftChangeStart').textContent.trim(),
+          document.querySelector('#shiftChangeEnd').textContent.trim()
+        ]),
+        ['9.00AM', '6.00PM']
+      );
+      await page.click('#shiftChangeModalOverlay button[type="submit"]');
+      await waitForOverlay(page, '#shiftChangeModalOverlay', false);
+      await page.waitForFunction(() => document.activeElement.classList.contains('btn-shift-change'));
+      assert.equal(await page.evaluate(() => document.activeElement.classList.contains('btn-shift-change')), true);
+
+      assert.deepEqual(errors, []);
+      await page.close();
+    }
+    console.log('PASS: Pending Attendance Feedback matches History cards and provides complete Feedback and Change Shift flows in both themes.');
+  } finally {
+    await browser.close();
+  }
+})().catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});

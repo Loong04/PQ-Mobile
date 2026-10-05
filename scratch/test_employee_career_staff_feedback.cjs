@@ -1,0 +1,128 @@
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const { pathToFileURL } = require('node:url');
+const puppeteer = require('puppeteer');
+const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/options/team/staff-feedback.html')).href;
+
+(async () => {
+  const browser = await puppeteer.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--no-sandbox', '--allow-file-access-from-files'] });
+  const errors = [];
+  try {
+    const page = await browser.newPage();
+    page.on('pageerror', error => errors.push(error.message));
+    const apply = async (values) => {
+      await page.click('#staffFeedbackFilterTrigger');
+      await page.evaluate(values => {
+        for (const [id, value] of Object.entries(values)) document.getElementById(id).value = value;
+      }, values);
+      await page.click('#staffFeedbackApplyFilter');
+    };
+    const reset = async () => { await page.click('#staffFeedbackFilterTrigger'); await page.click('#staffFeedbackResetFilter'); };
+    for (const theme of ['dark', 'light']) {
+      await page.setViewport({ width: 390, height: 950 });
+      await page.goto(url + '?theme=' + theme, { waitUntil: 'networkidle0' });
+      assert.equal(await page.$$eval('.staff-feedback-card', nodes => nodes.length), 60, 'The preview renders all 60 records');
+      assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '60');
+      for (const width of [360, 390, 450]) {
+        await page.setViewport({ width, height: 950 });
+        assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1), `No main overflow at ${width}px`);
+        assert.ok(await page.$$eval('.staff-feedback-card', nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)));
+        assert.ok(await page.$$eval('.staff-feedback-card', nodes => nodes.every(node => {
+          const id = node.querySelector('.staff-feedback-emp-no');
+          return id.textContent.startsWith('#') && id.getBoundingClientRect().top >= node.querySelector('.staff-feedback-name').getBoundingClientRect().bottom;
+        })));
+      }
+      await page.setViewport({ width: 390, height: 950 });
+      await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_${theme}.png`) });
+      await page.click('.staff-feedback-card');
+      assert.equal(await page.$eval('#staffFeedbackDetailsOverlay', node => node.hidden), false);
+      assert.equal(await page.$eval('main', node => node.inert), true);
+      await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_details_${theme}_top.png`) });
+      await page.$eval('#staffFeedbackDetailsOverlay .detail-popout-body', node => { node.scrollTop = node.scrollHeight; });
+      await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_details_${theme}_bottom.png`) });
+      await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(() => document.activeElement.classList.contains('staff-feedback-card')), true);
+      await page.click('#staffFeedbackFilterTrigger');
+      await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_filter_${theme}.png`) });
+      await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'staffFeedbackFilterTrigger');
+      await apply({ staffFeedbackKeyword: '#004177' });
+      assert.equal(await page.$$eval('.staff-feedback-card', nodes => nodes.length), 6);
+      await reset();
+      await page.click('#staffFeedbackViewChart');
+      assert.equal(await page.$eval('#staffFeedbackChartTotal', node => node.textContent), '60');
+      assert.equal(await page.$$eval('.staff-feedback-legend-count', nodes => nodes.reduce((sum, node) => sum + Number(node.textContent), 0)), 60);
+      await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_chart_${theme}.png`) });
+      await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'staffFeedbackViewChart');
+      assert.equal(await page.$eval('main', node => node.inert), false);
+    }
+
+    // Hand-picked records verify inclusive dates, combined filters and chart aggregation.
+    await page.evaluateOnNewDocument(() => {
+      window.EMPLOYEE_CAREER_STAFF_FEEDBACK_RECORDS = [
+        { empNo: '004177', name: 'Ahmad Rafy', date: '2026-09-02', title: 'Shift suggestion', feedback: 'Consider flexible starting hours.', type: 'Suggestion', category: 'Policy', status: 'Pending', feedbackDate1: '2026-09-02', feedbackDate2: '2026-09-03', feedbackNote: 'Start at 8 or 9 AM.', feedbackRemarks: 'For morning shifts.', submitDate: '2026-09-04', reviewerComment: 'Review next week.', reviewedBy: 'Sarah Tan', reviewedDate: '2026-09-05', rating: 0, reward: 0, attachments: [{ name: 'shift-note.txt', url: '../../assets/staff-feedback-sample-note.txt' }, { name: 'invalid.txt', url: 'javascript:alert(1)' }] },
+        { empNo: '004177', name: 'Ahmad Rafy', date: '2026-09-18', title: 'Office chairs', feedback: 'Please replace worn chairs.', type: 'Suggestion', category: 'Facilities', status: 'Resolved', reviewerComment: 'New chairs delivered.', reviewedBy: 'Farah Hassan', reviewedDate: '2026-09-20', rating: 4, reward: 'RM 50.00', attachments: [] },
+        { empNo: '000070', name: 'Yee seong liew', date: '2026-09-18', title: 'Shift suggestion', feedback: 'Add earlier shifts.', type: 'Suggestion', category: 'Policy', status: 'Pending' },
+        { empNo: '000030', name: 'Andrew', date: '2026-10-05', title: '<img src=x onerror=alert(1)>', feedback: 'Thanks for the training.', type: 'Compliment', category: 'Management', status: 'Resolved' }
+      ];
+    });
+    await page.goto(url + '?theme=dark', { waitUntil: 'networkidle0' });
+    await apply({ staffFeedbackKeyword: '#004177', staffFeedbackStartDate: '2026-09-02', staffFeedbackEndDate: '2026-09-18', staffFeedbackType: 'Suggestion', staffFeedbackCategory: 'Policy', staffFeedbackStatus: 'Pending' });
+    assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '1');
+    assert.match(await page.$eval('.staff-feedback-card', node => node.innerText), /Ahmad Rafy/);
+    await page.click('.staff-feedback-card');
+    const details = await page.$$eval('#staffFeedbackDetailsTable tr', rows => Object.fromEntries(rows.map(row => [row.cells[0].textContent.trim(), row.cells[1].textContent.trim()])));
+    assert.deepEqual(details, {
+      'Emp #': '#004177', 'Name': 'Ahmad Rafy', 'Type': 'Suggestion', 'Category': 'Policy', 'Title': 'Shift suggestion',
+      'Feedback Date 1': '2 Sept 2026', 'Feedback Date 2': '3 Sept 2026', 'Feedback Note': 'Start at 8 or 9 AM.',
+      'Feedback Remarks': 'For morning shifts.', 'Submit Date': '4 Sept 2026', 'Reviewer Comment': 'Review next week.',
+      'Reviewed By': 'Sarah Tan', 'Reviewed Date': '5 Sept 2026', 'Rating': '0', 'Reward': '0', 'Status': 'Pending', 'Attachment': 'shift-note.txtinvalid.txt'
+    }, 'The clicked filtered record supplies every detail field, including zero values');
+    assert.equal(await page.$$eval('#staffFeedbackDetailsTable a', nodes => nodes.length), 1, 'Unsafe attachment URLs do not become links');
+    assert.match(await page.$eval('#staffFeedbackDetailsTable a', node => node.href), /staff-feedback-sample-note\.txt$/);
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'staffFeedbackCloseDetails', 'Tab wraps inside details');
+    await page.keyboard.press('Escape');
+    await page.click('#staffFeedbackViewChart');
+    assert.equal(await page.$eval('#staffFeedbackChartTotal', node => node.textContent), '1');
+    assert.deepEqual(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.map(node => node.textContent.trim())), ['Pending1']);
+    await page.select('#staffFeedbackChartMetric', 'category');
+    assert.deepEqual(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.map(node => node.textContent.trim())), ['Policy1']);
+    await page.keyboard.press('Escape');
+    await reset();
+    await page.$eval('.staff-feedback-card:nth-child(2)', node => node.focus());
+    await page.keyboard.press('Enter');
+    assert.match(await page.$eval('#staffFeedbackDetailsTable', node => node.innerText), /New chairs delivered/);
+    assert.match(await page.$eval('#staffFeedbackDetailsTable', node => node.innerText), /Farah Hassan/);
+    assert.equal(await page.$eval('#staffFeedbackDetailsTable tr:last-child td:last-child', node => node.textContent.trim()), 'No attachments');
+    await page.click('#staffFeedbackCloseDetails');
+    assert.equal(await page.evaluate(() => document.activeElement.matches('.staff-feedback-card:nth-child(2)')), true);
+    await page.$eval('.staff-feedback-card:nth-child(3)', node => node.focus());
+    await page.keyboard.press('Space');
+    assert.match(await page.$eval('#staffFeedbackDetailsTable', node => node.innerText), /Yee seong liew/);
+    assert.match(await page.$eval('#staffFeedbackDetailsTable', node => node.innerText), /Add earlier shifts/);
+    assert.equal(await page.$eval('#staffFeedbackDetailsTable tr:nth-child(11) td:last-child', node => node.textContent.trim()), '—', 'Missing review data clears previous record values');
+    await page.keyboard.press('Escape');
+    await apply({ staffFeedbackStartDate: '2026-09-18', staffFeedbackEndDate: '2026-09-18' });
+    assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '2', 'Date boundaries are inclusive');
+    await apply({ staffFeedbackStartDate: '2026-10-05', staffFeedbackEndDate: '2026-09-02' });
+    assert.equal(await page.$eval('#staffFeedbackFilterOverlay', node => node.hidden), false, 'Invalid date range keeps filter open');
+    assert.equal(await page.$eval('#staffFeedbackFilterError', node => node.hidden), false);
+    assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '2', 'Validation leaves applied filters unchanged');
+    await page.keyboard.press('Escape');
+    await reset();
+    await apply({ staffFeedbackKeyword: 'no matching employee' });
+    assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '0');
+    assert.equal(await page.$eval('#staffFeedbackEmpty', node => node.hidden), false);
+    await page.click('#staffFeedbackViewChart');
+    assert.equal(await page.$eval('#staffFeedbackChartEmpty', node => node.hidden), false);
+    await page.keyboard.press('Escape');
+    await reset();
+    assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '4');
+    assert.equal(await page.$('.staff-feedback-card img'), null, 'Feedback titles are rendered as text');
+    assert.deepEqual(errors, []);
+    console.log('PASS: Staff Feedback history cards, clicked record details, all detail fields, safe attachments, zero and missing values, keyboard access, 60 records, six filters, charts, dates, responsive themes and focus restoration.');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

@@ -134,6 +134,21 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     await page.focus('.attendance-card-details-trigger');
     await page.keyboard.press('Enter');
     assert.equal(await page.$eval('#attendanceDetailsModalOverlay', node => getComputedStyle(node).display), 'flex');
+    const attendanceDetailSections = await page.evaluate(() => {
+      const mainDetails = document.querySelector('#attendanceDetailsModalOverlay .attendance-details-main');
+      return {
+        mainLabels: [...mainDetails.children].map(row => row.firstElementChild?.textContent.trim()),
+        outsideLabels: [...document.querySelectorAll('#attendanceDetailsModalOverlay .attendance-details-empty-label')]
+          .map(node => node.textContent.trim()),
+        allOutsideMain: [...document.querySelectorAll('#attendanceDetailsModalOverlay .attendance-details-empty-label')]
+          .every(node => !mainDetails.contains(node))
+      };
+    });
+    assert.equal(attendanceDetailSections.mainLabels.at(-1), 'Document #');
+    assert.equal(attendanceDetailSections.mainLabels.includes('Leave Info'), false);
+    assert.equal(attendanceDetailSections.mainLabels.includes('Overtime Info'), false);
+    assert.deepEqual(attendanceDetailSections.outsideLabels, ['Leave Info', 'Overtime Info']);
+    assert.equal(attendanceDetailSections.allOutsideMain, true);
     await page.evaluate(() => closeModal('attendanceDetailsModalOverlay'));
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 350)));
 

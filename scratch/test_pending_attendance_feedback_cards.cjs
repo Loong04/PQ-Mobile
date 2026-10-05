@@ -13,6 +13,7 @@ const puppeteer = require('puppeteer');
     for (const theme of ['light', 'dark']) {
       await page.goto(url + '?theme=' + theme, { waitUntil: 'networkidle0' });
       assert.equal(await page.$eval('#pendingFeedbackTotal', node => node.textContent.trim()), 'Total 2 Records');
+      assert.equal(await page.$eval('.pending-feedback-summary', node => node.textContent.trim().replace(/\s+/g, ' ')), 'Total 2 Records');
       for (const width of [360, 390, 420]) {
         await page.setViewport({ width, height: 950 });
         const cards = await page.$$eval('.pending-feedback-record', nodes => nodes.map(node => {
@@ -31,6 +32,12 @@ const puppeteer = require('puppeteer');
             })(),
             feedbackColor: getComputedStyle(node.querySelector('.btn-feedback')).color,
             feedbackBackground: getComputedStyle(node.querySelector('.btn-feedback')).backgroundImage,
+            shiftColor: getComputedStyle(node.querySelector('.btn-shift-change')).color,
+            shiftBackground: getComputedStyle(node.querySelector('.btn-shift-change')).backgroundImage,
+            actionButtons: [...node.querySelectorAll('.card-action-btn')].map(button => ({
+              text: button.textContent.trim(),
+              hasIcon: !!button.querySelector('i')
+            })),
             fits: node.scrollWidth <= node.clientWidth + 1 && [...node.querySelectorAll('.history-card-title,.card-status-badge,button,.attendance-history-detail strong')].every(child => {
               const childRect = child.getBoundingClientRect();
               return childRect.left >= rect.left - 1 && childRect.right <= rect.right + 1;
@@ -41,41 +48,35 @@ const puppeteer = require('puppeteer');
         assert.equal(cards.length, 2);
         assert.deepEqual(cards.map(card => card.date), ['Mon 14 SEP', 'Tue 15 SEP']);
         cards.forEach(card => {
-          assert.equal(card.radius, '18px');
+          assert.equal(card.radius, '20px');
           assert.ok(card.title && card.fits && !card.dateBadge);
-          assert.deepEqual(card.labels, ['Clocked Times', 'Normal Hours', 'Overtime']);
+          assert.deepEqual(card.labels, ['Times', 'Normal Hours', 'OT Hours', 'Exception']);
           assert.ok(card.statusAtRight, 'Exception uses the top-right History status slot');
           assert.equal(card.feedbackColor, 'rgb(255, 255, 255)');
           assert.equal(card.feedbackBackground, 'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%)');
+          assert.equal(card.shiftColor, card.feedbackColor);
+          assert.equal(card.shiftBackground, card.feedbackBackground);
+          assert.deepEqual(card.actionButtons, [
+            { text: 'Change Shift', hasIcon: false },
+            { text: 'Feedback', hasIcon: false }
+          ]);
         });
-        assert.deepEqual(cards[0].values, ['08:09 · 19:40', '8.00', '2.00']);
-        assert.deepEqual(cards[1].values, ['07:38', '0.00', '0.00']);
+        assert.deepEqual(cards[0].values, ['08:09 · 19:40', '8.00', '2.00', 'Unapproved OT']);
+        assert.deepEqual(cards[1].values, ['07:38', '0.00', '0.00', 'Missing Clock Out']);
         assert.deepEqual(cards.map(card => card.status), ['Unapproved OT', 'Missing Clock Out']);
         assert.ok(await page.$eval('.main-content', node => node.scrollWidth <= node.clientWidth + 1));
         if (width === 390) await page.screenshot({ path: path.join(__dirname, `pending_attendance_feedback_${theme}.png`) });
       }
-      await page.click('.pending-feedback-record [data-verify-record]');
-      assert.equal(await page.$$eval('.verify-checkbox-box.checked', nodes => nodes.length), 1);
-      assert.equal(await page.$eval('#attendanceDetailsModalOverlay', node => getComputedStyle(node).display), 'none');
-      await page.click('#verifyAllBtn');
-      assert.equal(await page.$$eval('.verify-checkbox-box.checked', nodes => nodes.length), 2);
-      await page.click('#verifyAllBtn');
-      assert.equal(await page.$$eval('.verify-checkbox-box.checked', nodes => nodes.length), 0);
-      await page.focus('.pending-feedback-record');
+      assert.equal(await page.$eval('body', node => node.querySelector('#verifyAllBtn, [data-verify-record]') === null), true);
+      assert.equal(await page.$eval('body', node => node.querySelector('.pending-feedback-context') === null), true);
+      await page.focus('.pending-feedback-record .pending-feedback-details-trigger');
       await page.keyboard.press('Enter');
       await page.waitForSelector('#attendanceDetailsModalOverlay', { visible: true });
-      await page.evaluate(() => closeModal('attendanceDetailsModalOverlay'));
+      await page.evaluate(() => closeOverlay('attendanceDetailsModalOverlay'));
       await page.waitForSelector('#attendanceDetailsModalOverlay', { hidden: true });
-      for (let index = 0; index < 2; index++) {
-        await page.$$eval('.pending-feedback-record .btn-feedback', (nodes, index) => nodes[index].click(), index);
-        await page.waitForSelector('#feedbackModalOverlay', { visible: true });
-        assert.equal(await page.$eval('#fbMetaDate', node => node.textContent.trim()), ['14 Sep 2026', '15 Sep 2026'][index]);
-        await page.evaluate(() => submitFeedbackForm());
-        await page.waitForSelector('#feedbackModalOverlay', { hidden: true });
-      }
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: Pending Attendance Feedback uses History cards, Total 2 Records, working Verify/Feedback controls, both themes and three mobile widths.');
+    console.log('PASS: Pending Attendance Feedback uses History cards without Verify controls in both themes and three mobile widths.');
   } finally {
     await browser.close();
   }
