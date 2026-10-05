@@ -53,10 +53,18 @@ async function assertOverlayFitsAtWidths(page, selector) {
       assert.equal(await page.$eval('#pendingFeedbackTotal', node => node.textContent.trim()), 'Total 2 Records');
       const summarySurface = await page.$eval('.pending-feedback-summary', node => {
         const style = getComputedStyle(node);
-        return { backgroundColor: style.backgroundColor, backgroundImage: style.backgroundImage };
+        return {
+          backgroundColor: style.backgroundColor,
+          backgroundImage: style.backgroundImage,
+          borderColor: style.borderColor
+        };
       });
       if (theme === 'light') {
-        assert.deepEqual(summarySurface, { backgroundColor: 'rgb(255, 255, 255)', backgroundImage: 'none' });
+        assert.deepEqual(summarySurface, {
+          backgroundColor: 'rgb(255, 255, 255)',
+          backgroundImage: 'none',
+          borderColor: 'rgb(255, 255, 255)'
+        });
       } else {
         assert.notEqual(summarySurface.backgroundColor, 'rgb(255, 255, 255)');
       }
