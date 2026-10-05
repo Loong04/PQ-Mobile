@@ -1083,6 +1083,35 @@
         }, 250);
       }
 
+      function upgradeAttendanceHistoryCardFacts() {
+        document
+          .querySelectorAll(
+            "#viewClockingHistory .history-card-details, #viewOtHistory .history-card-details, #viewFeedbackHistory .history-card-details",
+          )
+          .forEach((details) => {
+            const table = details.querySelector(".record-detail-table");
+            if (!table) return;
+            const facts = document.createElement("dl");
+            facts.className = "attendance-history-facts";
+            table.querySelectorAll(".attendance-history-detail").forEach((row) => {
+              const cells = row.querySelectorAll("td");
+              if (cells.length < 2) return;
+              const fact = document.createElement("div");
+              fact.className = "attendance-history-fact";
+              const label = document.createElement("dt");
+              label.className = "attendance-history-fact-label";
+              label.textContent = cells[0].textContent.trim();
+              const value = document.createElement("dd");
+              value.className = "attendance-history-fact-value";
+              value.textContent = cells[1].textContent.trim();
+              fact.append(label, value);
+              facts.append(fact);
+            });
+            details.replaceChildren(facts);
+          });
+      }
+
+      upgradeAttendanceHistoryCardFacts();
       function switchMainTab(tab) {
         document.getElementById("filterStatusGroup").hidden = tab === "clocking";
         const btnClocking = document.getElementById("tabClocking");

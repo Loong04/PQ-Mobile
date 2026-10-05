@@ -28,7 +28,7 @@ const tabs = [
             return {
               ref: node.querySelector('.history-card-ref')?.textContent.trim(),
               date: node.querySelector('.attendance-history-date')?.textContent.trim(),
-              labels: [...node.querySelectorAll('.attendance-history-detail > td:first-child')].map(node => node.textContent.trim()),
+              labels: [...node.querySelectorAll('.attendance-history-fact-label')].map(node => node.textContent.trim()),
               title: node.querySelector('.history-card-title')?.textContent.trim(),
               badge: node.querySelector('.card-status-badge')?.textContent.trim(),
               statusAtRight: (() => {
@@ -37,8 +37,8 @@ const tabs = [
                 return !!badge && badge.getBoundingClientRect().left >= heading.right;
               })(),
               dateBadge: !!node.querySelector('.history-date-badge'),
-              details: [...node.querySelectorAll('.attendance-history-detail')].map(row => row.textContent.replace(/\s+/g, ' ').trim()),
-              fits: node.scrollWidth <= node.clientWidth + 1 && [...node.querySelectorAll('.history-card-title,.card-status-badge,.attendance-history-detail strong')].every(child => {
+              details: [...node.querySelectorAll('.attendance-history-fact')].map(row => row.textContent.replace(/\s+/g, ' ').trim()),
+              fits: node.scrollWidth <= node.clientWidth + 1 && [...node.querySelectorAll('.history-card-title,.card-status-badge,.attendance-history-fact-value')].every(child => {
                 const childRect = child.getBoundingClientRect();
                 return childRect.right <= rect.right + 1 && childRect.left >= rect.left - 1;
               }),

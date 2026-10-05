@@ -231,7 +231,7 @@ async function check(name, fn) {
       assert.ok(scheduled.cards.every(card => card.role === 'button' && card.tabIndex === 0));
       assert.equal(scheduled.cards[0].title, 'W01: 8.30AM\u20135.30PM');
       assert.doesNotMatch(scheduled.cards[0].title, /\uFFFD/, 'Shift time does not contain a broken encoding character');
-      assert.match(scheduled.cards[0].date, /^Date:/);
+      assert.equal(scheduled.cards[0].date, 'Mon, 14 Sep 2026');
       assert.match(scheduled.cards[0].background, /16, 185, 129/, 'Normal attendance matches the Approved Leave History surface');
       assert.equal(scheduled.cards[0].borderLeftColor, 'rgb(16, 185, 129)', 'Category color stays on the left accent');
       assert.notEqual(scheduled.cards[0].borderTopColor, scheduled.cards[0].borderLeftColor, 'Category accent does not recolor the full border');
@@ -309,12 +309,14 @@ async function check(name, fn) {
         count: document.getElementById('list-record-count').textContent.trim(),
         totalHours: document.getElementById('list-total-hours').textContent.trim(),
         labels: [...document.querySelector('.summary-history-card').querySelectorAll('.summary-history-detail > span')]
-          .map(node => node.textContent.trim())
+          .map(node => node.textContent.trim()),
+        statuses: [...document.querySelectorAll('.summary-history-card-header .card-status-badge')].slice(0, 2).map(node => node.textContent.trim())
       }));
       assert.deepEqual(present, {
         count: '21',
         totalHours: '168.00',
-        labels: ['Clock Times', 'Normal Hours', 'Exception']
+        labels: ['Clock Times', 'Normal Hours'],
+        statuses: ['Normal', 'Unapproved OT']
       });
     });
     await check('hours summary View Chart is a compliant labeled pill', async () => {

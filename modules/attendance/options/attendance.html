@@ -1565,6 +1565,13 @@
                 <div class="label">Date</div>
                 <div class="value" id="fbMetaDate" data-feedback-meta-value>14 Sep</div>
               </div>
+              <div class="hero-stat feedback-meta-row">
+                <div class="label">Employee</div>
+                <div class="value" data-feedback-meta-value>
+                  <span id="fbMetaEmployeeName" style="display: block;">Farhan binti rahmat</span>
+                  <span id="fbMetaEmployeeNo" style="display: block; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: .8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EBB12</span>
+                </div>
+              </div>
            </div>
 
            <!-- Section: Clock Data Amendment -->
@@ -1843,6 +1850,13 @@
       
       setTimeout(() => {
         overlay.style.display = 'none';
+        if (overlayId === 'feedbackModalOverlay' && new URLSearchParams(window.location.search).get('feedbackFrom') === 'hours-summary') {
+          const returnUrl = new URL('hours-summary.html', window.location.href);
+          const requestedSummary = new URLSearchParams(window.location.search).get('feedbackSummary');
+          const summary = requestedSummary === 'Unapproved OT Hours' ? requestedSummary : 'Odd Clocking Days';
+          returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme, summary });
+          window.location.replace(returnUrl.href);
+        }
       }, 300);
     }
 
@@ -1998,6 +2012,7 @@
         });
       });
       renderFeedbackClockCards();
+      openHoursSummaryFeedback();
     });
 
     /* ================= Attendance Feedback Logic ================= */
@@ -2009,6 +2024,39 @@
     ];
     let selectedClockCardIndex = 1; // Card 2 selected initially
     let editingCardTarget = null; // { cardIndex, field: 'inTime'|'outTime' }
+
+    // Reuse this form for Feedback actions in Hours Summary.
+    function openHoursSummaryFeedback() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('feedbackFrom') !== 'hours-summary') return;
+      const dateStr = params.get('feedbackDate');
+      const recordDate = new Date(dateStr);
+      if (!dateStr || Number.isNaN(recordDate.getTime())) return;
+      const shortDate = date => `${date.getDate()} ${date.toLocaleDateString('en-US', { month: 'short' })}`;
+      const currentDate = shortDate(recordDate);
+      const colors = ['#ef4444', '#10b981', '#3b82f6'];
+      document.querySelectorAll('#feedbackModalOverlay .pill-tab').forEach((button, index) => {
+        const date = new Date(recordDate);
+        date.setDate(date.getDate() + index - 1);
+        const label = shortDate(date);
+        const plus = document.createElement('span');
+        plus.style.cssText = 'font-size: 15px; line-height: 1;';
+        plus.textContent = '+';
+        button.replaceChildren(plus, document.createTextNode(` ${label}`));
+        button.onclick = () => addClockCard(label, colors[index]);
+      });
+      const times = (params.get('feedbackClockTimes') || '').split(/[,\s]+/)
+        .filter(time => /^([01]\d|2[0-3]):[0-5]\d$/.test(time));
+      feedbackClockCards = (times.length ? times : ['New']).map((time, index) => ({
+        id: index + 1, inDate: currentDate, inTime: time, isNewIn: time === 'New',
+        outDate: currentDate, outTime: time === 'New' ? '--:--' : time, isDashedOut: time === 'New'
+      }));
+      selectedClockCardIndex = 0;
+      document.getElementById('fbMetaEmployeeName').textContent = params.get('feedbackEmployeeName') || 'Farhan binti rahmat';
+      document.getElementById('fbMetaEmployeeNo').textContent = `#${(params.get('feedbackEmployeeNo') || 'EBB12').replace(/^#+/, '')}`;
+      document.getElementById('fbAmendReasonSelect').value = '';
+      openFeedbackModal(dateStr, params.get('feedbackShift') || '', '');
+    }
 
     function renderFeedbackClockCards() {
       const track = document.getElementById('fbClockCardsTrack');
