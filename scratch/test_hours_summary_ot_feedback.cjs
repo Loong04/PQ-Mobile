@@ -13,7 +13,7 @@ const summaryUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/
     for (const theme of ['dark', 'light']) {
       await page.setViewport({ width: 390, height: 950 });
       await page.goto(summaryUrl + '?theme=' + theme, { waitUntil: 'networkidle0' });
-      assert.equal(await page.$eval('#odd-clocking-day-count', node => node.innerText), '8');
+      assert.equal(await page.$eval('#odd-clocking-day-count', node => node.innerText), '0');
       await page.evaluate(() => openListDetails('Normal OT Hours'));
       const rows = await page.$$eval('.summary-history-detail', nodes => nodes.map(node => node.innerText.replace(/\s+/g, ' ').trim()));
       assert.deepEqual(rows, ['Clock Times 07:45, 17:50', 'Approved OT 0.50 Hrs']);
@@ -27,7 +27,7 @@ const summaryUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/
       assert.equal(await page.$$eval('.summary-history-card', nodes => nodes.length), 1);
       assert.deepEqual(await page.$$eval('.summary-history-detail', nodes => nodes.map(node => node.innerText.replace(/\s+/g, ' ').trim())), ['Clock Times 08:14, 19:00', 'Approved OT 1.50 Hrs']);
       assert.equal(await page.$eval('#list-total-hours', node => node.innerText), '1.50');
-      assert.equal(await page.$eval('#other-ot-hours-total', node => node.innerText), '1.50');
+      assert.equal(await page.$eval('#other-ot-hours-total', node => node.innerText), '0.00');
       await page.click('.summary-history-card');
       await page.waitForSelector('#modal-attendance-details', { visible: true });
       assert.equal(await page.$eval('#ad-date', node => node.innerText), '10 Sep 2026');

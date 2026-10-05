@@ -132,6 +132,39 @@ async function check(name, fn) {
     });
 
     await page.goto(url('modules/attendance/options/hours-summary.html'), { waitUntil: 'domcontentloaded' });
+    await check('hours summary cards show only the reference KPIs clearly', async () => {
+      const cards = await page.$$eval('.summary-kpi-card', nodes => nodes.map(card => {
+        const title = card.querySelector('.card-theme-title');
+        const primary = card.querySelector('.summary-card-primary');
+        const secondary = card.querySelector('.summary-card-secondary');
+        return {
+          title: title?.textContent.trim(),
+          primary: primary?.textContent.trim(),
+          secondary: secondary?.textContent.trim() || '',
+          primarySize: primary ? Number.parseFloat(getComputedStyle(primary).fontSize) : 0,
+          titleSize: title ? Number.parseFloat(getComputedStyle(title).fontSize) : 0,
+          hasExtraCopy: Boolean(card.querySelector('.card-theme-sub, .work-card-unit, .work-card-status')),
+          fits: card.scrollWidth <= card.clientWidth + 1
+        };
+      }));
+      assert.deepEqual(cards.map(({ title, primary, secondary }) => ({ title, primary, secondary })), [
+        { title: 'Scheduled Work Days', primary: '22', secondary: '100%' },
+        { title: 'Normal Present Days', primary: '22', secondary: '100%' },
+        { title: 'Normal Work Hours', primary: '176.00', secondary: '100%' },
+        { title: 'Odd Clocking Days', primary: '0', secondary: '0%' },
+        { title: 'Normal OT Hours', primary: '4.50', secondary: '3%' },
+        { title: 'Other OT Hours', primary: '0.00', secondary: '0%' },
+        { title: 'Unapproved OT Hours', primary: '14.62', secondary: '8%' },
+        { title: 'Plan OT Hours', primary: '0.00', secondary: '' },
+        { title: 'Absent OT Hours', primary: '0.00', secondary: '' },
+        { title: 'Absent Days', primary: '0', secondary: '0%' },
+        { title: 'Leave Hours', primary: '0.00', secondary: '0%' },
+        { title: 'Lost Hours', primary: '0.00', secondary: '0%' }
+      ]);
+      assert.ok(cards.every(card => card.primarySize > card.titleSize));
+      assert.ok(cards.every(card => !card.hasExtraCopy));
+      assert.ok(cards.every(card => card.fits));
+    });
     await page.evaluate(() => setView('list'));
     await check('hours summary section headings stay text only', async () => {
       const headings = await page.$$eval('.dashboard-section-header', nodes => nodes.map(node => ({

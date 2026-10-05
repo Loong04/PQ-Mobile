@@ -27,7 +27,7 @@ const rows = nodes => nodes.map(node => node.innerText.replace(/\s+/g, ' ').trim
         'Clock Times 07:43, 17:40', 'Unapproved OT 0.30'
       ]);
       assert.equal(await page.$eval('#list-total-hours', node => node.innerText), '9.50');
-      assert.equal(await page.$eval('#unapproved-ot-hours-total', node => node.innerText), '9.50');
+      assert.equal(await page.$eval('#unapproved-ot-hours-total', node => node.innerText), '14.62');
       assert.equal(await page.$$eval('[data-summary-feedback]', nodes => nodes.length), 7);
       assert.equal(await page.$$eval('[data-summary-feedback] i', nodes => nodes.length), 0);
       await page.evaluate(() => openAttendanceDetailsByIndex(2));
@@ -54,7 +54,7 @@ const rows = nodes => nodes.map(node => node.innerText.replace(/\s+/g, ' ').trim
         'Clock Times 07:10, 21:48', 'Plan Hours 0.01'
       ]);
       assert.equal(await page.$eval('#list-total-hours', node => node.innerText), '0.23');
-      assert.equal(await page.$eval('#plan-ot-hours-total', node => node.innerText), '0.23');
+      assert.equal(await page.$eval('#plan-ot-hours-total', node => node.innerText), '0.00');
       assert.equal(await page.$$eval('[data-summary-feedback]', nodes => nodes.length), 0);
       await page.evaluate(() => openAttendanceDetailsByIndex(2));
       await page.waitForSelector('#modal-attendance-details', { visible: true });

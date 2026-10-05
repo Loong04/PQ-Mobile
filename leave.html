@@ -1976,6 +1976,8 @@
 
 </style>
   <link rel="stylesheet" href="css/approval-actions.css">
+  <link rel="stylesheet" href="css/attendance-schedule-calendar.css">
+  <script src="js/attendance-schedule-calendar.js" defer></script>
   <script src="js/pending-approval-filter.js"></script>
 </head>
 
@@ -2134,6 +2136,7 @@
                   <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Leaves &amp; Public Holidays</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px;">
+                  <button type="button" id="leaveIndividualCalendarInfo" class="attendance-schedule-info-trigger" data-schedule-info-trigger data-calendar-info-scope="individual" aria-haspopup="dialog" aria-controls="leaveCalendarInfo"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button>
                   <button type="button" onclick="shiftIndivCalMonth(-1)" title="Previous Month"
                     style="width: 32px; height: 32px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center;">‹</button>
                   <button type="button" onclick="shiftIndivCalMonth(1)" title="Next Month"
@@ -2366,8 +2369,7 @@
                 <h3
                   style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; white-space: nowrap;">
                   Team Leave Calendar</h3>
-                <span style="font-size: 12px; color: var(--text-muted); cursor: pointer;"
-                  title="Calendar Information">ⓘ</span>
+                <button type="button" id="leaveTeamCalendarInfo" class="attendance-schedule-info-trigger" data-schedule-info-trigger data-calendar-info-scope="team" aria-haspopup="dialog" aria-controls="leaveCalendarInfo"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button>
               </div>
               <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                 <!-- Icon-Only Filter Button -->
@@ -2602,19 +2604,6 @@
                 onclick="openCalDateDetailsModal('4')">
                 <span style="font-size: 12px; color: var(--text-muted); opacity: 0.4; line-height: 1;">4</span>
                 <span style="width: 16px; height: 16px; display: inline-block;"></span>
-              </div>
-            </div>
-
-            <!-- Legend Row (🟢 On Leave Today 🔵 Upcoming Leave) -->
-            <div
-              style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 16px; font-size: 11.5px; font-weight: 700; color: var(--text-muted);">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e;"></span>
-                <span>On Leave Today</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="width: 10px; height: 10px; border-radius: 50%; background: #3b82f6;"></span>
-                <span>Upcoming Leave</span>
               </div>
             </div>
 
@@ -4407,6 +4396,7 @@
                 Public Holiday Calendar</div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" id="leavePersonalCalendarInfo" class="attendance-schedule-info-trigger" data-schedule-info-trigger data-calendar-info-scope="individual" aria-haspopup="dialog" aria-controls="leaveCalendarInfo"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button>
               <button type="button" onclick="shiftMyPersonalPeriod(-1)" title="Previous Month"
                 style="width: 34px; height: 34px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center;">‹</button>
               <button type="button" onclick="shiftMyPersonalPeriod(1)" title="Next Month"
@@ -4493,6 +4483,7 @@
           style="background: var(--bg-card); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-card); border: 1px solid var(--border-subtle); margin-bottom: 16px;">
 
           <!-- Clean Month Navigation Header Bar with Arrows (No Department Dropdown) -->
+          <div class="leave-calendar-info-toolbar"><button type="button" id="leaveTeamOverviewCalendarInfo" class="attendance-schedule-info-trigger" data-schedule-info-trigger data-calendar-info-scope="team" aria-haspopup="dialog" aria-controls="leaveCalendarInfo"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button></div>
           <div
             style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; margin-bottom: 14px; background: var(--bg-input); border-radius: 16px; border: 1px solid var(--border-subtle);">
             <button type="button"
@@ -8465,6 +8456,26 @@
         </div>
       </div>
     </div>
+    <dialog id="leaveCalendarInfo" class="attendance-schedule-info-dialog" aria-labelledby="leaveCalendarInfoTitle">
+      <div class="attendance-schedule-info-panel">
+        <div class="attendance-schedule-info-handle" aria-hidden="true"></div>
+        <div class="attendance-schedule-info-header">
+          <h3 id="leaveCalendarInfoTitle">Calendar Information</h3>
+          <form method="dialog"><button type="submit" class="attendance-schedule-info-close" aria-label="Close calendar information"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>
+        </div>
+        <div class="attendance-schedule-info-list">
+          <div data-info-scope="individual"><span class="leave-calendar-info-tag">AL</span><span>Annual Leave</span></div>
+          <div data-info-scope="individual"><span class="leave-calendar-info-tag">MC</span><span>Medical Leave</span></div>
+          <div data-info-scope="individual"><span class="leave-calendar-info-tag">PH</span><span>Public Holiday</span></div>
+          <div data-info-scope="individual"><span class="leave-calendar-info-date">7</span><span>Working Day</span></div>
+          <div data-info-scope="individual"><span class="leave-calendar-info-date is-selected">10</span><span>Selected Date</span></div>
+          <div data-info-scope="individual"><span class="leave-calendar-info-date is-other-month">31</span><span>Other Month</span></div>
+          <div data-info-scope="team"><span class="leave-calendar-info-dot is-today"></span><span>On Leave Today</span></div>
+          <div data-info-scope="team"><span class="leave-calendar-info-dot is-upcoming"></span><span>Upcoming Leave</span></div>
+          <div data-info-scope="team"><span class="leave-calendar-info-count">3</span><span>Number of Staff on Leave</span></div>
+        </div>
+      </div>
+    </dialog>
   </div> <!-- Close .phone-container HERE -->
 
   <script>

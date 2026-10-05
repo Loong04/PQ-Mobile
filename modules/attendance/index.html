@@ -197,6 +197,7 @@
     }
   </style>
   <link rel="stylesheet" href="../../css/attendance-schedule-calendar.css">
+  <script src="../../js/attendance-schedule-calendar.js" defer></script>
 </head>
 <body>
 
@@ -330,16 +331,14 @@
       </a>
 
 
-      <!-- My Schedule retains the roster data with Leave calendar presentation. -->
+      <!-- Attendance roster with Leave calendar presentation. -->
       <div class="card attendance-schedule">
-         <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">My Schedule</h3>
-         <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 16px;">Shift roster &amp; schedules</p>
          
          <!-- Month Navigator Row -->
          <div class="attendance-schedule-header">
             <h3 class="attendance-schedule-month">September 2026</h3>
             <div class="attendance-schedule-controls">
-               <button type="button" class="attendance-schedule-today" onclick="selectDay(11)">Today</button>
+               <button type="button" class="attendance-schedule-info-trigger" data-schedule-info-trigger aria-haspopup="dialog" aria-controls="attendanceScheduleInfo"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button>
                <button type="button" title="Previous Month" aria-label="Previous Month">‹</button>
                <button type="button" title="Next Month" aria-label="Next Month">›</button>
             </div>
@@ -398,16 +397,24 @@
             <div class="cal-cell"></div>
          </div>
 
-         <!-- 7 Statuses Legend -->
-         <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: center; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 5px;"><span class="cal-d" style="margin:0;">D</span><span style="font-size: 11px; font-weight:600; color:var(--text-muted);">Working Day</span></div>
-            <div style="display: flex; align-items: center; gap: 5px;"><span class="cal-hol" style="margin:0;">HOL</span><span style="font-size: 11px; font-weight:600; color:var(--text-muted);">Holiday</span></div>
-            <div style="display: flex; align-items: center; gap: 5px;"><span class="cal-off" style="margin:0;">OFF</span><span style="font-size: 11px; font-weight:600; color:var(--text-muted);">Off Day</span></div>
-            <div style="display: flex; align-items: center; gap: 5px;"><span class="cal-rest" style="margin:0;">REST</span><span style="font-size: 11px; font-weight:600; color:var(--text-muted);">Rest Day</span></div>
-            <div style="display: flex; align-items: center; gap: 5px;"><span class="cal-cs" style="margin:0;">CS</span><span style="font-size: 11px; font-weight:600; color:var(--text-muted);">Shutdown</span></div>
-            <div style="display: flex; align-items: center; gap: 5px;"><span style="width:18px; height:18px; border-radius:50%; background:#7c3aed; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:800;">11</span><span style="font-size: 11px; font-weight:600; color:var(--text-muted);">Today</span></div>
-            <div style="display: flex; align-items: center; gap: 5px;"><span class="cal-none" style="margin:0;">NS</span><span style="font-size: 11px; font-weight:600; color:var(--text-muted);">No Shift</span></div>
-         </div>
+         <dialog id="attendanceScheduleInfo" class="attendance-schedule-info-dialog" aria-labelledby="attendanceScheduleInfoTitle">
+            <div class="attendance-schedule-info-panel">
+            <div class="attendance-schedule-info-handle" aria-hidden="true"></div>
+            <div class="attendance-schedule-info-header">
+               <h3 id="attendanceScheduleInfoTitle">Calendar Information</h3>
+               <form method="dialog"><button type="submit" class="attendance-schedule-info-close" aria-label="Close calendar information"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>
+            </div>
+            <div class="attendance-schedule-info-list">
+               <div><span class="cal-d">D</span><span>Working Day</span></div>
+               <div><span class="cal-hol">HOL</span><span>Holiday</span></div>
+               <div><span class="cal-off">OFF</span><span>Off Day</span></div>
+               <div><span class="cal-rest">REST</span><span>Rest Day</span></div>
+               <div><span class="cal-cs">CS</span><span>Shutdown</span></div>
+               <div><span class="attendance-schedule-info-today">11</span><span>Today</span></div>
+               <div><span class="cal-none">NS</span><span>No Shift</span></div>
+            </div>
+            </div>
+         </dialog>
       </div>
 
       <!-- Selected Day Details Card (Below Calendar) -->

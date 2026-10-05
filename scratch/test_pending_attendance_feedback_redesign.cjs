@@ -51,6 +51,15 @@ async function assertOverlayFitsAtWidths(page, selector) {
 
       assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
       assert.equal(await page.$eval('#pendingFeedbackTotal', node => node.textContent.trim()), 'Total 2 Records');
+      const summarySurface = await page.$eval('.pending-feedback-summary', node => {
+        const style = getComputedStyle(node);
+        return { backgroundColor: style.backgroundColor, backgroundImage: style.backgroundImage };
+      });
+      if (theme === 'light') {
+        assert.deepEqual(summarySurface, { backgroundColor: 'rgb(255, 255, 255)', backgroundImage: 'none' });
+      } else {
+        assert.notEqual(summarySurface.backgroundColor, 'rgb(255, 255, 255)');
+      }
 
       for (const width of [360, 390, 420]) {
         await page.setViewport({ width, height: 950 });

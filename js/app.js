@@ -1701,9 +1701,18 @@ function normalizeStandardFilterValue(value) {
 }
 
 function normalizeStandardFilterTrigger(card, value) {
-  const triggerCandidates = Array.from(card.querySelectorAll('button, .claim-icon-button, .filter-trigger-btn'));
+  const triggerCandidates = Array.from(card.querySelectorAll('button, .claim-icon-button, .filter-trigger-btn, .standard-filter-summary-trigger'));
   let trigger = triggerCandidates.find((element) => !value?.contains(element) && element.querySelector('i'));
   let triggerIcon = trigger?.querySelector('i') || null;
+
+  if (!triggerIcon) {
+    const existingSliders = Array.from(card.querySelectorAll('i.fa-sliders'))
+      .find((icon) => !value?.contains(icon));
+    if (existingSliders) {
+      triggerIcon = existingSliders;
+      if (existingSliders.parentElement !== card) trigger = existingSliders.parentElement;
+    }
+  }
 
   if (!triggerIcon) {
     const directIcon = Array.from(card.children).find((element) => element.matches?.('i'));
