@@ -142,7 +142,8 @@
         overflow: hidden;
       }
     </style>
-  </head>
+    <link rel="stylesheet" href="../../../css/form-section-headings.css">
+</head>
   <body class="attendance-history-page">
     <preview-top-bar active-page="attendance"></preview-top-bar>
 
@@ -656,42 +657,81 @@
               </tbody>
             </table>
           </div>
+          <footer class="attendance-history-modal-footer attendance-history-action-footer">
+            <button type="button" class="attendance-history-action-cancel" onclick="closeClockDetailsDirect()">Cancel</button>
+          </footer>
         </div>
       </div>
 
-      <!-- OT Document Detail Modal -->
-      <div class="modal-overlay" id="otDetailsModal" onclick="closeOtDetailsModal(event)">
-        <div class="modal-content attendance-history-modal" onclick="event.stopPropagation()">
-          <div class="modal-header-purple">
-            <h3>OT Document Detail</h3>
-            <button type="button" class="modal-close-round" onclick="closeOtDetailsDirect()" aria-label="Close details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-          </div>
-          <div class="attendance-history-modal-body">
-            <form id="historyOtForm" onsubmit="event.preventDefault(); submitOtDetailsForm()">
+      <!-- OT Plan History Form Page -->
+      <div class="modal-overlay attendance-history-form-overlay" id="otDetailsModal">
+        <section class="modal-content attendance-history-form-page" role="dialog" aria-modal="true" aria-labelledby="otPlanFormTitle">
+          <header class="attendance-history-form-header">
+            <phone-status-bar time="9:41" style="color: #ffffff"></phone-status-bar>
+            <div class="attendance-history-form-header-row">
+              <button type="button" class="attendance-history-form-back" data-ot-form-back onclick="closeOtDetailsDirect()" aria-label="Back to OT Plan History">
+                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+              </button>
+              <div class="attendance-history-form-heading">
+                <h3 id="otPlanFormTitle">OT Plan Details</h3>
+                <p>OT Plan History</p>
+              </div>
+              <span class="attendance-history-form-header-spacer" aria-hidden="true"></span>
+            </div>
+          </header>
 
-              <table class="detail-popout-table"><tbody>
-                <tr><td class="detail-label">Document Reference</td><td class="detail-value" id="modalOtDocRef">-</td></tr>
-                <tr><td class="detail-label">Plan Status</td><td class="detail-value" id="modalOtPlanStatus">-</td></tr>
-                <tr><td class="detail-label">Employee</td><td class="detail-value"><div class="attendance-history-detail-employee"><span id="modalOtEmpName">-</span><span id="modalOtEmpNo" class="attendance-history-detail-employee-id">-</span></div></td></tr>
-                <tr><td class="detail-label">Supervisor</td><td class="detail-value" id="modalOtSupervisor">-</td></tr>
-                <tr><td class="detail-label">Submit Date</td><td class="detail-value" id="modalOtSubmitDate">-</td></tr>
-                <tr><td class="detail-label"><label for="modalOtDate">OT Date</label></td><td class="detail-value"><input id="modalOtDate" type="date" data-history-field="date" ></td></tr>
-                <tr><td class="detail-label">Shift</td><td class="detail-value" id="modalOtShift">-</td></tr>
-                <tr><td class="detail-label">Clocking Times</td><td class="detail-value" id="modalOtClockingTimes">-</td></tr>
-                <tr><td class="detail-label"><label for="modalOtStartTime">Start Time</label></td><td class="detail-value"><input id="modalOtStartTime" type="time" data-history-field="startTime" ></td></tr>
-                <tr><td class="detail-label"><label for="modalOtEndTime">End Time</label></td><td class="detail-value"><input id="modalOtEndTime" type="time" data-history-field="endTime" ></td></tr>
-                <tr><td class="detail-label"><label for="modalOtBreakHours">Break Hours</label></td><td class="detail-value"><input id="modalOtBreakHours" type="number" data-history-field="breakHours" min="0" step="0.01"></td></tr>
-                <tr><td class="detail-label"><label for="modalOtPlanHours">Plan Hours</label></td><td class="detail-value"><input id="modalOtPlanHours" type="number" data-history-field="planHours" min="0" step="0.01"></td></tr>
-                <tr><td class="detail-label"><label for="modalOtType">OT Type</label></td><td class="detail-value"><textarea id="modalOtType" data-history-field="type" rows="2"></textarea></td></tr>
-                <tr><td class="detail-label"><label for="modalOtReason">OT Reason</label></td><td class="detail-value"><textarea id="modalOtReason" data-history-field="reason" rows="2"></textarea></td></tr>
-                <tr><td class="detail-label"><label for="modalOtTask">Task</label></td><td class="detail-value"><textarea id="modalOtTask" data-history-field="task" rows="2"></textarea></td></tr>
-                <tr><td class="detail-label"><label for="modalOtCredit">Allow Leave Credit</label></td><td class="detail-value"><label class="attendance-history-check"><input id="modalOtCredit" type="checkbox" data-history-field="credit"><span>Allow credit</span></label></td></tr>
-                <tr><td class="detail-label"><label for="modalOtTransport">Need Transport</label></td><td class="detail-value"><label class="attendance-history-check"><input id="modalOtTransport" type="checkbox" data-history-field="transport"><span>Transport required</span></label></td></tr>
-                <tr><td class="detail-label"><label for="modalOtRemarks">Remarks</label></td><td class="detail-value"><textarea id="modalOtRemarks" data-history-field="remarks" rows="2"></textarea></td></tr>
-              </tbody></table>
+          <div class="attendance-history-modal-body attendance-history-form-body">
+            <form id="historyOtForm" class="attendance-history-form" onsubmit="event.preventDefault(); submitOtDetailsForm()">
+              <section class="attendance-history-form-card attendance-history-form-summary" aria-label="OT plan summary">
+                <h2 class="attendance-history-form-section-title">Request Summary</h2>
+                <dl class="attendance-history-form-summary-list">
+                  <div><dt>Document Reference</dt><dd id="modalOtDocRef">-</dd></div>
+                  <div><dt>Plan Status</dt><dd id="modalOtPlanStatus">-</dd></div>
+                  <div><dt>Employee</dt><dd><span class="attendance-history-detail-employee"><span id="modalOtEmpName">-</span><span id="modalOtEmpNo" class="attendance-history-detail-employee-id">-</span></span></dd></div>
+                  <div><dt>Supervisor</dt><dd id="modalOtSupervisor">-</dd></div>
+                  <div><dt>Submit Date</dt><dd id="modalOtSubmitDate">-</dd></div>
+                  <div><dt>Shift</dt><dd id="modalOtShift">-</dd></div>
+                  <div><dt>Clocking Times</dt><dd id="modalOtClockingTimes">-</dd></div>
+                </dl>
+              </section>
 
-              <section class="attendance-history-upload" data-history-edit-only>
-                <h4>Upload Attachments</h4>
+              <section class="attendance-history-form-card">
+                <h2 class="attendance-history-form-section-title">OT Details</h2>
+                <div class="attendance-history-form-fields">
+                  <div class="attendance-history-form-field"><label for="modalOtDate">OT Date</label><input id="modalOtDate" type="date" data-history-field="date"></div>
+                  <div class="attendance-history-form-field"><label for="modalOtStartTime">Start Time</label><input id="modalOtStartTime" type="time" data-history-field="startTime"></div>
+                  <div class="attendance-history-form-field"><label for="modalOtEndTime">End Time</label><input id="modalOtEndTime" type="time" data-history-field="endTime"></div>
+                  <div class="attendance-history-form-field"><label for="modalOtBreakHours">Break Hours</label><input id="modalOtBreakHours" type="number" data-history-field="breakHours" min="0" step="0.01"></div>
+                  <div class="attendance-history-form-field"><label for="modalOtPlanHours">Plan Hours</label><input id="modalOtPlanHours" type="number" data-history-field="planHours" min="0" step="0.01"></div>
+                  <div class="attendance-history-form-field"><label for="modalOtType">OT Type</label><textarea id="modalOtType" data-history-field="type" rows="2"></textarea></div>
+                  <div class="attendance-history-form-field"><label for="modalOtReason">OT Reason</label><textarea id="modalOtReason" data-history-field="reason" rows="3"></textarea></div>
+                  <div class="attendance-history-form-field"><label for="modalOtTask">Task</label><textarea id="modalOtTask" data-history-field="task" rows="3"></textarea></div>
+                  <div class="attendance-history-form-field">
+                    <label for="modalOtCredit">Allow Leave Credit</label>
+                    <div class="attendance-history-form-switch-row">
+                      <span>Allow credit for this request</span>
+                      <label class="attendance-history-form-switch" aria-label="Allow leave credit">
+                        <input id="modalOtCredit" type="checkbox" role="switch" data-history-field="credit">
+                        <span class="attendance-history-form-switch-track" aria-hidden="true"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="attendance-history-form-field">
+                    <label for="modalOtTransport">Need Transport</label>
+                    <div class="attendance-history-form-switch-row">
+                      <span>Transport required</span>
+                      <label class="attendance-history-form-switch" aria-label="Need transport">
+                        <input id="modalOtTransport" type="checkbox" role="switch" data-history-field="transport">
+                        <span class="attendance-history-form-switch-track" aria-hidden="true"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="attendance-history-form-field"><label for="modalOtRemarks">Remarks</label><textarea id="modalOtRemarks" data-history-field="remarks" rows="3"></textarea></div>
+                </div>
+              </section>
+
+              <section class="attendance-history-form-card attendance-history-upload" data-history-edit-only>
+                <h2 class="attendance-history-form-section-title">Upload Attachments</h2>
                 <div class="attendance-history-upload-actions">
                   <button type="button" onclick="triggerHistoryUpload('ot', false)"><span class="attendance-history-upload-icon"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span><span>Select File(s)</span></button>
                   <button type="button" onclick="triggerHistoryUpload('ot', true)"><span class="attendance-history-upload-icon"><i class="fa-solid fa-camera" aria-hidden="true"></i></span><span>Take a Picture</span></button>
@@ -700,56 +740,81 @@
                 <input id="modalOtCamera" type="file" accept="image/*" capture="environment" hidden onchange="handleHistoryFiles('ot', this)">
                 <div id="modalOtAttachments" class="attendance-history-attachments form-attachment-list" aria-live="polite"></div>
               </section>
-              <section class="detail-popout-comments">
-                <label for="modalOtApproverComments">Approver Comments</label>
-                <textarea id="modalOtApproverComments" class="detail-popout-comment-control attendance-history-approver-comment-control" rows="3" readonly></textarea>
+
+              <section class="attendance-history-form-card">
+                <div class="attendance-history-form-field">
+                  <label for="modalOtApproverComments">Approver Comments</label>
+                  <textarea id="modalOtApproverComments" class="attendance-history-approver-comment-control" rows="3" readonly></textarea>
+                </div>
               </section>
             </form>
           </div>
-          <footer class="attendance-history-modal-footer">
 
-            <button type="submit" form="historyOtForm" class="primary" data-history-submit data-history-edit-only>Submit</button>
+          <footer class="attendance-history-form-actions attendance-history-action-footer">
+            <button type="button" class="attendance-history-form-cancel attendance-history-action-cancel" data-ot-form-cancel onclick="closeOtDetailsDirect()">Cancel</button>
+            <button type="submit" form="historyOtForm" class="attendance-history-form-submit attendance-history-action-submit" data-history-submit>Submit</button>
           </footer>
-        </div>
+        </section>
       </div>
 
-      <!-- Attendance Advice Detail Modal -->
-      <div class="modal-overlay" id="feedbackDetailsModal" onclick="closeFeedbackDetailsModal(event)">
-        <div class="modal-content attendance-history-modal" onclick="event.stopPropagation()">
-          <div class="modal-header-purple">
-            <h3>Attendance Advice Detail</h3>
-            <button type="button" class="modal-close-round" onclick="closeFeedbackDetailsDirect()" aria-label="Close details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-          </div>
-          <div class="attendance-history-modal-body">
-            <form id="historyFeedbackForm" onsubmit="event.preventDefault(); submitFeedbackDetailsForm()">
+      <!-- Attendance Feedback Form Page -->
+      <div class="modal-overlay attendance-history-form-overlay" id="feedbackDetailsModal">
+        <section class="modal-content attendance-history-modal attendance-history-form-page" role="dialog" aria-modal="true" aria-labelledby="feedbackPlanFormTitle">
+          <header class="attendance-history-form-header">
+            <phone-status-bar time="9:41" style="color: #ffffff"></phone-status-bar>
+            <div class="attendance-history-form-header-row">
+              <button type="button" class="attendance-history-form-back" data-feedback-form-back onclick="closeFeedbackDetailsDirect()" aria-label="Back to Attendance Feedback History">
+                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+              </button>
+              <div class="attendance-history-form-heading">
+                <h3 id="feedbackPlanFormTitle">Attendance Feedback</h3>
+                <p>Attendance History</p>
+              </div>
+              <span class="attendance-history-form-header-spacer" aria-hidden="true"></span>
+            </div>
+          </header>
 
-              <section class="attendance-history-punches">
-                <div class="attendance-history-punch-heading"><h4><span class="attendance-history-clock-heading-icon"><i class="fa-solid fa-clock" aria-hidden="true"></i></span>Clock In/Out Data</h4></div>
-                <div class="attendance-history-punch-actions">
-                  <div id="modalFbkPunchDays" class="attendance-history-punch-days" data-history-edit-only></div>
-                  <button type="button" id="modalFbkPunchDelete" class="attendance-history-punch-delete" data-history-edit-only aria-label="Delete selected clock entry" title="Delete selected clock entry"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
-                </div>
-                <div class="attendance-history-clock-container"><div id="modalFbkPunches" class="attendance-history-clock-track" role="group" aria-label="Original and amended clock times"></div></div>
-                <p id="modalFbkPunchEmpty" class="attendance-history-attachment-empty">No time amendments</p>
+          <div class="attendance-history-modal-body attendance-history-form-body">
+            <form id="historyFeedbackForm" class="attendance-history-form" onsubmit="event.preventDefault(); submitFeedbackDetailsForm()">
+              <section class="attendance-history-form-card attendance-history-form-summary" aria-label="Attendance feedback summary">
+                <h2 class="attendance-history-form-section-title">Request Summary</h2>
+                <dl class="attendance-history-form-summary-list">
+                  <div><dt>Document Reference</dt><dd id="modalFbkDocRef">-</dd></div>
+                  <div><dt>Document Status</dt><dd id="modalFbkDocStatus">-</dd></div>
+                  <div><dt>Employee</dt><dd><span class="attendance-history-detail-employee"><span id="modalFbkEmpName">-</span><span id="modalFbkEmpNo" class="attendance-history-detail-employee-id">-</span></span></dd></div>
+                  <div><dt>Employee Branch</dt><dd id="modalFbkBranch">-</dd></div>
+                  <div><dt>Employee Department</dt><dd id="modalFbkDepartment">-</dd></div>
+                  <div><dt>Date</dt><dd id="modalFbkDate">-</dd></div>
+                  <div><dt>Shift</dt><dd id="modalFbkShift">-</dd></div>
+                  <div><dt>Submitter</dt><dd><span class="attendance-history-detail-employee"><span id="modalFbkSubmitterName">-</span><span id="modalFbkSubmitterId" class="attendance-history-detail-employee-id">-</span></span></dd></div>
+                  <div><dt>Submit Date</dt><dd id="modalFbkSubmitDate">-</dd></div>
+                </dl>
               </section>
-              <table class="detail-popout-table"><tbody>
-                <tr><td class="detail-label">Document Reference</td><td class="detail-value" id="modalFbkDocRef">-</td></tr>
-                <tr><td class="detail-label">Document Status</td><td class="detail-value" id="modalFbkDocStatus">-</td></tr>
-                <tr><td class="detail-label">Employee</td><td class="detail-value"><div class="attendance-history-detail-employee"><span id="modalFbkEmpName">-</span><span id="modalFbkEmpNo" class="attendance-history-detail-employee-id">-</span></div></td></tr>
-                <tr><td class="detail-label">Employee Branch</td><td class="detail-value" id="modalFbkBranch">-</td></tr>
-                <tr><td class="detail-label">Employee Department</td><td class="detail-value" id="modalFbkDepartment">-</td></tr>
-                <tr><td class="detail-label">Date</td><td class="detail-value" id="modalFbkDate">-</td></tr>
-                <tr><td class="detail-label">Shift</td><td class="detail-value" id="modalFbkShift">-</td></tr>
-                <tr><td class="detail-label">Submitter</td><td class="detail-value"><div class="attendance-history-detail-employee"><span id="modalFbkSubmitterName">-</span><span id="modalFbkSubmitterId" class="attendance-history-detail-employee-id">-</span></div></td></tr>
-                <tr><td class="detail-label">Submit Date</td><td class="detail-value" id="modalFbkSubmitDate">-</td></tr>
-                <tr><td class="detail-label"><label for="modalFbkAmendedShift">Amended Shift</label></td><td class="detail-value"><select id="modalFbkAmendedShift" data-history-field="amendedShift"><option value="">- Select Shift Type -</option><option value="W01">8.30AM-5.30PM (W01)</option><option value="W02">8.00AM-5.00PM (W02)</option><option value="W03">9.00AM-6.00PM (W03)</option><option value="FLEX">Flexible Hours</option></select></td></tr>
-                <tr><td class="detail-label"><label for="modalFbkShiftReason">Shift Change Reason</label></td><td class="detail-value"><select id="modalFbkShiftReason" data-history-field="shiftReason"><option value="">- Select Reason -</option><option value="swap">Swapped Shift with Teammate</option><option value="coverage">Cover Colleague</option><option value="schedule">Schedule Change</option><option value="other">Other</option></select></td></tr>
-                <tr><td class="detail-label"><label for="modalFbkEditTimeReason">Edit Time Reason</label></td><td class="detail-value"><select id="modalFbkEditTimeReason" data-history-field="editReason"><option value="">- Select Reason -</option><option value="forgot">Forgot to Clock</option><option value="clockout">Forgotten Clock Out</option><option value="device">Clocking Device Issue</option><option value="business">Official Business</option><option value="other">Other</option></select></td></tr>
-                <tr><td class="detail-label"><label for="modalFbkRemarks">Remarks</label></td><td class="detail-value"><textarea id="modalFbkRemarks" data-history-field="remarks" rows="2"></textarea></td></tr>
-              </tbody></table>
 
-              <section class="attendance-history-upload" data-history-edit-only>
-                <h4>Upload Attachments</h4>
+              <section class="attendance-history-form-card attendance-history-feedback-clock-card">
+                <h2 class="attendance-history-form-section-title" data-feedback-clock-title>Clock Time</h2>
+                <div class="attendance-history-punches">
+                  <div class="attendance-history-punch-actions">
+                    <div id="modalFbkPunchDays" class="attendance-history-punch-days" data-history-edit-only></div>
+                    <button type="button" id="modalFbkPunchDelete" class="attendance-history-punch-delete" data-history-edit-only aria-label="Delete selected clock entry" title="Delete selected clock entry"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                  </div>
+                  <div class="attendance-history-clock-container"><div id="modalFbkPunches" class="attendance-history-clock-track" role="group" aria-label="Original and amended clock times"></div></div>
+                  <p id="modalFbkPunchEmpty" class="attendance-history-attachment-empty">No time amendments</p>
+                </div>
+              </section>
+
+              <section class="attendance-history-form-card">
+                <h2 class="attendance-history-form-section-title">Feedback Details</h2>
+                <div class="attendance-history-form-fields">
+                  <div class="attendance-history-form-field"><label for="modalFbkAmendedShift">Amended Shift</label><select id="modalFbkAmendedShift" data-history-field="amendedShift"><option value="">- Select Shift Type -</option><option value="W01">8.30AM-5.30PM (W01)</option><option value="W02">8.00AM-5.00PM (W02)</option><option value="W03">9.00AM-6.00PM (W03)</option><option value="FLEX">Flexible Hours</option></select></div>
+                  <div class="attendance-history-form-field"><label for="modalFbkShiftReason">Shift Change Reason</label><select id="modalFbkShiftReason" data-history-field="shiftReason"><option value="">- Select Reason -</option><option value="swap">Swapped Shift with Teammate</option><option value="coverage">Cover Colleague</option><option value="schedule">Schedule Change</option><option value="other">Other</option></select></div>
+                  <div class="attendance-history-form-field"><label for="modalFbkEditTimeReason">Edit Time Reason</label><select id="modalFbkEditTimeReason" data-history-field="editReason"><option value="">- Select Reason -</option><option value="forgot">Forgot to Clock</option><option value="clockout">Forgotten Clock Out</option><option value="device">Clocking Device Issue</option><option value="business">Official Business</option><option value="other">Other</option></select></div>
+                  <div class="attendance-history-form-field"><label for="modalFbkRemarks">Remarks</label><textarea id="modalFbkRemarks" data-history-field="remarks" rows="3"></textarea></div>
+                </div>
+              </section>
+
+              <section class="attendance-history-form-card attendance-history-upload" data-history-edit-only>
+                <h2 class="attendance-history-form-section-title">Upload Attachments</h2>
                 <div class="attendance-history-upload-actions">
                   <button type="button" onclick="triggerHistoryUpload('feedback', false)"><span class="attendance-history-upload-icon"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span><span>Select File(s)</span></button>
                   <button type="button" onclick="triggerHistoryUpload('feedback', true)"><span class="attendance-history-upload-icon"><i class="fa-solid fa-camera" aria-hidden="true"></i></span><span>Take a Picture</span></button>
@@ -758,19 +823,22 @@
                 <input id="modalFbkCamera" type="file" accept="image/*" capture="environment" hidden onchange="handleHistoryFiles('feedback', this)">
                 <div id="modalFbkAttachments" class="attendance-history-attachments form-attachment-list" aria-live="polite"></div>
               </section>
-              <section class="detail-popout-comments">
-                <label for="modalFbkApproverComments">Approver Comments</label>
-                <textarea id="modalFbkApproverComments" class="detail-popout-comment-control attendance-history-approver-comment-control" rows="3" readonly></textarea>
+
+              <section class="attendance-history-form-card">
+                <h2 class="attendance-history-form-section-title">Approver Comments</h2>
+                <div class="attendance-history-form-field">
+                  <label for="modalFbkApproverComments">Approver Comments</label>
+                  <textarea id="modalFbkApproverComments" class="attendance-history-approver-comment-control" rows="3" readonly></textarea>
+                </div>
               </section>
             </form>
           </div>
-          <footer class="attendance-history-modal-footer">
-            <button type="button" onclick="closeFeedbackDetailsDirect()">Cancel</button>
-            <button type="button" data-history-edit-only onclick="saveHistoryDetailDraft('feedback')">Save Draft</button>
 
-            <button type="submit" form="historyFeedbackForm" class="primary" data-history-submit data-history-edit-only>Submit</button>
+          <footer class="attendance-history-form-actions attendance-history-action-footer">
+            <button type="button" class="attendance-history-form-cancel attendance-history-action-cancel" data-feedback-form-cancel onclick="closeFeedbackDetailsDirect()">Cancel</button>
+            <button type="submit" form="historyFeedbackForm" class="attendance-history-form-submit attendance-history-action-submit" data-history-submit>Submit</button>
           </footer>
-        </div>
+        </section>
       </div>
 
       <!-- Filter Modal (Bottom Sheet) -->

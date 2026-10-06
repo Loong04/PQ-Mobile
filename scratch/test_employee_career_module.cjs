@@ -14,7 +14,6 @@ const individual = [
 const team = [
   ['Confirm New User', 'confirm-new-user.html'],
   ['Staff List', 'staff-list.html'],
-  ['Staff Onboard', 'staff-onboard.html'],
   ['Manpower Stats', 'manpower-stats.html'],
   ['Confirm Staff', 'confirm-staff.html'],
   ['Staff Exit', 'staff-exit.html'],

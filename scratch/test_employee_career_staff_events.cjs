@@ -28,6 +28,14 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
           await page.waitForSelector('#staffEventDetails', { visible: true });
           assert.equal(await page.$eval('#staffEventDetailsTitle', n => n.textContent), titles[i]);
           assert.equal(await page.$eval('#staffEventDetailsCount', n => Number(n.textContent)), counts[i]);
+          assert.deepEqual(await page.$$eval('#staffEventDetails table thead th', nodes => nodes.map(n => ({ label: n.textContent.trim(), scope: n.scope }))), [
+            { label: 'Employee', scope: 'col' },
+            { label: 'Date', scope: 'col' }
+          ], 'Each event category must expose Employee and Date as table column headers');
+          assert.equal(await page.$$eval('#staffEventDetails table tbody tr', nodes => nodes.length), samples[i]);
+          assert.ok(await page.$$eval('#staffEventDetails table tbody tr', nodes => nodes.every(n =>
+            n.cells.length === 2 && n.cells[0].querySelector('.staff-event-person-name') && n.cells[1].querySelector('.staff-event-person-date')
+          )), 'Employee identity and event date must occupy corresponding table cells');
           assert.equal(await page.$$eval('.staff-event-person', nodes => nodes.length), samples[i]);
           assert.ok(await page.$$eval('.staff-event-person', nodes => nodes.every(n => {
             const name = n.querySelector('.staff-event-person-name');
@@ -39,6 +47,26 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
           if (i === 6) assert.deepEqual(await page.$$eval('.staff-event-person-date', nodes => nodes.map(n => n.textContent)), ['12 Oct 2026', '13 Oct 2026']);
           if (i === 2) assert.equal(await page.$eval('.staff-event-person-date', n => n.textContent), '13 Oct 1966');
           if (width === 390 && [1, 2, 5, 6].includes(i)) await page.screenshot({ path: path.join(__dirname, `employee_career_staff_events_${i}_${theme}.png`) });
+          if (i === 1) {
+            const headerPositions = await page.evaluate(async () => {
+              const body = document.querySelector('#staffEventDetails .detail-popout-body');
+              const positions = [];
+              for (const offset of [18, 45, 110, body.scrollHeight]) {
+                body.scrollTop = offset;
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                const header = body.querySelector('thead th').getBoundingClientRect();
+                const bounds = body.getBoundingClientRect();
+                positions.push({ gap: header.top - bounds.top, visible: header.bottom <= bounds.bottom });
+              }
+              return positions;
+            });
+            assert.ok(headerPositions.every(position => position.gap >= -1 && position.gap <= 1 && position.visible),
+              `Sticky headers must meet the scroll area top without exposing rows above them: ${JSON.stringify(headerPositions)}`);
+            if (width === 390) {
+              await page.$eval('#staffEventDetails .detail-popout-body', body => { body.scrollTop = 45; });
+              await page.screenshot({ path: path.join(__dirname, `employee_career_staff_events_scrolled_${theme}.png`) });
+            }
+          }
           await page.keyboard.press('Escape');
           assert.equal(await page.$eval('#staffEventDetails', n => n.hidden), true);
           assert.equal(await page.$eval('main', n => n.inert), false);
@@ -103,6 +131,6 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
       assert.equal(await page.$eval('#staffEventFilterOverlay', n => n.hidden), true);
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: seven Staff Events categories, reference totals and visible records, names/IDs/dates, filtering, empty state, focus and back navigation, both themes and three mobile widths.');
+    console.log('PASS: seven Staff Events category tables, column headers and cells, sticky headers, reference totals, names/IDs/dates, filtering, empty state, focus and back navigation, both themes and three mobile widths.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

@@ -39,6 +39,8 @@
   const defaults = { keyword: '', startDate: '', endDate: '', type: '', category: '', status: '' };
   let applied = { ...defaults };
   let visibleRows = [];
+  let currentView = 'list';
+  let listScroll = 0;
   let activeOverlay = null;
   let returnFocus = null;
   let inerted = [];
@@ -51,7 +53,14 @@
   const formatDate = value => value ? new Date(value + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
   const employeeNumber = row => '#' + String(row.empNo).replace(/^#/, '');
   const historyStatus = status => ({ Pending: 'submitted', 'In Progress': 'draft', Resolved: 'approved' }[status] || '');
-  const statusBadge = status => element('span', 'status-pill staff-feedback-status ' + historyStatus(status), status || '—');
+  const statusIcon = status => ({ Pending: 'fa-clock', 'In Progress': 'fa-spinner', Resolved: 'fa-circle-check' }[status] || 'fa-circle-info');
+  const statusBadge = status => {
+    const badge = element('span', 'status-pill staff-feedback-status ' + historyStatus(status));
+    const icon = element('i', 'fa-solid ' + statusIcon(status));
+    icon.setAttribute('aria-hidden', 'true');
+    badge.append(icon, document.createTextNode(status || '—'));
+    return badge;
+  };
 
   function render() {
     const keyword = applied.keyword.toLowerCase().replace(/^#/, '');
@@ -127,8 +136,7 @@
     const rows = fields.map(([label, value]) => {
       const row = element('tr', '');
       const cell = element('td', 'detail-popout-value');
-      if (label === 'Status') cell.append(statusBadge(value));
-      else cell.textContent = value === '' || value == null ? '—' : String(value);
+      cell.textContent = value === '' || value == null ? '—' : String(value);
       row.append(element('td', 'detail-popout-label', label), cell);
       return row;
     });
@@ -163,30 +171,54 @@
 
   function renderChart() {
     const metric = $('staffFeedbackChartMetric').value;
+    const metricCopy = {
+      status: { title: 'Feedback by status', column: 'Status' },
+      type: { title: 'Feedback by type', column: 'Feedback Type' },
+      category: { title: 'Feedback by category', column: 'Feedback Category' }
+    }[metric];
     const counts = new Map();
     visibleRows.forEach(row => { const label = row[metric] || 'Unspecified'; counts.set(label, (counts.get(label) || 0) + 1); });
     const palette = ['#a78bfa', '#f59e0b', '#34d399', '#60a5fa', '#f472b6'];
     const statusColors = { Pending: '#f59e0b', 'In Progress': '#7c3aed', Resolved: '#10b981' };
-    let offset = 0;
-    const stops = [];
+    let currentOffset = 0;
+    const circumference = 439.82;
     const legend = [];
+    const chartSegments = [];
     counts.forEach((count, label) => {
       const color = metric === 'status' ? statusColors[label] || palette[legend.length % palette.length] : palette[legend.length % palette.length];
-      const end = offset + count / visibleRows.length * 100;
-      stops.push(`${color} ${offset}% ${end}%`);
-      offset = end;
+      const percentage = count / visibleRows.length * 100;
+      const dashLength = percentage / 100 * circumference;
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      [['cx', '90'], ['cy', '90'], ['r', '70'], ['fill', 'transparent'], ['stroke', color], ['stroke-width', '22'], ['stroke-dasharray', `${dashLength.toFixed(2)} ${(circumference - dashLength).toFixed(2)}`], ['stroke-dashoffset', (-currentOffset).toFixed(2)]].forEach(([name, value]) => circle.setAttribute(name, value));
+      currentOffset += dashLength;
+      chartSegments.push(circle);
       const row = element('li', 'staff-feedback-legend-row');
       const swatch = element('span', 'staff-feedback-legend-swatch');
       swatch.style.backgroundColor = color;
       swatch.setAttribute('aria-hidden', 'true');
-      row.append(swatch, element('span', '', label), element('strong', 'staff-feedback-legend-count', count));
+      const name = element('span', 'staff-feedback-legend-name');
+      name.append(swatch, element('span', '', label));
+      row.append(name, element('strong', 'staff-feedback-legend-count', count), element('span', 'staff-feedback-legend-percent', percentage.toFixed(2) + '%'));
       legend.push(row);
     });
-    $('staffFeedbackChartRing').style.background = stops.length ? `conic-gradient(${stops.join(', ')})` : 'var(--border-subtle)';
-    $('staffFeedbackChartRing').setAttribute('aria-label', `${visibleRows.length} feedback records. ${[...counts].map(([label, count]) => `${label}: ${count}`).join('. ')}`);
+    $('staffFeedbackChartTitle').textContent = metricCopy.title;
+    $('staffFeedbackChartColumn').textContent = metricCopy.column;
+    $('staffFeedbackDonutCircles').replaceChildren(...chartSegments);
+    $('staffFeedbackDonutSvg').setAttribute('aria-label', `${visibleRows.length} feedback records. ${[...counts].map(([label, count]) => `${label}: ${count}`).join('. ')}`);
     $('staffFeedbackChartTotal').textContent = visibleRows.length;
     $('staffFeedbackChartLegend').replaceChildren(...legend);
     $('staffFeedbackChartEmpty').hidden = visibleRows.length > 0;
+  }
+
+  function showView(view) {
+    const main = document.querySelector('main');
+    if (view === 'chart' && currentView === 'list') listScroll = main.scrollTop;
+    currentView = view;
+    $('staffFeedbackListView').hidden = view !== 'list';
+    $('staffFeedbackChartView').hidden = view !== 'chart';
+    $('staffFeedbackPageTitle').textContent = view === 'chart' ? 'Staff Feedback Analysis' : 'Staff Feedback';
+    $('staffFeedbackBack').setAttribute('aria-label', view === 'chart' ? 'Back to Staff Feedback' : 'Back to Employee and Career');
+    main.scrollTop = view === 'chart' ? 0 : listScroll;
   }
 
   function openOverlay(id, focusId) {
@@ -242,14 +274,25 @@
     $('staffFeedbackCloseFilter').addEventListener('click', closeOverlay);
     $('staffFeedbackResetFilter').addEventListener('click', () => { fillFilter(defaults); applyFilter(); });
     $('staffFeedbackFilterForm').addEventListener('submit', event => { event.preventDefault(); applyFilter(); });
-    $('staffFeedbackViewChart').addEventListener('click', () => { renderChart(); openOverlay('staffFeedbackChartOverlay', 'staffFeedbackCloseChart'); });
-    $('staffFeedbackCloseChart').addEventListener('click', closeOverlay);
+    $('staffFeedbackViewChart').addEventListener('click', () => { renderChart(); showView('chart'); $('staffFeedbackChartMetric').focus({ preventScroll: true }); });
+    $('staffFeedbackBack').addEventListener('click', event => {
+      if (currentView !== 'chart') return;
+      event.preventDefault();
+      showView('list');
+      $('staffFeedbackViewChart').focus({ preventScroll: true });
+    });
     $('staffFeedbackCloseDetails').addEventListener('click', closeOverlay);
     $('staffFeedbackChartMetric').addEventListener('change', renderChart);
-    ['staffFeedbackFilterOverlay', 'staffFeedbackChartOverlay', 'staffFeedbackDetailsOverlay'].forEach(id => {
+    ['staffFeedbackFilterOverlay', 'staffFeedbackDetailsOverlay'].forEach(id => {
       $(id).addEventListener('click', event => { if (event.target === event.currentTarget) closeOverlay(); });
     });
     document.addEventListener('keydown', event => {
+      if (!activeOverlay && currentView === 'chart' && event.key === 'Escape') {
+        event.preventDefault();
+        showView('list');
+        $('staffFeedbackViewChart').focus({ preventScroll: true });
+        return;
+      }
       if (!activeOverlay) return;
       if (event.key === 'Escape') { event.preventDefault(); closeOverlay(); }
       else if (event.key === 'Tab') {

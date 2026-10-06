@@ -7,7 +7,6 @@ window.EMPLOYEE_CAREER_OPTIONS = {
   team: [
     { id: 'confirm-new-user', title: 'Confirm New User', icon: 'fa-user-check', tone: 'violet', href: 'options/team/confirm-new-user.html' },
     { id: 'staff-list', title: 'Staff List', icon: 'fa-address-book', tone: 'cyan', href: 'options/team/staff-list.html' },
-    { id: 'staff-onboard', title: 'Staff Onboard', icon: 'fa-person-circle-plus', tone: 'emerald', href: 'options/team/staff-onboard.html' },
     { id: 'manpower-stats', title: 'Manpower Stats', icon: 'fa-chart-column', tone: 'amber', href: 'options/team/manpower-stats.html' },
     { id: 'confirm-staff', title: 'Confirm Staff', icon: 'fa-user-shield', tone: 'blue', href: 'options/team/confirm-staff.html' },
     { id: 'staff-exit', title: 'Staff Exit', icon: 'fa-person-walking-arrow-right', tone: 'rose', href: 'options/team/staff-exit.html' },

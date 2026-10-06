@@ -21,8 +21,11 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
     for (const theme of ['dark', 'light']) {
       await page.setViewport({ width: 390, height: 950 });
       await page.goto(url + '?theme=' + theme, { waitUntil: 'networkidle0' });
-      assert.equal(await page.$$eval('.staff-feedback-card', nodes => nodes.length), 60, 'The preview renders all 60 records');
-      assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '60');
+     assert.equal(await page.$$eval('.staff-feedback-card', nodes => nodes.length), 60, 'The preview renders all 60 records');
+      assert.equal(await page.$('.staff-feedback-list-heading'), null, 'The repeated Staff Feedback heading is removed');
+     assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '60');
+      const statusIcons = await page.$$eval('.staff-feedback-card .staff-feedback-status', badges => Object.fromEntries(badges.map(badge => [badge.textContent.trim(), badge.querySelector('i')?.className || ''])));
+      assert.deepEqual(statusIcons, { Pending: 'fa-solid fa-clock', 'In Progress': 'fa-solid fa-spinner', Resolved: 'fa-solid fa-circle-check' });
       for (const width of [360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
         assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1), `No main overflow at ${width}px`);
@@ -34,8 +37,13 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
       }
       await page.setViewport({ width: 390, height: 950 });
       await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_${theme}.png`) });
-      await page.click('.staff-feedback-card');
-      assert.equal(await page.$eval('#staffFeedbackDetailsOverlay', node => node.hidden), false);
+     await page.click('.staff-feedback-card');
+     assert.equal(await page.$eval('#staffFeedbackDetailsOverlay', node => node.hidden), false);
+      const detailStatus = await page.$$eval('#staffFeedbackDetailsTable tr', rows => {
+        const row = rows.find(node => node.cells[0].textContent.trim() === 'Status');
+        return { text: row.cells[1].textContent.trim(), hasBadge: Boolean(row.cells[1].querySelector('.status-pill, i')) };
+      });
+      assert.deepEqual(detailStatus, { text: 'Pending', hasBadge: false });
       assert.equal(await page.$eval('main', node => node.inert), true);
       await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_details_${theme}_top.png`) });
       await page.$eval('#staffFeedbackDetailsOverlay .detail-popout-body', node => { node.scrollTop = node.scrollHeight; });
@@ -48,14 +56,41 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
       assert.equal(await page.evaluate(() => document.activeElement.id), 'staffFeedbackFilterTrigger');
       await apply({ staffFeedbackKeyword: '#004177' });
       assert.equal(await page.$$eval('.staff-feedback-card', nodes => nodes.length), 6);
-      await reset();
-      await page.click('#staffFeedbackViewChart');
-      assert.equal(await page.$eval('#staffFeedbackChartTotal', node => node.textContent), '60');
-      assert.equal(await page.$$eval('.staff-feedback-legend-count', nodes => nodes.reduce((sum, node) => sum + Number(node.textContent), 0)), 60);
-      await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_chart_${theme}.png`) });
-      await page.keyboard.press('Escape');
-      assert.equal(await page.evaluate(() => document.activeElement.id), 'staffFeedbackViewChart');
-      assert.equal(await page.$eval('main', node => node.inert), false);
+     await reset();
+     await page.click('#staffFeedbackViewChart');
+      assert.equal(await page.$eval('#staffFeedbackListView', node => node.hidden), true);
+      assert.equal(await page.$eval('#staffFeedbackChartView', node => node.hidden), false);
+      assert.equal(await page.$eval('#staffFeedbackPageTitle', node => node.textContent.trim()), 'Staff Feedback Analysis');
+      assert.equal(await page.$('#staffFeedbackChartOverlay'), null, 'Chart is a page view, not an overlay');
+      assert.ok(await page.$eval('phone-bottom-nav .bottom-nav', node => node.getBoundingClientRect().height > 0));
+     assert.equal(await page.$eval('#staffFeedbackChartTotal', node => node.textContent), '60');
+     assert.equal(await page.$$eval('.staff-feedback-legend-count', nodes => nodes.reduce((sum, node) => sum + Number(node.textContent), 0)), 60);
+     assert.ok(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.every(node => node.children.length === 3)));
+      const benefitChartLayout = await page.evaluate(() => {
+        const card = document.querySelector('.staff-feedback-chart-card');
+        const title = document.getElementById('staffFeedbackChartTitle');
+        const figure = document.querySelector('.staff-feedback-chart-figure');
+        const svg = document.getElementById('staffFeedbackDonutSvg');
+        const markers = [...document.querySelectorAll('.staff-feedback-legend-swatch')];
+        return {
+          cardRadius: getComputedStyle(card).borderRadius,
+          titleSize: getComputedStyle(title).fontSize,
+          figureWidth: figure.getBoundingClientRect().width,
+          svgWidth: svg.getBoundingClientRect().width,
+          segmentCount: svg.querySelectorAll('#staffFeedbackDonutCircles circle').length,
+          strokeWidths: [...svg.querySelectorAll('#staffFeedbackDonutCircles circle')].map(circle => circle.getAttribute('stroke-width')),
+          roundMarkers: markers.every(marker => getComputedStyle(marker).borderRadius === '50%')
+        };
+      });
+      assert.deepEqual(benefitChartLayout, { cardRadius: '28px', titleSize: '17px', figureWidth: 195, svgWidth: 195, segmentCount: 3, strokeWidths: ['22', '22', '22'], roundMarkers: true });
+     assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1));
+     await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_chart_${theme}.png`) });
+      await page.click('#staffFeedbackBack');
+      assert.equal(await page.$eval('#staffFeedbackListView', node => node.hidden), false);
+      assert.equal(await page.$eval('#staffFeedbackChartView', node => node.hidden), true);
+      assert.equal(await page.$eval('#staffFeedbackPageTitle', node => node.textContent.trim()), 'Staff Feedback');
+     assert.equal(await page.evaluate(() => document.activeElement.id), 'staffFeedbackViewChart');
+     assert.equal(await page.$eval('main', node => node.inert), false);
     }
 
     // Hand-picked records verify inclusive dates, combined filters and chart aggregation.
@@ -85,13 +120,13 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'staffFeedbackCloseDetails', 'Tab wraps inside details');
     await page.keyboard.press('Escape');
-    await page.click('#staffFeedbackViewChart');
-    assert.equal(await page.$eval('#staffFeedbackChartTotal', node => node.textContent), '1');
-    assert.deepEqual(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.map(node => node.textContent.trim())), ['Pending1']);
-    await page.select('#staffFeedbackChartMetric', 'category');
-    assert.deepEqual(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.map(node => node.textContent.trim())), ['Policy1']);
-    await page.keyboard.press('Escape');
-    await reset();
+   await page.click('#staffFeedbackViewChart');
+   assert.equal(await page.$eval('#staffFeedbackChartTotal', node => node.textContent), '1');
+    assert.deepEqual(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.map(node => ({ label: node.children[0].textContent.trim(), count: node.children[1].textContent.trim(), percent: node.children[2].textContent.trim() }))), [{ label: 'Pending', count: '1', percent: '100.00%' }]);
+   await page.select('#staffFeedbackChartMetric', 'category');
+    assert.deepEqual(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.map(node => ({ label: node.children[0].textContent.trim(), count: node.children[1].textContent.trim(), percent: node.children[2].textContent.trim() }))), [{ label: 'Policy', count: '1', percent: '100.00%' }]);
+    await page.click('#staffFeedbackBack');
+   await reset();
     await page.$eval('.staff-feedback-card:nth-child(2)', node => node.focus());
     await page.keyboard.press('Enter');
     assert.match(await page.$eval('#staffFeedbackDetailsTable', node => node.innerText), /New chairs delivered/);

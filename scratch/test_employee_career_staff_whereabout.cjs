@@ -24,11 +24,48 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
       assert.deepEqual(await page.$$eval('#staffWhereaboutFilterForm label', nodes => nodes.map(n => n.textContent)), ['Date', 'Search Keyword', 'Branch', 'Department', 'Whereabout']);
       assert.equal(await page.$eval('#staffWhereaboutTotal', n => n.textContent), '5 records');
       assert.deepEqual(await page.$$eval('.staff-whereabout-card:first-child .staff-whereabout-field', nodes => nodes.map(n => n.innerText.replace(/\s+/g, ' ').trim())), ['Whereabout Annual Leave', 'Time -', 'Project -', 'Task -']);
+      assert.ok(await page.$$eval('.staff-whereabout-card', nodes => nodes.every(n => {
+        const description = document.getElementById(n.getAttribute('aria-describedby'));
+        return description?.contains(n.querySelector('.staff-whereabout-field'));
+      })), 'Clickable cards must keep their whereabouts and time available as accessible descriptions');
       for (const width of [360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
         assert.ok(await page.$eval('main', n => n.scrollWidth <= n.clientWidth + 1));
         assert.ok(await page.$$eval('.staff-whereabout-card', nodes => nodes.every(n => n.scrollWidth <= n.clientWidth + 1)));
         assert.ok(await page.$$eval('.staff-whereabout-card', nodes => nodes.every(n => n.querySelector('.staff-whereabout-emp-no').getBoundingClientRect().top >= n.querySelector('.staff-whereabout-name').getBoundingClientRect().bottom)));
+        await page.click('.staff-whereabout-card');
+        assert.ok(await page.$('#staffWhereaboutDetails'), 'Staff Whereabout needs a card details popup');
+        assert.equal(await page.$eval('#staffWhereaboutDetails', n => n.hidden), false, 'Clicking a staff card must open its details');
+        assert.deepEqual(await page.$$eval('#staffWhereaboutDetails .detail-popout-label', nodes => nodes.map(n => n.textContent)),
+          ['Name', 'Branch', 'Department', 'Project', 'Task', 'State', 'Date', 'Description', 'Status', 'Remark']);
+        assert.deepEqual(await page.$$eval('#staffWhereaboutDetails .detail-popout-value', nodes => nodes.map(n => n.textContent)),
+          ['Andrew#000030', '-', '-', '-', '-', '-', '5 Oct 2026', '-', '-', '-']);
+        assert.ok(await page.$eval('#staffWhereaboutDetails .detail-popout-body', n => n.scrollWidth <= n.clientWidth + 1));
+        assert.ok(await page.$eval('#staffWhereaboutDetails', n => {
+          const overlay = n.getBoundingClientRect();
+          const panel = n.querySelector('.detail-popout-panel').getBoundingClientRect();
+          return Math.abs((panel.top + panel.bottom) / 2 - (overlay.top + overlay.bottom) / 2) < 1;
+        }), 'The details popup must be centered within the phone');
+        assert.equal(await page.$eval('main', n => n.inert), true);
+        await page.keyboard.press('Tab');
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'staffWhereaboutCloseDetails');
+        if (width === 390) await page.screenshot({ path: path.join(__dirname, `employee_career_staff_whereabout_details_${theme}.png`) });
+        await page.keyboard.press('Escape');
+        assert.equal(await page.$eval('#staffWhereaboutDetails', n => n.hidden), true);
+        assert.equal(await page.$eval('main', n => n.inert), false);
+        assert.equal(await page.evaluate(() => document.activeElement.classList.contains('staff-whereabout-card')), true);
+      }
+      for (const key of ['Enter', 'Space']) {
+        await page.keyboard.press(key);
+        assert.equal(await page.$eval('#staffWhereaboutDetails', n => n.hidden), false);
+        await page.click('#staffWhereaboutCloseDetails');
+      }
+      const cards = await page.$$('.staff-whereabout-card');
+      for (let i = 0; i < cards.length; i++) {
+        await cards[i].click();
+        assert.equal(await page.$eval('#staffWhereaboutDetails .staff-whereabout-detail-name', n => n.textContent),
+          ['Andrew', 'Yee seong liew', 'Ewi robert', 'Ali bin ahmad', 'Juliana binti othman'][i]);
+        await page.click('#staffWhereaboutCloseDetails');
       }
       await page.setViewport({ width: 390, height: 950 });
       await page.screenshot({ path: path.join(__dirname, `employee_career_staff_whereabout_${theme}.png`) });
@@ -62,7 +99,7 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
     await fixturePage.evaluateOnNewDocument(() => {
       window.EMPLOYEE_CAREER_STAFF_WHEREABOUT_RECORDS = [
         { date: '2026-10-05', empNo: '000030', name: 'Andrew', whereabout: 'Annual Leave', time: '-', project: '-', task: '-', branch: 'HQ', department: 'HR' },
-        { date: '2026-10-05', empNo: '000070', name: 'Yee seong liew', whereabout: 'Medical Leave', time: '09:00 – 17:00', project: 'PeopleHub Rollout', task: 'Review', branch: 'HQ', department: 'Operations' },
+        { date: '2026-10-05', empNo: '000070', name: 'Yee seong liew', whereabout: 'Medical Leave', time: '09:00 – 17:00', project: 'PeopleHub Rollout', task: 'Review', branch: 'HQ', department: 'Operations', state: 'Selangor', description: 'On-site review\nDiscuss <handover> & next steps', status: 'Approved', remark: 'Bring the project documents.' },
         { date: '2026-10-05', empNo: '82828', name: 'Ewi robert', whereabout: 'Medical Leave', time: '-', project: '-', task: '-', branch: 'South', department: 'HR' }
       ];
     });
@@ -75,7 +112,16 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
     assert.equal(await fixturePage.$$eval('.staff-whereabout-card', nodes => nodes.length), 1);
     assert.match(await fixturePage.$eval('.staff-whereabout-card', n => n.innerText), /PeopleHub Rollout/);
     assert.match(await fixturePage.$eval('.staff-whereabout-card', n => n.innerText), /Review/);
+    await fixturePage.click('.staff-whereabout-card');
+    assert.deepEqual(await fixturePage.$$eval('#staffWhereaboutDetails .detail-popout-value', nodes => nodes.map(n => n.textContent)),
+      ['Yee seong liew#000070', 'HQ', 'Operations', 'PeopleHub Rollout', 'Review', 'Selangor', '5 Oct 2026', 'On-site review\nDiscuss <handover> & next steps', 'Approved', 'Bring the project documents.']);
+    assert.ok(await fixturePage.$eval('#staffWhereaboutDetails .staff-whereabout-detail-id', n =>
+      n.getBoundingClientRect().top >= n.previousElementSibling.getBoundingClientRect().bottom));
+    const overlay = await fixturePage.$('#staffWhereaboutDetails');
+    const overlayBounds = await overlay.boundingBox();
+    await overlay.click({ offset: { x: 8, y: overlayBounds.height / 2 } });
+    assert.equal(await fixturePage.$eval('#staffWhereaboutDetails', n => n.hidden), true);
     assert.deepEqual(errors, []);
-    console.log('PASS: Staff Whereabout reference records, four card fields, five filters, IDs below names, date filtering, organization combinations, validation, both themes and three widths.');
+    console.log('PASS: Staff Whereabout card details with ten fields, record values and blank fallbacks, keyboard and close controls, focus restoration, existing filters, both themes and three widths.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

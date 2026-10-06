@@ -77,8 +77,8 @@ const tabs = [
                 await Promise.all(document.getElementById(id).getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {})));
               }, tab.modal);
               assert.equal(await page.$eval('#' + tab.ref, node => node.textContent.trim()), tab.refs[index]);
-              const fits = await page.$eval('#' + tab.modal + ' .modal-content', node => {
-                const body = node.querySelector('.detail-popout-body');
+             const fits = await page.$eval('#' + tab.modal + ' .modal-content', node => {
+                const body = node.querySelector('.attendance-history-form-body, .detail-popout-body');
                 const rect = node.getBoundingClientRect();
                 return node.scrollWidth <= node.clientWidth + 1 && body.scrollWidth <= body.clientWidth + 1 && [...node.querySelectorAll('input:not([hidden]),textarea,select,footer button:not([hidden])')].every(control => {
                   const controlRect = control.getBoundingClientRect();
@@ -87,6 +87,11 @@ const tabs = [
               });
               assert.ok(fits, `${theme} ${width}px ${tab.key}: all detail fields fit`);
               if (tab.key === 'clocking') {
+                assert.deepEqual(await page.$$eval('#clockDetailsModal .attendance-history-action-footer button', nodes => nodes.map(node => node.textContent.trim())), ['Cancel']);
+                assert.deepEqual(await page.$eval('#clockDetailsModal .attendance-history-action-cancel', node => {
+                  const style = getComputedStyle(node);
+                  return { backgroundColor: style.backgroundColor, color: style.color, borderRadius: style.borderRadius };
+                }), { backgroundColor: 'rgb(255, 241, 242)', color: 'rgb(225, 29, 72)', borderRadius: '999px' });
                 const fields = await page.$$eval('#clockDetailsModal tr', rows => rows.map(row => [row.cells[0].textContent.trim(), row.cells[1].textContent.trim()]));
                 assert.deepEqual(fields.map(([label]) => label), ['Date', 'Time', 'ID', 'Type', 'Location', 'Clock-In Zone', 'Cost Center', 'Is Voided', 'Is Invalid']);
                 assert.equal(fields[0][1], ['17/09/2026', '17/09/2026', '16/09/2026', '16/09/2026', '13/09/2026', '13/09/2026'][index]);
@@ -95,30 +100,41 @@ const tabs = [
                 if (index === 0 && width === 390) await page.screenshot({ path: path.join(__dirname, `attendance_history_clocking_details_${theme}.png`) });
               }
               if (tab.key === 'ot') {
-                const labels = await page.$$eval('#otDetailsModal tr', rows => rows.map(row => row.cells[0].textContent.trim()));
-                assert.deepEqual(labels, ['Document Reference', 'Plan Status', 'Employee', 'Supervisor', 'Submit Date', 'OT Date', 'Shift', 'Clocking Times', 'Start Time', 'End Time', 'Break Hours', 'Plan Hours', 'OT Type', 'OT Reason', 'Task', 'Allow Leave Credit', 'Need Transport', 'Remarks']);
+                const summaryLabels = await page.$$eval('#otDetailsModal .attendance-history-form-summary-list dt', nodes => nodes.map(node => node.textContent.trim()));
+                const fieldLabels = await page.$$eval('#otDetailsModal .attendance-history-form-field > label:first-child', nodes => nodes.map(node => node.textContent.trim()));
+                assert.deepEqual(summaryLabels, ['Document Reference', 'Plan Status', 'Employee', 'Supervisor', 'Submit Date', 'Shift', 'Clocking Times']);
+                assert.deepEqual(fieldLabels, ['OT Date', 'Start Time', 'End Time', 'Break Hours', 'Plan Hours', 'OT Type', 'OT Reason', 'Task', 'Allow Leave Credit', 'Need Transport', 'Remarks', 'Approver Comments']);
+                assert.equal(await page.$eval('#otPlanFormTitle', node => node.textContent.trim()), 'OT Plan Details');
+                assert.equal(await page.$eval('#otDetailsModal [data-ot-form-cancel]', node => node.textContent.trim()), 'Cancel');
+                assert.deepEqual(await page.$$eval('#otDetailsModal .attendance-history-form-actions button', nodes => nodes.map(node => node.textContent.trim())), ['Cancel', 'Submit']);
+                assert.equal(await page.$eval('#otDetailsModal [data-history-submit]', node => node.disabled), false);
                 assert.equal(await page.$eval('#modalOtBreakHours', node => node.value), '0');
                 assert.equal(await page.$eval('#modalOtCredit', node => node.checked), index === 2);
                 assert.equal(await page.$eval('#modalOtTransport', node => node.checked), index !== 2);
                 assert.equal(await page.$eval('#modalOtApproverComments', node => node.value.trim()), ['Please resubmit with signed supervisor logs', 'asd', 'Pending manager final signoff'][index]);
-                assert.ok(await page.$eval('#modalOtApproverComments', node => node.readOnly && !node.closest('table') && !!node.closest('.detail-popout-comments')));
+                assert.ok(await page.$eval('#modalOtApproverComments', node => node.readOnly && !node.closest('table') && !!node.closest('.attendance-history-form-field') && !node.closest('.detail-popout-comments')));
                 assert.equal(await page.$eval('#modalOtCamera', node => node.getAttribute('capture')), 'environment');
               }
               if (tab.key === 'feedback') {
-                const labels = await page.$$eval('#feedbackDetailsModal tr', rows => rows.map(row => row.cells[0].textContent.trim()));
-                assert.deepEqual(labels, ['Document Reference', 'Document Status', 'Employee', 'Employee Branch', 'Employee Department', 'Date', 'Shift', 'Submitter', 'Submit Date', 'Amended Shift', 'Shift Change Reason', 'Edit Time Reason', 'Remarks']);
+                const summaryLabels = await page.$$eval('#feedbackDetailsModal .attendance-history-form-summary-list dt', nodes => nodes.map(node => node.textContent.trim()));
+                const fieldLabels = await page.$$eval('#feedbackDetailsModal .attendance-history-form-field > label:first-child', nodes => nodes.map(node => node.textContent.trim()));
+                assert.deepEqual(summaryLabels, ['Document Reference', 'Document Status', 'Employee', 'Employee Branch', 'Employee Department', 'Date', 'Shift', 'Submitter', 'Submit Date']);
+                assert.deepEqual(fieldLabels, ['Amended Shift', 'Shift Change Reason', 'Edit Time Reason', 'Remarks', 'Approver Comments']);
+                assert.equal(await page.$eval('#feedbackPlanFormTitle', node => node.textContent.trim()), 'Attendance Feedback');
                 assert.equal(await page.$eval('#modalFbkSubmitDate', node => node.textContent.trim()), ['26/02/2026', '14/09/2026'][index]);
                 assert.equal(await page.$eval('#modalFbkAmendedShift', node => node.value), '');
                 assert.equal(await page.$eval('#modalFbkCamera', node => node.getAttribute('capture')), 'environment');
-                assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', node => node.hidden), index === 1);
+                assert.deepEqual(await page.$$eval('#feedbackDetailsModal .attendance-history-form-actions button', nodes => nodes.map(node => node.textContent.trim())), ['Cancel', 'Submit']);
+                assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', node => node.hidden), false);
+                assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', node => node.disabled), index === 1);
                 const punches = await page.$$eval('#modalFbkPunches [data-punch-row]', nodes => nodes.map(node => node.textContent.replace(/\s+/g, ' ').trim()));
                 if (index === 0) {
                   assert.ok(punches.some(text => text.includes('07:02') && text.includes('06:02')));
                   assert.ok(punches.some(text => text.includes('New') && text.includes('10:00')));
                 } else assert.deepEqual(punches, []);
-              }
-              if (tab.key !== 'clocking' && index === 0 && width === 390) {
-                const modalBody = '#' + tab.modal + ' .detail-popout-body';
+             }
+             if (tab.key !== 'clocking' && index === 0 && width === 390) {
+                const modalBody = '#' + tab.modal + ' .attendance-history-form-body';
                 await page.$eval(modalBody, node => { node.scrollTop = 0; });
                 await page.screenshot({ path: path.join(__dirname, `attendance_history_${tab.key}_details_${theme}_top.png`) });
                 await page.$eval(modalBody, node => { node.scrollTop = node.scrollHeight; });

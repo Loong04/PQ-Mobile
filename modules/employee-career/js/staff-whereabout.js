@@ -14,6 +14,7 @@
   let applied = { ...defaults };
   let returnFocus = null;
   let inerted = [];
+  let openOverlay = null;
   const element = (tag, className, text) => {
     const node = document.createElement(tag);
     node.className = className;
@@ -31,17 +32,31 @@
     );
     const container = $('staffWhereaboutRecords');
     container.replaceChildren();
-    rows.forEach(row => {
+    rows.forEach((row, index) => {
       const card = element('article', 'staff-whereabout-card');
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', `View whereabout details for ${row.name}, #${row.empNo}`);
+      card.setAttribute('aria-haspopup', 'dialog');
+      card.setAttribute('aria-controls', 'staffWhereaboutDetails');
       const header = element('header', 'staff-whereabout-card-header');
       header.append(element('h3', 'staff-whereabout-name', row.name), element('span', 'staff-whereabout-emp-no', '#' + row.empNo));
+      const arrow = element('i', 'fa-solid fa-chevron-right staff-whereabout-card-chevron');
+      arrow.setAttribute('aria-hidden', 'true');
+      header.append(arrow);
       const body = element('dl', 'staff-whereabout-card-body');
+      body.id = `staffWhereaboutSummary${index}`;
+      card.setAttribute('aria-describedby', body.id);
       [['Whereabout', row.whereabout], ['Time', row.time], ['Project', row.project], ['Task', row.task]].forEach(([label, value]) => {
         const field = element('div', 'staff-whereabout-field');
         field.append(element('dt', '', label), element('dd', '', value || '-'));
         body.append(field);
       });
       card.append(header, body);
+      card.addEventListener('click', () => showDetails(row));
+      card.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); showDetails(row); }
+      });
       container.append(card);
     });
     $('staffWhereaboutEmpty').hidden = rows.length > 0;
@@ -67,32 +82,59 @@
     validateDate();
   }
 
-  function openFilter() {
-    const overlay = $('staffWhereaboutFilterOverlay');
+  function show(overlay, focus) {
     returnFocus = document.activeElement;
-    fillFilter(applied);
+    openOverlay = overlay;
     overlay.hidden = false;
-    overlay.classList.add('is-open');
+    if (overlay.classList.contains('standard-filter-sheet')) overlay.classList.add('is-open');
     overlay.setAttribute('aria-hidden', 'false');
     inerted = [...overlay.parentElement.children].filter(node => node !== overlay && !node.inert);
     inerted.forEach(node => { node.inert = true; });
-    $('staffWhereaboutDate').focus({ preventScroll: true });
+    focus.focus({ preventScroll: true });
   }
 
-  function closeFilter() {
-    const overlay = $('staffWhereaboutFilterOverlay');
+  function close() {
+    if (!openOverlay) return;
+    const overlay = openOverlay;
     overlay.hidden = true;
     overlay.classList.remove('is-open');
     overlay.setAttribute('aria-hidden', 'true');
     inerted.forEach(node => { node.inert = false; });
     inerted = [];
+    openOverlay = null;
     if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
+  }
+
+  function openFilter() {
+    fillFilter(applied);
+    show($('staffWhereaboutFilterOverlay'), $('staffWhereaboutDate'));
+  }
+
+  function showDetails(row) {
+    const body = $('staffWhereaboutDetailFields');
+    body.replaceChildren();
+    const date = row.date ? new Date(row.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+    const fields = [['Name', row.name], ['Branch', row.branch], ['Department', row.department], ['Project', row.project], ['Task', row.task], ['State', row.state], ['Date', date], ['Description', row.description], ['Status', row.status], ['Remark', row.remark ?? row.remarks]];
+    fields.forEach(([label, value]) => {
+      const field = element('tr', '');
+      const heading = element('th', 'detail-popout-label', label);
+      heading.scope = 'row';
+      const cell = element('td', 'detail-popout-value');
+      if (label === 'Name') {
+        cell.append(element('strong', 'staff-whereabout-detail-name', value || '-'));
+        if (row.empNo) cell.append(element('span', 'staff-whereabout-detail-id', '#' + row.empNo));
+      } else cell.textContent = value || '-';
+      field.append(heading, cell);
+      body.append(field);
+    });
+    $('staffWhereaboutDetails').querySelector('.detail-popout-body').scrollTop = 0;
+    show($('staffWhereaboutDetails'), $('staffWhereaboutCloseDetails'));
   }
 
   function apply() {
     if (!validateDate()) { $('staffWhereaboutDate').focus(); return; }
     applied = Object.fromEntries(Object.entries(filterIds).map(([key, id]) => [key, $(id).value.trim()]));
-    closeFilter();
+    close();
     render();
     document.querySelector('main').scrollTop = 0;
   }
@@ -106,16 +148,16 @@
       });
     });
     $('staffWhereaboutFilterTrigger').addEventListener('click', openFilter);
-    $('staffWhereaboutCloseFilter').addEventListener('click', closeFilter);
+    ['staffWhereaboutCloseFilter', 'staffWhereaboutCloseDetails'].forEach(id => $(id).addEventListener('click', close));
     $('staffWhereaboutResetFilter').addEventListener('click', () => { fillFilter(defaults); apply(); });
     $('staffWhereaboutFilterForm').addEventListener('submit', event => { event.preventDefault(); apply(); });
     $('staffWhereaboutDate').addEventListener('input', validateDate);
-    $('staffWhereaboutFilterOverlay').addEventListener('click', event => { if (event.target === event.currentTarget) closeFilter(); });
+    ['staffWhereaboutFilterOverlay', 'staffWhereaboutDetails'].forEach(id => $(id).addEventListener('click', event => { if (event.target === event.currentTarget) close(); }));
     document.addEventListener('keydown', event => {
-      if ($('staffWhereaboutFilterOverlay').hidden) return;
-      if (event.key === 'Escape') { event.preventDefault(); closeFilter(); }
+      if (!openOverlay) return;
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
       else if (event.key === 'Tab') {
-        const controls = [...$('staffWhereaboutFilterForm').querySelectorAll('button, input, select')].filter(node => !node.disabled && node.getClientRects().length);
+        const controls = [...openOverlay.querySelectorAll('button, input, select')].filter(node => !node.disabled && node.getClientRects().length);
         const first = controls[0];
         const last = controls[controls.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }

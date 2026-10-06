@@ -137,6 +137,10 @@ async function check(name, fn) {
         const title = card.querySelector('.card-theme-title');
         const primary = card.querySelector('.summary-card-primary');
         const secondary = card.querySelector('.summary-card-secondary');
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const primaryRect = primary?.getBoundingClientRect();
+        const secondaryRect = secondary?.getBoundingClientRect();
         return {
           title: title?.textContent.trim(),
           primary: primary?.textContent.trim(),
@@ -144,6 +148,9 @@ async function check(name, fn) {
           primarySize: primary ? Number.parseFloat(getComputedStyle(primary).fontSize) : 0,
           titleSize: title ? Number.parseFloat(getComputedStyle(title).fontSize) : 0,
           hasExtraCopy: Boolean(card.querySelector('.card-theme-sub, .work-card-unit, .work-card-status')),
+          valuesCentered: Boolean(primaryRect) &&
+            Math.abs((primaryRect.left + primaryRect.width / 2) - cardCenter) <= 2 &&
+            (!secondaryRect || Math.abs((secondaryRect.left + secondaryRect.width / 2) - cardCenter) <= 2),
           fits: card.scrollWidth <= card.clientWidth + 1
         };
       }));
@@ -163,7 +170,21 @@ async function check(name, fn) {
       ]);
       assert.ok(cards.every(card => card.primarySize > card.titleSize));
       assert.ok(cards.every(card => !card.hasExtraCopy));
+      assert.ok(cards.every(card => card.valuesCentered));
       assert.ok(cards.every(card => card.fits));
+      for (const width of [360, 420]) {
+        await page.setViewport({ width, height: 950 });
+        const responsiveCards = await page.$$eval('.summary-kpi-card', nodes => nodes.map(card => {
+          const cardRect = card.getBoundingClientRect();
+          const center = cardRect.left + cardRect.width / 2;
+          return [...card.querySelectorAll('.summary-card-primary, .summary-card-secondary')].every(value => {
+            const rect = value.getBoundingClientRect();
+            return Math.abs((rect.left + rect.width / 2) - center) <= 2;
+          }) && card.scrollWidth <= card.clientWidth + 1;
+        }));
+        assert.ok(responsiveCards.every(Boolean), 'KPI values stay centered and contained at ' + width + 'px');
+      }
+      await page.setViewport({ width: 390, height: 950 });
     });
     await page.evaluate(() => setView('list'));
     await check('hours summary section headings stay text only', async () => {

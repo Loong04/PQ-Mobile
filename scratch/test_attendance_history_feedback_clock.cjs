@@ -17,7 +17,62 @@ const puppeteer = require('puppeteer');
       await page.click('#tabFeedback');
       await page.$$eval('#viewFeedbackHistory .history-card-item', nodes => nodes[0].click());
       await page.waitForSelector('#feedbackDetailsModal', { visible: true });
-      assert.ok(await page.$eval('#modalFbkApproverComments', node => node.tagName === 'TEXTAREA' && node.readOnly && !node.closest('table') && !!node.closest('.detail-popout-comments')), 'Existing approval comment card with a read-only field is used outside the table');
+      await page.waitForFunction(() => document.getElementById('feedbackDetailsModal').classList.contains('is-open'));
+      const formLayout = await page.$eval('#feedbackDetailsModal', overlay => {
+        const phone = overlay.closest('.phone-container').getBoundingClientRect();
+        const panelNode = overlay.querySelector('.attendance-history-form-page');
+        const panel = panelNode.getBoundingClientRect();
+        const body = overlay.querySelector('.attendance-history-form-body');
+        const fields = [...overlay.querySelectorAll('.attendance-history-form-field')];
+        const approver = overlay.querySelector('#modalFbkApproverComments');
+        const remarks = overlay.querySelector('#modalFbkRemarks');
+        const approverStyle = getComputedStyle(approver);
+        const remarksStyle = getComputedStyle(remarks);
+        return {
+          title: overlay.querySelector('#feedbackPlanFormTitle')?.textContent.trim(),
+          subtitle: overlay.querySelector('.attendance-history-form-heading p')?.textContent.trim(),
+          clockTitle: overlay.querySelector('[data-feedback-clock-title]')?.textContent.trim(),
+          hasClockIcon: Boolean(overlay.querySelector('[data-feedback-clock-title] i')),
+          hasBack: Boolean(overlay.querySelector('[data-feedback-form-back]')),
+          hasCloseIcon: Boolean(overlay.querySelector('.modal-close-round')),
+          fullWidth: Math.abs(panel.width - phone.width) <= 1,
+          fullHeight: Math.abs(panel.height - phone.height) <= 1,
+          fieldsStacked: fields.length >= 5 && fields.every(field => {
+            const label = field.querySelector('label')?.getBoundingClientRect();
+            const control = field.querySelector('input, textarea, select')?.getBoundingClientRect();
+            return label && control && control.top >= label.bottom;
+          }),
+          fits: panelNode.scrollWidth <= panelNode.clientWidth + 1 && body.scrollWidth <= body.clientWidth + 1,
+          sections: [...overlay.querySelectorAll('.attendance-history-form-section-title')].map(node => node.textContent.trim()),
+          actions: [...overlay.querySelectorAll('.attendance-history-form-actions button:not([hidden])')].map(node => node.textContent.trim()),
+          actionStyles: [...overlay.querySelectorAll('.attendance-history-form-actions button')].map(node => {
+            const style = getComputedStyle(node);
+            return { text: node.textContent.trim(), backgroundColor: style.backgroundColor, backgroundImage: style.backgroundImage, color: style.color, borderRadius: style.borderRadius, disabled: node.disabled };
+          }),
+          approverField: {
+            readOnly: approver.readOnly,
+            inFormField: Boolean(approver.closest('.attendance-history-form-field')),
+            hasLegacyClass: Boolean(approver.closest('.detail-popout-comments, .detail-popout-body') || approver.classList.contains('detail-popout-comment-control')),
+            backgroundMatchesRemarks: approverStyle.backgroundColor === remarksStyle.backgroundColor,
+            radiusMatchesRemarks: approverStyle.borderRadius === remarksStyle.borderRadius,
+            paddingMatchesRemarks: approverStyle.padding === remarksStyle.padding
+          }
+        };
+      });
+      assert.equal(formLayout.title, 'Attendance Feedback');
+      assert.equal(formLayout.subtitle, 'Attendance History');
+      assert.equal(formLayout.clockTitle, 'Clock Time');
+      assert.equal(formLayout.hasClockIcon, false);
+      assert.ok(formLayout.hasBack && !formLayout.hasCloseIcon, `${theme}: feedback form uses page navigation`);
+      assert.ok(formLayout.fullWidth && formLayout.fullHeight, `${theme}: feedback form fills the phone`);
+      assert.ok(formLayout.fieldsStacked && formLayout.fits, `${theme}: feedback fields use the standard stacked form layout`);
+      assert.deepEqual(formLayout.sections, ['Request Summary', 'Clock Time', 'Feedback Details', 'Upload Attachments', 'Approver Comments']);
+      assert.deepEqual(formLayout.actions, ['Cancel', 'Submit']);
+      assert.deepEqual(formLayout.actionStyles[0], { text: 'Cancel', backgroundColor: 'rgb(255, 241, 242)', backgroundImage: 'none', color: 'rgb(225, 29, 72)', borderRadius: '999px', disabled: false });
+      assert.equal(formLayout.actionStyles[1].text, 'Submit');
+      assert.match(formLayout.actionStyles[1].backgroundImage, /linear-gradient/);
+      assert.deepEqual({ color: formLayout.actionStyles[1].color, borderRadius: formLayout.actionStyles[1].borderRadius, disabled: formLayout.actionStyles[1].disabled }, { color: 'rgb(255, 255, 255)', borderRadius: '999px', disabled: false });
+      assert.deepEqual(formLayout.approverField, { readOnly: true, inFormField: true, hasLegacyClass: false, backgroundMatchesRemarks: true, radiusMatchesRemarks: true, paddingMatchesRemarks: true });
       assert.equal(await page.$eval('#modalFbkApproverComments', node => node.value), '[Comment by FARHAN BIN RAHMAT (EBB12)]\nokay');
       assert.equal(await page.$eval('label[for="modalFbkApproverComments"]', node => node.textContent), 'Approver Comments');
       assert.deepEqual(await page.$$eval('#modalFbkPunchDays button', nodes => nodes.map(node => node.textContent.trim())), ['+ 30 Dec', '+ 31 Dec', '+ 1 Jan']);
@@ -56,6 +111,8 @@ const puppeteer = require('puppeteer');
       await page.evaluate(() => openFeedbackDetailsModal('READONLY-CLOCK', 'Approved', 'SP013 - Employee', 'Branch', 'Department', '14 Sep 2026', 'Shift', 'EBB12 - Submitter', '14/09/2026', 'Line one\nLine two', { punches: [{ date: '2026-09-14', original: '08:09', amended: '08:30' }] }));
       assert.ok(await page.$eval('#modalFbkPunches input', node => node.disabled));
       assert.ok(await page.$eval('#modalFbkPunchDays', node => node.hidden));
+      assert.deepEqual(await page.$$eval('#feedbackDetailsModal .attendance-history-form-actions button:not([hidden])', nodes => nodes.map(node => node.textContent.trim())), ['Cancel', 'Submit']);
+      assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', node => node.disabled), true);
       assert.equal(await page.$eval('#modalFbkApproverComments', node => node.value), 'Line one\nLine two');
       assert.equal(await page.$eval('#modalFbkApproverComments', node => getComputedStyle(node).whiteSpace), 'pre-wrap');
     }

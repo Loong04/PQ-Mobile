@@ -202,6 +202,7 @@
     for (const [id, selector, closeFunction] of definitions) {
       const overlay = document.getElementById(id);
       if (!overlay) continue;
+      if (overlay.classList.contains('attendance-history-form-overlay')) continue;
       const options = { subtree: true, childList: true, attributes: true, attributeFilter: ['class','style','hidden'] };
       const update = () => {
         observer.disconnect();

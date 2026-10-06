@@ -334,15 +334,20 @@
     .attendance-meta-item strong { color: var(--purple-primary); font-weight: 800; }
 
     .attendance-total-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: grid;
+      gap: 12px;
       margin-bottom: 16px;
       background: var(--bg-card);
       padding: 12px 16px;
       border-radius: 16px;
       border: 1px solid var(--border-subtle);
       box-shadow: var(--shadow-sm);
+    }
+    .attendance-total-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
     }
     .attendance-total-label {
       font-size: 10px;
@@ -365,10 +370,11 @@
       gap: 12px;
     }
     .attendance-update-btn {
-      min-width: 76px;
-      padding: 9px 15px;
+      width: 100%;
+      min-height: 40px;
+      padding: 10px 16px;
       border: 0;
-      border-radius: 999px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
       box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
       color: #fff;
@@ -1095,6 +1101,30 @@
       font-weight: 800;
       text-align: right;
     }
+    .attendance-form-shift-times {
+      display: grid;
+      gap: 8px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--bg-input);
+    }
+    .attendance-form-shift-time-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 12.5px;
+    }
+    .attendance-form-shift-time-row span {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .attendance-form-shift-time-row strong {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+    }
     .attendance-form-field {
       display: flex;
       flex-direction: column;
@@ -1205,6 +1235,7 @@
         text-overflow: ellipsis;
       }
   </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
 </head>
 <body>
   <preview-top-bar active-page="attendance"></preview-top-bar>
@@ -1260,12 +1291,12 @@
 
       <!-- Total Hours & Verify All -->
       <div class="attendance-total-bar">
+        <div class="attendance-total-summary-row">
           <div style="display: flex; flex-direction: column; gap: 2px;">
               <span class="attendance-total-label" id="attendanceTotalHoursLabel">Total Hours</span>
               <div class="attendance-total-value" id="attendanceTotalHoursValue">8.00/2.00</div>
           </div>
           <div class="attendance-total-actions">
-            <button class="attendance-update-btn" type="button" id="attendanceUpdateBtn" onclick="updateAttendanceVerification()" hidden>Update</button>
             <button class="verify-btn-all" type="button" onclick="toggleVerifyAll()" id="verifyAllBtn" title="Verify all attendance records" aria-pressed="false">
                 <div class="verify-all-box" id="verifyAllIcon">
                    <i class="fa-solid fa-check" style="color: #ffffff; font-size: 11px;"></i>
@@ -1273,6 +1304,8 @@
                 <span id="verifyAllText" style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.3px;">Verify All</span>
             </button>
           </div>
+        </div>
+        <button class="attendance-update-btn" type="button" id="attendanceUpdateBtn" onclick="updateAttendanceVerification()" hidden>Update</button>
       </div>
 
       <!-- Attendance Card 1 (Normal) -->
@@ -1479,11 +1512,10 @@
         <div class="attendance-form-body">
           <form class="attendance-form" id="shiftChangeRequestForm" onsubmit="submitShiftChangeRequest(event)">
             <div class="attendance-form-card">
+              <h2 class="form-section-heading form-section-heading--new">Shift Change Details</h2>
               <section class="attendance-form-summary" aria-label="Current shift details">
                 <div class="attendance-form-summary-row"><span>Date</span><strong id="shiftMetaDate">15 Sep 2026</strong></div>
                 <div class="attendance-form-summary-row"><span>Original Shift</span><strong id="shiftMetaOriginal">8.30AM–5.30PM (W01)</strong></div>
-                <div class="attendance-form-summary-row"><span>New Shift Start</span><strong id="shiftChangeStart">–</strong></div>
-                <div class="attendance-form-summary-row"><span>New Shift End</span><strong id="shiftChangeEnd">–</strong></div>
               </section>
 
               <div class="attendance-form-field">
@@ -1497,6 +1529,11 @@
                   <i class="fa-solid fa-chevron-down attendance-form-select-chevron" aria-hidden="true"></i>
                 </div>
               </div>
+
+              <section class="attendance-form-shift-times" aria-label="Selected new shift times" aria-live="polite">
+                <div class="attendance-form-shift-time-row"><span>New Shift Start</span><strong id="shiftChangeStart">–</strong></div>
+                <div class="attendance-form-shift-time-row"><span>New Shift End</span><strong id="shiftChangeEnd">–</strong></div>
+              </section>
 
               <div class="attendance-form-field">
                 <label for="shiftChangeReason">Reason</label>
@@ -1576,12 +1613,7 @@
 
            <!-- Section: Clock Data Amendment -->
            <div style="margin-bottom: 20px;">
-              <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                 <div style="width: 24px; height: 24px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-clock" style="font-size: 13px;"></i>
-                 </div>
-                 Clock In/Out Data
-              </h4>
+              <h4 class="attendance-feedback-clock-title form-section-heading" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Clock Time</h4>
               
               <!-- Modern Pill Actions -->
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
@@ -1612,7 +1644,7 @@
 
            <!-- Section: Feedback Details Card (Matching leave.html Image 2 Pattern) -->
            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 20px;">
-              <h4 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 18px;">Feedback Details</h4>
+              <h4 class="form-section-heading" style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 18px;">Feedback Details</h4>
 
               <!-- Amended Shift (Line 1) -->
               <div class="modern-form-group">
@@ -1659,7 +1691,7 @@
 
               <!-- Section: Upload Attachments (Integrated inside card matching leave.html) -->
               <div>
-                 <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px;">Attachments</label>
+                 <label class="form-section-heading" style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px;">Attachments</label>
                          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0 4px;">
                      <!-- Circular Option 1: Select File(s) -->
                      <div onclick="triggerFbFileUpload('file')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" title="Select Files">
@@ -1742,7 +1774,7 @@
         style="width: 90%; max-width: 340px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; display: flex; flex-direction: column;">
         
         <div class="modal-header-purple" style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
-          <h3 style="font-size: 15px; font-weight: 800; color: #ffffff; margin: 0;" id="fbTimeEditTitle">Edit Clock Time</h3>
+          <h3 class="form-section-heading" style="font-size: 15px; font-weight: 800; color: #ffffff; margin: 0;" id="fbTimeEditTitle">Edit Clock Time</h3>
           <button class="modal-close-round" onclick="closeModal('fbTimeEditModalOverlay', event)" aria-label="Close" style="width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
             <i class="fa-solid fa-xmark" style="font-size: 13px;"></i>
           </button>

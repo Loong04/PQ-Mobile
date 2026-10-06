@@ -27,14 +27,16 @@ const puppeteer = require('puppeteer');
             date: node.querySelector('.ot-record-date').textContent,
             status: node.querySelector('.ot-record-status').textContent,
             details: [...node.querySelectorAll('.ot-record-detail')].map(row => row.textContent),
-            radius: getComputedStyle(node).borderRadius,
-            hasDateBadge: !!node.querySelector('.history-date-badge, .date-badge-compact')
+           radius: getComputedStyle(node).borderRadius,
+            hasDateBadge: !!node.querySelector('.history-date-badge, .date-badge-compact'),
+            hasChevron: !!node.querySelector('.fa-chevron-right')
           }))
         };
       });
       assert.ok(dashboard.meta[1].top > dashboard.meta[0].top, 'Supervisor is below Shift Group');
       assert.equal(dashboard.cards.length, 2);
-      assert.ok(dashboard.cards.every(card => !card.hasDateBadge));
+     assert.ok(dashboard.cards.every(card => !card.hasDateBadge));
+      assert.ok(dashboard.cards.every(card => !card.hasChevron), `${theme}: overtime cards do not show chevrons`);
       assert.deepEqual(dashboard.cards.map(card => card.details.at(-1)), ['Approved Hours0.00', 'Approved Hours2.00']);
       console.log(JSON.stringify({ theme, dashboard }));
       await page.screenshot({ path: path.join(__dirname, `attendance_overtime_${theme}.png`) });

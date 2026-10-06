@@ -4,6 +4,8 @@
   const active = { ot: null, feedback: null };
   const prefixes = { ot: 'modalOt', feedback: 'modalFbk' };
   const overlays = { ot: 'otDetailsModal', feedback: 'feedbackDetailsModal' };
+  const closeTimers = { ot: null, feedback: null };
+  const returnFocus = { ot: null, feedback: null };
   const resubmittable = status => /resubmit|resubmission/i.test(status || '');
   const text = (id, value) => { document.getElementById(id).textContent = value ?? '-'; };
 
@@ -21,6 +23,8 @@
 
   function show(kind, record) {
     const overlay = document.getElementById(overlays[kind]);
+    window.clearTimeout(closeTimers[kind]);
+    returnFocus[kind] = document.activeElement;
     active[kind] = record;
     const prefix = prefixes[kind];
     const saved = drafts.get(kind + ':' + record.ref);
@@ -34,6 +38,7 @@
       control.disabled = !record.editable;
     });
     overlay.querySelectorAll('[data-history-edit-only]').forEach(node => { node.hidden = !record.editable; });
+    overlay.querySelectorAll('[data-history-submit]').forEach(button => { button.disabled = !record.editable; });
     document.getElementById(prefix + 'Files').value = '';
     document.getElementById(prefix + 'Camera').value = '';
     renderFiles(kind);
@@ -43,13 +48,21 @@
     }
     overlay.querySelector('.attendance-history-modal-body').scrollTop = 0;
     overlay.style.display = 'flex';
-    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      overlay.classList.add('is-open');
+      overlay.querySelector(kind === 'ot' ? '[data-ot-form-back]' : '[data-feedback-form-back]')?.focus({ preventScroll: true });
+    });
   }
 
   function close(kind) {
     const overlay = document.getElementById(overlays[kind]);
+    overlay.classList.remove('is-open');
     overlay.style.opacity = '0';
-    window.setTimeout(() => { overlay.style.display = 'none'; }, 250);
+    closeTimers[kind] = window.setTimeout(() => {
+      overlay.style.display = 'none';
+      returnFocus[kind]?.focus?.({ preventScroll: true });
+    }, 280);
   }
 
   function capture(kind) {

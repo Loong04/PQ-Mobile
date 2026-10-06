@@ -83,17 +83,18 @@
     const total = count(category);
     $('staffEventDetailsTitle').textContent = category.title;
     $('staffEventDetailsCount').textContent = String(total);
-    $('staffEventDetailsShowing').textContent = rows.length < total ? `Showing ${rows.length} of ${total}` : `${rows.length} ${rows.length === 1 ? 'employee' : 'employees'}`;
-    const list = $('staffEventPeople');
-    list.replaceChildren();
+    const body = $('staffEventPeople');
+    body.replaceChildren();
     rows.forEach(row => {
-      const item = element('li', 'staff-event-person');
-      const employee = element('div', 'staff-event-person-identity');
+      const item = element('tr', 'staff-event-person');
+      const employee = element('td', 'staff-event-person-identity');
       employee.append(element('strong', 'staff-event-person-name', row.name), element('span', 'staff-event-person-id', '#' + row.empNo));
-      const date = element('div', 'staff-event-person-date-column');
-      date.append(element('span', 'staff-event-person-date', formatDate(row.date)));
+      const date = element('td', 'staff-event-person-date-column');
+      const value = element(row.date ? 'time' : 'span', 'staff-event-person-date', formatDate(row.date));
+      if (row.date) value.dateTime = row.date;
+      date.append(value);
       item.append(employee, date);
-      list.append(item);
+      body.append(item);
     });
     $('staffEventDetailsEmpty').hidden = rows.length > 0;
     $('staffEventDetails').querySelector('.detail-popout-body').scrollTop = 0;
