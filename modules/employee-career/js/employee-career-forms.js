@@ -180,6 +180,19 @@
     bindSubmit(form, 'Staff request submitted successfully');
   }
 
+  function initKeyStaffNomination() {
+    const form = document.getElementById('keyStaffNominationForm');
+    if (!form) return;
+    bindEmployee('nominationEmployee', { nominationName: 'name', nominationPosition: 'position' });
+    initAttachments(form, ['nominationFiles', 'nominationCamera'], 'nominationAttachments');
+    const select = document.getElementById('nominationEmployee');
+    const id = document.getElementById('nominationEmployeeId');
+    select.addEventListener('change', () => {
+      id.textContent = employees[select.value] ? '#' + select.value : '';
+      id.hidden = !id.textContent;
+    });
+  }
+
   function init() {
     setBackTheme();
     document.querySelectorAll('.employee-career-form-page select.employee-career-control').forEach(select => {
@@ -193,6 +206,7 @@
     initConfirmStaff();
     initStaffExit();
     initStaffRequest();
+    initKeyStaffNomination();
   }
 
   window.EmployeeCareerForms = { showToast };

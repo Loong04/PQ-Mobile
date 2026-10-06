@@ -1,6 +1,9 @@
 (() => {
   const isRetention = document.body.dataset.staffReport === 'retention';
   const isAttrition = document.body.dataset.staffReport === 'attrition';
+  const isStaffList = !isRetention && !isAttrition;
+  const hasTrend = !isRetention;
+  const trendPrefix = isAttrition ? 'staffAttrition' : 'staffList';
   const reportTitle = isAttrition ? 'Staff Attrition' : isRetention ? 'Staff Retention' : 'Staff List';
   // Demo staff records follow the existing Employee & Career and Leave examples.
   const activeStaff = [
@@ -28,7 +31,7 @@
     };
     return { ...row, ...organization[row.department], job: row.position };
   });
-  const staff = isAttrition ? window.EMPLOYEE_CAREER_ATTRITION_DATA : activeStaff;
+  const staff = isAttrition ? window.EMPLOYEE_CAREER_ATTRITION_DATA : isStaffList ? window.EMPLOYEE_CAREER_STAFF_LIST_RECORDS || activeStaff : activeStaff;
   const $ = id => document.getElementById(id);
   const today = new Date();
   const dateISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -38,10 +41,25 @@
     ? { keyword: '', start: startISO, end: dateISO, branch: '', department: '', section: '', job: '', skillGroup: '' }
     : isRetention
     ? { keyword: '', serviceYears: '0', branch: '', department: '', section: '', job: '', skillGroup: '' }
-    : { keyword: '', asAt: dateISO, branch: '', department: '', position: '' };
+    : { keyword: '', asAt: dateISO, category: '', branch: '', department: '', position: '' };
   const filterDimensions = isRetention || isAttrition ? ['branch', 'department', 'section', 'job', 'skillGroup'] : ['branch', 'department', 'position'];
   const columns = [['empNo', 'Emp#'], ['name', 'Name'], ...(isAttrition ? [['reason', 'Reason']] : [...(!isRetention ? [['age', 'Age']] : []), ['yos', 'YOS']]), ['branch', 'Branch'], ['department', 'Department'], ['position', 'Position']];
-  const state = { filters: { ...defaults }, rows: [], view: 'table', metric: 'branch', showAll: false, selectedMonth: null, analysisMetric: 'branch', analysisShowAll: false, trendScroll: 0 };
+  const state = { filters: { ...defaults }, rows: [], summaryRows: [], view: 'table', metric: 'branch', showAll: false, selectedMonth: null, analysisMetric: 'branch', analysisShowAll: false, chartScroll: 0, trendScroll: 0 };
+  const hasResigned = row => row.exitDate ? row.exitDate <= state.filters.asAt : row.employmentStatus === 'Resigned';
+  const summaryCategories = [
+    { id: 'active', label: 'Active Staff', icon: 'fa-users', tone: 'green', matches: row => !hasResigned(row) },
+    { id: 'probationary', label: 'Probationary', icon: 'fa-user-clock', tone: 'green', matches: row => !hasResigned(row) && (row.probationary === true || row.employmentStatus === 'Probationary') },
+    { id: 'key-level-3', label: 'Key Level 3', icon: 'fa-star', tone: 'blue', matches: row => Number(row.keyLevel) === 3 },
+    { id: 'key-level-2', label: 'Key Level 2', icon: 'fa-star', tone: 'blue', matches: row => Number(row.keyLevel) === 2 },
+    { id: 'key-level-1', label: 'Key Level 1', icon: 'fa-star', tone: 'blue', matches: row => Number(row.keyLevel) === 1 },
+    { id: 'blacklisted', label: 'Blacklisted', icon: 'fa-user-slash', tone: 'blue', matches: row => row.blacklisted === true },
+    { id: 'permit-expiring', label: 'Permit Expiring', icon: 'fa-id-card', tone: 'amber', matches: row => row.permitExpiring === true },
+    { id: 'contract-expiring', label: 'Contract Expiring', icon: 'fa-file-contract', tone: 'amber', matches: row => row.contractExpiring === true },
+    { id: 'exit-notice', label: 'Exit Notice', icon: 'fa-door-open', tone: 'rose', matches: row => !hasResigned(row) && row.exitNotice === true },
+    { id: 'resigned', label: 'Resigned', icon: 'fa-user-minus', tone: 'rose', matches: hasResigned },
+    { id: 'unverified', label: 'Unverified', icon: 'fa-user-check', tone: 'purple', matches: row => row.verified === false },
+    { id: 'unapproved', label: 'Unapproved', icon: 'fa-clipboard-check', tone: 'purple', matches: row => row.approved === false }
+  ];
   const metrics = {
     branch: { label: 'Branch', plural: 'branches', value: row => row.branch },
     department: { label: 'Department', plural: 'departments', value: row => row.department },
@@ -77,7 +95,7 @@
     const asAtISO = state.filters.asAt || dateISO;
     const asAt = parseDate(asAtISO);
     const keyword = state.filters.keyword.toLowerCase().replace(/^#/, '');
-    state.rows = staff.filter(row => row.hireDate <= asAtISO
+    state.summaryRows = staff.filter(row => row.hireDate <= asAtISO
       && (!keyword || `${row.empNo} ${row.name}`.toLowerCase().includes(keyword))
       && (!isAttrition || (row.exitDate >= state.filters.start && row.exitDate <= state.filters.end))
       && filterDimensions.every(key => !state.filters[key] || row[key] === state.filters[key]))
@@ -86,6 +104,8 @@
         return { ...row, age: completedYears(parseDate(row.birthDate), recordDate), yos: yearsOfService(parseDate(row.hireDate), recordDate) };
       })
       .filter(row => !isRetention || row.yos >= Number(state.filters.serviceYears || 0));
+    const category = isStaffList && summaryCategories.find(category => category.id === state.filters.category);
+    state.rows = category ? state.summaryRows.filter(category.matches) : state.summaryRows;
     const body = $('staffListTable').tBodies[0];
     body.replaceChildren();
     state.rows.forEach(row => {
@@ -111,11 +131,54 @@
     }
     $('staffListEmpty').hidden = state.rows.length > 0;
     const summary = [state.filters.keyword ? `Search: ${state.filters.keyword}` : 'All Employees'];
+    if (category) summary.push(category.label);
     if (isRetention) summary.push(`Service Years >= ${state.filters.serviceYears || 0}`);
     filterDimensions.forEach(key => { if (state.filters[key]) summary.push(state.filters[key]); });
     if (isAttrition) summary.push(`${formatDate(state.filters.start)} – ${formatDate(state.filters.end)}`);
     else if (!isRetention) summary.push(formatDate(asAtISO));
     $('staffListFilterSummary').textContent = summary.join(' >> ');
+  }
+  function renderSummary() {
+    $('staffListSummaryAsAt').textContent = 'As At ' + formatDate(state.filters.asAt);
+    const cards = $('staffListSummaryCards');
+    cards.replaceChildren();
+    summaryCategories.forEach(category => {
+      const count = state.summaryRows.filter(category.matches).length;
+      const percent = state.summaryRows.length ? Math.round(count / state.summaryRows.length * 100) : 0;
+      const card = node('button', 'staff-list-summary-card');
+      card.type = 'button';
+      card.dataset.staffCategory = category.id;
+      card.dataset.tone = category.tone;
+      card.setAttribute('aria-label', `${category.label}: ${count} staff, ${percent}%. View staff list.`);
+      const icons = node('span', 'staff-list-summary-card-icon');
+      const icon = node('i', 'fa-solid ' + category.icon);
+      const arrow = node('i', 'fa-solid fa-chevron-right');
+      [icon, arrow].forEach(item => item.setAttribute('aria-hidden', 'true'));
+      icons.append(icon, arrow);
+      const values = node('span', 'staff-list-summary-card-values');
+      values.append(node('strong', 'staff-list-summary-card-count', count), node('span', 'staff-list-summary-card-percent', percent + '%'));
+      card.append(icons, values, node('span', 'staff-list-summary-card-title', category.label));
+      card.addEventListener('click', () => selectSummaryCategory(category.id));
+      cards.append(card);
+    });
+  }
+  function selectSummaryCategory(category) {
+    state.filters.category = category;
+    state.showAll = false;
+    renderTable();
+    renderChart();
+    showView('table');
+    $('staffListFilterTrigger').focus({ preventScroll: true });
+  }
+  function initSummary() {
+    summaryCategories.forEach(category => $('staffListFilterCategory').add(new Option(category.label, category.id)));
+    $('staffListViewSummary').addEventListener('click', () => {
+      state.chartScroll = document.querySelector('main').scrollTop;
+      renderSummary();
+      showView('summary');
+      $('staffListSummaryCards').querySelector('button').focus({ preventScroll: true });
+    });
+    $('staffListSummaryShowAll').addEventListener('click', () => selectSummaryCategory(''));
   }
   function chartGroups(rows = state.rows, metricKey = state.metric) {
     const counts = new Map();
@@ -171,13 +234,14 @@
     state.view = view;
     $('staffListTableView').hidden = view !== 'table';
     $('staffListChartView').hidden = view !== 'chart';
-    if (isAttrition) {
-      $('staffAttritionTrendView').hidden = view !== 'trend';
-      $('staffAttritionAnalysisView').hidden = view !== 'analysis';
+    if (isStaffList) $('staffListSummaryView').hidden = view !== 'summary';
+    if (hasTrend) {
+      $(trendPrefix + 'TrendView').hidden = view !== 'trend';
+      $(trendPrefix + 'AnalysisView').hidden = view !== 'analysis';
     }
-    const titles = { table: reportTitle, chart: isAttrition ? 'Attrition Analysis' : isRetention ? 'Retention Analysis' : 'Staff Analysis', trend: 'Attrition Trend Analysis', analysis: 'Attrition Analysis' };
+    const titles = { table: reportTitle, summary: 'Staff Listing Summary', chart: isAttrition ? 'Attrition Analysis' : isRetention ? 'Retention Analysis' : 'Staff Analysis', trend: isAttrition ? 'Attrition Trend Analysis' : 'Staff Trend Analysis', analysis: isAttrition ? 'Attrition Analysis' : 'Staff Analysis' };
     $('staffListTitle').textContent = titles[view];
-    $('staffListBack').setAttribute('aria-label', view === 'analysis' ? 'Back to Attrition Trend' : view === 'trend' ? 'Back to Attrition Chart' : view === 'chart' ? 'Back to ' + reportTitle : 'Back to Employee and Career');
+    $('staffListBack').setAttribute('aria-label', view === 'analysis' ? 'Back to ' + (isAttrition ? 'Attrition' : 'Staff') + ' Trend' : view === 'summary' || view === 'trend' ? 'Back to ' + (isAttrition ? 'Attrition' : 'Staff') + ' Chart' : view === 'chart' ? 'Back to ' + reportTitle : 'Back to Employee and Career');
     document.querySelector('main').scrollTop = 0;
   }
   function populateFilter() {
@@ -206,7 +270,7 @@
     state.showAll = false;
     renderTable();
     renderChart();
-    if (isAttrition) renderTrend();
+    if (hasTrend) renderTrend();
     closeFilter();
   }
   function exportCsv() {
@@ -224,66 +288,83 @@
   function monthLabel(key) {
     return parseDate(key + '-01').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
   }
+  function staffDateForMonth(month) {
+    if (!month) return state.filters.asAt;
+    const start = parseDate(month + '-01');
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+    const endISO = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
+    return endISO < state.filters.asAt ? endISO : state.filters.asAt;
+  }
+  function staffRowsAt(asAtISO) {
+    const asAt = parseDate(asAtISO);
+    return state.rows.filter(row => row.hireDate <= asAtISO).map(row => ({
+      ...row, age: completedYears(parseDate(row.birthDate), asAt), yos: yearsOfService(parseDate(row.hireDate), asAt)
+    }));
+  }
   function renderTrend() {
     const months = [];
-    const cursor = parseDate(state.filters.start);
+    const cursor = parseDate(isAttrition ? state.filters.start : state.filters.asAt);
     cursor.setDate(1);
-    const endMonth = state.filters.end.slice(0, 7);
+    if (!isAttrition) cursor.setMonth(cursor.getMonth() - 11);
+    const rangeStart = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-01`;
+    const endMonth = (isAttrition ? state.filters.end : state.filters.asAt).slice(0, 7);
     while (true) {
       const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`;
       if (key > endMonth) break;
-      months.push({ key, count: state.rows.filter(row => row.exitDate.slice(0, 7) === key).length });
+      months.push({ key, count: isAttrition ? state.rows.filter(row => row.exitDate.slice(0, 7) === key).length : staffRowsAt(staffDateForMonth(key)).length });
       cursor.setMonth(cursor.getMonth() + 1);
     }
-    $('staffAttritionTrendRange').textContent = `${formatDate(state.filters.start)} – ${formatDate(state.filters.end)}`;
-    $('staffAttritionTrendTotalCount').textContent = state.rows.length;
+    $(trendPrefix + 'TrendRange').textContent = `${formatDate(isAttrition ? state.filters.start : rangeStart)} – ${formatDate(isAttrition ? state.filters.end : state.filters.asAt)}`;
+    $(trendPrefix + 'TrendTotalCount').textContent = state.rows.length;
+    if (!isAttrition) $('staffListTrendAsAt').textContent = 'As At ' + formatDate(state.filters.asAt);
     const maximum = Math.max(1, ...months.map(month => month.count));
-    $('staffAttritionTrendBars').replaceChildren();
+    $(trendPrefix + 'TrendBars').replaceChildren();
     months.forEach(month => {
-      const button = node('button', 'staff-attrition-bar');
+      const barClass = isAttrition ? 'staff-attrition-bar' : 'staff-list-bar';
+      const button = node('button', barClass);
       button.type = 'button';
-      button.dataset.attritionMonth = month.key;
+      button.dataset[isAttrition ? 'attritionMonth' : 'staffMonth'] = month.key;
       button.dataset.count = month.count;
-      button.setAttribute('aria-label', `${monthLabel(month.key)}: ${month.count} exits. View analysis.`);
-      const track = node('span', 'staff-attrition-bar-track');
-      const fill = node('span', 'staff-attrition-bar-fill');
+      button.setAttribute('aria-label', `${monthLabel(month.key)}: ${month.count} ${isAttrition ? 'exits' : 'staff'}. View analysis.`);
+      const track = node('span', barClass + '-track');
+      const fill = node('span', barClass + '-fill');
       fill.style.width = month.count / maximum * 100 + '%';
       track.append(fill);
-      button.append(node('span', 'staff-attrition-bar-month', monthLabel(month.key)), track, node('strong', '', month.count));
-      button.addEventListener('click', () => openAttritionAnalysis(month.key));
-      $('staffAttritionTrendBars').append(button);
+      button.append(node('span', barClass + '-month', monthLabel(month.key)), track, node('strong', '', month.count));
+      button.addEventListener('click', () => openPeriodAnalysis(month.key));
+      $(trendPrefix + 'TrendBars').append(button);
     });
   }
-  function renderAttritionAnalysis() {
-    const rows = state.selectedMonth ? state.rows.filter(row => row.exitDate.slice(0, 7) === state.selectedMonth) : state.rows;
-    $('staffAttritionAnalysisPeriod').textContent = state.selectedMonth ? monthLabel(state.selectedMonth) : `${formatDate(state.filters.start)} – ${formatDate(state.filters.end)}`;
-    renderChart('staffAttritionAnalysis', rows, state.analysisMetric, state.analysisShowAll);
+  function renderPeriodAnalysis() {
+    const rows = isAttrition ? (state.selectedMonth ? state.rows.filter(row => row.exitDate.slice(0, 7) === state.selectedMonth) : state.rows) : staffRowsAt(staffDateForMonth(state.selectedMonth));
+    $(trendPrefix + 'AnalysisPeriod').textContent = isAttrition ? (state.selectedMonth ? monthLabel(state.selectedMonth) : `${formatDate(state.filters.start)} – ${formatDate(state.filters.end)}`) : 'As At ' + formatDate(staffDateForMonth(state.selectedMonth));
+    renderChart(trendPrefix + 'Analysis', rows, state.analysisMetric, state.analysisShowAll);
   }
-  function openAttritionAnalysis(month = null) {
+  function openPeriodAnalysis(month = null) {
     state.trendScroll = document.querySelector('main').scrollTop;
     state.selectedMonth = month;
     state.analysisMetric = 'branch';
     state.analysisShowAll = false;
-    $('staffAttritionAnalysisChartMetric').value = 'branch';
-    renderAttritionAnalysis();
+    $(trendPrefix + 'AnalysisChartMetric').value = 'branch';
+    renderPeriodAnalysis();
     showView('analysis');
-    $('staffAttritionAnalysisChartMetric').focus();
+    $(trendPrefix + 'AnalysisChartMetric').focus();
   }
-  function initAttrition() {
-    $('staffAttritionViewTrend').addEventListener('click', () => {
+  function initTrend() {
+    $(trendPrefix + 'ViewTrend').addEventListener('click', () => {
       renderTrend();
       showView('trend');
-      $('staffAttritionTrendTotal').focus();
+      $(trendPrefix + 'TrendTotal').focus();
     });
-    $('staffAttritionTrendTotal').addEventListener('click', () => openAttritionAnalysis());
-    $('staffAttritionAnalysisChartMetric').addEventListener('change', event => {
+    $(trendPrefix + 'TrendTotal').addEventListener('click', () => openPeriodAnalysis());
+    $(trendPrefix + 'AnalysisChartMetric').addEventListener('change', event => {
       state.analysisMetric = event.target.value;
       state.analysisShowAll = false;
-      renderAttritionAnalysis();
+      renderPeriodAnalysis();
     });
-    $('staffAttritionAnalysisChartViewAll').addEventListener('click', () => {
+    $(trendPrefix + 'AnalysisChartViewAll').addEventListener('click', () => {
       state.analysisShowAll = !state.analysisShowAll;
-      renderAttritionAnalysis();
+      renderPeriodAnalysis();
     });
     renderTrend();
   }
@@ -316,13 +397,17 @@
     $('staffListBack').addEventListener('click', event => {
       if (state.view === 'table') return;
       event.preventDefault();
-      const view = state.view === 'analysis' ? 'trend' : state.view === 'trend' ? 'chart' : 'table';
+      const wasSummary = state.view === 'summary';
+      const view = state.view === 'analysis' ? 'trend' : state.view === 'summary' || state.view === 'trend' ? 'chart' : 'table';
       showView(view);
       if (view === 'trend') {
         document.querySelector('main').scrollTop = state.trendScroll;
-        const selected = [...document.querySelectorAll('[data-attrition-month]')].find(button => button.dataset.attritionMonth === state.selectedMonth);
-        (selected || $('staffAttritionTrendTotal')).focus({ preventScroll: true });
-      } else (view === 'chart' ? $('staffAttritionViewTrend') : $('staffListViewChart')).focus();
+        const selected = [...document.querySelectorAll(isAttrition ? '[data-attrition-month]' : '[data-staff-month]')].find(button => button.dataset[isAttrition ? 'attritionMonth' : 'staffMonth'] === state.selectedMonth);
+        (selected || $(trendPrefix + 'TrendTotal')).focus({ preventScroll: true });
+      } else if (view === 'chart') {
+        if (wasSummary) document.querySelector('main').scrollTop = state.chartScroll;
+        (wasSummary ? $('staffListViewSummary') : $(trendPrefix + 'ViewTrend')).focus({ preventScroll: true });
+      } else $('staffListViewChart').focus();
     });
     $('staffListExportExcel').addEventListener('click', exportCsv);
     $('staffListExportPdf').addEventListener('click', () => window.print());
@@ -336,10 +421,11 @@
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
     });
+    if (isStaffList) initSummary();
     populateFilter();
     renderTable();
     renderChart();
-    if (isAttrition) initAttrition();
+    if (hasTrend) initTrend();
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();
