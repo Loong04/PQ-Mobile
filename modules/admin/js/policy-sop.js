@@ -55,11 +55,10 @@
       url.searchParams.set('document', record.id);
       url.searchParams.set('theme', theme());
       return `<article class="history-card-item policy-card">
-        <a class="policy-cover-link" href="${escape(url.href)}" aria-label="Preview Policy PDF for ${escape(record.title)}"><span class="policy-cover-caption"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i>Policy document</span><span class="policy-pdf-badge">PDF</span><img class="policy-cover-image" src="${escape(record.preview)}" alt="${escape(record.filename)} cover" width="595" height="842"></a>
+        <a class="policy-card-title-link" href="${escape(url.href)}" aria-label="View ${escape(record.title)} policy"><div><h3>${escape(record.title)}</h3><p>Ref: ${escape(record.reference)}</p></div><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
         <div class="policy-card-body">
-        <div class="policy-card-heading"><div><h3>${escape(record.title)}</h3><p>Ref: ${escape(record.reference)}</p></div></div>
         <dl class="policy-card-details"><div><dt>Department</dt><dd>${escape(record.department)}</dd></div><div><dt>Policy WEF</dt><dd>${date(record.policyWEF)}</dd></div><div><dt>SOP WEF</dt><dd>${date(record.sopWEF)}</dd></div><div><dt>Guideline WEF</dt><dd>${date(record.guidelineWEF)}</dd></div></dl>
-        <div class="policy-card-footer"><span class="policy-file-type"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i>PDF document</span><a class="policy-document-link" href="${escape(url.href)}" aria-label="Open Policy PDF for ${escape(record.title)}"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>Policy</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></div>
+        <div class="policy-card-footer"><a class="policy-document-link" href="${escape(url.href)}" aria-label="View Policy for ${escape(record.title)}"><span>Policy</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></div>
         </div>
       </article>`;
     }).join('');

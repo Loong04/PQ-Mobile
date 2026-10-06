@@ -74,8 +74,8 @@ window.PAYROLL_CONFIG = {
       name: 'Tax Relief',
       desc: 'Review & approve staff tax relief claims',
       icon: '<i class="fa-solid fa-hand-holding-dollar"></i>',
-      color: '#10b981',
-      bg: 'rgba(16, 185, 129, 0.14)',
+      color: 'var(--purple-primary)',
+      bg: 'rgba(124, 58, 237, 0.1)',
       link: 'options/tax-relief.html',
       badge: '4 Pending'
     }

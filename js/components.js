@@ -8,6 +8,16 @@
 {
   const source = document.currentScript?.src;
   if (source) {
+    if (
+      !window.PeopleHcmIcons
+      && !document.querySelector('script[src$="icon-system.js"], script[data-peoplehcm-icon-system]')
+    ) {
+      const icons = document.createElement('script');
+      icons.src = new URL('icon-system.js', source).href;
+      icons.async = false;
+      icons.dataset.peoplehcmIconSystem = '';
+      document.head.append(icons);
+    }
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
     stylesheet.href = new URL('../css/detail-popout.css', source).href;
@@ -23,8 +33,8 @@ class PreviewTopBar extends HTMLElement {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     this.innerHTML = `
       <div class="theme-switch-bar">
-        <button class="mode-btn theme-btn ${currentTheme === 'dark' ? 'active' : ''}" data-set-theme="dark" onclick="setTheme('dark')">🌙 Dark Mode</button>
-        <button class="mode-btn theme-btn ${currentTheme === 'light' ? 'active' : ''}" data-set-theme="light" onclick="setTheme('light')">☀️ Light Mode</button>
+        <button class="mode-btn theme-btn ${currentTheme === 'dark' ? 'active' : ''}" data-set-theme="dark" onclick="setTheme('dark')"><i class="fa-solid fa-moon" aria-hidden="true"></i><span>Dark Mode</span></button>
+        <button class="mode-btn theme-btn ${currentTheme === 'light' ? 'active' : ''}" data-set-theme="light" onclick="setTheme('light')"><i class="fa-solid fa-sun" aria-hidden="true"></i><span>Light Mode</span></button>
       </div>
     `;
   }
@@ -1448,4 +1458,3 @@ class PendingApprovalCard extends HTMLElement {
   }
 }
 customElements.define('pending-approval-card', PendingApprovalCard);
-

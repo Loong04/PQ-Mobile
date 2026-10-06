@@ -103,8 +103,13 @@
     $('historyRecordCount').textContent = `${matching.length} ${matching.length === 1 ? 'Record' : 'Records'}`;
     $('historyEmptyState').hidden = matching.length > 0;
     $('historyEmptyText').textContent = records[kind].length ? 'Try another date range or filter.' : 'Your saved deduction requests will appear here.';
-    $('historyCreateRequest').href = category.file;
-    $('historyCreateRequest').textContent = `Create ${category.name}${kind === 'tax' ? ' Request' : ''} →`;
+    const createRequest = $('historyCreateRequest');
+    createRequest.href = category.file;
+    createRequest.replaceChildren(document.createTextNode(`Create ${category.name}${kind === 'tax' ? ' Request' : ''} `));
+    const createRequestIcon = document.createElement('i');
+    createRequestIcon.className = 'fa-solid fa-arrow-right';
+    createRequestIcon.setAttribute('aria-hidden', 'true');
+    createRequest.append(createRequestIcon);
     $('payrollHistoryList').replaceChildren();
     matching.forEach(record => {
       const card = document.createElement('article');

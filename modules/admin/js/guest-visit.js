@@ -387,7 +387,12 @@ document.addEventListener('DOMContentLoaded', () => {
       icon.setAttribute('aria-hidden', 'true');
       const text = node('span', 'visit-attachment-text', attachment.name);
       if (!attachment.file) text.append(node('span', 'visit-attachment-note', 'Please reattach this file or remove it.'));
-      const remove = recordButton('×', 'data-remove-attachment', index, attachment.name);
+      const remove = recordButton('', 'data-remove-attachment', index, attachment.name);
+      remove.className = 'visit-record-action';
+      const removeIcon = node('i', 'fa-solid fa-xmark');
+      removeIcon.setAttribute('aria-hidden', 'true');
+      remove.append(removeIcon);
+      remove.title = 'Remove';
       remove.setAttribute('aria-label', 'Remove ' + attachment.name);
       row.append(icon, text, remove);
       list.append(row);

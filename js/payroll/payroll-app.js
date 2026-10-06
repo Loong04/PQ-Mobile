@@ -116,7 +116,7 @@
     });
 
     if (window.showToast) {
-      window.showToast(isPrivacyHidden ? '🔒 Salary figures masked' : '👁 Salary figures visible');
+      window.showToast(isPrivacyHidden ? 'Salary figures masked' : 'Salary figures visible');
     }
   }
 
@@ -438,7 +438,7 @@
     if (filtered.length === 0) {
       listContainer.innerHTML = `
         <div style="text-align: center; padding: 32px 16px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
+          <div style="font-size: 32px; margin-bottom: 8px;"><i class="fa-solid fa-box-open" aria-hidden="true"></i></div>
           <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">No Tax Relief Claims</div>
           <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">No claims found matching this category.</div>
         </div>
@@ -553,7 +553,9 @@
           </div>
           ` : `
           <div style="text-align: center; padding: 6px; font-size: 12px; font-weight: 700; color: ${item.status === 'approved' ? '#10b981' : '#ef4444'};">
-            ${item.status === 'approved' ? '✔ Claim Approved for LHDN Submission' : '✕ Claim Disapproved'}
+            ${item.status === 'approved'
+              ? '<i class="fa-solid fa-check" aria-hidden="true"></i> Claim Approved for LHDN Submission'
+              : '<i class="fa-solid fa-xmark" aria-hidden="true"></i> Claim Disapproved'}
           </div>
           `}
         </div>
@@ -583,9 +585,9 @@
 
       if (window.showToast) {
         if (action === 'approve') {
-          window.showToast(`✔ Approved ${userName}'s tax relief of RM ${amount}`);
+          window.showToast(`Approved ${userName}'s tax relief of RM ${amount}`);
         } else {
-          window.showToast(`✕ Rejected ${userName}'s tax relief claim`);
+          window.showToast(`Rejected ${userName}'s tax relief claim`);
         }
       }
     }
@@ -658,7 +660,7 @@
 
   function downloadMockFile(filename) {
     if (window.showToast) {
-      window.showToast(`⬇ Preparing download: ${filename}...`);
+      window.showToast(`Preparing download: ${filename}...`);
     }
   }
 
