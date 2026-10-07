@@ -14,7 +14,7 @@ const pages = [
   ...['work-plan', 'work-assignment', 'time-sheet'].map(name => `modules/project-task/options/${name}.html`),
   ...['feedback', 'whereabout'].map(name => `modules/employee-career/options/individual/${name}.html`),
   ...['confirm-staff', 'staff-exit', 'staff-request'].map(name => `modules/employee-career/options/team/${name}.html`),
-  ...['attendance', 'overtime', 'feedback-history', 'history', 'ot-plan', 'shift-plan', 'daily-ot'].map(name => `modules/attendance/options/${name}.html`)
+  ...['attendance', 'overtime', 'feedback-history', 'history', 'ot-plan', 'shift-plan', 'daily-ot-details'].map(name => `modules/attendance/options/${name}.html`)
 ];
 const results = [];
 const failures = [];
@@ -160,12 +160,6 @@ async function screenshot(page, name) {
             await inspect(page, file, theme, 'edit ' + kind);
             await page.evaluate(kind => window['toggle' + kind + 'Form'](false), kind);
           }
-        }
-        if (name === 'daily-ot.html') {
-          await page.evaluate(() => openApprovalModal(masterStaffList[0].id));
-          await inspect(page, file, theme, 'approval');
-          const title = await page.$eval('#approvalCardContainer .form-section-heading', element => element.textContent);
-          if (title !== 'OT Approval Details') failures.push('Daily OT section title lost during render');
         }
         if (pageErrors.length) failures.push(`${file} ${theme}: ${pageErrors.join('; ')}`);
       }

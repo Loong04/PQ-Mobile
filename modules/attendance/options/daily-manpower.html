@@ -562,29 +562,20 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* AGENTS.md View Chart Button Presentation Standard */
-    .view-chart-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 7px 13px;
-      border-radius: 12px;
-      background: rgba(245, 158, 11, 0.14);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: #f59e0b;
-      font-weight: 800;
-      font-size: 12px;
-      white-space: nowrap;
-      cursor: pointer;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-    .view-chart-btn:active {
-      transform: scale(0.95);
-      background: rgba(245, 158, 11, 0.25);
-    }
+    .manpower-card-list { display: flex; flex-direction: column; gap: 12px; }
+    .manpower-group-card.history-card-item { padding: 0; border: 1px solid var(--border-subtle); border-radius: 18px; overflow: hidden; background: var(--bg-card); }
+    .manpower-company-header { margin: 0; padding: 12px 14px; background: linear-gradient(110deg,#5b21b6,#7c3aed); color: #fff; font-size: 14px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+    .manpower-group-content { padding: 12px 14px; }
+    .manpower-group-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-bottom: 10px; }
+    .manpower-group-field { display: flex; flex-direction: column; gap: 4px; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 13px; background: var(--bg-input); }
+    .manpower-group-field small { color: var(--text-muted); font-size: 10px; font-weight: 700; }
+    .manpower-group-field strong { color: var(--text-primary); font-size: 11.5px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+    .manpower-group-actions { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); padding: 10px 0; border: 1px solid var(--border-subtle); border-radius: 13px; background: var(--bg-input); }
+    .manpower-group-actions button { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 3px; border: 0; background: transparent; color: var(--text-muted); font-size: 10.5px; font-weight: 700; line-height: 1.4; white-space: nowrap; }
+    .manpower-group-actions button + button { border-left: 1px solid var(--border-subtle); }
+    .manpower-group-actions button:hover { background: var(--purple-subtle); color: var(--purple-text); }
+    .manpower-group-actions button:focus-visible { outline: 2px solid var(--purple-primary); outline-offset: -2px; border-radius: 6px; }
+    .manpower-group-actions strong { font-size: 15px; font-weight: 800; }
 
     /* Collapsible Filter Accordion Card */
     .filter-accordion-card {
@@ -689,8 +680,9 @@
       align-items: center;
     }
   </style>
+<link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
 </head>
-<body>
+<body class="attendance-highlight-page">
   <preview-top-bar active-page="attendance"></preview-top-bar>
 
   <div class="phone-container">
@@ -742,114 +734,10 @@
           </button>
         </div>
 
-      <!-- 3. Executive KPI Overview Card -->
-      <div class="kpi-overview-card">
-        <div class="kpi-top-row">
-          <div class="kpi-title-col">
-            <div class="kpi-icon-bubble">
-              <i class="fa-solid fa-users"></i>
-            </div>
-            <div class="kpi-main-label">Manpower Overview</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="kpi-total-badge">
-              <span id="totalRecordsVal">26</span> Total Records
-            </div>
-            <!-- AGENTS.md View Chart Button Presentation Standard -->
-            <button type="button" class="view-chart-btn" onclick="openChartModal()" title="View Chart">
-              <i class="fa-solid fa-chart-pie"></i><span>View Chart</span>
-            </button>
-          </div>
-        </div>
+        <div class="attendance-report-summary"><div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label">Total Records</span><strong class="attendance-report-summary-value" id="totalRecordsVal">26</strong></div></div></div>
+        <div id="manpowerListContainer" class="manpower-card-list"></div>
+        <p id="manpowerEmpty" class="attendance-report-empty" hidden>No records match the current filter.</p>
 
-        <!-- 4 Metric Bento Pillars -->
-        <div class="kpi-pillars-grid">
-          <div class="kpi-pillar" onclick="openKpiDetails('workShift')" style="cursor: pointer;">
-            <div class="kpi-pillar-label">Work Shift</div>
-            <div class="kpi-pillar-value val-work-shift" id="kpiWorkShift">16</div>
-          </div>
-          <div class="kpi-pillar" onclick="openKpiDetails('noWork')" style="cursor: pointer;">
-            <div class="kpi-pillar-label">No Work</div>
-            <div class="kpi-pillar-value val-no-work" id="kpiNoWork">10</div>
-          </div>
-          <div class="kpi-pillar" onclick="openKpiDetails('otPlan')" style="cursor: pointer;">
-            <div class="kpi-pillar-label">OT Plan</div>
-            <div class="kpi-pillar-value val-ot-plan" id="kpiOtPlan">0</div>
-          </div>
-          <div class="kpi-pillar" onclick="openKpiDetails('onLeave')" style="cursor: pointer;">
-            <div class="kpi-pillar-label">On Leave</div>
-            <div class="kpi-pillar-value val-on-leave" id="kpiOnLeave">0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. DAILY MANPOWER DATA TABLE HEADER -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
-        <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-          <i class="fa-solid fa-table-list" style="color: var(--purple-primary);"></i>
-          <span>Department Manpower Table</span>
-        </div>
-        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
-          6 Departments
-        </div>
-      </div>
-
-      <!-- 5. DAILY MANPOWER DATA TABLE GRID (TABLE SHOW DATA) -->
-      <div class="summary-table-card">
-        <div class="summary-table-hdr">
-          <div>Department</div>
-          <div>Shift / Status</div>
-          <div style="text-align: right;">Manpower</div>
-        </div>
-        <div id="manpowerSummaryTableContainer">
-          <div class="summary-table-row" onclick="openKpiDetails('workShift')">
-            <div style="color: var(--purple-primary); font-weight: 800;">Production</div>
-            <div>Work Shift (0700:1500)</div>
-            <div style="text-align: right; color: #10b981; font-weight: 800;">180 Staff</div>
-          </div>
-          <div class="summary-table-row" onclick="openKpiDetails('workShift')">
-            <div style="color: var(--purple-primary); font-weight: 800;">Quality Control</div>
-            <div>Work Shift (8.30:17.30W)</div>
-            <div style="text-align: right; color: #10b981; font-weight: 800;">35 Staff</div>
-          </div>
-          <div class="summary-table-row" onclick="openKpiDetails('noWork')">
-            <div style="color: var(--purple-primary); font-weight: 800;">Operations</div>
-            <div>Off Day (Rest / Off)</div>
-            <div style="text-align: right; color: #f59e0b; font-weight: 800;">32 Staff</div>
-          </div>
-          <div class="summary-table-row" onclick="openKpiDetails('workShift')">
-            <div style="color: var(--purple-primary); font-weight: 800;">Accounting</div>
-            <div>Work Shift (8.30:17.30W)</div>
-            <div style="text-align: right; color: #10b981; font-weight: 800;">18 Staff</div>
-          </div>
-          <div class="summary-table-row" onclick="openKpiDetails('noWork')">
-            <div style="color: var(--purple-primary); font-weight: 800;">Human Resource</div>
-            <div>Off Day (Rest / Off)</div>
-            <div style="text-align: right; color: #f59e0b; font-weight: 800;">12 Staff</div>
-          </div>
-          <div class="summary-table-row" onclick="openKpiDetails('workShift')">
-            <div style="color: var(--purple-primary); font-weight: 800;">Logistics</div>
-            <div>Work Shift (8.30:17.30W)</div>
-            <div style="text-align: right; color: #10b981; font-weight: 800;">10 Staff</div>
-          </div>
-        </div>
-        <div class="summary-table-footer">
-          <div style="color: var(--purple-primary); font-weight: 900;">Total</div>
-          <div style="color: var(--text-muted); font-size: 11.5px;">6 Departments Summary</div>
-          <div style="text-align: right; color: var(--purple-primary); font-weight: 900; font-size: 13.5px;">287 Staff</div>
-        </div>
-      </div>
-
-      <!-- 4. Section Breakdown Header -->
-      <div class="section-header-title">
-        <span>Section Breakdown</span>
-        <span id="sectionCountBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Showing 5 Groups</span>
-      </div>
-
-      <!-- 5. Grouped Breakdown Cards Container -->
-        <div id="manpowerListContainer" style="display: flex; flex-direction: column; gap: 12px;">
-          <!-- Populated dynamically by JS -->
-        </div>
       </div> <!-- End view-dashboard -->
 
       <!-- Details View -->
@@ -977,42 +865,10 @@
       </div>
     </div>
 
-    <div id="dailyManpowerChartModal" onclick="closeDailyManpowerChart(event)" style="position:absolute;inset:0;z-index:1000;display:none;align-items:flex-end;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);border-radius:44px;overflow:hidden;">
-      <div onclick="event.stopPropagation()" style="width:100%;background:var(--bg-card);border-top-left-radius:26px;border-top-right-radius:26px;padding:20px 18px 24px;box-shadow:0 -12px 40px rgba(0,0,0,.4);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><div><div style="font-size:17px;font-weight:900;color:var(--text-primary);">Daily Manpower Distribution</div><div id="dailyManpowerChartTotal" style="font-size:11.5px;color:var(--text-muted);margin-top:3px;"></div></div><button type="button" onclick="closeDailyManpowerChart()" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border-subtle);background:var(--bg-input);color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button></div>
-        <div id="dailyManpowerChartRows" style="display:flex;flex-direction:column;gap:12px;"></div>
-      </div>
-    </div>
-
 
   </div>
 
   <script>
-    function openChartModal() {
-      const items = [
-        { label: 'Work Shift', value: Number(document.getElementById('kpiWorkShift').textContent) || 0, color: '#7c3aed' },
-        { label: 'No Work', value: Number(document.getElementById('kpiNoWork').textContent) || 0, color: '#f59e0b' },
-        { label: 'OT Plan', value: Number(document.getElementById('kpiOtPlan').textContent) || 0, color: '#06b6d4' },
-        { label: 'On Leave', value: Number(document.getElementById('kpiOnLeave').textContent) || 0, color: '#ec4899' }
-      ];
-      const total = items.reduce((sum, item) => sum + item.value, 0);
-      const modal = document.getElementById('dailyManpowerChartModal');
-      modal.dataset.total = total;
-      document.getElementById('dailyManpowerChartTotal').textContent = `${total} total records`;
-      document.getElementById('dailyManpowerChartRows').innerHTML = items.map(item => `
-        <div data-chart-value="${item.value}">
-          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text-primary);margin-bottom:6px;"><span>${item.label}</span><span>${item.value}</span></div>
-          <div style="height:9px;border-radius:999px;background:var(--bg-input);overflow:hidden;"><div style="height:100%;width:${total ? (item.value / total * 100) : 0}%;background:${item.color};border-radius:999px;"></div></div>
-        </div>`).join('');
-      modal.style.display = 'flex';
-    }
-
-    function closeDailyManpowerChart(event) {
-      if (event && event.target && event.target.id !== 'dailyManpowerChartModal') return;
-      const modal = document.getElementById('dailyManpowerChartModal');
-      if (modal) modal.style.display = 'none';
-    }
-
     // Master Dataset of Daily Manpower Groups
     const masterManpowerDataset = [
       {
@@ -1164,89 +1020,21 @@
         totOnLeave += it.onLeave;
       });
 
-      const updateKpiElement = (id, val, activeClass) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.innerText = val;
-        el.className = `kpi-pillar-value ${val > 0 ? activeClass : 'val-zero'}`;
-      };
-
-      updateKpiElement('kpiWorkShift', totWorkShift, 'val-work-shift');
-      updateKpiElement('kpiNoWork', totNoWork, 'val-no-work');
-      updateKpiElement('kpiOtPlan', totOtPlan, 'val-ot-plan');
-      updateKpiElement('kpiOnLeave', totOnLeave, 'val-on-leave');
-
       const totalRecords = totWorkShift + totNoWork + totOtPlan + totOnLeave;
       document.getElementById('totalRecordsVal').innerText = totalRecords;
-      document.getElementById('sectionCountBadge').innerText = `Showing ${filtered.length} Group${filtered.length === 1 ? '' : 's'}`;
 
       const container = document.getElementById('manpowerListContainer');
       if (!container) return;
 
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; color: var(--text-muted); background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-subtle); margin-top: 10px;">
-            <div style="font-size: 32px; margin-bottom: 8px; opacity: 0.6;"><i class="fa-solid fa-magnifying-glass"></i></div>
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">No Manpower Records Found</div>
-            <div style="font-size: 12px; margin-top: 4px;">Try adjusting or resetting your filter parameters</div>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = filtered.map(item => `
-        <div class="manpower-card">
-          <div class="card-meta-top">
-            <div>
-              <div class="card-company-tag">
-                <i class="fa-solid fa-building" style="font-size: 10.5px;"></i>
-                <span>${item.company}</span>
-              </div>
-              <div class="card-dept-name">${item.dept}</div>
-            </div>
-          </div>
-
-          <div class="card-info-grid">
-            <div class="card-info-item">
-              <span class="card-info-label">Section</span>
-              <span class="card-info-val">${item.section || '-'}</span>
-            </div>
-            <div class="card-info-item">
-              <span class="card-info-label">Cost Center</span>
-              <span class="card-info-val">${item.costCenter || '-'}</span>
-            </div>
-          </div>
-
-          <div class="card-counters-row">
-            <div class="card-count-box">
-              <span class="card-count-lbl">Work Shift</span>
-              <span class="card-count-num ${item.workShift > 0 ? 'num-green' : 'num-zero'}">${item.workShift}</span>
-            </div>
-            <div class="card-count-box">
-              <span class="card-count-lbl">No Work</span>
-              <span class="card-count-num ${item.noWork > 0 ? 'num-amber' : 'num-zero'}">${item.noWork}</span>
-            </div>
-            <div class="card-count-box">
-              <span class="card-count-lbl">OT Plan</span>
-              <span class="card-count-num ${item.otPlan > 0 ? 'num-purple' : 'num-zero'}">${item.otPlan}</span>
-            </div>
-            <div class="card-count-box">
-              <span class="card-count-lbl">On Leave</span>
-              <span class="card-count-num ${item.onLeave > 0 ? 'num-rose' : 'num-zero'}">${item.onLeave}</span>
-            </div>
-          </div>
-        </div>
-      `).join('');
+      document.getElementById('manpowerEmpty').hidden = filtered.length > 0;
+      renderManpowerCards(container, filtered);
     }
-
     // Modal Operations
     function openFilterModal() {
       const modal = document.getElementById('filterModal');
       if (!modal) return;
       modal.style.display = 'flex';
-      setTimeout(() => {
-        modal.classList.add('active');
-      }, 10);
+      setTimeout(() => { modal.classList.add('active'); }, 10);
     }
 
     function closeFilterModal(e) {
@@ -1254,9 +1042,7 @@
       const modal = document.getElementById('filterModal');
       if (!modal) return;
       modal.classList.remove('active');
-      setTimeout(() => {
-        modal.style.display = 'none';
-      }, 260);
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
     }
 
     function resetFilterModal() {
@@ -1283,9 +1069,7 @@
       if (!toast || !text) return;
       text.innerText = msg;
       toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2200);
+      setTimeout(() => { toast.classList.remove('show'); }, 2200);
     }
 
     // Keyboard navigation (ESC closes open modal)
@@ -1296,6 +1080,7 @@
     });
 
     let currentView = 'dashboard';
+    let selectedManpowerGroup = null;
     
     function goBack() {
       if (currentView === 'details') {
@@ -1308,7 +1093,8 @@
       }
     }
 
-    function openKpiDetails(type) {
+    function openKpiDetails(type, group = null) {
+      selectedManpowerGroup = group;
       currentView = 'details';
       document.getElementById('view-dashboard').style.display = 'none';
       document.getElementById('view-details').style.display = 'block';
@@ -1359,5 +1145,6 @@
       renderManpowerList();
     });
   </script>
+<script src="../../../js/attendance-manpower-report.js"></script>
 </body>
 </html>

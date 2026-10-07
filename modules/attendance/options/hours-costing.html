@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
@@ -656,9 +657,50 @@
     .filter-apply-btn:active {
       transform: scale(0.98);
     }
+
+    .highlight-report-view,
+    .highlight-chart-view { min-width: 0; }
+    .highlight-table-card {
+      min-height: 480px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-card);
+    }
+    .highlight-table-card .attendance-report-table {
+      min-width: 620px;
+      border: 0;
+      background: transparent;
+    }
+    .highlight-table-card .attendance-report-table th {
+      padding: 14px 16px;
+      background: var(--purple-subtle);
+      border: 0;
+      border-bottom: 2px solid var(--purple-border);
+      color: var(--purple-primary);
+    }
+    .highlight-table-card .attendance-report-table td {
+      padding: 13px 16px;
+      border: 0;
+      border-bottom: 1px solid var(--border-subtle);
+      background: transparent;
+    }
+    .highlight-table-card .attendance-report-table tbody tr:nth-child(even) { background: var(--bg-card-hover); }
+    .highlight-table-card .attendance-report-table tbody tr:hover { background: var(--purple-subtle); }
+    .highlight-chart-view > .highlight-analysis-card { display: block; }
+    .highlight-chart-view .attendance-report-legend-row { display: grid; }
+    .highlight-chart-view .attendance-report-donut-center strong {
+      max-width: 130px;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    @media (max-width: 480px) {
+      body { padding: 0; }
+      .phone-container { max-width: none; height: 100vh; border-radius: 0; }
+    }
   </style>
 </head>
-<body>
+<body class="attendance-highlight-page">
   <preview-top-bar active-page="attendance"></preview-top-bar>
 
   <div class="phone-container">
@@ -666,12 +708,12 @@
     <div class="cal-top-header">
       <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
-        <button class="header-btn-icon" onclick="window.location.href='team.html'" aria-label="Back" title="Back">
+        <button class="header-btn-icon" onclick="handleHoursCostingBack()" aria-label="Back" title="Back">
           <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
         </button>
         
         <div style="text-align: center;">
-          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;">Hours Costing</h1>
+          <h1 id="hoursCostingHeaderTitle" style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;">Hours Costing</h1>
           <div style="font-size: 11.5px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 2px;">Work Hours Expense &amp; Cost Analysis</div>
         </div>
         
@@ -681,9 +723,10 @@
 
     <!-- Main Content -->
     <div class="main-content">
+      <div id="hoursCostingReportView" class="highlight-report-view">
       
       <!-- Standardized Executive Filter Summary Bar -->
-      <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter records">
+      <div class="filter-summary-bar highlight-filter-card" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter records">
         <div style="flex: 1; min-width: 0; padding-right: 8px;">
           <div class="filter-bar-label">
             <span>CURRENT FILTER</span>
@@ -697,31 +740,26 @@
         </button>
       </div>
 
-      <!-- Executive KPI Cards Row: Total Records & Total Cost -->
-      <div class="summary-info-row" style="display: flex; align-items: stretch; justify-content: space-between; margin-bottom: 14px; gap: 10px; border-bottom: none; padding: 0;">
-        
-        <!-- Card 1: Total Records -->
-        <div class="kpi-card-box kpi-records-card" style="border-radius: 18px; padding: 14px 14px; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; box-shadow: var(--shadow-sm);">
-          <div class="kpi-icon-box kpi-icon-records" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;">
-            <i class="fa-solid fa-receipt"></i>
+      <div class="attendance-report-summary highlight-summary-card">
+        <div class="attendance-report-summary-row">
+          <div>
+            <span class="attendance-report-summary-label">Total Records</span>
+            <strong id="totalRecordsVal" class="attendance-report-summary-value">181</strong>
           </div>
-          <div style="display: flex; flex-direction: column; min-width: 0;">
-            <span class="kpi-card-label" style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">TOTAL RECORDS</span>
-            <span id="totalRecordsVal" class="kpi-card-val" style="font-size: 20px; font-weight: 900; line-height: 1.1; margin-top: 2px;">181</span>
-          </div>
+          <button type="button" class="view-chart-btn" onclick="openChartModal()" title="View Chart">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            <span>View Chart</span>
+          </button>
         </div>
-
-        <!-- Card 2: Total Cost -->
-        <div class="kpi-card-box kpi-cost-card" style="border-radius: 18px; padding: 14px 14px; display: flex; align-items: center; gap: 12px; flex: 1.35; min-width: 0; box-shadow: var(--shadow-sm);">
-          <div class="kpi-icon-box kpi-icon-cost" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;">
-            <i class="fa-solid fa-sack-dollar"></i>
+        <div class="attendance-report-summary-row">
+          <div>
+            <span class="attendance-report-summary-label">Total Cost</span>
+            <strong id="totalCostVal" class="attendance-report-summary-value">RM 29,523.38</strong>
           </div>
-          <div style="display: flex; flex-direction: column; min-width: 0;">
-            <span class="kpi-card-label" style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">TOTAL COST</span>
-            <span id="totalCostVal" class="kpi-card-val" style="font-size: 18px; font-weight: 900; line-height: 1.1; margin-top: 2px;">RM 29,523.38</span>
-          </div>
+          <button type="button" class="btn-excel-export" onclick="exportToExcel()" title="Export Excel Data Sheet" aria-label="Export Excel Data Sheet">
+            <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+          </button>
         </div>
-
       </div>
 
       <!-- Toast feedback popup for Excel Export -->
@@ -730,24 +768,18 @@
         <span>Exporting Excel report...</span>
       </div>
 
-      <!-- Quick Search Bar & View Chart + Export Excel Buttons -->
+      <!-- Quick Search Bar -->
       <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
         <div class="search-bar-wrap theme-card" style="position: relative; flex: 1; border-radius: 12px; padding: 0;">
           <i class="fa-solid fa-magnifying-glass search-bar-icon" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px;"></i>
           <input type="text" id="empSearchInput" onkeyup="syncKeywordAndFilter()" placeholder="Search staff name or #ID..." style="width: 100%; padding: 10px 12px 10px 34px; border-radius: 12px; background: transparent; border: none; font-size: 12.5px; font-weight: 700; outline: none;">
         </div>
-        <button type="button" class="view-chart-btn" onclick="if(typeof openChartModal === 'function') openChartModal();" title="View Chart">
-          <i class="fa-solid fa-chart-pie"></i>
-          <span>View Chart</span>
-        </button>
-        <button type="button" class="btn-excel-export" onclick="exportToExcel()" title="Export Excel Data Sheet" aria-label="Export Excel Data Sheet">
-          <i class="fa-solid fa-file-excel" style="font-size: 16px;"></i>
-        </button>
       </div>
 
       <!-- Excel Data Grid Table Wrapper -->
-      <div class="excel-grid-wrapper">
-        <table class="excel-grid-table">
+      <div class="excel-grid-wrapper attendance-report-table-card highlight-table-card">
+        <div class="attendance-report-table-scroll">
+        <table class="excel-grid-table attendance-report-table">
           <thead>
             <tr>
               <th style="width: 28px; text-align: center;">#</th>
@@ -988,6 +1020,43 @@
 
           </tbody>
         </table>
+        </div>
+      </div>
+      </div>
+
+      <div id="hoursCostingChartView" class="highlight-chart-view attendance-report-chart" style="display: none;">
+        <section class="attendance-report-breakdown highlight-analysis-card">
+          <label for="hoursCostingBreakdownSelect">BREAKDOWN BY</label>
+          <select id="hoursCostingBreakdownSelect" class="highlight-breakdown-select" onchange="renderHoursCostingChart()">
+            <option value="costCenter">Cost Centre</option>
+            <option value="department">Department</option>
+          </select>
+        </section>
+
+        <section class="attendance-report-chart-card highlight-analysis-card">
+          <h3 id="hoursCostingChartTitle">Cost by cost centre</h3>
+          <p>Share of the currently filtered hours costing records</p>
+          <div class="attendance-report-donut">
+            <svg id="hoursCostingDonutSvg" viewBox="0 0 180 180" role="img" aria-label="Hours costing distribution">
+              <circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle>
+              <g id="hoursCostingDonutCircles"></g>
+            </svg>
+            <div class="attendance-report-donut-center">
+              <strong id="hoursCostingChartTotal">RM 0.00</strong>
+              <small>Total Cost</small>
+            </div>
+          </div>
+          <div class="attendance-report-note">Based on the current filter</div>
+        </section>
+
+        <section class="attendance-report-legend highlight-analysis-card">
+          <div class="attendance-report-legend-head">
+            <span id="hoursCostingLegendLabel">COST CENTRE</span>
+            <span>COST</span>
+            <span>% OF TOTAL</span>
+          </div>
+          <div id="hoursCostingChartLegend" class="attendance-report-legend-rows highlight-legend-grid"></div>
+        </section>
       </div>
 
     </div>
@@ -1070,36 +1139,78 @@
         </button>
       </div>
     </div>
-    <div id="hoursCostingChartModal" onclick="closeHoursCostingChart(event)" style="position:absolute;inset:0;z-index:1000;display:none;align-items:flex-end;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);border-radius:44px;overflow:hidden;">
-      <div onclick="event.stopPropagation()" style="width:100%;max-height:80%;overflow-y:auto;background:var(--bg-card);border-top-left-radius:26px;border-top-right-radius:26px;padding:20px 18px 24px;box-shadow:0 -12px 40px rgba(0,0,0,.4);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><div><div style="font-size:17px;font-weight:900;color:var(--text-primary);">Cost by Cost Centre</div><div data-chart-total style="font-size:12px;font-weight:800;color:var(--purple-primary);margin-top:3px;"></div></div><button type="button" onclick="closeHoursCostingChart()" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border-subtle);background:var(--bg-input);color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button></div>
-        <div id="hoursCostingChartRows" style="display:flex;flex-direction:column;gap:12px;"></div>
-      </div>
-    </div>
-
   </div>
 
   <script>
-    function openChartModal() {
-      const groups = {};
-      const visible = [...document.querySelectorAll('#employeeCostingList .emp-card')].filter(card => getComputedStyle(card).display !== 'none');
-      visible.forEach(card => { groups[card.dataset.cc || 'Unassigned'] = (groups[card.dataset.cc || 'Unassigned'] || 0) + (Number(card.dataset.cost) || 0); });
-      const total = visible.reduce((sum, card) => sum + (Number(card.dataset.cost) || 0), 0);
-      document.getElementById('totalRecordsVal').textContent = visible.length;
-      const money = value => 'RM ' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      document.getElementById('totalCostVal').textContent = money(total);
-      const modal = document.getElementById('hoursCostingChartModal');
-      modal.querySelector('[data-chart-total]').textContent = money(total);
-      document.getElementById('hoursCostingChartRows').innerHTML = Object.entries(groups).sort((a,b) => b[1] - a[1]).map(([label,value]) => `
-        <div><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text-primary);margin-bottom:6px;"><span>${label}</span><span>${money(value)}</span></div><div style="height:9px;border-radius:999px;background:var(--bg-input);overflow:hidden;"><div style="height:100%;width:${total ? value / total * 100 : 0}%;background:#7c3aed;border-radius:999px;"></div></div></div>`).join('');
-      modal.style.display = 'flex';
+    const hoursCostingColors = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#6366f1'];
+
+    function formatHoursCostingMoney(value) {
+      return 'RM ' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function closeHoursCostingChart(event) {
-      if (event && event.target && event.target.id !== 'hoursCostingChartModal') return;
-      document.getElementById('totalCostVal').textContent = money(total);
-      const modal = document.getElementById('hoursCostingChartModal');
-      if (modal) modal.style.display = 'none';
+    function handleHoursCostingBack() {
+      const chartView = document.getElementById('hoursCostingChartView');
+      if (chartView && chartView.style.display !== 'none') {
+        showHoursCostingView('report');
+        return;
+      }
+      window.location.href = 'team.html';
+    }
+
+    function showHoursCostingView(view) {
+      const reportView = document.getElementById('hoursCostingReportView');
+      const chartView = document.getElementById('hoursCostingChartView');
+      const title = document.getElementById('hoursCostingHeaderTitle');
+      const isChart = view === 'chart';
+      reportView.style.display = isChart ? 'none' : 'block';
+      chartView.style.display = isChart ? 'block' : 'none';
+      title.textContent = isChart ? 'Hours Cost Analysis' : 'Hours Costing';
+      document.querySelector('.main-content').scrollTop = 0;
+    }
+
+    function openChartModal() {
+      renderHoursCostingChart();
+      showHoursCostingView('chart');
+    }
+
+    function renderHoursCostingChart() {
+      const dimension = document.getElementById('hoursCostingBreakdownSelect').value;
+      const visible = [...document.querySelectorAll('#employeeCostingList .emp-card')]
+        .filter(row => getComputedStyle(row).display !== 'none');
+      const groups = new Map();
+
+      visible.forEach(row => {
+        const departmentText = row.querySelector('.emp-card-dept')?.textContent.trim() || 'Unassigned';
+        const department = departmentText.endsWith(row.dataset.cc)
+          ? departmentText.slice(0, -row.dataset.cc.length).replace(/[\s•â€¢-]+$/g, '').trim()
+          : departmentText;
+        const label = dimension === 'department' ? department : (row.dataset.cc || 'Unassigned');
+        groups.set(label, (groups.get(label) || 0) + (Number(row.dataset.cost) || 0));
+      });
+
+      const items = [...groups].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+      const total = items.reduce((sum, item) => sum + item.value, 0);
+      const dimensionLabel = dimension === 'department' ? 'Department' : 'Cost Centre';
+      document.getElementById('hoursCostingChartTitle').textContent = `Cost by ${dimensionLabel.toLowerCase()}`;
+      document.getElementById('hoursCostingLegendLabel').textContent = dimensionLabel.toUpperCase();
+      document.getElementById('hoursCostingChartTotal').textContent = formatHoursCostingMoney(total);
+
+      const circumference = 2 * Math.PI * 70;
+      let offset = 0;
+      document.getElementById('hoursCostingDonutCircles').innerHTML = items.map((item, index) => {
+        const length = total ? item.value / total * circumference : 0;
+        const circle = `<circle cx="90" cy="90" r="70" fill="none" stroke="${hoursCostingColors[index % hoursCostingColors.length]}" stroke-width="22" stroke-dasharray="${length} ${circumference - length}" stroke-dashoffset="${-offset}"></circle>`;
+        offset += length;
+        return circle;
+      }).join('');
+
+      document.getElementById('hoursCostingChartLegend').innerHTML = items.map((item, index) => `
+        <div class="attendance-report-legend-row">
+          <span class="attendance-report-legend-label"><i class="attendance-report-dot" style="background:${hoursCostingColors[index % hoursCostingColors.length]}"></i>${item.label}</span>
+          <span>${formatHoursCostingMoney(item.value)}</span>
+          <span>${total ? (item.value / total * 100).toFixed(1) : '0.0'}%</span>
+        </div>
+      `).join('');
     }
 
     function openFilterModal() {

@@ -18,7 +18,7 @@ async function check(name, fn) {
 }
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true, executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || (process.platform === 'win32' ? 'C:/Program Files/Google/Chrome/Application/chrome.exe' : undefined) });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 390, height: 950 });
@@ -51,10 +51,10 @@ async function check(name, fn) {
     });
 
     await page.goto(url('modules/attendance/options/daily-manpower.html'), { waitUntil: 'domcontentloaded' });
-    await check('daily manpower View Chart opens a visible data-backed chart modal', async () => {
+    await check('daily manpower View Chart opens a visible data-backed chart analysis', async () => {
       assert.equal(await page.evaluate(() => typeof openChartModal), 'function');
       await page.click('.view-chart-btn');
-      const chart = await page.$eval('#dailyManpowerChartModal', node => ({
+      const chart = await page.$eval('.attendance-report-chart', node => ({
         display: getComputedStyle(node).display,
         values: [...node.querySelectorAll('[data-chart-value]')].map(el => Number(el.dataset.chartValue)),
         total: Number(node.dataset.total)
@@ -68,12 +68,16 @@ async function check(name, fn) {
     await check('hours costing View Chart opens a visible chart matching the filtered total', async () => {
       assert.equal(await page.evaluate(() => typeof openChartModal), 'function');
       await page.click('.view-chart-btn');
-      const chart = await page.$eval('#hoursCostingChartModal', node => ({
+      const chart = await page.$eval('#hoursCostingChartView', node => ({
         display: getComputedStyle(node).display,
-        total: node.querySelector('[data-chart-total]').textContent.trim()
+        total: node.querySelector('#hoursCostingChartTotal').textContent.trim(),
+        slices: node.querySelectorAll('#hoursCostingDonutCircles circle').length,
+        cards: node.querySelectorAll(':scope > .highlight-analysis-card').length
       }));
       assert.notEqual(chart.display, 'none');
-      assert.equal(chart.total, await page.$eval('#totalCostVal', node => node.textContent.trim()));
+      assert.match(chart.total, /^RM /);
+      assert.ok(chart.slices > 0);
+      assert.equal(chart.cards, 3);
     });
 
     await page.goto(url('modules/attendance/options/shift-summary.html'), { waitUntil: 'domcontentloaded' });

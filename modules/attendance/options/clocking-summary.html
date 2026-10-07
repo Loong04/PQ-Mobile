@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
@@ -536,9 +537,35 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+    .highlight-report-view,
+    .highlight-chart-view { min-width: 0; }
+    .highlight-table-card {
+      min-height: 480px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-card);
+    }
+    .highlight-table-card .attendance-report-table { min-width: 560px; }
+    .highlight-table-card .summary-table-row {
+      display: table-row !important;
+      padding: 0;
+      transform: none;
+    }
+    .highlight-table-card .summary-table-row td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .highlight-table-card .summary-table-row .cell-count { text-align: right; }
+    .highlight-chart-view > .highlight-analysis-card { display: block; }
+    .highlight-chart-view .attendance-report-legend-row { display: grid; }
+    @media (max-width: 480px) {
+      body { padding: 0; }
+      .phone-container { max-width: none; height: 100vh; border-radius: 0; }
+    }
   </style>
+  <link rel="stylesheet" href="clocking-summary.css">
 </head>
-<body>
+<body class="attendance-highlight-page">
   <preview-top-bar active-page="attendance"></preview-top-bar>
 
   <div class="phone-container">
@@ -562,16 +589,16 @@
     <div class="main-content">
       
       <!-- ================= VIEW 1: SUMMARY TABLE VIEW ================= -->
-      <div id="view-summary" style="display: block;">
+      <div id="view-summary" class="highlight-report-view" style="display: block;">
         
         <!-- 1. Executive Filter Summary Bar -->
-        <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter clocking records">
+        <div class="filter-summary-bar highlight-filter-card" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter clocking records">
           <div style="flex: 1; min-width: 0; padding-right: 8px;">
             <div class="filter-bar-label">
               <span>CURRENT FILTER</span>
             </div>
             <div class="filter-bar-value" id="filterSummaryText">
-              20 Sep 2026 • All Companies
+              05 Oct 2026 • 00:00 – 23:59 • All Branches
             </div>
           </div>
           <button type="button" class="filter-trigger-btn" onclick="event.stopPropagation(); openFilterModal();" title="Filter Options" aria-label="Filter Options">
@@ -579,87 +606,85 @@
           </button>
         </div>
 
-        <!-- Summary Executive KPI Stats & View Chart Row -->
-        <div class="summary-info-row" style="display: flex; align-items: stretch; justify-content: space-between; margin-bottom: 14px; gap: 8px; border-bottom: none; padding: 0 2px;">
-          
-          <!-- KPI 1: Total Records -->
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); flex: 1; min-width: 0;">
-            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
-              <i class="fa-solid fa-list-check"></i>
+        <div class="attendance-report-summary highlight-summary-card">
+          <div class="attendance-report-summary-row">
+            <div>
+              <span class="attendance-report-summary-label">Total Records</span>
+              <strong id="totalRecordsVal" class="attendance-report-summary-value">2</strong>
             </div>
-            <div style="display: flex; flex-direction: column; min-width: 0;">
-              <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;">Records</span>
-              <span id="totalRecordsVal" style="font-size: 15px; font-weight: 900; color: var(--text-primary); line-height: 1.1;">4</span>
+            <button type="button" class="view-chart-btn" onclick="showSectionView('chart')" title="View Chart">
+              <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+              <span>View Chart</span>
+            </button>
+          </div>
+          <div class="attendance-report-summary-row">
+            <div>
+              <span class="attendance-report-summary-label">Total Count</span>
+              <strong id="totalCountVal" class="attendance-report-summary-value">6</strong>
             </div>
           </div>
-
-          <!-- KPI 2: Total Count -->
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); flex: 1.1; min-width: 0;">
-            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.25); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">
-              <i class="fa-solid fa-user-clock"></i>
-            </div>
-            <div style="display: flex; flex-direction: column; min-width: 0;">
-              <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;">Total Count</span>
-              <span id="totalCountVal" style="font-size: 15px; font-weight: 900; color: #10b981; line-height: 1.1;">24</span>
-            </div>
-          </div>
-
-          <!-- View Chart Action Button -->
-          <button type="button" class="view-chart-btn" onclick="showSectionView('chart')" style="padding: 8px 11px; border-radius: 14px; border: 1px solid rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; flex-shrink: 0; cursor: pointer;">
-            <i class="fa-solid fa-chart-pie"></i>
-            <span>View Chart</span>
-          </button>
         </div>
 
         <!-- Section & Cost Centre Table -->
-        <div class="summary-table-card">
-          <div class="summary-table-hdr">
-            <div>Section</div>
-            <div>Cost Centre</div>
-            <div style="text-align: right;">Count</div>
-          </div>
-          <div id="summaryTableBody">
-            <!-- Dynamically populated table rows -->
+        <div class="summary-table-card attendance-report-table-card highlight-table-card">
+          <div class="attendance-report-table-scroll">
+            <table class="attendance-report-table">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Cost Centre</th>
+                  <th style="text-align: right;">Count</th>
+                </tr>
+              </thead>
+              <tbody id="summaryTableBody">
+                <!-- Dynamically populated table rows -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
       <!-- ================= VIEW 2: DEDICATED CHART PAGE VIEW ================= -->
-      <div id="view-chart" style="display: none;">
-        <!-- Top Action Bar inside Chart Page -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px;">
-          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-chart-pie" style="color: #f59e0b;"></i>
-            <span>Clocking Distribution Chart</span>
+      <div id="view-chart" class="highlight-chart-view attendance-report-chart" style="display: none;">
+        <section class="attendance-report-breakdown highlight-analysis-card">
+          <label for="clockingBreakdownSelect">BREAKDOWN BY</label>
+          <div class="clocking-select-wrap">
+            <select id="clockingBreakdownSelect" class="highlight-breakdown-select" onchange="renderDonutChartData()">
+              <option value="branch">Branch</option>
+              <option value="dept">Department</option>
+              <option value="section">Section</option>
+              <option value="costCenter">Cost Centre</option>
+              <option value="type">Clocking Type</option>
+              <option value="mode">Clock Mode</option>
+            </select>
+            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
           </div>
-        </div>
+        </section>
 
-        <!-- SVG Donut Chart Card -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 20px 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; margin-bottom: 14px;">
-          <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 210px; height: 210px; margin: 6px 0 14px;">
-            <svg id="summaryDonutSvg" width="210" height="210" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 20px rgba(124, 58, 237, 0.18));">
+        <section class="attendance-report-chart-card highlight-analysis-card">
+          <h3 id="clockingChartTitle">Clock transactions by branch</h3>
+          <p id="clockingChartSubtitle">Share of the currently filtered clocking transactions</p>
+          <div class="attendance-report-donut">
+            <svg id="summaryDonutSvg" viewBox="0 0 180 180" role="img" aria-label="Clocking distribution">
               <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22"></circle>
               <g id="summaryDonutCircles"></g>
             </svg>
-            <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 120px;">
-              <div id="summaryCenterTotal" style="font-size: 24px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px;">24</div>
-              <div id="summaryCenterBadge" style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 4px;">Clock Transactions</div>
+            <div class="attendance-report-donut-center">
+              <strong id="summaryCenterTotal">6</strong>
+              <small id="summaryCenterBadge">Clock Transactions</small>
             </div>
           </div>
-        </div>
+          <div class="attendance-report-note" id="clockingChartNote">Based on the current filter</div>
+        </section>
 
-        <!-- Breakdown Legend Table Card -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-sm);">
-          <div style="display: grid; grid-template-columns: 1fr 60px 75px; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-            <div>BRANCH</div>
-            <div style="text-align: right;">COUNT</div>
-            <div style="text-align: right;">% TOTAL</div>
+        <section class="attendance-report-legend highlight-analysis-card">
+          <div class="attendance-report-legend-head">
+            <span id="clockingLegendLabel">BRANCH</span>
+            <span>COUNT</span>
+            <span>% OF TOTAL</span>
           </div>
-
-          <div id="summaryChartLegendGrid" style="display: flex; flex-direction: column; gap: 12px; padding-top: 12px;">
-            <!-- Generated dynamically -->
-          </div>
-        </div>
+          <div id="summaryChartLegendGrid" class="attendance-report-legend-rows highlight-legend-grid"></div>
+        </section>
       </div>
 
     </div>
@@ -674,42 +699,47 @@
     </div>
 
     <!-- MODAL 1: BOTTOM SHEET DATA FILTER MODAL -->
-    <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)">
-      <div class="bottom-sheet-content" onclick="event.stopPropagation()">
+    <div class="modal-overlay" id="filterModal" aria-hidden="true" onclick="closeFilterModal(event)">
+      <div class="bottom-sheet-content" role="dialog" aria-modal="true" aria-labelledby="clockingFilterTitle" onclick="event.stopPropagation()">
         <div class="sheet-handle-pill"></div>
         
         <div class="filter-header-row">
-          <h3 class="filter-modal-title">Data Filter</h3>
+          <h3 class="filter-modal-title" id="clockingFilterTitle">Data Filter</h3>
           <button type="button" class="filter-reset-btn" onclick="resetFilterModal()">
             <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
           </button>
         </div>
 
-        <div style="display: flex; flex-direction: column; overflow-y: auto; max-height: 60vh; padding-right: 2px;">
+        <div class="clocking-filter-fields">
           <!-- 1. Date -->
           <div class="form-group-item">
-            <label class="form-field-label">Date</label>
-            <input type="date" id="filterDateInput" class="form-field-input" value="2026-09-20">
+            <label class="form-field-label" for="filterDateInput">Date</label>
+            <div class="clocking-date-field">
+              <button type="button" class="date-nav-btn" onclick="shiftDate(-1)" aria-label="Previous date"><i class="fa-solid fa-chevron-left"></i></button>
+              <input type="date" id="filterDateInput" class="form-field-input" value="2026-10-05">
+              <button type="button" class="date-nav-btn" onclick="shiftDate(1)" aria-label="Next date"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
           </div>
 
           <!-- 2. Start Time & End Time -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="form-group-item">
             <div>
-              <label class="form-field-label">Start Time</label>
+              <label class="form-field-label" for="filterStartTimeInput">Start Time</label>
               <input type="time" id="filterStartTimeInput" class="form-field-input" value="00:00">
             </div>
             <div>
-              <label class="form-field-label">End Time</label>
+              <label class="form-field-label" for="filterEndTimeInput">End Time</label>
               <input type="time" id="filterEndTimeInput" class="form-field-input" value="23:59">
             </div>
           </div>
 
           <!-- 3. Branch -->
           <div class="form-group-item">
-            <label class="form-field-label">Branch</label>
+            <label class="form-field-label" for="filterBranchSelect">Branch</label>
             <div style="position: relative;">
               <select id="filterBranchSelect" class="form-field-select">
                 <option value="all" selected>- All Branches -</option>
+                <option value="TIMES SQUARE BRANCH">TIMES SQUARE BRANCH</option>
                 <option value="HQ - KL Main">HQ - KL Main</option>
                 <option value="Penang Branch">Penang Branch</option>
                 <option value="Johor Bahru Branch">Johor Bahru Branch</option>
@@ -720,7 +750,7 @@
 
           <!-- 4. Department -->
           <div class="form-group-item">
-            <label class="form-field-label">Department</label>
+            <label class="form-field-label" for="filterDeptSelect">Department</label>
             <div style="position: relative;">
               <select id="filterDeptSelect" class="form-field-select">
                 <option value="all" selected>- All Departments -</option>
@@ -734,7 +764,7 @@
 
           <!-- 5. Section -->
           <div class="form-group-item">
-            <label class="form-field-label">Section</label>
+            <label class="form-field-label" for="filterSectionSelect">Section</label>
             <div style="position: relative;">
               <select id="filterSectionSelect" class="form-field-select">
                 <option value="all" selected>- All Sections -</option>
@@ -749,11 +779,12 @@
 
           <!-- 6. Cost Center -->
           <div class="form-group-item">
-            <label class="form-field-label">Cost Center</label>
+            <label class="form-field-label" for="filterCostCenterSelect">Cost Centre</label>
             <div style="position: relative;">
               <select id="filterCostCenterSelect" class="form-field-select">
-                <option value="all" selected>- All Cost Centers -</option>
+                <option value="all" selected>- All Cost Centres -</option>
                 <option value="MANAGEMENT">MANAGEMENT</option>
+                <option value="MID VALLEY">MID VALLEY</option>
                 <option value="CC-101 MANAGEMENT">CC-101 MANAGEMENT</option>
                 <option value="CC-501 HR & OPS">CC-501 HR & OPS</option>
                 <option value="CC-301 PRODUCTION">CC-301 PRODUCTION</option>
@@ -764,7 +795,7 @@
 
           <!-- 7. Clocking Type -->
           <div class="form-group-item">
-            <label class="form-field-label">Clocking Type</label>
+            <label class="form-field-label" for="filterClockTypeSelect">Clocking Type</label>
             <div style="position: relative;">
               <select id="filterClockTypeSelect" class="form-field-select">
                 <option value="all" selected>- All Clocking Types -</option>
@@ -777,6 +808,22 @@
             </div>
           </div>
 
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterZoneSelect">Clock-In Zone</label>
+            <div style="position: relative;">
+              <select id="filterZoneSelect" class="form-field-select">
+                <option value="all">- All Shift Locations -</option>
+                <option value="TIMES SQUARE OFFICE">TIMES SQUARE OFFICE</option>
+                <option value="MID VALLEY OFFICE">MID VALLEY OFFICE</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterRadiusInput">Radius (meter)</label>
+            <input type="number" id="filterRadiusInput" class="form-field-input" min="0" step="1" value="0" inputmode="numeric">
+          </div>
+          <div id="clockingFilterError" class="clocking-filter-error" role="alert" hidden></div>
           <button type="button" class="form-apply-btn" onclick="applyFilterModal()">
             <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
             <span>Apply Filter</span>
@@ -786,28 +833,32 @@
     </div>
 
     <!-- MODAL 2: PERSONNEL CLOCKING DETAILS MODAL (CENTER POPOUT DIALOG WITH COLORED HEADER) -->
-    <div class="modal-overlay popout-mode" id="detailsModal" onclick="closeDetailsModal(event)">
-      <div class="popout-dialog-card" onclick="event.stopPropagation()">
+    <div class="modal-overlay popout-mode" id="detailsModal" aria-hidden="true" onclick="closeDetailsModal(event)">
+      <div class="popout-dialog-card" role="dialog" aria-modal="true" aria-labelledby="modalSectionTitle" onclick="event.stopPropagation()">
         
         <!-- Colored Header Bar -->
         <div class="popout-hdr-colored">
-          <div>
+          <div class="clocking-modal-heading">
             <h3 class="popout-hdr-title" id="modalSectionTitle">BENEFITS</h3>
-            <div style="font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, 0.85); margin-top: 2px;" id="modalSectionMeta">Cost Centre: MANAGEMENT</div>
+            <div id="modalSectionMeta">Cost Centre: MANAGEMENT</div>
+            <div class="clocking-modal-subtitle">Clocking Summary Details</div>
           </div>
-          <button type="button" class="popout-close-btn" onclick="closeDetailsModalDirect()" title="Close details">
+          <button type="button" class="popout-close-btn" onclick="closeDetailsModalDirect()" title="Close details" aria-label="Close clocking details">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
         <!-- Body Content -->
         <div class="popout-body-content">
-          <div style="font-size: 12px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-            <span>Personnel Clocking Details</span>
-            <span id="modalRecordCount" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">3 Records</span>
+          <div class="clocking-details-toolbar">
+            <span id="modalRecordCount">4 Records</span>
+            <button type="button" class="view-chart-btn" onclick="openDetailsChart()"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
           </div>
-
-          <div id="detailsListContainer" style="display: flex; flex-direction: column; overflow-y: auto; max-height: 52vh; padding-right: 2px;">
+          <div class="clocking-export-actions" aria-label="Export clocking details">
+            <button type="button" id="clockingExportPdf" onclick="printClockingDetails()"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>PDF</span></button>
+            <button type="button" id="clockingExportExcel" onclick="exportClockingDetails()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i><span>Excel</span></button>
+          </div>
+          <div id="detailsListContainer">
             <!-- Dynamically populated personnel list -->
           </div>
         </div>
@@ -816,441 +867,6 @@
 
   </div>
 
-  <script>
-    const masterClockingTableDataset = [
-      {
-        id: 1,
-        branch: 'HQ - KL Main',
-        dept: 'HUMAN RESOURCE',
-        section: 'BENEFITS',
-        costCenter: 'MANAGEMENT',
-        count: 3,
-        details: [
-          { empNo: '#EBB15', name: 'Asmawi idris', date: '20 Sep 2026', startTime: '08:04 AM', endTime: '05:30 PM', time: '08:04 AM', type: 'Clock In', mode: 'Manual Input(People HR)', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MANAGEMENT' },
-          { empNo: '#A0001', name: 'Natasha thean mei hoi', date: '20 Sep 2026', startTime: '08:00 AM', endTime: '05:30 PM', time: '08:00 AM', type: 'Clock In', mode: 'Manual Input(People HR)', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MANAGEMENT' },
-          { empNo: '#EBB12', name: 'Farhan binti rahmat', date: '20 Sep 2026', startTime: '07:34 AM', endTime: '05:30 PM', time: '07:34 AM', type: 'Clock In', mode: 'Manual Input(People HR)', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MANAGEMENT' }
-        ]
-      },
-      {
-        id: 2,
-        branch: 'HQ - KL Main',
-        dept: 'HUMAN RESOURCE',
-        section: 'CORPORATE',
-        costCenter: 'CC-101 MANAGEMENT',
-        count: 8,
-        details: [
-          { empNo: '#EBB01', name: 'Lee Soon Hock', date: '20 Sep 2026', startTime: '08:00 AM', endTime: '05:30 PM', time: '08:00 AM', type: 'Clock In', mode: 'Face Kiosk', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'CORPORATE', costCenter: 'CC-101 MANAGEMENT' },
-          { empNo: '#004177', name: 'Siti Nurhaliza', date: '20 Sep 2026', startTime: '08:15 AM', endTime: '05:45 PM', time: '08:15 AM', type: 'Clock In', mode: 'Mobile Geofence', typeClass: 'type-in', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'CORPORATE', costCenter: 'CC-101 MANAGEMENT' },
-          { empNo: '#0000101', name: 'Tan Wei Ming', date: '20 Sep 2026', startTime: '08:30 AM', endTime: '05:30 PM', time: '05:30 PM', type: 'Clock Out', mode: 'Face Kiosk', typeClass: 'type-out', branch: 'HQ - KL Main', dept: 'HUMAN RESOURCE', section: 'CORPORATE', costCenter: 'CC-101 MANAGEMENT' }
-        ]
-      },
-      {
-        id: 3,
-        branch: 'Penang Branch',
-        dept: 'HUMAN RESOURCE',
-        section: 'GENERAL HR',
-        costCenter: 'CC-501 HR & OPS',
-        count: 1,
-        details: [
-          { empNo: '#EBB02', name: 'Wong Kah Fai', date: '20 Sep 2026', startTime: '08:30 AM', endTime: '05:30 PM', time: '08:30 AM', type: 'Clock In', mode: 'Mobile Geofence', typeClass: 'type-in', branch: 'Penang Branch', dept: 'HUMAN RESOURCE', section: 'GENERAL HR', costCenter: 'CC-501 HR & OPS' }
-        ]
-      },
-      {
-        id: 4,
-        branch: 'Johor Bahru Branch',
-        dept: 'PLANT OPERATIONS',
-        section: 'ASSEMBLY',
-        costCenter: 'CC-301 PRODUCTION',
-        count: 12,
-        details: [
-          { empNo: '#EBB03', name: 'Chok Ching Hou', date: '20 Sep 2026', startTime: '07:45 AM', endTime: '05:15 PM', time: '07:45 AM', type: 'Clock In', mode: 'Biometric Scanner', typeClass: 'type-in', branch: 'Johor Bahru Branch', dept: 'PLANT OPERATIONS', section: 'ASSEMBLY', costCenter: 'CC-301 PRODUCTION' },
-          { empNo: '#004199', name: 'Kavitha Raj', date: '20 Sep 2026', startTime: '07:50 AM', endTime: '05:20 PM', time: '07:50 AM', type: 'Clock In', mode: 'Biometric Scanner', typeClass: 'type-in', branch: 'Johor Bahru Branch', dept: 'PLANT OPERATIONS', section: 'ASSEMBLY', costCenter: 'CC-301 PRODUCTION' }
-        ]
-      }
-    ];
-
-    let currentDateObj = new Date(2026, 8, 20);
-    let currentActiveSection = 'summary'; // 'summary' or 'chart'
-
-    function handleHeaderBack() {
-      if (currentActiveSection === 'chart') {
-        showSectionView('summary');
-      } else {
-        javascript:history.back();
-      }
-    }
-
-    function showSectionView(sec) {
-      currentActiveSection = sec;
-      const summaryView = document.getElementById('view-summary');
-      const chartView = document.getElementById('view-chart');
-      const pageTitle = document.getElementById('pageHeaderTitle');
-
-      if (sec === 'chart') {
-        if (summaryView) summaryView.style.display = 'none';
-        if (chartView) chartView.style.display = 'block';
-        if (pageTitle) pageTitle.innerText = 'Clocking Distribution Chart';
-        renderDonutChartData();
-      } else {
-        if (chartView) chartView.style.display = 'none';
-        if (summaryView) summaryView.style.display = 'block';
-        if (pageTitle) pageTitle.innerText = 'Clocking Summary';
-      }
-    }
-
-    function formatDateDisplay(d) {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const day = d.getDate();
-      const month = months[d.getMonth()];
-      const year = d.getFullYear();
-      return `${day < 10 ? '0' + day : day} ${month} ${year}`;
-    }
-
-    function shiftDate(deltaDays) {
-      currentDateObj.setDate(currentDateObj.getDate() + deltaDays);
-      const displayStr = formatDateDisplay(currentDateObj);
-      const dateElem = document.getElementById('currentDateDisplay');
-      if (dateElem) dateElem.innerText = displayStr;
-      
-      const dateInput = document.getElementById('filterDateInput');
-      if (dateInput) {
-        const y = currentDateObj.getFullYear();
-        const m = String(currentDateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(currentDateObj.getDate()).padStart(2, '0');
-        dateInput.value = `${y}-${m}-${day}`;
-      }
-
-      updateFilterSummaryDisplay();
-      renderTable();
-      if (currentActiveSection === 'chart') {
-        renderDonutChartData();
-      }
-      showToastNotification(`Date shifted to ${displayStr}`);
-    }
-
-    function updateFilterSummaryDisplay() {
-      const dateVal = document.getElementById('filterDateInput')?.value;
-      let displayDate = formatDateDisplay(currentDateObj);
-      if (dateVal) {
-        const p = dateVal.split('-');
-        if (p.length === 3) {
-          const parsed = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
-          if (!isNaN(parsed.getTime())) {
-            displayDate = formatDateDisplay(parsed);
-          }
-        }
-      }
-      const branch = document.getElementById('filterBranchSelect')?.value || 'all';
-      const dept = document.getElementById('filterDeptSelect')?.value || 'all';
-      const sec = document.getElementById('filterSectionSelect')?.value || 'all';
-      const cc = document.getElementById('filterCostCenterSelect')?.value || 'all';
-      const type = document.getElementById('filterClockTypeSelect')?.value || 'all';
-
-      let parts = [displayDate];
-      if (branch !== 'all') parts.push(branch);
-      if (dept !== 'all') parts.push(dept);
-      if (sec !== 'all') parts.push(sec);
-      if (cc !== 'all') parts.push(cc);
-      if (type !== 'all') parts.push(type);
-
-      if (parts.length === 1) parts.push('All Branches');
-
-      document.getElementById('filterSummaryText').innerText = parts.join(' • ');
-    }
-
-    function renderTable() {
-      const branchFilter = document.getElementById('filterBranchSelect')?.value || 'all';
-      const deptFilter = document.getElementById('filterDeptSelect')?.value || 'all';
-      const sectionFilter = document.getElementById('filterSectionSelect')?.value || 'all';
-      const costCenterFilter = document.getElementById('filterCostCenterSelect')?.value || 'all';
-      const clockTypeFilter = document.getElementById('filterClockTypeSelect')?.value || 'all';
-
-      const filtered = masterClockingTableDataset.filter(item => {
-        const matchBranch = (branchFilter === 'all' || item.branch === branchFilter);
-        const matchDept = (deptFilter === 'all' || item.dept === deptFilter);
-        const matchSection = (sectionFilter === 'all' || item.section === sectionFilter);
-        const matchCostCenter = (costCenterFilter === 'all' || item.costCenter === costCenterFilter);
-        
-        let matchClockType = true;
-        if (clockTypeFilter !== 'all') {
-          matchClockType = item.details && item.details.some(d => d.type === clockTypeFilter);
-        }
-        return matchBranch && matchDept && matchSection && matchCostCenter && matchClockType;
-      });
-
-      let totalCount = 0;
-      filtered.forEach(item => { totalCount += item.count; });
-      
-      document.getElementById('totalRecordsVal').innerText = filtered.length;
-      document.getElementById('totalCountVal').innerText = totalCount;
-
-      const container = document.getElementById('summaryTableBody');
-      if (!container) return;
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 30px 16px; color: var(--text-muted); font-size: 13px;">
-            No clocking summary records found matching filters.
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = filtered.map(item => `
-        <div class="summary-table-row" onclick="openDetailsModal(${item.id})">
-          <div class="cell-section">${item.section}</div>
-          <div class="cell-cc">${item.costCenter}</div>
-          <div class="cell-count">${item.count}</div>
-        </div>
-      `).join('');
-    }
-
-    function renderDonutChartData() {
-      const branchFilter = document.getElementById('filterBranchSelect')?.value || 'all';
-      const deptFilter = document.getElementById('filterDeptSelect')?.value || 'all';
-      const sectionFilter = document.getElementById('filterSectionSelect')?.value || 'all';
-      const costCenterFilter = document.getElementById('filterCostCenterSelect')?.value || 'all';
-      const clockTypeFilter = document.getElementById('filterClockTypeSelect')?.value || 'all';
-
-      const filtered = masterClockingTableDataset.filter(item => {
-        const matchBranch = (branchFilter === 'all' || item.branch === branchFilter);
-        const matchDept = (deptFilter === 'all' || item.dept === deptFilter);
-        const matchSection = (sectionFilter === 'all' || item.section === sectionFilter);
-        const matchCostCenter = (costCenterFilter === 'all' || item.costCenter === costCenterFilter);
-
-        let matchClockType = true;
-        if (clockTypeFilter !== 'all') {
-          matchClockType = item.details && item.details.some(d => d.type === clockTypeFilter);
-        }
-        return matchBranch && matchDept && matchSection && matchCostCenter && matchClockType;
-      });
-
-      // Group counts by Branch ("下面是 branch")
-      const branchMap = {};
-      let grandTotal = 0;
-      filtered.forEach(item => {
-        const b = item.branch || 'HQ - KL Main';
-        branchMap[b] = (branchMap[b] || 0) + item.count;
-        grandTotal += item.count;
-      });
-
-      // Center number & label ("chart 是 3 clock transaction")
-      document.getElementById('summaryCenterTotal').innerText = grandTotal;
-      const centerBadge = document.getElementById('summaryCenterBadge');
-      if (centerBadge) centerBadge.innerText = 'Clock Transactions';
-
-      const colors = ['#7c3aed', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
-      const branchKeys = Object.keys(branchMap);
-
-      const chartItems = branchKeys.map((bName, idx) => {
-        const val = branchMap[bName];
-        const pct = grandTotal > 0 ? (val / grandTotal) * 100 : 0;
-        return {
-          name: bName,
-          val: val,
-          pct: pct,
-          color: colors[idx % colors.length]
-        };
-      });
-
-      // Render SVG Donut Slices
-      const svgGroup = document.getElementById('summaryDonutCircles');
-      if (svgGroup) {
-        const C = 439.82; // 2 * PI * 70
-        let currentOffset = 0;
-        let circlesHtml = '';
-
-        chartItems.forEach(item => {
-          const pctFraction = item.pct / 100;
-          const dashLen = pctFraction * C;
-          const dashOffset = -currentOffset;
-          currentOffset += dashLen;
-
-          circlesHtml += `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${item.color}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
-        });
-        svgGroup.innerHTML = circlesHtml;
-      }
-
-      // Render Legend Grid Rows (by Branch)
-      const grid = document.getElementById('summaryChartLegendGrid');
-      if (grid) {
-        let listHtml = '';
-        chartItems.forEach(item => {
-          listHtml += `
-            <div style="display: grid; grid-template-columns: 1fr 60px 75px; gap: 10px; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${item.color}; flex-shrink: 0;"></span>
-                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
-              </div>
-              <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right;">${item.val}</div>
-              <div style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary); text-align: right;">${item.pct.toFixed(1)}%</div>
-            </div>
-          `;
-        });
-        grid.innerHTML = listHtml;
-      }
-    }
-
-    function openDetailsModal(id) {
-      const item = masterClockingTableDataset.find(x => x.id === id);
-      if (!item) return;
-
-      document.getElementById('modalSectionTitle').innerText = item.section;
-      document.getElementById('modalSectionMeta').innerText = `Branch: ${item.branch} • Cost Centre: ${item.costCenter}`;
-
-      const details = item.details || [];
-      document.getElementById('modalRecordCount').innerText = `${details.length} Record${details.length === 1 ? '' : 's'}`;
-
-      const container = document.getElementById('detailsListContainer');
-      if (details.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;">
-            No detailed personnel records for this section.
-          </div>
-        `;
-      } else {
-        container.innerHTML = details.map(d => `
-          <div class="staff-clock-card" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 14px 16px; margin-bottom: 12px; display: flex; flex-direction: column; align-items: stretch; gap: 0;">
-            <!-- Top Row: Avatar, Name, Employee ID (below name per AGENTS.md), and Clock Type Badge -->
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="staff-avatar-bubble" style="width: 40px; height: 40px; border-radius: 12px; font-size: 15px; flex-shrink: 0;">
-                  <i class="fa-solid fa-user"></i>
-                </div>
-                <div>
-                  <div class="staff-name-text" style="font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${d.name}</div>
-                  <!-- REPOSITORY RULE (AGENTS.md): Employee ID placed directly BELOW name with leading # -->
-                  <div class="staff-emp-badge" style="margin: 2px 0 0 0;">${d.empNo}</div>
-                </div>
-              </div>
-              <div class="clock-type-tag ${d.typeClass || (d.type === 'Clock Out' ? 'type-out' : 'type-in')}" style="padding: 5px 12px; font-size: 11.5px; flex-shrink: 0;">
-                ${d.type}
-              </div>
-            </div>
-
-            <!-- Subtle Horizontal Divider -->
-            <div style="height: 1px; background: var(--border-subtle); margin: 10px 0 10px; opacity: 0.6;"></div>
-
-            <!-- Structured Metadata Grid: 2 Columns -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; font-size: 11.5px;">
-              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
-                <i class="fa-regular fa-calendar" style="color: var(--purple-primary); font-size: 11px; flex-shrink: 0;"></i>
-                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap;">${d.date || '20 Sep 2026'}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
-                <i class="fa-regular fa-clock" style="color: var(--purple-primary); font-size: 11px; flex-shrink: 0;"></i>
-                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap;">${d.startTime || '08:00 AM'} - ${d.endTime || '05:30 PM'}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
-                <i class="fa-solid fa-building" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
-                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.branch || item.branch}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
-                <i class="fa-solid fa-sitemap" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
-                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.dept || item.dept}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
-                <i class="fa-solid fa-layer-group" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
-                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.section || item.section}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); overflow: hidden;">
-                <i class="fa-solid fa-wallet" style="color: var(--purple-primary); font-size: 10.5px; flex-shrink: 0;"></i>
-                <span style="font-weight: 700; color: var(--text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${d.costCenter || item.costCenter}</span>
-              </div>
-            </div>
-
-            <!-- Footer Badge: Clock Mode -->
-            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-subtle); display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-              <span style="display: flex; align-items: center; gap: 6px; font-weight: 700;">
-                <i class="fa-solid fa-mobile-screen" style="font-size: 10px; color: var(--purple-primary);"></i>
-                <span>${d.mode}</span>
-              </span>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      const modal = document.getElementById('detailsModal');
-      if (!modal) return;
-      modal.style.display = 'flex';
-      setTimeout(() => { modal.classList.add('active'); }, 10);
-    }
-
-    function closeDetailsModal(e) {
-      if (e && e.target !== e.currentTarget) return;
-      closeDetailsModalDirect();
-    }
-
-    function closeDetailsModalDirect() {
-      const modal = document.getElementById('detailsModal');
-      if (!modal) return;
-      modal.classList.remove('active');
-      setTimeout(() => { modal.style.display = 'none'; }, 260);
-    }
-
-    function openFilterModal() {
-      const modal = document.getElementById('filterModal');
-      if (!modal) return;
-      modal.style.display = 'flex';
-      setTimeout(() => { modal.classList.add('active'); }, 10);
-    }
-
-    function closeFilterModal(e) {
-      if (e && e.target !== e.currentTarget) return;
-      const modal = document.getElementById('filterModal');
-      if (!modal) return;
-      modal.classList.remove('active');
-      setTimeout(() => { modal.style.display = 'none'; }, 260);
-    }
-
-    function resetFilterModal() {
-      if (document.getElementById('filterDateInput')) document.getElementById('filterDateInput').value = '2026-09-20';
-      if (document.getElementById('filterStartTimeInput')) document.getElementById('filterStartTimeInput').value = '00:00';
-      if (document.getElementById('filterEndTimeInput')) document.getElementById('filterEndTimeInput').value = '23:59';
-      if (document.getElementById('filterBranchSelect')) document.getElementById('filterBranchSelect').value = 'all';
-      if (document.getElementById('filterDeptSelect')) document.getElementById('filterDeptSelect').value = 'all';
-      if (document.getElementById('filterSectionSelect')) document.getElementById('filterSectionSelect').value = 'all';
-      if (document.getElementById('filterCostCenterSelect')) document.getElementById('filterCostCenterSelect').value = 'all';
-      if (document.getElementById('filterClockTypeSelect')) document.getElementById('filterClockTypeSelect').value = 'all';
-      updateFilterSummaryDisplay();
-      closeFilterModal();
-      renderTable();
-      if (currentActiveSection === 'chart') {
-        renderDonutChartData();
-      }
-      showToastNotification('Filters reset to default');
-    }
-
-    function applyFilterModal() {
-      updateFilterSummaryDisplay();
-      closeFilterModal();
-      renderTable();
-      if (currentActiveSection === 'chart') {
-        renderDonutChartData();
-      }
-      showToastNotification('Filter applied successfully');
-    }
-
-    function showToastNotification(msg) {
-      const toast = document.getElementById('feedbackToast');
-      const text = document.getElementById('toastMessage');
-      if (!toast || !text) return;
-      text.innerText = msg;
-      toast.classList.add('show');
-      setTimeout(() => { toast.classList.remove('show'); }, 2200);
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeFilterModal();
-        closeDetailsModalDirect();
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      updateFilterSummaryDisplay();
-      renderTable();
-    });
-  </script>
+  <script src="clocking-summary.js"></script>
 </body>
 </html>
