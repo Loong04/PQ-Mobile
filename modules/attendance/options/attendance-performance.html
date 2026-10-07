@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/history-cards.css">
+  <link rel="stylesheet" href="../../../css/attendance-history.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
@@ -110,46 +112,69 @@
     /* Donut Chart Styling */
     .chart-container {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-around;
-      gap: 16px;
-      padding: 10px 0 6px;
+      gap: 28px;
+      padding: 24px 0 2px;
     }
     .chart-svg-wrap {
       position: relative;
-      width: 140px;
-      height: 140px;
+      width: 230px;
+      height: 230px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+    .chart-svg-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
     .chart-center-text {
       position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
+      pointer-events: none;
     }
+    .chart-center-total { font-size: 46px; font-weight: 800; color: var(--text-primary); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+    .chart-center-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-top: 10px; }
+    .performance-chart-card { border-radius: 18px; padding: 20px; }
+    .performance-chart-title { font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0; }
 
     .chart-legend-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
     }
     .chart-legend-item {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      padding: 8px 12px;
-      border-radius: 14px;
+      justify-content: center;
+      min-width: 0;
+      min-height: 122px;
+      background: var(--performance-band-bg);
+      border: 1px solid transparent;
+      padding: 14px 4px;
+      border-radius: 10px;
+      font: inherit;
+      color: var(--text-primary);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
+    .chart-legend-item[data-band="Good"] { --performance-band-color: #199779; --performance-band-bg: rgba(25,151,121,.08); }
+    .chart-legend-item[data-band="Caution"] { --performance-band-color: #e2a316; --performance-band-bg: rgba(226,163,22,.08); }
+    .chart-legend-item[data-band="Poor"] { --performance-band-color: #e7587a; --performance-band-bg: rgba(231,88,122,.08); }
+    .performance-band-label { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; }
+    .performance-band-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--performance-band-color); }
+    .performance-band-count { font-size: 25px; font-weight: 800; line-height: 1.2; margin-top: 9px; font-variant-numeric: tabular-nums; }
+    .performance-band-unit { margin-top: 4px; color: var(--text-muted); font-size: 10.5px; font-weight: 500; }
+    .performance-band-percent { margin-top: 9px; color: var(--text-secondary); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .chart-legend-item:hover { border-color: var(--performance-band-color); }
+    .chart-legend-item:focus-visible { outline: 2px solid var(--performance-band-color); outline-offset: 3px; }
     .chart-legend-item:active { transform: scale(0.97); }
+    @media (prefers-reduced-motion: reduce) { .chart-legend-item { transition: none; } }
 
     /* Standardized Bottom Sheet Modal Specification */
     .modal-overlay {
@@ -381,120 +406,55 @@
       box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
     }
 
-    /* History Cards matching clocking-history.html design specification */
-    .history-card-item {
-      background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(52,211,153,0.03) 100%);
-      border: 1px solid rgba(16,185,129,0.3);
+    /* Reuse the shared History Card container and header layout. */
+    #employeePerformanceList .history-card-item {
       border-radius: 18px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      display: flex !important;
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      box-shadow: 0 4px 12px rgba(16,185,129,0.05);
-      transition: transform 0.15s ease;
-      cursor: pointer;
-      text-decoration: none;
       width: 100%;
-      box-sizing: border-box;
     }
-    .history-card-item:active { transform: scale(0.98); }
-
-    html[data-theme="dark"] .history-card-item,
-    [data-theme="dark"] .history-card-item {
-      background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(52,211,153,0.05) 100%);
-      border-color: rgba(16,185,129,0.22);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    #employeePerformanceList .history-card-item[data-band="Caution"] {
+      --history-rgb: 245, 158, 11;
+      --history-accent: #f59e0b;
+      --history-ink: #d97706;
     }
-    
-    .history-card-item.good-theme {
-      background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(52,211,153,0.03) 100%);
-      border: 1px solid rgba(16,185,129,0.3);
+    #employeePerformanceList .history-card-item[data-band="Poor"] {
+      --history-rgb: 239, 68, 68;
+      --history-accent: #ef4444;
+      --history-ink: #dc2626;
     }
-    html[data-theme="dark"] .history-card-item.good-theme,
-    [data-theme="dark"] .history-card-item.good-theme {
-      background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(52,211,153,0.05) 100%);
-      border-color: rgba(16,185,129,0.22);
-    }
-
-    .history-card-item.caution-theme {
-      background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(251,191,36,0.03) 100%);
-      border: 1px solid rgba(245,158,11,0.3);
-    }
-    html[data-theme="dark"] .history-card-item.caution-theme,
-    [data-theme="dark"] .history-card-item.caution-theme {
-      background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,191,36,0.05) 100%);
-      border-color: rgba(245,158,11,0.25);
-    }
-
-    .history-card-item.poor-theme {
-      background: linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(248,113,113,0.03) 100%);
-      border: 1px solid rgba(239,68,68,0.3);
-    }
-    html[data-theme="dark"] .history-card-item.poor-theme,
-    [data-theme="dark"] .history-card-item.poor-theme {
-      background: linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(248,113,113,0.05) 100%);
-      border-color: rgba(239,68,68,0.25);
-    }
-
-
-
-    /* Right Status Pill Badges for Good, Caution, Poor */
-    .perf-status-pill {
+    [data-theme="dark"] #employeePerformanceList .history-card-item[data-band="Caution"] { --history-ink: #fbbf24; }
+    [data-theme="dark"] #employeePerformanceList .history-card-item[data-band="Poor"] { --history-ink: #f87171; }
+    .performance-employee-id {
+      margin-top: 2px;
+      margin-bottom: 4px;
       font-size: 11.5px;
-      font-weight: 800;
-      padding: 5px 12px;
-      border-radius: 12px;
-      display: inline-flex;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.8;
+      font-family: monospace, sans-serif;
+    }
+    .performance-card-actions {
+      display: flex;
       align-items: center;
-      gap: 6px;
-      letter-spacing: 0.3px;
+      gap: 8px;
+      flex-shrink: 0;
     }
-    
-    .perf-status-pill.good-pill {
-      background: rgba(16, 185, 129, 0.14);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      color: #059669;
+    .performance-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      padding: 0;
     }
-    html[data-theme="dark"] .perf-status-pill.good-pill,
-    [data-theme="dark"] .perf-status-pill.good-pill {
-      background: rgba(16, 185, 129, 0.22);
-      border-color: rgba(52, 211, 153, 0.4);
-      color: #34d399;
+    .performance-detail-row > span { color: var(--text-muted); font-weight: 600; }
+    .performance-detail-row > strong {
+      min-width: 0;
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+      overflow-wrap: anywhere;
     }
-
-    .perf-status-pill.caution-pill {
-      background: rgba(245, 158, 11, 0.14);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      color: #d97706;
-    }
-    html[data-theme="dark"] .perf-status-pill.caution-pill,
-    [data-theme="dark"] .perf-status-pill.caution-pill {
-      background: rgba(245, 158, 11, 0.22);
-      border-color: rgba(251, 191, 36, 0.4);
-      color: #fbbf24;
-    }
-
-    .perf-status-pill.poor-pill {
-      background: rgba(239, 68, 68, 0.14);
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      color: #dc2626;
-    }
-    html[data-theme="dark"] .perf-status-pill.poor-pill,
-    [data-theme="dark"] .perf-status-pill.poor-pill {
-      background: rgba(239, 68, 68, 0.22);
-      border-color: rgba(248, 113, 113, 0.4);
-      color: #f87171;
-    }
-
-    .dot-good { width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; }
-    .dot-caution { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block; }
-    .dot-poor { width: 8px; height: 8px; border-radius: 50%; background: #f43f5e; display: inline-block; }
-    .dot-good-dark { width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block; box-shadow: 0 0 8px rgba(52, 211, 153, 0.8); }
-    .dot-caution-dark { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; display: inline-block; box-shadow: 0 0 8px rgba(251, 191, 36, 0.8); }
-    .dot-poor-dark { width: 8px; height: 8px; border-radius: 50%; background: #fb7185; display: inline-block; box-shadow: 0 0 8px rgba(251, 113, 133, 0.8); }
   </style>
 </head>
 <body>
@@ -518,7 +478,7 @@
     </div>
 
     <!-- Main Scrollable Content -->
-    <div class="main-content">
+    <div class="main-content attendance-history-page">
       
       <!-- Standardized Executive Filter Summary Bar -->
       <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter records">
@@ -536,108 +496,59 @@
       </div>
 
       <!-- Donut Chart & Distribution Breakdown Card -->
-      <div class="card">
-        <div style="margin-bottom: 12px;">
-          <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Attendance Performance</h3>
-          <p style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Distribution by Attendance performance bands</p>
+      <div class="card performance-chart-card">
+        <div>
+          <h3 class="performance-chart-title">Attendance performance</h3>
         </div>
 
         <!-- Donut Chart & Legend Component -->
         <div class="chart-container">
           <!-- Donut SVG -->
           <div class="chart-svg-wrap">
-            <svg width="130" height="130" viewBox="0 0 100 100">
-              <!-- Outer track background circle -->
-              <circle cx="50" cy="50" r="38" fill="none" stroke="var(--bg-input)" stroke-width="14" />
-              
-              <!-- Segment 1: Good (Green) - 38.38% -> Dash 91.6, Gap 147.2 -->
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#10b981" stroke-width="14"
-                      stroke-dasharray="91.6 147.2" stroke-dashoffset="0"
-                      style="transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.5s ease;" />
-              
-              <!-- Segment 2: Caution (Amber) - 28.52% -> Dash 68.1, Gap 170.7 -->
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" stroke-width="14"
-                      stroke-dasharray="68.1 170.7" stroke-dashoffset="-91.6"
-                      style="transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.5s ease;" />
-              
-              <!-- Segment 3: Poor (Red) - 33.09% -> Dash 79.0, Gap 159.8 -->
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#f43f5e" stroke-width="14"
-                      stroke-dasharray="79.0 159.8" stroke-dashoffset="-159.7"
-                      style="transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.5s ease;" />
+            <svg viewBox="0 0 100 100" role="img" aria-label="Attendance performance: 284 staff; Good 109, Caution 81, Poor 94">
+              <circle cx="50" cy="50" r="44" fill="none" stroke="var(--border-subtle)" stroke-width="12" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="#199779" stroke-width="12" pathLength="100" stroke-dasharray="38.38028 61.61972" stroke-dashoffset="0" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="#e2a316" stroke-width="12" pathLength="100" stroke-dasharray="28.52113 71.47887" stroke-dashoffset="-38.38028" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="#e7587a" stroke-width="12" pathLength="100" stroke-dasharray="33.09859 66.90141" stroke-dashoffset="-66.90141" />
             </svg>
 
             <div class="chart-center-text">
-              <div style="font-size: 20px; font-weight: 900; color: var(--text-primary); line-height: 1;">284</div>
-              <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 2px;">Staff</div>
+              <strong class="chart-center-total">284</strong>
+              <span class="chart-center-label">Total staff</span>
             </div>
           </div>
 
           <!-- Interactive Legend Items -->
           <div class="chart-legend-list">
-            <!-- Good -->
-            <div class="chart-legend-item" onclick="setBandFilter('Good', document.getElementById('pill-good'))">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="dot-good"></span>
-                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Good</span>
-              </div>
-              <div style="text-align: right;">
-                <span style="font-size: 12.5px; font-weight: 900; color: #10b981;">38.38%</span>
-                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">109 staff</div>
-              </div>
-            </div>
-
-            <!-- Caution -->
-            <div class="chart-legend-item" onclick="setBandFilter('Caution', document.getElementById('pill-caution'))">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="dot-caution"></span>
-                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Caution</span>
-              </div>
-              <div style="text-align: right;">
-                <span style="font-size: 12.5px; font-weight: 900; color: #f59e0b;">28.52%</span>
-                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">81 staff</div>
-              </div>
-            </div>
-
-            <!-- Poor -->
-            <div class="chart-legend-item" onclick="setBandFilter('Poor', document.getElementById('pill-poor'))">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="dot-poor"></span>
-                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Poor</span>
-              </div>
-              <div style="text-align: right;">
-                <span style="font-size: 12.5px; font-weight: 900; color: #f43f5e;">33.09%</span>
-                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">94 staff</div>
-              </div>
-            </div>
+            <button type="button" class="chart-legend-item" data-band="Good" onclick="setBandFilter('Good', document.getElementById('pill-good'))">
+              <span class="performance-band-label"><i class="performance-band-dot" aria-hidden="true"></i>Good</span>
+              <strong class="performance-band-count">109</strong><span class="performance-band-unit">staff</span><span class="performance-band-percent">38.38%</span>
+            </button>
+            <button type="button" class="chart-legend-item" data-band="Caution" onclick="setBandFilter('Caution', document.getElementById('pill-caution'))">
+              <span class="performance-band-label"><i class="performance-band-dot" aria-hidden="true"></i>Caution</span>
+              <strong class="performance-band-count">81</strong><span class="performance-band-unit">staff</span><span class="performance-band-percent">28.52%</span>
+            </button>
+            <button type="button" class="chart-legend-item" data-band="Poor" onclick="setBandFilter('Poor', document.getElementById('pill-poor'))">
+              <span class="performance-band-label"><i class="performance-band-dot" aria-hidden="true"></i>Poor</span>
+              <strong class="performance-band-count">94</strong><span class="performance-band-unit">staff</span><span class="performance-band-percent">33.10%</span>
+            </button>
           </div>
         </div>
-      </div>
-
-      <!-- Employee Performance Section Header -->
-      <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; padding: 0 4px;">
-        <h3 style="font-size: 13px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Employee Directory</h3>
       </div>
 
       <!-- Performance Band Quick Filter Pills -->
       <div class="segmented-tab-container">
         <button id="pill-all" type="button" class="filter-pill active" onclick="setBandFilter('all', this)">
           <span>All Bands</span>
-          <span style="font-size: 10.5px; opacity: 0.85;">(284)</span>
         </button>
         <button id="pill-good" type="button" class="filter-pill" onclick="setBandFilter('Good', this)">
-          <span class="dot-good"></span>
           <span>Good</span>
-          <span style="font-size: 10.5px; opacity: 0.85;">(109)</span>
         </button>
         <button id="pill-caution" type="button" class="filter-pill" onclick="setBandFilter('Caution', this)">
-          <span class="dot-caution"></span>
           <span>Caution</span>
-          <span style="font-size: 10.5px; opacity: 0.85;">(81)</span>
         </button>
         <button id="pill-poor" type="button" class="filter-pill" onclick="setBandFilter('Poor', this)">
-          <span class="dot-poor"></span>
           <span>Poor</span>
-          <span style="font-size: 10.5px; opacity: 0.85;">(94)</span>
         </button>
       </div>
 
@@ -646,181 +557,241 @@
 
         <!-- 1. Aaron kwok wei yik (#1231234) -> Caution (Amber Theme) -->
         <div class="emp-card history-card-item caution-theme" data-band="Caution" data-name="Aaron kwok wei yik" data-id="1231234" data-dept="Operations" data-cc="CC-101">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">Aaron kwok wei yik</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#1231234</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Operations • CC-101 • TIMES SQUARE</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill caution-pill">
-              <span class="dot-caution-dark"></span> Caution
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">Aaron kwok wei yik</div>
+              </div>
+              <div class="performance-employee-id">#1231234</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-clock" aria-hidden="true"></i>Caution</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Operations</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-101</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>TIMES SQUARE</strong></div>
           </div>
         </div>
 
         <!-- 2. ABDUL AZIM BIN ABDUL GHANI (#004188) -> Poor (Red Theme) -->
         <div class="emp-card history-card-item poor-theme" data-band="Poor" data-name="ABDUL AZIM BIN ABDUL GHANI" data-id="004188" data-dept="Quality Control" data-cc="CC-102">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">ABDUL AZIM BIN ABDUL GHANI</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004188</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Quality Control • CC-102 • HQ KL</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill poor-pill">
-              <span class="dot-poor-dark"></span> Poor
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">ABDUL AZIM BIN ABDUL GHANI</div>
+              </div>
+              <div class="performance-employee-id">#004188</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Poor</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Quality Control</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-102</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>HQ KL</strong></div>
           </div>
         </div>
 
         <!-- 3. ABDUL KADIR JALANI BIN JAAFAR (#004189) -> Good (Green Theme) -->
         <div class="emp-card history-card-item good-theme" data-band="Good" data-name="ABDUL KADIR JALANI BIN JAAFAR" data-id="004189" data-dept="Production Line A" data-cc="CC-202">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">ABDUL KADIR JALANI BIN JAAFAR</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004189</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Production Line A • CC-202 • SUNWAY</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill good-pill">
-              <span class="dot-good-dark"></span> Good
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">ABDUL KADIR JALANI BIN JAAFAR</div>
+              </div>
+              <div class="performance-employee-id">#004189</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-check" aria-hidden="true"></i>Good</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Production Line A</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-202</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>SUNWAY</strong></div>
           </div>
         </div>
 
         <!-- 4. AHMAD AIMAN FIRDAUS BIN AHMAD RAFY (#004190) -> Good (Green Theme) -->
         <div class="emp-card history-card-item good-theme" data-band="Good" data-name="AHMAD AIMAN FIRDAUS BIN AHMAD RAFY" data-id="004190" data-dept="Logistics" data-cc="CC-404">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">AHMAD AIMAN FIRDAUS BIN AHMAD RAFY</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004190</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Logistics • CC-404 • MID VALLEY</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill good-pill">
-              <span class="dot-good-dark"></span> Good
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">AHMAD AIMAN FIRDAUS BIN AHMAD RAFY</div>
+              </div>
+              <div class="performance-employee-id">#004190</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-check" aria-hidden="true"></i>Good</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Logistics</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-404</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>MID VALLEY</strong></div>
           </div>
         </div>
 
         <!-- 5. AHMAD AISAMUDDIN SYAFIQ BIN MOHD AFANDI (#004191) -> Poor (Red Theme) -->
         <div class="emp-card history-card-item poor-theme" data-band="Poor" data-name="AHMAD AISAMUDDIN SYAFIQ BIN MOHD AFANDI" data-id="004191" data-dept="Operations" data-cc="CC-101">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">AHMAD AISAMUDDIN SYAFIQ BIN MOHD AFANDI</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004191</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Operations • CC-101 • PENANG</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill poor-pill">
-              <span class="dot-poor-dark"></span> Poor
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">AHMAD AISAMUDDIN SYAFIQ BIN MOHD AFANDI</div>
+              </div>
+              <div class="performance-employee-id">#004191</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Poor</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Operations</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-101</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>PENANG</strong></div>
           </div>
         </div>
 
         <!-- 6. Ahmad ali (#004192) -> Good (Green Theme) -->
         <div class="emp-card history-card-item good-theme" data-band="Good" data-name="Ahmad ali" data-id="004192" data-dept="Engineering" data-cc="CC-101">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">Ahmad ali</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004192</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Engineering &amp; IT • CC-101 • HQ KL</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill good-pill">
-              <span class="dot-good-dark"></span> Good
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">Ahmad ali</div>
+              </div>
+              <div class="performance-employee-id">#004192</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-check" aria-hidden="true"></i>Good</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Engineering &amp; IT</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-101</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>HQ KL</strong></div>
           </div>
         </div>
 
         <!-- 7. Ahmad bin ali (#004193) -> Caution (Amber Theme) -->
         <div class="emp-card history-card-item caution-theme" data-band="Caution" data-name="Ahmad bin ali" data-id="004193" data-dept="Logistics" data-cc="CC-404">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">Ahmad bin ali</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004193</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Warehouse • CC-404 • JOHOR BAHRU</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill caution-pill">
-              <span class="dot-caution-dark"></span> Caution
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">Ahmad bin ali</div>
+              </div>
+              <div class="performance-employee-id">#004193</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-clock" aria-hidden="true"></i>Caution</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Warehouse</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-404</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>JOHOR BAHRU</strong></div>
           </div>
         </div>
 
         <!-- 8. Ahmad bin musa (#004194) -> Poor (Red Theme) -->
         <div class="emp-card history-card-item poor-theme" data-band="Poor" data-name="Ahmad bin musa" data-id="004194" data-dept="Production Line A" data-cc="CC-202">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">Ahmad bin musa</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004194</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Assembly Line • CC-202 • SUNWAY</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill poor-pill">
-              <span class="dot-poor-dark"></span> Poor
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">Ahmad bin musa</div>
+              </div>
+              <div class="performance-employee-id">#004194</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Poor</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Assembly Line</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-202</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>SUNWAY</strong></div>
           </div>
         </div>
 
         <!-- 9. Ahmad bin sulong (#004195) -> Caution (Amber Theme) -->
         <div class="emp-card history-card-item caution-theme" data-band="Caution" data-name="Ahmad bin sulong" data-id="004195" data-dept="Operations" data-cc="CC-101">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">Ahmad bin sulong</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004195</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Maintenance • CC-101 • MID VALLEY</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill caution-pill">
-              <span class="dot-caution-dark"></span> Caution
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">Ahmad bin sulong</div>
+              </div>
+              <div class="performance-employee-id">#004195</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-clock" aria-hidden="true"></i>Caution</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Maintenance</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-101</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>MID VALLEY</strong></div>
           </div>
         </div>
 
         <!-- 10. AHMAD NIZAMUDDIN BIN MUHAMAD (#004196) -> Poor (Red Theme) -->
         <div class="emp-card history-card-item poor-theme" data-band="Poor" data-name="AHMAD NIZAMUDDIN BIN MUHAMAD" data-id="004196" data-dept="Production Line A" data-cc="CC-202">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">AHMAD NIZAMUDDIN BIN MUHAMAD</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004196</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Packaging • CC-202 • TIMES SQUARE</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill poor-pill">
-              <span class="dot-poor-dark"></span> Poor
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">AHMAD NIZAMUDDIN BIN MUHAMAD</div>
+              </div>
+              <div class="performance-employee-id">#004196</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Poor</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Packaging</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-202</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>TIMES SQUARE</strong></div>
           </div>
         </div>
 
         <!-- 11. AHMAD RAFY BIN ZULKIFLE (#004197) -> Good (Green Theme) -->
         <div class="emp-card history-card-item good-theme" data-band="Good" data-name="AHMAD RAFY BIN ZULKIFLE" data-id="004197" data-dept="Quality Control" data-cc="CC-102">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">AHMAD RAFY BIN ZULKIFLE</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004197</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Quality Control • CC-102 • HQ KL</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill good-pill">
-              <span class="dot-good-dark"></span> Good
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">AHMAD RAFY BIN ZULKIFLE</div>
+              </div>
+              <div class="performance-employee-id">#004197</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-check" aria-hidden="true"></i>Good</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Quality Control</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-102</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>HQ KL</strong></div>
           </div>
         </div>
 
         <!-- 12. Afifah Nasir (#004177) -> Good (Green Theme) -->
         <div class="emp-card history-card-item good-theme" data-band="Good" data-name="Afifah Nasir" data-id="004177" data-dept="Quality Control" data-cc="CC-102">
-          <div style="flex: 1; min-width: 0; padding-right: 12px;">
-            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.35;">Afifah Nasir</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-family: monospace, sans-serif; opacity: 0.85; margin-top: 2px; margin-bottom: 3px;">#004177</div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); opacity: 0.85; line-height: 1.3;">Quality Control • CC-102 • TIMES SQUARE</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <div class="perf-status-pill good-pill">
-              <span class="dot-good-dark"></span> Good
+          <div class="history-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title-row">
+                <div class="history-card-title history-time-row">Afifah Nasir</div>
+              </div>
+              <div class="performance-employee-id">#004177</div>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 13px; color: var(--text-muted); opacity: 0.4;"></i>
+            <div class="performance-card-actions">
+              <span class="card-status-badge"><i class="fa-solid fa-check" aria-hidden="true"></i>Good</span>
+            </div>
+          </div>
+          <div class="history-card-details">
+            <div class="performance-detail-row"><span>Department</span><strong>Quality Control</strong></div>
+            <div class="performance-detail-row"><span>Cost Centre</span><strong>CC-102</strong></div>
+            <div class="performance-detail-row"><span>Branch</span><strong>TIMES SQUARE</strong></div>
           </div>
         </div>
 
@@ -896,7 +867,7 @@
                 <option value="all">All API Bands</option>
                 <option value="Good">Good (38.38%)</option>
                 <option value="Caution">Caution (28.52%)</option>
-                <option value="Poor">Poor (33.09%)</option>
+                <option value="Poor">Poor (33.10%)</option>
               </select>
               <div class="select-chevron-icon">
                 <i class="fa-solid fa-chevron-down"></i>
@@ -1020,7 +991,7 @@
         const matchesCc = (ccSelect === 'all' || cc === ccSelect);
 
         if (matchesQuery && matchesBand && matchesDept && matchesCc) {
-          card.style.display = 'flex';
+          card.style.display = '';
           visibleCount++;
         } else {
           card.style.display = 'none';

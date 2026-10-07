@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let editingGuest = null;
   let editingAttendee = null;
   let attachments = [];
+  let historyRecordId = null;
   const today = new Date();
   $('visitDate').value = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
 
@@ -493,7 +494,21 @@ document.addEventListener('DOMContentLoaded', () => {
       form.querySelector('[data-file-picker="visitFiles"]').focus();
       return;
     }
-    // This Admin prototype has no guest-visit submission API.
-    feedback('Guest visit ready for submission.');
+    try {
+      const location = $('visitLocation').selectedOptions[0].textContent;
+      const requests = [...form.querySelectorAll('[data-other-request]:checked')].map(field => field.closest('label').querySelector('span').textContent);
+      const record = window.WorkplaceHistoryStore.save({
+        id: historyRecordId, kind: 'guest-visit', title: location, date: $('visitDate').value,
+        fields: [['Visit Date', $('visitDate').value], ['Time', $('visitStartTime').value + ' – ' + $('visitEndTime').value],
+          ['Total Guest', $('visitTotalGuest').value], ['Location', location], ['Meal', $('visitMeal').checked ? 'Yes' : 'No'],
+          ...guests.map((guest, index) => ['Guest ' + (index + 1), `${guest.name} • ${guest.company} • ${guest.relation} • ${guest.position}`]),
+          ...attendeeIds.map((id, index) => ['Attendee ' + (index + 1), `${employees[id].name}\n#${id}\n${employees[id].department} • ${employees[id].position}`]),
+          ['Other Request', requests.join(', ') || 'None'], ['Attachments', attachments.map(file => file.name).join(', ') || 'None']]
+      });
+      historyRecordId = record.id;
+      feedback('Guest visit saved to History on this device.');
+    } catch {
+      feedback('Unable to save this visit to History. Please try again.', true);
+    }
   });
 });

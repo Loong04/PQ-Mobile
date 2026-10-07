@@ -545,7 +545,8 @@
           </div>
           <label class="verify-all-wrap">
             <input type="checkbox" class="staff-verify-checkbox" id="staffVerifyAll" onchange="toggleVerifyAll()">
-            <span>Verify All</span>
+            <span class="staff-verify-box staff-verify-all-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+            <span class="staff-verify-label" id="staffVerifyAllText">Verify All</span>
           </label>
         </div>
 
@@ -559,12 +560,22 @@
     </div>
 
     <div class="modal-overlay popout-mode" id="detailsModal" onclick="closeDetailsModal(event)">
-      <section class="popout-dialog-card staff-dialog" role="dialog" aria-modal="true" aria-labelledby="staffDetailsName" onclick="event.stopPropagation()">
+      <section class="popout-dialog-card staff-dialog" role="dialog" aria-modal="true" aria-labelledby="staffDetailsTitle" onclick="event.stopPropagation()">
         <div class="popout-hdr-colored">
-          <div class="staff-dialog-identity"><h2 id="staffDetailsName" class="popout-hdr-title"></h2><span id="staffDetailsEmployeeId" class="staff-hdr-empno"></span></div>
+          <h2 id="staffDetailsTitle" class="popout-hdr-title">Attendance Details</h2>
           <button type="button" class="popout-close-btn" onclick="closeDetailsModalDirect()" aria-label="Close attendance details">&times;</button>
         </div>
-        <div class="popout-body-content"><table class="staff-details-table"><tbody id="detailsModalTableBody"></tbody></table></div>
+        <div class="popout-body-content detail-popout-body">
+          <table class="staff-details-table detail-popout-table record-detail-table"><tbody id="detailsModalTableBody"></tbody></table>
+          <div class="attendance-detail-section-title">Leave Info</div>
+          <table id="staffLeaveInfoTable" class="attendance-detail-subtable detail-popout-table record-detail-table" hidden>
+            <tbody><tr><td class="detail-popout-label">Description</td><td class="detail-popout-value" id="staffLeaveInfoValue">-</td></tr></tbody>
+          </table>
+          <div class="attendance-detail-section-title">Overtime Info</div>
+          <table id="staffOvertimeInfoTable" class="attendance-detail-subtable detail-popout-table record-detail-table" hidden>
+            <tbody><tr><td class="detail-popout-label">Description</td><td class="detail-popout-value" id="staffOvertimeInfoValue">-</td></tr></tbody>
+          </table>
+        </div>
       </section>
     </div>
 
@@ -903,6 +914,7 @@
       verifyAll.checked = filtered.length > 0 && verifiedCount === filtered.length;
       verifyAll.indeterminate = false;
       verifyAll.disabled = !filtered.length;
+      document.getElementById('staffVerifyAllText').textContent = verifyAll.checked ? 'Verified All' : 'Verify All';
       syncStaffAttendanceUpdate();
 
       const container = document.getElementById('staffCardsContainer');
@@ -923,7 +935,7 @@
         const card = document.createElement('article');
         card.className = `history-card-item staff-card-item${hasException ? ' exception-theme' : ''}`;
         card.dataset.empNo = item.cleanEmpNo;
-        card.innerHTML = '<div class="attendance-record-top"><button type="button" class="staff-card-details-trigger"><span class="staff-hdr-name"></span><span class="staff-hdr-empno"></span><span class="history-time-row"></span><span class="attendance-record-reference"></span></button><div class="attendance-record-controls"><label class="staff-verify-control"><input type="checkbox" class="staff-verify-checkbox"><span>Verify</span></label><span class="attendance-exception-status"></span></div></div><div class="attendance-record-summary-panel"></div><div class="staff-card-actions"><button type="button" class="btn-action-feedback">Feedback</button><button type="button" class="btn-action-follow-up">Follow Up</button></div>';
+        card.innerHTML = '<div class="attendance-record-top"><button type="button" class="staff-card-details-trigger"><span class="staff-hdr-name"></span><span class="staff-hdr-empno"></span><span class="history-time-row"></span><span class="attendance-record-reference"></span></button><div class="attendance-record-controls"><label class="staff-verify-control"><input type="checkbox" class="staff-verify-checkbox"><span class="staff-verify-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span class="staff-verify-label">Verify</span></label><span class="attendance-exception-status"></span></div></div><div class="attendance-record-summary-panel"></div><div class="staff-card-actions"><button type="button" class="btn-action-feedback">Feedback</button><button type="button" class="btn-action-follow-up">Follow Up</button></div>';
         card.querySelector('.staff-hdr-name').textContent = item.name;
         card.querySelector('.staff-hdr-empno').textContent = `#${item.empNo.replace(/^#/, '')}`;
         card.querySelector('.history-time-row').textContent = `Shift: ${item.shift}`;
@@ -933,6 +945,7 @@
         details.addEventListener('click', () => openDetailsModal(item.cleanEmpNo));
         const verify = card.querySelector('.staff-verify-checkbox');
         verify.checked = item.verified;
+        card.querySelector('.staff-verify-label').textContent = item.verified ? 'Verified' : 'Verify';
         verify.setAttribute('aria-label', `Verify attendance for ${item.name}, ${item.date}`);
         verify.addEventListener('change', () => toggleSingleVerify(item.cleanEmpNo));
         const status = card.querySelector('.attendance-exception-status');
@@ -979,10 +992,10 @@
       const item = masterStaffDataset.find(x => x.cleanEmpNo === cleanEmpNo);
       if (!item) return;
       attendanceDialogReturnFocus = document.activeElement;
-      document.getElementById('staffDetailsName').textContent = item.name;
-      document.getElementById('staffDetailsEmployeeId').textContent = item.empNo;
 
       const rows = [
+        { key: 'Employee #', val: `#${item.empNo.replace(/^#/, '')}` },
+        { key: 'Name', val: item.name },
         { key: 'Date', val: item.date },
         { key: 'Shift', val: item.shift },
         { key: 'Day Type', val: item.dayType },
@@ -997,20 +1010,28 @@
         { key: 'Approved OT Hours', val: item.approvedOt },
         { key: 'Unapproved OT Hours', val: item.unapprovedOt },
         { key: 'Exception', val: item.exception },
-        { key: 'Document #', val: item.docNo },
-        { key: 'Leave Info', val: item.leaveInfo },
-        { key: 'Overtime Info', val: item.otInfo }
+        { key: 'Document #', val: item.docNo }
       ];
 
       const tbody = document.getElementById('detailsModalTableBody');
       if (tbody) {
         tbody.innerHTML = rows.map(r => `
-          <tr style="border-bottom: 1px solid var(--border-subtle);">
-            <td style="padding: 10px 8px; font-weight: 700; color: var(--text-muted); width: 42%; text-transform: capitalize;">${r.key}</td>
-            <td style="padding: 10px 8px; font-weight: 800; color: var(--text-primary); text-align: left;">${r.val}</td>
+          <tr>
+            <td class="detail-popout-label">${r.key}</td>
+            <td class="detail-popout-value">${r.val}</td>
           </tr>
         `).join('');
       }
+
+      const leaveInfo = String(item.leaveInfo || '').trim();
+      const hasLeaveInfo = Boolean(leaveInfo && leaveInfo !== '-');
+      document.getElementById('staffLeaveInfoValue').textContent = hasLeaveInfo ? leaveInfo : '-';
+      document.getElementById('staffLeaveInfoTable').hidden = !hasLeaveInfo;
+
+      const overtimeInfo = String(item.otInfo || '').trim();
+      const hasOvertimeInfo = Boolean(overtimeInfo && overtimeInfo !== '-');
+      document.getElementById('staffOvertimeInfoValue').textContent = hasOvertimeInfo ? overtimeInfo : '-';
+      document.getElementById('staffOvertimeInfoTable').hidden = !hasOvertimeInfo;
 
       const modal = document.getElementById('detailsModal');
       if (modal) {

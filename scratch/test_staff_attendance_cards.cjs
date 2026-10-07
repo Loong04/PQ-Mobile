@@ -210,8 +210,8 @@ const puppeteer = require('puppeteer');
         assert.equal(await page.evaluate(() => sessionStorage.getItem(staffFeedbackStateKey)), null, 'Return state is consumed after browser Back');
         await page.click('.staff-card-details-trigger');
         await page.waitForSelector('#detailsModal', { visible: true });
-        assert.equal(await page.$eval('#staffDetailsName', node => node.textContent), 'Aqilah antasha');
-        assert.match(await page.$eval('#detailsModalTableBody', node => node.textContent), /20 Sep 2026/);
+        assert.equal(await page.$eval('#staffDetailsTitle', node => node.textContent), 'Attendance Details');
+        assert.match(await page.$eval('#detailsModalTableBody', node => node.textContent), /#000008[\s\S]*Aqilah antasha[\s\S]*20 Sep 2026/);
         await page.keyboard.press('Escape');
         await page.waitForSelector('#detailsModal', { hidden: true });
         await page.evaluate(() => {

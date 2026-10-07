@@ -184,7 +184,7 @@ const draftKey = 'peoplehcm:guest-visit:draft:v1';
       await tab('other');
       assert.equal(await page.$eval('#visitRequestRooms', n => n.checked), true);
       await click('#visitSubmit');
-      assert.match(await page.$eval('#visitFeedback', n => n.textContent), /ready for submission/i);
+      assert.match(await page.$eval('#visitFeedback', n => n.textContent), /saved to History/i);
       await tab('general');
       await (await page.$('#visitFiles')).uploadFile(path.resolve(__dirname, '../package.json'));
       assert.match(await page.$eval('#visitAttachments', n => n.textContent), /package.json/);

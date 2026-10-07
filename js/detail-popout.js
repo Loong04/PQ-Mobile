@@ -31,6 +31,19 @@
     return node;
   }
 
+  function normalizeCloseButton(close) {
+    if (!close) return;
+    addClass(close, 'detail-popout-close');
+    close.classList.remove('detail-popout-decoration');
+    if (!close.getAttribute('aria-label')) close.setAttribute('aria-label', 'Close details');
+    if (!close.querySelector('.fa-xmark')) {
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid fa-xmark';
+      icon.setAttribute('aria-hidden', 'true');
+      close.append(icon);
+    }
+  }
+
   function normalizeHeader(header, title) {
     addClass(header, 'detail-popout-header');
     clear(header, ['background', 'background-image', 'background-color', 'color']);
@@ -38,11 +51,11 @@
     for (let node = title.parentElement; node && node !== header; node = node.parentElement) addClass(node, 'detail-popout-header-contents');
     const buttons = [...header.querySelectorAll('button')];
     const close = buttons.find(button => /close/i.test(button.getAttribute('aria-label') || button.title || '')) || buttons.at(-1);
-    addClass(close, 'detail-popout-close');
-    if (close && !close.getAttribute('aria-label')) close.setAttribute('aria-label', 'Close details');
+    normalizeCloseButton(close);
     for (const button of buttons) if (button !== close) addClass(button, 'detail-popout-back');
     for (const node of header.querySelectorAll('[class*="handle"], [class*="-icon"]')) addClass(node, 'detail-popout-decoration');
     for (const node of header.children) {
+      if (node === close) continue;
       if (!node.textContent.trim() && !node.querySelector('button') && !node.contains(title)) addClass(node, 'detail-popout-decoration');
     }
     for (const node of header.querySelectorAll('p,small,[id$="Sub"],[id$="Subtitle"],#detailEmpNo')) addClass(node, 'detail-popout-subtitle');
@@ -199,6 +212,7 @@
   }
 
   function init() {
+    for (const close of document.querySelectorAll('.detail-popout-close')) normalizeCloseButton(close);
     for (const [id, selector, closeFunction] of definitions) {
       const overlay = document.getElementById(id);
       if (!overlay) continue;

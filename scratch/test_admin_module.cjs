@@ -22,13 +22,13 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$eval('title', node => node.textContent.trim()), 'PeopleHCM - Workplace');
       assert.equal(await page.$eval('.admin-heading h1', node => node.textContent.trim()), 'Workplace');
       assert.equal((await page.$eval('body', node => node.innerText)).includes('Admin'), false);
-      assert.deepEqual(await page.$$eval('.admin-option-title', nodes => nodes.map(n => n.textContent)), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Policy / SOP']);
+      assert.deepEqual(await page.$$eval('.admin-option-title', nodes => nodes.map(n => n.textContent)), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Policy / SOP', 'History']);
       const links = await page.$$eval('.admin-option', nodes => nodes.map(n => n.href));
       for (const link of links) {
         await page.goto(link, { waitUntil: 'load' });
         assert.equal(await page.$eval('html', n => n.dataset.theme), theme);
         assert.equal((await page.$eval('body', node => node.innerText)).includes('Admin'), false);
-        const formSelector = link.includes('letter-request.html') ? '#letterRequestForm' : link.includes('guest-visit.html') ? '#guestVisitForm' : link.includes('policy-sop.html') ? '#policyList .policy-card' : '.admin-coming-card';
+        const formSelector = link.includes('letter-request.html') ? '#letterRequestForm' : link.includes('guest-visit.html') ? '#guestVisitForm' : link.includes('policy-sop.html') ? '#policyList .policy-card' : link.includes('history.html') ? '#workplaceHistoryList' : '.admin-coming-card';
         assert.ok(await page.$(formSelector));
         await Promise.all([page.waitForNavigation({ waitUntil: 'load' }), page.click('[data-admin-back]')]);
         assert.ok(page.url().includes('/modules/admin/index.html'));
@@ -39,10 +39,10 @@ const puppeteer = require('puppeteer');
       }
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 350)));
       assert.equal(await page.$eval('.phone-container', n => getComputedStyle(n).backgroundColor), theme === 'light' ? 'rgb(246, 248, 252)' : 'rgb(9, 10, 22)');
-      await page.screenshot({ path: `C:/tmp/workplace_${theme}.png` });
+      await page.screenshot({ path: path.join(__dirname, `workplace_${theme}.png`) });
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: Workplace entry, five option pages, return navigation, both themes and mobile widths.');
+    console.log('PASS: Workplace entry, six option pages, return navigation, both themes and mobile widths.');
   } finally {
     await browser.close();
   }

@@ -65,7 +65,7 @@
       button.addEventListener('click', () => openDetails(employee));
       hoursCell.append(button);
       const branchCell = row.insertCell();
-      branchCell.append(textElement('span', 'branch-pill', employee.branch || '—'));
+      branchCell.textContent = employee.branch || '—';
       row.insertCell().textContent = employee.department || '—';
       row.insertCell().textContent = employee.position || '—';
     });
@@ -120,7 +120,7 @@
         ? [['Description', detail.description, 'description'], ['Hours', hoursText(detail.hours), 'hours']]
         : [['Shift', detail.shift, 'shift'], ['Clock Times', detail.clockTimes.join(', '), 'clockTimes'], ['Hours', hoursText(detail.hours), 'hours'], ...(detail.exception ? [['Exception', detail.exception, 'exception']] : [])];
       detailFields.forEach(([label, value, key]) => {
-        const field = textElement('div', 'leave-highlight-detail-field' + (key === 'shift' ? ' wide' : ''));
+        const field = textElement('div', 'leave-highlight-detail-field' + (key === 'shift' || key === 'exception' ? ' wide' : ''));
         const content = textElement('div', 'leave-highlight-detail-value', value);
         content.dataset.field = key;
         field.append(textElement('div', 'leave-highlight-detail-label', label), content);

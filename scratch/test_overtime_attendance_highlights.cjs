@@ -20,6 +20,10 @@ const puppeteer = require('puppeteer');
         assert.deepEqual(await page.$$eval('.highlight-table-card th', nodes => nodes.map(node => node.textContent)), ['Emp #', 'Name', 'Hours', 'Branch', 'Department', 'Position']);
         assert.equal(await page.$eval('#highlightTotalRecords', node => node.textContent), kind === 'overtime' ? '8' : '6');
         assert.equal(await page.$eval('#highlightMetricValue', node => node.textContent), kind === 'overtime' ? '62.00' : '648.73');
+        const metadata = await page.$$eval(body + ' tr', rows => rows.map(row => [row.cells[3].textContent.trim(), row.cells[4].textContent.trim(), row.cells[5].textContent.trim()]));
+        assert.ok(metadata.every(values => values.every(value => value && value !== '—')), 'Highlight employees need branch, department and position preview data');
+        assert.equal(await page.$$eval(body + ' .branch-pill', nodes => nodes.length), 0, 'Branch must be ordinary table text');
+        assert.equal(await page.$eval(body + ' tr td:nth-child(4)', node => node.textContent), kind === 'overtime' ? 'TIMES SQ' : 'USJ 20');
         await page.screenshot({ path: path.resolve(__dirname, `${kind}-highlight-table-${theme}-${width}.png`) });
         await page.click(body + ' [data-highlight-hours]');
         await page.waitForSelector('#highlightDetailsModal', { visible: true });
@@ -32,6 +36,13 @@ const puppeteer = require('puppeteer');
         } else {
           assert.match(await page.$eval('.leave-highlight-detail-record', node => node.textContent), /17 Sep 2026.*Shift.*8.00AM–5.00PM.*Clock Times.*1957.*Hours.*8.00.*Exception.*Absent/s);
           assert.equal(await page.$$eval('[data-field="exception"]', nodes => nodes.length), 4, 'Do not invent an exception omitted from the cropped photo');
+          const layout = await page.$eval('.leave-highlight-detail-record', card => {
+            const rect = field => card.querySelector(`[data-field="${field}"]`).parentElement.getBoundingClientRect();
+            const shift = rect('shift'), clock = rect('clockTimes'), hours = rect('hours'), exception = rect('exception');
+            return { shift: shift.width, exception: exception.width, exceptionTop: exception.top, otherBottom: Math.max(clock.bottom, hours.bottom) };
+          });
+          assert.ok(Math.abs(layout.shift - layout.exception) < 1, 'Exception must span the full detail row like Shift');
+          assert.ok(layout.exceptionTop >= layout.otherBottom, 'Exception sits below Clock Times and Hours');
         }
         await page.screenshot({ path: path.resolve(__dirname, `${kind}-highlight-details-${theme}-${width}.png`) });
         await page.click('#highlightDetailsModal [aria-label="Close details"]');

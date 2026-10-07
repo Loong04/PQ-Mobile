@@ -39,7 +39,7 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/admin/options/lett
         assert.ok(await submit.isIntersectingViewport(), 'Submit must remain reachable above the bottom navigation');
       }
       await page.click('#letterRequestSubmit');
-      assert.match(await page.$eval('#letterRequestFeedback', n => n.textContent), /ready for submission/i);
+      assert.match(await page.$eval('#letterRequestFeedback', n => n.textContent), /saved to History/i);
       assert.equal(await page.$eval('#letterRequestMerge2', n => n.value), 'Employee reference #EBB01');
       assert.equal(await page.$eval('#letterRequestCancel', n => new URL(n.href).searchParams.get('theme')), theme);
       await page.setViewport({ width: 390, height: 950 });

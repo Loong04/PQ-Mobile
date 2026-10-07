@@ -12,6 +12,13 @@
     const grid = document.getElementById('employeeCareerOptions');
     const items = options[activeScope] || [];
     if (!grid) return;
+    const documentStatus = document.getElementById('employeeCareerDocumentStatus');
+    if (documentStatus) {
+      documentStatus.hidden = activeScope !== 'individual';
+      documentStatus.querySelectorAll('[data-document-status]').forEach(link => {
+        link.href = `options/history.html?theme=${theme()}`;
+      });
+    }
     grid.innerHTML = activeScope === 'team' ? items.slice(0, 5).map(cardMarkup).join('') + viewAllMarkup() : items.map(cardMarkup).join('');
     const subtitle = document.getElementById('employeeCareerSubtitle');
     if (subtitle) subtitle.textContent = activeScope === 'team' ? 'Team' : 'Individual';
