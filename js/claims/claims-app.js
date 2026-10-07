@@ -40,21 +40,18 @@
     const tabTeam = document.getElementById('tabClaimTeam');
     const secIndiv = document.getElementById('scopeIndividualSection');
     const secTeam = document.getElementById('scopeTeamSection');
-    const subtitle = document.getElementById('headerSubtitleText');
 
     if (scope === 'team') {
       if (tabIndiv) tabIndiv.classList.remove('active');
       if (tabTeam) tabTeam.classList.add('active');
       if (secIndiv) secIndiv.style.display = 'none';
       if (secTeam) secTeam.style.display = 'block';
-      if (subtitle) subtitle.textContent = 'Team Overview';
       renderTeamDashboard();
     } else {
       if (tabTeam) tabTeam.classList.remove('active');
       if (tabIndiv) tabIndiv.classList.add('active');
       if (secTeam) secTeam.style.display = 'none';
       if (secIndiv) secIndiv.style.display = 'block';
-      if (subtitle) subtitle.textContent = 'Individual';
       renderIndividualDashboard();
     }
   }
@@ -718,14 +715,12 @@
     const mainEl = document.getElementById('teamMainDashboard');
     const secEl = document.getElementById('teamPendingApprovalSection');
     const titleEl = document.getElementById('globalTopTitle');
-    const subtitleEl = document.getElementById('headerSubtitleText');
     const switcherEl = document.getElementById('mainScopeSwitcher');
     
     if (mainEl) mainEl.style.display = 'none';
     if (secEl) secEl.style.display = 'block';
     
     if (titleEl) titleEl.innerHTML = 'Pending Approval';
-    if (subtitleEl) subtitleEl.style.display = 'none';
     if (switcherEl) switcherEl.style.display = 'none';
     
     // Scroll to top
@@ -737,14 +732,12 @@
     const mainEl = document.getElementById('teamMainDashboard');
     const secEl = document.getElementById('teamPendingApprovalSection');
     const titleEl = document.getElementById('globalTopTitle');
-    const subtitleEl = document.getElementById('headerSubtitleText');
     const switcherEl = document.getElementById('mainScopeSwitcher');
     
     if (mainEl) mainEl.style.display = 'block';
     if (secEl) secEl.style.display = 'none';
     
     if (titleEl) titleEl.innerHTML = 'Claims &amp; Expenses';
-    if (subtitleEl) subtitleEl.style.display = 'block';
     if (switcherEl) switcherEl.style.display = 'flex';
   }
 

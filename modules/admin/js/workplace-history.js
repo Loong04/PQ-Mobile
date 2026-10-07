@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   const $ = id => document.getElementById(id);
-  const labels = { 'guest-visit': 'Guest Visit', 'letter-request': 'Letter Request' };
+  const labels = { 'guest-visit': 'Guest Visit', 'letter-request': 'Letter Request', 'inventory-request': 'Inventory Request' };
   const statuses = { submitted: ['Submitted', 'fa-paper-plane'], resubmit: ['Resubmit', 'fa-rotate-right'], approved: ['Approved', 'fa-check'], rejected: ['Rejected', 'fa-xmark'] };
   const requested = new URLSearchParams(location.search).get('category');
   let kind = labels[requested] ? requested : 'guest-visit';
   const emptyFilter = () => ({ from: '', to: '', status: '' });
-  const filters = { 'guest-visit': emptyFilter(), 'letter-request': emptyFilter() };
+  const filters = { 'guest-visit': emptyFilter(), 'letter-request': emptyFilter(), 'inventory-request': emptyFilter() };
   let records = [];
   let modal = null;
   let opener = null;
@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
       heading.append(node('span', 'history-card-title', row.title));
       header.append(heading, statusPill(row.status));
       const details = node('span', 'history-card-details');
-      const summaryFields = [['Date', date(row.date)], ...row.fields.filter(([label]) => kind === 'guest-visit' ? ['Time', 'Total Guest'].includes(label) : ['Description', 'Reason'].includes(label))];
+      const summaryLabels = kind === 'guest-visit' ? ['Time', 'Total Guest'] : kind === 'letter-request' ? ['Description', 'Reason'] : ['Quantity', 'Required By'];
+      const summaryFields = [['Date', date(row.date)], ...row.fields.filter(([label]) => summaryLabels.includes(label))];
       for (const [label, value] of summaryFields) {
         const line = node('span', 'history-card-row');
         line.append(node('span', '', label + ' :'), node('strong', '', value || '—'));

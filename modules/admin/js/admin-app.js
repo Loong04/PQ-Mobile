@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
       tab.tabIndex = selected ? 0 : -1;
       document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
     });
-    document.getElementById('workplaceScopeSubtitle').textContent = activeScope === 'team' ? 'Team' : 'Individual';
     if (updateUrl) {
       const url = new URL(location.href);
       url.searchParams.set('scope', activeScope);
@@ -30,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (scopeTabs.length) setScope(new URLSearchParams(location.search).get('scope'), false);
   function updateAdminLinks() {
-    document.querySelectorAll('.admin-option, [data-admin-back], [data-document-status]').forEach(link => {
+    document.querySelectorAll('.admin-option, .team-pending-approval-action, [data-admin-back], [data-document-status]').forEach(link => {
       const url = new URL(link.href, window.location.href);
       url.searchParams.set('theme', getCurrentTheme());
       link.href = url.href;

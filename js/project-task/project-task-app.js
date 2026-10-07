@@ -276,8 +276,6 @@
 
   function switchScope(scope, focusTab = false) {
     const selected = scope === 'team' ? 'team' : 'individual';
-    const headerScope = document.getElementById('projectHeaderScope');
-    if (headerScope) headerScope.textContent = selected === 'team' ? 'Team' : 'Individual';
     for (const name of ['individual', 'team']) {
       const tab = document.getElementById(`projectTab-${name}`);
       const panel = document.getElementById(`projectPanel-${name}`);

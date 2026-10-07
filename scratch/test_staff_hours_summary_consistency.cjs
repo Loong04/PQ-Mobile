@@ -120,7 +120,7 @@ const puppeteer = require('puppeteer');
       odd: '3',
       normalOt: '96.00',
       unapprovedOt: '12.00',
-      absentDays: '0',
+      absentDays: '9',
       leaveHours: '24.00',
       lostHours: '4.00'
     }, 'Dashboard totals must come from the active staff records');

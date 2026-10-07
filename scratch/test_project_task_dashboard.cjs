@@ -20,7 +20,7 @@ const dashboardUrl = theme => pathToFileURL(
 
       assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
       assert.equal(await page.$eval('.project-header h1', node => node.textContent.trim()), 'Project & Task Dashboard');
-      assert.equal(await page.$eval('#projectHeaderScope', node => node.textContent.trim()), 'Individual');
+      assert.equal(await page.$('#projectHeaderScope'), null, 'Project header has no scope subtitle');
       assert.deepEqual(
         await page.$$eval('.project-scope-tab', tabs => tabs.map(tab => tab.textContent.trim())),
         ['Individual', 'Team']
@@ -305,7 +305,7 @@ const dashboardUrl = theme => pathToFileURL(
       );
 
       await page.click('#projectTab-individual');
-      assert.equal(await page.$eval('#projectHeaderScope', node => node.textContent.trim()), 'Individual');
+      assert.equal(await page.$('#projectHeaderScope'), null, 'Project header remains single-title after scope switching');
       assert.equal(await page.$eval('#projectPanel-individual', panel => panel.hidden), false);
 
       for (const [tone, target] of [['submitted', 'strong'], ['draft', 'small'], ['overdue', 'span']]) {

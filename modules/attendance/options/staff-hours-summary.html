@@ -726,6 +726,7 @@
       display: flex;
       align-items: center;
       flex-shrink: 0;
+      gap: 8px;
       color: var(--text-muted);
     }
     .summary-history-card .history-time-row,
@@ -787,6 +788,10 @@
       text-align: right;
       overflow-wrap: anywhere;
     }
+    .summary-history-status[data-status="normal"] { color: #059669; background: rgba(16, 185, 129, .14); border: 1px solid rgba(16, 185, 129, .35); }
+    .summary-history-status[data-status="exception"] { color: #d97706; background: rgba(245, 158, 11, .14); border: 1px solid rgba(245, 158, 11, .35); }
+    [data-theme="dark"] .summary-history-status[data-status="normal"] { color: #34d399; background: rgba(16, 185, 129, .22); border-color: rgba(16, 185, 129, .45); }
+    [data-theme="dark"] .summary-history-status[data-status="exception"] { color: #fbbf24; background: rgba(245, 158, 11, .22); border-color: rgba(245, 158, 11, .45); }
     .bar-chart-item { margin-bottom: 24px; }
     .chart-label-row {
       display: flex;
@@ -1083,7 +1088,11 @@
 
             <div class="attendance-detail-section-title">Leave Info</div>
             <table id="ad-leave-info-table" class="attendance-detail-subtable is-leave detail-popout-table" hidden>
-              <tbody><tr><td class="detail-popout-label">Description</td><td id="ad-leave-info" class="detail-popout-value">-</td></tr></tbody>
+              <tbody>
+                <tr><td class="detail-popout-label">Leave Code</td><td id="ad-leave-code" class="detail-popout-value">-</td></tr>
+                <tr><td class="detail-popout-label">Description</td><td id="ad-leave-description" class="detail-popout-value">-</td></tr>
+                <tr><td class="detail-popout-label">Leave Hours</td><td id="ad-leave-hours" class="detail-popout-value">-</td></tr>
+              </tbody>
             </table>
 
             <div class="attendance-detail-section-title">Overtime Info</div>
@@ -1151,8 +1160,8 @@
       otherOt: 0,
       plannedOt: 8,
       unapprovedOt: 0,
-      absentDays: 0,
-      absentOt: 0,
+      absentDays: 3,
+      absentOt: 0.01,
       oddClocking: 1,
       leaveHours: 16,
       lostHours: 0,
@@ -1195,8 +1204,8 @@
       otherOt: 12,
       plannedOt: 10,
       unapprovedOt: 12,
-      absentDays: 0,
-      absentOt: 0,
+      absentDays: 6,
+      absentOt: 0.04,
       oddClocking: 2,
       leaveHours: 0,
       lostHours: 4,
@@ -1299,14 +1308,49 @@
       const config = getMetricConfig(title);
       const theme = getThemeForTitle(title);
       currentStaffItems = getStaffMetricItems(title);
+      const isDirectRecordSummary = title === "Odd Clocking Days" ||
+        title === "Normal OT Hours" ||
+        title === "Unapproved OT Hours" ||
+        title === "Planned OT Hours" ||
+        title === "Absent OT Hours" ||
+        title === "Absent Days" ||
+        title === "Leave Hours" ||
+        title === "Lost Hours";
+      const directRecords = isDirectRecordSummary
+        ? currentStaffItems.flatMap(function (staff) { return buildStaffAttendanceRecords(staff, title); })
+        : [];
+      if (isDirectRecordSummary) currentDailyItems = directRecords;
       document.getElementById("list-title").textContent = title;
-      document.getElementById("list-record-count").textContent = String(currentStaffItems.length);
-      document.getElementById("staff-list-total-label").textContent = config.totalLabel;
+      document.getElementById("list-record-count").textContent = String(isDirectRecordSummary ? directRecords.length : currentStaffItems.length);
+      document.getElementById("staff-list-total-label").textContent = isDirectRecordSummary ? "Total Hours" : config.totalLabel;
       document.getElementById("staff-list-total-value").textContent =
-        currentStaffItems.reduce((total, item) => total + getMetricNumber(item, title), 0).toFixed(2);
+        (isDirectRecordSummary
+          ? directRecords.reduce((total, item) => total + Number(item.metricHours || 0), 0)
+          : currentStaffItems.reduce((total, item) => total + getMetricNumber(item, title), 0)
+        ).toFixed(2);
 
-      if (!currentStaffItems.length) {
+      if (!(isDirectRecordSummary ? directRecords.length : currentStaffItems.length)) {
         container.innerHTML = '<div class="staff-summary-empty"><i class="fa-solid fa-inbox" style="font-size:32px;margin-bottom:10px;"></i><div>No staff records found.</div></div>';
+        return;
+      }
+
+      if (isDirectRecordSummary) {
+        container.innerHTML = directRecords.map(function (item, index) {
+          const employeeId = item.empNo.startsWith("#") ? item.empNo : "#" + item.empNo;
+          const detailRows = getDailyCardRows(item, title).map(function (row) {
+            return '<div class="summary-history-detail"><span>' + row[0] + '</span> <strong>' + row[1] + '</strong></div>';
+          }).join("");
+          return '<article class="history-card-item summary-history-card theme-' + theme + '" role="button" tabindex="0" ' +
+            'aria-label="View attendance details for ' + item.name + ' on ' + item.fullDate + '" onclick="openAttendanceDetailsByIndex(' + index + ')" ' +
+            'onkeydown="if(event.key === &quot;Enter&quot; || event.key === &quot; &quot;){event.preventDefault();openAttendanceDetailsByIndex(' + index + ');}">' +
+              '<div class="summary-history-card-header"><div class="summary-history-card-heading">' +
+                '<h3 class="staff-name-text">' + item.name + '</h3>' +
+                '<div class="summary-history-employee-id">' + employeeId + '</div>' +
+                '<div class="summary-history-date">' + item.day + ', ' + item.fullDate + '</div>' +
+              '</div></div>' +
+              '<div class="summary-history-details">' + detailRows + '</div>' +
+            '</article>';
+        }).join("");
         return;
       }
 
@@ -1372,12 +1416,18 @@
       const isAbsent = title === "Absent Days";
       const isLeave = title === "Leave Hours";
       const isOdd = title === "Odd Clocking Days";
+      const isAbsentOt = title === "Absent OT Hours";
       const isUnapproved = title === "Unapproved OT Hours";
       const isApprovedOt = title === "Normal OT Hours" || title === "Other OT Hours";
+      const isPlannedOt = title === "Planned OT Hours";
       return Array.from({ length: count }, function (_, index) {
         const date = getRecordDate(index);
         const clockTimes = isAbsent ? "-" : index === 0 ? "08:30 - 17:30" : "08:" + String(24 + index % 6).padStart(2, "0") + " - 17:" + String(30 + index % 10).padStart(2, "0");
         const recordHours = title === "Scheduled Work Days" ? 8 : perRecord;
+        const hasUnapprovedException = isUnapproved ||
+          (title === "Normal Present Days" && index === 0 && Number(staff.unapprovedOt) > 0);
+        const unapprovedHours = isUnapproved ? perRecord : hasUnapprovedException ? Number(staff.unapprovedOt) : 0;
+        const hasOvertimeInfo = isApprovedOt || hasUnapprovedException || isPlannedOt;
         return {
           empNo: staff.empNo,
           name: staff.name,
@@ -1397,14 +1447,19 @@
           timeOff: isLeave ? "08:00" : "-",
           absent: isAbsent ? "Yes" : "No",
           approvedOt: isApprovedOt ? perRecord.toFixed(2) : "0.00",
-          unapprovedOt: isUnapproved ? perRecord.toFixed(2) : "0.00",
-          exception: isAbsent ? "Absent" : isLeave ? "On Leave" : isOdd ? "Odd Clocking" : isUnapproved ? "Unapproved OT" : "-",
+          unapprovedOt: hasUnapprovedException ? unapprovedHours.toFixed(2) : "0.00",
+          planHours: isPlannedOt ? perRecord.toFixed(2) : "0.00",
+          absentOtHours: isAbsentOt ? perRecord.toFixed(2) : "0.00",
+          exception: isAbsent ? "Absent" : isLeave ? "On Leave" : isOdd ? "Odd Clocking" :
+            hasUnapprovedException ? "Unapproved OT" : "-",
           docNo: "-",
-          leaveInfo: isLeave ? "Annual Leave" : "-",
-          otCode: isApprovedOt || isUnapproved ? "OT1" : "-",
-          otDesc: isApprovedOt || isUnapproved ? title : "-",
-          otHours: isApprovedOt || isUnapproved ? perRecord.toFixed(2) : "-",
-          uot: isUnapproved ? "Yes" : "-"
+          leaveCode: isLeave ? "AL" : "-",
+          leaveDescription: isLeave ? "Annual Leave" : "-",
+          leaveHours: isLeave ? recordHours.toFixed(2) : "-",
+          otCode: hasOvertimeInfo ? (isPlannedOt ? "OT PLAN" : "OT1") : "-",
+          otDesc: hasOvertimeInfo ? (hasUnapprovedException ? "Unapproved OT Hours" : title) : "-",
+          otHours: isApprovedOt || isPlannedOt ? perRecord.toFixed(2) : hasUnapprovedException ? unapprovedHours.toFixed(2) : "-",
+          uot: hasUnapprovedException ? "Yes" : isPlannedOt ? "No" : "-"
         };
       });
     }
@@ -1412,14 +1467,35 @@
     function getDailyCardRows(item, title) {
       if (title === "Scheduled Work Days") return [["Clock Times", item.clockTimes], ["Scheduled Hours", item.schedHours]];
       if (title === "Normal Present Days") {
-        return [["Clock Times", item.clockTimes], ["Normal Hours", item.normalHours], ["Exception", item.exception]];
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Normal Hours", item.normalHours]];
       }
-      if (title === "Normal Work Hours" || title === "Odd Clocking Days") {
+      if (title === "Odd Clocking Days") {
+        return [["Shift", item.shift], ["Clock Time", item.clockTimes], ["Normal Hours", item.normalHours]];
+      }
+      if (title === "Normal OT Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Approved OT Hours", item.approvedOt]];
+      }
+      if (title === "Unapproved OT Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Unapproved OT", item.unapprovedOt]];
+      }
+      if (title === "Planned OT Hours") {
+        return [["Shift", item.shift], ["Clock Time", item.clockTimes], ["Plan Hours", item.planHours]];
+      }
+      if (title === "Absent OT Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Absent OT Hours", item.absentOtHours]];
+      }
+      if (title === "Normal Work Hours") {
         return [["Clock Times", item.clockTimes], ["Normal Hours", item.normalHours]];
       }
-      if (title === "Absent Days") return [["Clock Times", item.clockTimes], ["Absent Hours", item.metricHours.toFixed(2)]];
-      if (title === "Leave Hours") return [["Clock Times", item.clockTimes], ["Leave Hours", item.metricHours.toFixed(2)]];
-      if (title === "Lost Hours") return [["Clock Times", item.clockTimes], ["Lost Hours", item.metricHours.toFixed(2)]];
+      if (title === "Absent Days") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Absent Hours", item.metricHours.toFixed(2)]];
+      }
+      if (title === "Leave Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Leave Description", item.leaveDescription], ["Leave Hours", item.metricHours.toFixed(2)]];
+      }
+      if (title === "Lost Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Lost Hours", item.metricHours.toFixed(2)]];
+      }
       return [["Clock Times", item.clockTimes], [getMetricConfig(title).label, item.metricHours.toFixed(2)]];
     }
 
@@ -1440,16 +1516,29 @@
         return;
       }
       container.innerHTML = currentDailyItems.map(function (item, index) {
+        const isNormalPresentDay = listActiveTitle === "Normal Present Days";
+        const employeeId = item.empNo.startsWith("#") ? item.empNo : "#" + item.empNo;
         const rows = getDailyCardRows(item, listActiveTitle).map(function (row) {
           return '<div class="summary-history-detail"><span>' + row[0] + '</span> <strong>' + row[1] + '</strong></div>';
         }).join("");
+        const hasException = Boolean(item.exception && item.exception !== "-");
+        const statusBadge = isNormalPresentDay
+          ? '<span class="card-status-badge summary-history-status" data-status="' + (hasException ? "exception" : "normal") + '">' +
+            '<i class="fa-solid ' + (hasException ? "fa-circle-exclamation" : "fa-check") + '" aria-hidden="true"></i>' +
+            '<span>' + (hasException ? item.exception : "Normal") + '</span></span>'
+          : "";
+        const heading = isNormalPresentDay
+          ? '<h3 class="staff-name-text">' + item.name + '</h3>' +
+            '<div class="summary-history-employee-id">' + employeeId + '</div>' +
+            '<div class="summary-history-date">' + item.day + ', ' + item.fullDate + '</div>'
+          : '<h3 class="history-time-row">' + item.shift + '</h3>' +
+            '<div class="summary-history-date">' + item.day + ', ' + item.fullDate + '</div>';
         return '<article class="history-card-item summary-history-card theme-' + theme + '" role="button" tabindex="0" ' +
           'aria-label="View attendance details for ' + item.fullDate + '" onclick="openAttendanceDetailsByIndex(' + index + ')" ' +
           'onkeydown="if(event.key === &quot;Enter&quot; || event.key === &quot; &quot;){event.preventDefault();openAttendanceDetailsByIndex(' + index + ');}">' +
             '<div class="summary-history-card-header"><div class="summary-history-card-heading">' +
-              '<h3 class="history-time-row">' + item.shift + '</h3>' +
-              '<div class="summary-history-date">' + item.day + ', ' + item.fullDate + '</div>' +
-            '</div></div>' +
+              heading +
+            '</div>' + (statusBadge ? '<div class="summary-history-card-end">' + statusBadge + '</div>' : '') + '</div>' +
             '<div class="summary-history-details">' + rows + '</div>' +
           '</article>';
       }).join("");
@@ -1483,16 +1572,19 @@
       setAttendanceDetail("ad-unapproved-ot", data.unapprovedOt);
       setAttendanceDetail("ad-exception", data.exception);
       setAttendanceDetail("ad-doc-no", data.docNo);
-      setAttendanceDetail("ad-leave-info", data.leaveInfo);
+      setAttendanceDetail("ad-leave-code", data.leaveCode);
+      setAttendanceDetail("ad-leave-description", data.leaveDescription);
+      setAttendanceDetail("ad-leave-hours", data.leaveHours);
       setAttendanceDetail("ad-ot-code", data.otCode);
       setAttendanceDetail("ad-ot-desc", data.otDesc);
       setAttendanceDetail("ad-ot-hours", data.otHours);
       setAttendanceDetail("ad-uot", data.uot);
-      document.getElementById("ad-leave-info-table").hidden = data.leaveInfo === "-";
+      document.getElementById("ad-leave-info-table").hidden = data.leaveCode === "-";
       document.getElementById("ad-overtime-info-table").hidden = data.otCode === "-";
       document.getElementById("ad-overtime-info-additional").replaceChildren();
       const exception = document.getElementById("ad-exception");
-      exception.style.color = data.exception === "-" ? "var(--text-primary)" : "#f59e0b";
+      exception.style.color = data.exception === "Unapproved OT" ? "#f59e0b" :
+        data.exception === "-" ? "var(--text-primary)" : "#f59e0b";
 
       const overlay = document.getElementById("modal-attendance-details");
       const popup = overlay.querySelector(".popup-modal-content");

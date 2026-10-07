@@ -20,8 +20,6 @@
       });
     }
     grid.innerHTML = activeScope === 'team' ? items.slice(0, 5).map(cardMarkup).join('') + viewAllMarkup() : items.map(cardMarkup).join('');
-    const subtitle = document.getElementById('employeeCareerSubtitle');
-    if (subtitle) subtitle.textContent = activeScope === 'team' ? 'Team' : 'Individual';
   }
 
   function setScope(scope, updateUrl = true) {

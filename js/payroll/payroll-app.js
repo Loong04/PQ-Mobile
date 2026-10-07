@@ -58,7 +58,6 @@
     const tabTeam = document.getElementById('tabPayrollTeam');
     const secIndiv = document.getElementById('scopeIndividualSection');
     const secTeam = document.getElementById('scopeTeamSection');
-    const subtitleEl = document.getElementById('headerSubtitleText');
     const titleEl = document.getElementById('globalTopTitle');
     const switcherEl = document.getElementById('mainScopeSwitcher');
 
@@ -69,7 +68,6 @@
       if (secTeam) secTeam.style.display = 'block';
       if (switcherEl) switcherEl.style.display = 'flex';
       if (titleEl) titleEl.textContent = 'Payroll';
-      if (subtitleEl) subtitleEl.textContent = 'Team';
     } else {
       if (tabTeam) tabTeam.classList.remove('active');
       if (tabIndiv) tabIndiv.classList.add('active');
@@ -77,7 +75,6 @@
       if (secIndiv) secIndiv.style.display = 'block';
       if (switcherEl) switcherEl.style.display = 'flex';
       if (titleEl) titleEl.textContent = 'Payroll';
-      if (subtitleEl) subtitleEl.textContent = 'Individual';
     }
 
     // Scroll main content to top

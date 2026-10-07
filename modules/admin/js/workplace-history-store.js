@@ -1,7 +1,7 @@
-/* Local history for the Workplace preview's two request types. */
+/* Local history for the Workplace preview's request types. */
 (() => {
   const key = 'peoplehcm:workplace:history:v1';
-  const kinds = ['guest-visit', 'letter-request'];
+  const kinds = ['guest-visit', 'letter-request', 'inventory-request'];
   const statuses = ['submitted', 'resubmit', 'approved', 'rejected'];
   function list() {
     const raw = localStorage.getItem(key);
@@ -21,7 +21,7 @@
     const record = {
       id: existing?.id || crypto.randomUUID(),
       kind: input.kind,
-      title: String(input.title || (input.kind === 'guest-visit' ? 'Guest Visit' : 'Letter Request')),
+      title: String(input.title || ({ 'guest-visit': 'Guest Visit', 'letter-request': 'Letter Request', 'inventory-request': 'Inventory Request' }[input.kind])),
       date: input.date,
       status: 'submitted',
       createdAt: existing?.createdAt || new Date().toISOString(),

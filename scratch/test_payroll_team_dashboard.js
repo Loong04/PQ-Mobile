@@ -155,7 +155,7 @@ async function run() {
     await page.keyboard.press('Escape');
 
     const dashboardPassed = dashboard.title === 'Payroll'
-      && dashboard.subtitle === 'Team'
+      && dashboard.subtitle === undefined
       && dashboard.actionTitle === 'Pending Approval'
       && dashboard.actionCount === '20'
       && dashboard.quickAction === 'Tax Relief'
@@ -166,7 +166,7 @@ async function run() {
       && dashboard.headerIsCentered;
 
     const breakdownPassed = payments.title === 'Payroll'
-      && payments.subtitle === 'Team'
+      && payments.subtitle === undefined
       && payments.scopeSwitcherDisplay !== 'none'
       && payments.sheetOpen
       && payments.teamDashboardVisible
@@ -181,7 +181,7 @@ async function run() {
       && payments.rows[0].amount === 'RM 392,136.02';
 
     const returnPassed = returned.title === 'Payroll'
-      && returned.subtitle === 'Team'
+      && returned.subtitle === undefined
       && returned.switcherVisible
       && returned.focusReturned;
 

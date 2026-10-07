@@ -11,10 +11,14 @@
   <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/app.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="../../css/attendance-schedule-calendar.css">
+  <link rel="stylesheet" href="css/workplace-calendar.css">
   <script src="../../js/components.js"></script>
   <script src="../../js/app.js" defer></script>
   <script src="js/workplace-history-store.js" defer></script>
   <script src="js/admin-app.js" defer></script>
+  <script src="../../js/attendance-schedule-calendar.js" defer></script>
+  <script src="js/workplace-calendar.js" defer></script>
 </head>
 <body class="admin-page">
   <preview-top-bar active-page="workplace"></preview-top-bar>
@@ -23,7 +27,7 @@
       <phone-status-bar time="9:41"></phone-status-bar>
       <div class="admin-header-row">
         <a class="admin-back" href="../../appdark.html" onclick="navTo('nav_apps', event)" aria-label="Back to apps"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
-        <div class="admin-heading"><h1>Workplace</h1><p id="workplaceScopeSubtitle">Individual</p></div>
+        <div class="admin-heading"><h1>Workplace</h1></div>
         <span aria-hidden="true"></span>
       </div>
     </header>
@@ -62,6 +66,10 @@
             <span class="admin-option-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
             <span class="admin-option-title">Guest Visit</span>
           </a>
+          <a class="admin-option" data-tone="purple" data-option-id="inventory-request" href="options/inventory-request.html?scope=individual">
+            <span class="admin-option-icon"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></span>
+            <span class="admin-option-title">Inventory Request</span>
+          </a>
           <a class="admin-option" data-tone="purple" href="options/policy-sop.html">
             <span class="admin-option-icon"><i class="fa-solid fa-file-shield" aria-hidden="true"></i></span>
             <span class="admin-option-title">Policy / SOP</span>
@@ -72,10 +80,71 @@
           </a>
         </div>
       </section>
+      <section id="workplaceCalendar" class="workplace-calendar" aria-labelledby="workplaceCalendarTitle">
+        <h2 id="workplaceCalendarTitle" class="admin-section-title"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i>Workplace Calendar</h2>
+        <div class="calendar-card">
+          <div class="attendance-schedule-header">
+            <h3 id="workplaceCalendarMonth" class="attendance-schedule-month" aria-live="polite"></h3>
+            <div class="attendance-schedule-controls">
+              <button type="button" id="workplaceCalendarInfo" class="attendance-schedule-info-trigger" data-schedule-info-trigger aria-haspopup="dialog" aria-controls="attendanceScheduleInfo"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button>
+              <button type="button" id="workplaceCalendarPrevious" aria-label="Previous month"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+              <button type="button" id="workplaceCalendarNext" aria-label="Next month"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="attendance-schedule-weekdays" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+          <div id="workplaceCalendarGrid" class="attendance-schedule-grid" role="group" aria-label="Calendar dates"></div>
+          <div id="workplaceCalendarSelection" class="workplace-calendar-selection" aria-live="polite"><time id="workplaceCalendarSelectedDate"></time></div>
+        </div>
+      </section>
       </div>
-      <div id="workplaceTeamPanel" class="workplace-scope-panel" role="tabpanel" aria-labelledby="workplaceTabTeam" hidden></div>
+      <div id="workplaceTeamPanel" class="workplace-scope-panel" role="tabpanel" aria-labelledby="workplaceTabTeam" hidden>
+        <section class="team-action-required-card workplace-team-actions" aria-labelledby="workplaceTeamActionTitle">
+          <div class="team-action-required-header">
+            <div class="team-action-required-heading">
+              <span class="team-action-required-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+              <span class="team-action-required-copy">
+                <strong class="team-action-required-title" id="workplaceTeamActionTitle">Action Required</strong>
+                <span class="team-action-required-description">Items that require your action</span>
+              </span>
+            </div>
+          </div>
+          <div class="team-action-required-items">
+            <a class="team-pending-approval-action" id="workplaceTeamPendingApproval" href="options/pending-approval.html?scope=team">
+              <span class="team-pending-approval-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+              <span class="team-pending-approval-copy">
+                <strong class="team-pending-approval-title">Pending Approval</strong>
+                <span class="team-pending-approval-description">Workplace requests awaiting review</span>
+              </span>
+              <span class="team-pending-approval-end"><i class="fa-solid fa-chevron-right team-pending-approval-chevron" aria-hidden="true"></i></span>
+            </a>
+          </div>
+        </section>
+        <section aria-labelledby="workplaceTeamOptionsTitle">
+          <h2 class="admin-section-title" id="workplaceTeamOptionsTitle">OPTIONS</h2>
+          <div class="admin-options">
+            <a class="admin-option" data-tone="purple" data-option-id="asset-highlight" href="options/asset-highlight.html?scope=team">
+              <span class="admin-option-icon"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span>
+              <span class="admin-option-title">Asset Highlight</span>
+            </a>
+          </div>
+        </section>
+      </div>
     </main>
     <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <dialog id="attendanceScheduleInfo" class="attendance-schedule-info-dialog" aria-labelledby="workplaceCalendarInfoTitle">
+      <div class="attendance-schedule-info-panel">
+        <div class="attendance-schedule-info-handle" aria-hidden="true"></div>
+        <div class="attendance-schedule-info-header">
+          <h3 id="workplaceCalendarInfoTitle">Calendar Information</h3>
+          <form method="dialog"><button type="submit" class="attendance-schedule-info-close" aria-label="Close calendar information"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>
+        </div>
+        <div class="attendance-schedule-info-list">
+          <div><span class="attendance-schedule-info-today">7</span><span>Today</span></div>
+          <div><span class="leave-calendar-info-date is-selected">10</span><span>Selected Date</span></div>
+          <div><span class="leave-calendar-info-date is-other-month">31</span><span>Other Month</span></div>
+        </div>
+      </div>
+    </dialog>
   </div>
 </body>
 </html>

@@ -218,7 +218,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     assert.equal(shiftForm.hasStatusBar, true, 'Shift Change uses the standard phone form header');
     assert.equal(shiftForm.hasBackButton, true, 'Shift Change header uses a back control');
     assert.equal(shiftForm.title, 'Shift Change Request');
-    assert.equal(shiftForm.subtitle, 'Individual');
+    assert.equal(shiftForm.subtitle, undefined, 'Shift Change header has no secondary title');
     assert.ok(shiftForm.titleCenterDelta <= 2, 'Shift Change title block is centered like Leave');
     assert.equal(shiftForm.headerRadius, '24px');
     assert.equal(shiftForm.headerBackground, shiftForm.pageHeaderBackground, 'Shift Change header matches Attendance header');

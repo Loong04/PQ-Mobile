@@ -17,7 +17,7 @@ const puppeteer = require('puppeteer');
       assert.ok(await page.$(individual), 'Workplace must offer an Individual / Team switch');
       const counts = await page.$$eval('[data-document-status] strong', nodes => nodes.map(node => node.textContent));
       const stored = await page.evaluate(() => localStorage.getItem('peoplehcm:workplace:history:v1'));
-      assert.deepEqual(await page.$$eval('#workplaceIndividualPanel .admin-option-title', nodes => nodes.map(node => node.textContent)), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Policy / SOP', 'History']);
+      assert.deepEqual(await page.$$eval('#workplaceIndividualPanel .admin-option-title', nodes => nodes.map(node => node.textContent)), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Inventory Request', 'Policy / SOP', 'History']);
       assert.equal(await page.$eval(individual, node => node.getAttribute('aria-selected')), 'true');
       assert.equal(await page.$eval('#workplaceIndividualPanel', node => node.hidden), false);
       await page.screenshot({ path: path.resolve(__dirname, `workplace-individual-${theme}-${width}.png`) });
@@ -26,6 +26,10 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$eval(individual, node => node.tabIndex), -1);
       assert.equal(await page.$eval('#workplaceIndividualPanel', node => node.hidden), true);
       assert.equal(await page.$eval('#workplaceTeamPanel', node => node.hidden), false);
+      assert.deepEqual(await page.$$eval('#workplaceTeamPanel .admin-option-title', nodes => nodes.map(node => node.textContent)), ['Asset Highlight']);
+      assert.equal(await page.$eval('#workplaceTeamPendingApproval .team-pending-approval-title', node => node.textContent), 'Pending Approval');
+      assert.equal(new URL(await page.$eval('#workplaceTeamPendingApproval', node => node.href)).searchParams.get('theme'), theme);
+      await page.screenshot({ path: path.resolve(__dirname, `workplace-team-${theme}-${width}.png`) });
       assert.equal(await page.$eval('#workplaceDocumentStatus', node => node.getClientRects().length), 0, 'My Document Status is personal');
       assert.equal(new URL(page.url()).searchParams.get('scope'), 'team');
       assert.equal(new URL(page.url()).searchParams.get('theme'), theme);
@@ -40,6 +44,19 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.evaluate(() => localStorage.getItem('peoplehcm:workplace:history:v1')), stored);
       assert.equal(await page.$eval('main', node => node.scrollWidth > node.clientWidth), false);
       assert.ok(await page.$$eval('#workplaceIndividualPanel a', nodes => nodes.every(node => new URL(node.href).searchParams.get('theme') === document.documentElement.dataset.theme)));
+      for (const [scope, selector, title] of [
+        ['individual', '[data-option-id="inventory-request"]', 'Inventory Request'],
+        ['team', '[data-option-id="asset-highlight"]', 'Asset Highlight'],
+        ['team', '#workplaceTeamPendingApproval', 'Pending Approval']
+      ]) {
+        await page.click(scope === 'team' ? team : individual);
+        await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click(selector)]);
+        assert.equal(await page.$eval('.admin-heading h1', node => node.textContent), title);
+        assert.equal(new URL(page.url()).searchParams.get('theme'), theme);
+        assert.equal(await page.$eval('main', node => node.scrollWidth > node.clientWidth), false);
+        await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('[data-admin-back]')]);
+        assert.equal(await page.$eval(scope === 'team' ? team : individual, node => node.getAttribute('aria-selected')), 'true', 'New options must return to their own scope');
+      }
       assert.deepEqual(errors, []);
       console.log(`PASS: Workplace scope switching, original Individual options and History, ${theme}, ${width}px`);
       await page.close();
