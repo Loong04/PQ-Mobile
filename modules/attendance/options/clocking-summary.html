@@ -105,7 +105,7 @@
       border: 1px solid var(--border-subtle);
       border-radius: 18px;
       padding: 6px 8px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -144,7 +144,11 @@
       color: var(--text-primary);
       padding: 6px 12px;
       border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
     }
+    .date-current-badge:hover { background: var(--bg-input); }
 
     /* Summary Stats Row */
     .summary-info-row {
@@ -590,7 +594,20 @@
       
       <!-- ================= VIEW 1: SUMMARY TABLE VIEW ================= -->
       <div id="view-summary" class="highlight-report-view" style="display: block;">
-        
+
+        <div class="date-switcher-card" id="clockingDateSwitcher">
+          <button type="button" class="date-nav-btn" data-clocking-date-shift="-1" onclick="changeClockingSummaryDate(-1)" title="Previous Day" aria-label="Previous Day">
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+          </button>
+          <div class="date-current-badge">
+            <i class="fa-solid fa-calendar-day" style="color: var(--purple-primary); font-size: 14px;" aria-hidden="true"></i>
+            <span id="clockingCurrentDate">05 Oct 2026</span>
+          </div>
+          <button type="button" class="date-nav-btn" data-clocking-date-shift="1" onclick="changeClockingSummaryDate(1)" title="Next Day" aria-label="Next Day">
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+
         <!-- 1. Executive Filter Summary Bar -->
         <div class="filter-summary-bar highlight-filter-card" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter clocking records">
           <div style="flex: 1; min-width: 0; padding-right: 8px;">
@@ -612,7 +629,7 @@
               <span class="attendance-report-summary-label">Total Records</span>
               <strong id="totalRecordsVal" class="attendance-report-summary-value">2</strong>
             </div>
-            <button type="button" class="view-chart-btn" onclick="showSectionView('chart')" title="View Chart">
+            <button type="button" class="view-chart-btn" onclick="openSummaryChart()" title="View Chart">
               <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
               <span>View Chart</span>
             </button>
@@ -687,6 +704,42 @@
         </section>
       </div>
 
+      <!-- ================= VIEW 3: CLOCKING DETAILS PAGE ================= -->
+      <div id="view-details" class="clocking-details-view" style="display: none;">
+        <section class="clocking-details-page">
+          <div class="clocking-details-toolbar">
+            <span id="detailsRecordCount">Total Records: 0</span>
+            <div class="clocking-details-actions" aria-label="Clocking summary actions">
+              <button type="button" class="view-chart-btn" onclick="openDetailsChart()"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
+              <button type="button" id="clockingExportPdf" onclick="printClockingDetails()"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>PDF</span></button>
+              <button type="button" id="clockingExportExcel" onclick="exportClockingDetails()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i><span>Excel</span></button>
+            </div>
+          </div>
+          <div id="detailsListContainer"></div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 4: FULL PHONE MAP PAGE ================= -->
+      <div id="view-map" class="clocking-map-view" style="display: none;">
+        <section id="clockingFullMap" class="clocking-full-map" aria-label="Employee clocking location">
+          <span class="clocking-map-block clocking-map-block-one"></span>
+          <span class="clocking-map-block clocking-map-block-two"></span>
+          <span class="clocking-map-block clocking-map-block-three"></span>
+          <span class="clocking-map-block clocking-map-block-four"></span>
+          <span class="clocking-map-pin"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+          <button type="button" class="clocking-map-locate-btn" aria-label="Centre map on location" title="Centre location">
+            <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+          </button>
+          <div class="clocking-map-address-card">
+            <span class="clocking-map-address-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+            <div>
+              <small>Clocking Location</small>
+              <strong id="clockingMapAddress">Location unavailable</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+
     </div>
 
     <!-- Bottom Navigation -->
@@ -714,11 +767,7 @@
           <!-- 1. Date -->
           <div class="form-group-item">
             <label class="form-field-label" for="filterDateInput">Date</label>
-            <div class="clocking-date-field">
-              <button type="button" class="date-nav-btn" onclick="shiftDate(-1)" aria-label="Previous date"><i class="fa-solid fa-chevron-left"></i></button>
-              <input type="date" id="filterDateInput" class="form-field-input" value="2026-10-05">
-              <button type="button" class="date-nav-btn" onclick="shiftDate(1)" aria-label="Next date"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
+            <input type="date" id="filterDateInput" class="form-field-input" value="2026-10-05">
           </div>
 
           <!-- 2. Start Time & End Time -->
@@ -828,39 +877,6 @@
             <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
             <span>Apply Filter</span>
           </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL 2: PERSONNEL CLOCKING DETAILS MODAL (CENTER POPOUT DIALOG WITH COLORED HEADER) -->
-    <div class="modal-overlay popout-mode" id="detailsModal" aria-hidden="true" onclick="closeDetailsModal(event)">
-      <div class="popout-dialog-card" role="dialog" aria-modal="true" aria-labelledby="modalSectionTitle" onclick="event.stopPropagation()">
-        
-        <!-- Colored Header Bar -->
-        <div class="popout-hdr-colored">
-          <div class="clocking-modal-heading">
-            <h3 class="popout-hdr-title" id="modalSectionTitle">BENEFITS</h3>
-            <div id="modalSectionMeta">Cost Centre: MANAGEMENT</div>
-            <div class="clocking-modal-subtitle">Clocking Summary Details</div>
-          </div>
-          <button type="button" class="popout-close-btn" onclick="closeDetailsModalDirect()" title="Close details" aria-label="Close clocking details">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <!-- Body Content -->
-        <div class="popout-body-content">
-          <div class="clocking-details-toolbar">
-            <span id="modalRecordCount">4 Records</span>
-            <button type="button" class="view-chart-btn" onclick="openDetailsChart()"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
-          </div>
-          <div class="clocking-export-actions" aria-label="Export clocking details">
-            <button type="button" id="clockingExportPdf" onclick="printClockingDetails()"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>PDF</span></button>
-            <button type="button" id="clockingExportExcel" onclick="exportClockingDetails()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i><span>Excel</span></button>
-          </div>
-          <div id="detailsListContainer">
-            <!-- Dynamically populated personnel list -->
-          </div>
         </div>
       </div>
     </div>

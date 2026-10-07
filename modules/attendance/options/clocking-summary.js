@@ -3,7 +3,7 @@ const clockingGroups = [
   { id: 1, branch: 'TIMES SQUARE BRANCH', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MANAGEMENT', date: '2026-10-05', zone: 'TIMES SQUARE OFFICE', details: [
     { empNo: 'EBB15', name: 'Asmawi idris', time: '08:18', type: 'Clock In', mode: 'Manual Input (People HR)' },
     { empNo: 'EBB15', name: 'Asmawi idris', time: '19:53', type: 'Clock Out', mode: 'Manual Input (People HR)' },
-    { empNo: 'A0001', name: 'Natasha thean mei hoi', time: '07:58', type: 'Clock In', mode: 'Manual Input (People HR)' },
+    { empNo: 'A0001', name: 'Natasha thean mei hoi', time: '07:58', type: 'Clock In', mode: 'Manual Input (People HR)', location: 'Times Square Office, Kuala Lumpur' },
     { empNo: 'A0001', name: 'Natasha thean mei hoi', time: '18:47', type: 'Clock Out', mode: 'Manual Input (People HR)' }
   ] },
   { id: 2, branch: 'TIMES SQUARE BRANCH', dept: 'HUMAN RESOURCE', section: 'BENEFITS', costCenter: 'MID VALLEY', date: '2026-10-05', zone: 'MID VALLEY OFFICE', details: [
@@ -36,6 +36,8 @@ let appliedClockingFilters = { ...defaultClockingFilters };
 let currentActiveSection = 'summary';
 let chartScope = null;
 let detailsContext = null;
+let detailsReturnSection = 'summary';
+let chartReturnSection = 'summary';
 let modalReturnFocus = null;
 const modalHideTimers = new Map();
 const chartDimensionLabels = { branch: 'Branch', dept: 'Department', section: 'Section', costCenter: 'Cost Centre', type: 'Clocking Type', mode: 'Clock Mode' };
@@ -58,7 +60,8 @@ function formatClockingDate(value) {
 
 function updateFilterSummaryDisplay() {
   const filter = appliedClockingFilters;
-  const parts = [formatClockingDate(filter.date), `${filter.start} – ${filter.end}`];
+  document.getElementById('clockingCurrentDate').textContent = formatClockingDate(filter.date);
+  const parts = [`${filter.start} – ${filter.end}`];
   for (const key of ['branch', 'dept', 'section', 'costCenter', 'type', 'zone']) if (filter[key] !== 'all') parts.push(filter[key]);
   if (filter.branch === 'all') parts.push('All Branches');
   if (filter.radius > 0) parts.push(`Within ${filter.radius} m`);
@@ -80,27 +83,38 @@ function renderTable() {
     <tr class="summary-table-row">
       <td class="cell-section attendance-report-name">${escapeClockingText(group.section)}</td>
       <td class="cell-cc">${escapeClockingText(group.costCenter)}</td>
-      <td class="cell-count"><button type="button" class="attendance-report-pill" onclick="openDetailsModal(${group.id})" aria-label="View ${group.count} clocking records for ${escapeClockingText(group.section)}, ${escapeClockingText(group.costCenter)}">${group.count}</button></td>
+      <td class="cell-count"><button type="button" class="attendance-report-pill" onclick="openDetailsPage(${group.id})" aria-label="View ${group.count} clocking records for ${escapeClockingText(group.section)}, ${escapeClockingText(group.costCenter)}">${group.count}</button></td>
     </tr>`).join('') || '<tr><td colspan="3" class="attendance-report-empty">No clocking records match the current filter.</td></tr>';
 }
 
 function showSectionView(section) {
   currentActiveSection = section;
-  document.getElementById('view-summary').style.display = section === 'summary' ? 'block' : 'none';
-  document.getElementById('view-chart').style.display = section === 'chart' ? 'block' : 'none';
-  document.getElementById('pageHeaderTitle').textContent = section === 'chart' ? 'Clocking Analysis' : 'Clocking Summary';
-  document.querySelector('.main-content').scrollTop = 0;
-  if (section === 'chart') { chartScope = null; renderDonutChartData(); }
+  ['summary', 'chart', 'details', 'map'].forEach(view => {
+    document.getElementById('view-' + view).style.display = section === view ? 'block' : 'none';
+  });
+  const titles = { summary: 'Clocking Summary', chart: 'Clocking Analysis', details: 'Clocking Summary Details', map: 'Location Map' };
+  document.getElementById('pageHeaderTitle').textContent = titles[section];
+  const mainContent = document.querySelector('.main-content');
+  mainContent.classList.toggle('is-map-view', section === 'map');
+  document.querySelector('.phone-container').classList.toggle('clocking-map-active', section === 'map');
+  mainContent.scrollTop = 0;
 }
 
 function handleHeaderBack() {
-  if (document.getElementById('detailsModal').classList.contains('active')) { closeDetailsModalDirect(); return; }
+  if (currentActiveSection === 'map') { showSectionView('details'); return; }
+  if (currentActiveSection === 'details') { showSectionView(detailsReturnSection); return; }
   if (currentActiveSection === 'chart') {
-    const previous = chartScope;
-    showSectionView('summary');
-    chartScope = null;
-    if (previous) showClockingDetails(previous);
+    const returnSection = chartReturnSection;
+    showSectionView(returnSection);
+    if (returnSection === 'summary') chartScope = null;
   } else { history.back(); }
+}
+
+function openSummaryChart() {
+  chartScope = null;
+  chartReturnSection = 'summary';
+  showSectionView('chart');
+  renderDonutChartData();
 }
 
 function renderDonutChartData() {
@@ -142,17 +156,16 @@ function renderDonutChartData() {
   if (!total) legend.innerHTML = '<div class="attendance-report-empty">No categories to display.</div>';
 }
 
-function openDetailsModal(id) {
+function openDetailsPage(id) {
   const group = clockingGroups.find(item => item.id === id);
   if (!group) return;
   showClockingDetails({ title: group.section, meta: `Cost Centre: ${group.costCenter} • ${formatClockingDate(appliedClockingFilters.date)}`, records: filteredClockingTransactions().filter(record => record.section === group.section && record.costCenter === group.costCenter) });
 }
 
-function showClockingDetails(context) {
+function showClockingDetails(context, returnSection = currentActiveSection === 'chart' ? 'chart' : 'summary') {
   detailsContext = context;
-  document.getElementById('modalSectionTitle').textContent = context.title;
-  document.getElementById('modalSectionMeta').textContent = context.meta;
-  document.getElementById('modalRecordCount').textContent = `${context.records.length} Record${context.records.length === 1 ? '' : 's'}`;
+  detailsReturnSection = returnSection;
+  document.getElementById('detailsRecordCount').textContent = `Total Records: ${context.records.length}`;
   document.getElementById('detailsListContainer').innerHTML = context.records.map(record => {
     const isIn = record.type === 'Clock In' || record.type === 'Break In';
     return `<article class="staff-clock-card history-card-item">
@@ -161,20 +174,30 @@ function showClockingDetails(context) {
         <div class="clocking-record-field"><div class="clocking-record-label">Clock Type</div><div class="clocking-record-type ${isIn ? 'is-in' : 'is-out'}"><i class="fa-solid ${isIn ? 'fa-right-to-bracket' : 'fa-right-from-bracket'}" aria-hidden="true"></i>${escapeClockingText(record.type)}</div></div>
         <div class="clocking-record-field"><div class="clocking-record-label">Clock Time</div><div class="clocking-record-time">${escapeClockingText(record.time)}</div></div>
         <div class="clocking-record-field clocking-record-mode-field"><div class="clocking-record-label">Clock Mode</div><div class="clocking-record-mode">${escapeClockingText(record.mode)}</div></div>
+        ${record.location ? `<div class="clocking-record-location-field"><div class="clocking-record-location-main"><span class="clocking-record-location-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span><div class="clocking-record-location-copy"><div class="clocking-record-label">Location</div><div class="clocking-record-location">${escapeClockingText(record.location)}</div></div></div><button type="button" class="clocking-map-btn" aria-label="View ${escapeClockingText(record.location)} map full screen"><i class="fa-solid fa-expand" aria-hidden="true"></i><span>View Map</span></button></div>` : ''}
       </div></article>`;
   }).join('') || '<div class="attendance-report-empty">No clocking records match the current filter.</div>';
-  document.querySelector('#detailsModal .view-chart-btn').disabled = !context.records.length;
-  openClockingOverlay('detailsModal');
-  document.querySelector('#detailsModal .popout-body-content').scrollTop = 0;
+  document.querySelectorAll('#detailsListContainer .clocking-map-btn').forEach(button => {
+    button.addEventListener('click', () => openClockingMap(button));
+  });
+  document.querySelector('#view-details .view-chart-btn').disabled = !context.records.length;
+  showSectionView('details');
 }
 
 function openDetailsChart() {
   const context = detailsContext;
   if (!context?.records.length) return;
-  closeDetailsModalDirect();
-  showSectionView('chart');
   chartScope = context;
+  chartReturnSection = 'details';
+  showSectionView('chart');
   renderDonutChartData();
+  document.querySelector('.header-btn-icon').focus();
+}
+
+function openClockingMap(button) {
+  const location = button.closest('.clocking-record-location-field').querySelector('.clocking-record-location').textContent.trim();
+  document.getElementById('clockingMapAddress').textContent = location;
+  showSectionView('map');
   document.querySelector('.header-btn-icon').focus();
 }
 
@@ -234,8 +257,6 @@ function closeClockingOverlay(id) {
   modalHideTimers.set(id, setTimeout(() => { modal.style.display = 'none'; }, 260));
 }
 
-function closeDetailsModal(event) { if (!event || event.target === event.currentTarget) closeDetailsModalDirect(); }
-function closeDetailsModalDirect() { closeClockingOverlay('detailsModal'); }
 function closeFilterModal(event) { if (!event || event.target === event.currentTarget) closeClockingOverlay('filterModal'); }
 
 function setClockingFilterInputs(filters) {
@@ -245,11 +266,14 @@ function setClockingFilterInputs(filters) {
 
 function openFilterModal() { setClockingFilterInputs(appliedClockingFilters); openClockingOverlay('filterModal'); }
 
-function shiftDate(days) {
-  const input = document.getElementById('filterDateInput');
-  const date = new Date(`${input.value || defaultClockingFilters.date}T12:00:00`);
+function changeClockingSummaryDate(days) {
+  const date = new Date(`${appliedClockingFilters.date || defaultClockingFilters.date}T12:00:00`);
   date.setDate(date.getDate() + days);
-  input.value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  appliedClockingFilters.date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  setClockingFilterInputs(appliedClockingFilters);
+  updateFilterSummaryDisplay();
+  renderTable();
+  if (currentActiveSection === 'chart') renderDonutChartData();
 }
 
 function resetFilterModal() {
@@ -287,7 +311,7 @@ function showToastNotification(message) {
 }
 
 document.addEventListener('keydown', event => {
-  const modal = ['detailsModal', 'filterModal'].map(id => document.getElementById(id)).find(node => node.classList.contains('active'));
+  const modal = document.getElementById('filterModal').classList.contains('active') ? document.getElementById('filterModal') : null;
   if (!modal) return;
   if (event.key === 'Escape') { closeClockingOverlay(modal.id); return; }
   if (event.key !== 'Tab') return;

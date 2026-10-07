@@ -500,6 +500,16 @@
       border-color: var(--purple-primary);
       box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
     }
+    #filterModal .form-field-select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 40px !important;
+    }
+    #filterModal .standard-filter-header { padding: 0 0 16px !important; flex-shrink: 0; }
+    .manpower-filter-fields { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; padding: 2px 2px 8px 0; }
+    .manpower-filter-fields .form-group-item:last-child { margin-bottom: 0; }
+    .manpower-filter-footer { flex: 0 0 auto; padding-top: 10px; }
+    .manpower-filter-footer .form-apply-btn { margin-top: 0; }
     .select-chevron-icon {
       position: absolute;
       right: 14px;
@@ -576,6 +586,7 @@
     .manpower-group-actions button:hover { background: var(--purple-subtle); color: var(--purple-text); }
     .manpower-group-actions button:focus-visible { outline: 2px solid var(--purple-primary); outline-offset: -2px; border-radius: 6px; }
     .manpower-group-actions strong { font-size: 15px; font-weight: 800; }
+    .manpower-summary-actions { margin-bottom: 20px; padding: 14px 0; border-radius: 18px; background: var(--bg-card); }
 
     /* Collapsible Filter Accordion Card */
     .filter-accordion-card {
@@ -681,8 +692,10 @@
     }
   </style>
 <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+<link rel="stylesheet" href="../../../css/attendance-manpower-details.css">
+<script src="../../../js/attendance-manpower-data.js"></script>
 </head>
-<body class="attendance-highlight-page">
+<body class="attendance-highlight-page manpower-page">
   <preview-top-bar active-page="attendance"></preview-top-bar>
 
   <div class="phone-container">
@@ -735,6 +748,12 @@
         </div>
 
         <div class="attendance-report-summary"><div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label">Total Records</span><strong class="attendance-report-summary-value" id="totalRecordsVal">26</strong></div></div></div>
+        <div class="history-card-item manpower-group-actions manpower-summary-actions" role="group" aria-label="Manpower summary for the current filter">
+          <button type="button" id="boxkpiWorkShift" onclick="openKpiDetails('workShift')"><span>Work Shift</span><strong id="kpiWorkShift" class="val-work-shift">16</strong></button>
+          <button type="button" id="boxkpiNoWork" onclick="openKpiDetails('noWork')"><span>No Work</span><strong id="kpiNoWork" class="val-no-work">10</strong></button>
+          <button type="button" id="boxkpiOtPlan" onclick="openKpiDetails('otPlan')"><span>OT Plan</span><strong id="kpiOtPlan" class="val-zero">0</strong></button>
+          <button type="button" id="boxkpiOnLeave" onclick="openKpiDetails('onLeave')"><span>On Leave</span><strong id="kpiOnLeave" class="val-zero">0</strong></button>
+        </div>
         <div id="manpowerListContainer" class="manpower-card-list"></div>
         <p id="manpowerEmpty" class="attendance-report-empty" hidden>No records match the current filter.</p>
 
@@ -742,20 +761,13 @@
 
       <!-- Details View -->
       <div id="view-details" style="display: none;">
-        <div id="detailsContent" style="background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-subtle); padding: 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead id="detailsTableHead">
-              <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
-                <th style="padding: 10px 4px;">Working Time</th>
-                <th style="padding: 10px 4px;">Headcount</th>
-                <th style="padding: 10px 4px;">Sch. Hours</th>
-                <th style="padding: 10px 4px;">Work Hours</th>
-              </tr>
-            </thead>
-            <tbody id="detailsTableBody">
-            </tbody>
-          </table>
+        <div class="manpower-detail-info-card">
+          <div class="manpower-detail-date"><span>Date</span><strong id="manpowerDetailDate"></strong></div>
+          <div id="manpowerDetailOverview" class="manpower-detail-overview"></div>
         </div>
+        <p id="manpowerDetailScope" class="manpower-detail-scope" hidden></p>
+        <div id="manpowerDetailList" class="manpower-detail-list"></div>
+        <p id="manpowerDetailEmpty" class="attendance-report-empty" hidden></p>
       </div>
     </div>
 
@@ -784,7 +796,7 @@
         </div>
 
         <!-- Filter Inputs Container -->
-        <div style="display: flex; flex-direction: column; overflow-y: auto; max-height: 60vh; padding-right: 2px;">
+        <div class="manpower-filter-fields">
           
           <!-- 1. Company -->
           <div class="form-group-item">
@@ -856,7 +868,10 @@
             </div>
           </div>
 
-          <!-- Apply Filter Button -->
+        </div>
+
+        <!-- Apply Filter Button -->
+        <div class="manpower-filter-footer">
           <button type="button" class="form-apply-btn" onclick="applyFilterModal()">
             <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
             <span>Apply Filter</span>
@@ -877,10 +892,6 @@
         dept: 'ALL DEPARTMENTS',
         section: 'CORPORATE',
         costCenter: 'CC-101 MANAGEMENT',
-        workShift: 10,
-        noWork: 0,
-        otPlan: 0,
-        onLeave: 0,
         staff: [
           { name: 'Lee Soon Hock', empNo: '#EBB01', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Morning Shift' },
           { name: 'Siti Nurhaliza', empNo: '#004177', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Morning Shift' },
@@ -894,10 +905,6 @@
         dept: 'HUMAN RESOURCE',
         section: 'GENERAL HR',
         costCenter: 'CC-501 HR & OPS',
-        workShift: 1,
-        noWork: 0,
-        otPlan: 0,
-        onLeave: 0,
         staff: [
           { name: 'Wong Kah Fai', empNo: '#EBB02', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:30 AM – 05:30 PM • HR Operations' }
         ]
@@ -908,10 +915,6 @@
         dept: 'PLANT OPERATIONS',
         section: 'ASSEMBLY',
         costCenter: 'CC-301 PRODUCTION',
-        workShift: 0,
-        noWork: 10,
-        otPlan: 0,
-        onLeave: 0,
         staff: [
           { name: 'Chok Ching Hou', empNo: '#EBB03', status: 'No Work', badgeClass: 'status-badge-amber', info: 'Scheduled Rest Day Off' },
           { name: 'Kavitha Raj', empNo: '#004199', status: 'No Work', badgeClass: 'status-badge-amber', info: 'Public Holiday Off' }
@@ -923,10 +926,6 @@
         dept: 'GENERAL MANAGEMENT',
         section: 'EXECUTIVE',
         costCenter: 'CC-100 ADMIN',
-        workShift: 4,
-        noWork: 0,
-        otPlan: 0,
-        onLeave: 0,
         staff: [
           { name: 'David Miller', empNo: '#EBB05', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Management' },
           { name: 'Jessica Taylor', empNo: '#EBB06', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Executive' }
@@ -938,15 +937,11 @@
         dept: 'ACCOUNTS',
         section: 'FOREX',
         costCenter: 'MANAGEMENT',
-        workShift: 1,
-        noWork: 0,
-        otPlan: 0,
-        onLeave: 0,
         staff: [
           { name: 'Lee Soon Hock', empNo: '#EBB01', status: 'Work Shift', badgeClass: 'status-badge-green', info: 'FOREX Management • 08:30 – 17:30' }
         ]
       }
-    ];
+    ].map(group => ({ ...group, ...getManpowerPreviewCounts(group.id) }));
 
     let currentDateObj = new Date(2026, 8, 20); // 20 Sep 2026
 
@@ -1022,6 +1017,16 @@
 
       const totalRecords = totWorkShift + totNoWork + totOtPlan + totOnLeave;
       document.getElementById('totalRecordsVal').innerText = totalRecords;
+      for (const [id, count, colorClass] of [
+        ['kpiWorkShift', totWorkShift, 'val-work-shift'],
+        ['kpiNoWork', totNoWork, 'val-no-work'],
+        ['kpiOtPlan', totOtPlan, 'val-ot-plan'],
+        ['kpiOnLeave', totOnLeave, 'val-on-leave']
+      ]) {
+        const value = document.getElementById(id);
+        value.textContent = count;
+        value.className = count > 0 ? colorClass : 'val-zero';
+      }
 
       const container = document.getElementById('manpowerListContainer');
       if (!container) return;
@@ -1075,7 +1080,8 @@
     // Keyboard navigation (ESC closes open modal)
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        closeFilterModal();
+        if (currentView !== 'dashboard') goBack();
+        else closeFilterModal();
       }
     });
 
@@ -1083,60 +1089,11 @@
     let selectedManpowerGroup = null;
     
     function goBack() {
-      if (currentView === 'details') {
-        document.getElementById('view-details').style.display = 'none';
-        document.getElementById('view-dashboard').style.display = 'block';
-        document.getElementById('headerTitle').innerText = 'Daily Manpower Summary';
-        currentView = 'dashboard';
-      } else {
-        history.back();
-      }
+      if (!backManpowerDetails()) history.back();
     }
 
     function openKpiDetails(type, group = null) {
-      selectedManpowerGroup = group;
-      currentView = 'details';
-      document.getElementById('view-dashboard').style.display = 'none';
-      document.getElementById('view-details').style.display = 'block';
-      
-      const thead = document.getElementById('detailsTableHead');
-      const tbody = document.getElementById('detailsTableBody');
-      const headerTitle = document.getElementById('headerTitle');
-      
-      let headHtml = '';
-      let bodyHtml = '';
-      
-      if (type === 'workShift') {
-        headerTitle.innerText = 'Work Shift Details';
-        headHtml = '<tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;"><th style="padding: 10px 4px;">Working Time</th><th style="padding: 10px 4px;">Headcount</th><th style="padding: 10px 4px;">Sch. Hours</th><th style="padding: 10px 4px;">Work Hours</th></tr>';
-        bodyHtml = `
-          <tr><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle); font-weight: 600;">08:00 AM - 05:00 PM</td><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle);">10</td><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle);">80.0</td><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle);">80.0</td></tr>
-          <tr><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle); font-weight: 600;">08:30 AM - 05:30 PM</td><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle);">4</td><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle);">32.0</td><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle);">32.0</td></tr>
-          <tr><td style="padding: 12px 4px; font-weight: 600;">09:00 AM - 06:00 PM</td><td style="padding: 12px 4px;">2</td><td style="padding: 12px 4px;">16.0</td><td style="padding: 12px 4px;">16.0</td></tr>
-        `;
-      } else if (type === 'noWork') {
-        headerTitle.innerText = 'No Work Details';
-        headHtml = '<tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;"><th style="padding: 10px 4px;">Status</th><th style="padding: 10px 4px; text-align: right;">Headcount</th></tr>';
-        bodyHtml = `
-          <tr><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle); font-weight: 600;">Scheduled Rest Day Off</td><td style="padding: 12px 4px; border-bottom: 1px solid var(--border-subtle); text-align: right;">6</td></tr>
-          <tr><td style="padding: 12px 4px; font-weight: 600;">Public Holiday Off</td><td style="padding: 12px 4px; text-align: right;">4</td></tr>
-        `;
-      } else if (type === 'otPlan') {
-        headerTitle.innerText = 'OT Plan Details';
-        headHtml = '<tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;"><th style="padding: 10px 4px;">Department</th><th style="padding: 10px 4px; text-align: center;">Headcount</th><th style="padding: 10px 4px; text-align: right;">OT Hours</th></tr>';
-        bodyHtml = `
-          <tr><td style="padding: 12px 4px; font-weight: 600; color: var(--text-muted); text-align: center;" colspan="3">No records found</td></tr>
-        `;
-      } else if (type === 'onLeave') {
-        headerTitle.innerText = 'On Leave Details';
-        headHtml = '<tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;"><th style="padding: 10px 4px;">Working Time</th><th style="padding: 10px 4px;">Leave Type</th><th style="padding: 10px 4px; text-align: right;">Headcount</th></tr>';
-        bodyHtml = `
-          <tr><td style="padding: 12px 4px; font-weight: 600; color: var(--text-muted); text-align: center;" colspan="3">No records found</td></tr>
-        `;
-      }
-      
-      thead.innerHTML = headHtml;
-      tbody.innerHTML = bodyHtml;
+      openManpowerSummary(type, group);
     }
 
     // Initialize on load
