@@ -108,7 +108,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     });
     assert.deepEqual(cards.map(card => card.exceptionStatus), ['No Exception', 'Unapproved OT']);
     assert.equal(await page.$eval('#verifyAllBtn', node => node.tagName), 'BUTTON');
-    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.hidden), true, 'Update starts hidden');
+    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), true, 'Update starts disabled');
 
     const actionColors = await page.$eval('.attendance-record-card', node => {
       const shift = getComputedStyle(node.querySelector('.btn-shift-change'));
@@ -156,14 +156,15 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     await page.keyboard.press('Enter');
     assert.equal(await page.$eval('.attendance-verify-button', node => node.getAttribute('aria-pressed')), 'true');
 
+    await page.$eval('#verifyAllBtn', button => button.scrollIntoView({ block: 'start' }));
     await page.click('#verifyAllBtn');
-    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.hidden), false, 'Verify All reveals Update');
+    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), false, 'Verify All enables Update');
     assert.deepEqual(
       await page.$$eval('.attendance-verify-button', buttons => buttons.map(button => button.getAttribute('aria-pressed'))),
       ['true', 'true']
     );
     await page.click('#attendanceUpdateBtn');
-    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.hidden), true, 'Update hides after saving');
+    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), true, 'Update disables after saving');
 
     await page.$eval('.attendance-record-card .btn-shift-change', node => {
       node.scrollIntoView({ block: 'center' });
@@ -308,8 +309,8 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     assert.deepEqual(feedbackDetails.feedbackBack, feedbackDetails.attendanceBack, 'Feedback back button matches the Attendance header control');
     assert.deepEqual(
       feedbackDetails.metaRows.map(row => row.label),
-      ['Original Shift', 'Date'],
-      'Feedback summary shows Original Shift first and Date on the next row'
+      ['Original Shift', 'Date', 'Employee'],
+      'Feedback summary shows Original Shift, Date, and the existing Employee row'
     );
     assert.ok(feedbackDetails.metaRows[0].value, 'Original Shift has a value');
     assert.equal(feedbackDetails.metaRows[1].value, '15 Sep 2026');
@@ -380,7 +381,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
           overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           mainOverflow: document.querySelector('.main-content').scrollWidth - document.querySelector('.main-content').clientWidth,
           metaRows: new Set(Array.from(document.querySelector('#attendanceMetaBar').children).map(node => Math.round(node.getBoundingClientRect().top))).size,
-          updateVisible: !document.getElementById('attendanceUpdateBtn').hidden
+          updateVisible: !document.getElementById('attendanceUpdateBtn').disabled
         }));
         assert.ok(layout.overflow <= 1, `${theme} ${width}px has no document overflow`);
         assert.ok(layout.mainOverflow <= 1, `${theme} ${width}px has no content overflow`);

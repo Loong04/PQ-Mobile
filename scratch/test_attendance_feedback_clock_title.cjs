@@ -17,11 +17,13 @@ const pageUrl = file => pathToFileURL(path.join(root, file)).href;
     const cases = [
       {
         file: 'modules/attendance/options/attendance.html',
-        selector: '.attendance-feedback-clock-title'
+        selector: '.attendance-feedback-clock-title',
+        title: 'Clock Times'
       },
       {
         file: 'modules/attendance/options/feedback-history.html',
-        selector: '.pending-feedback-clock-section h4'
+        selector: '.pending-feedback-clock-section h4',
+        title: 'Clock Time'
       }
     ];
 
@@ -35,13 +37,13 @@ const pageUrl = file => pathToFileURL(path.join(root, file)).href;
           text: node.textContent.replace(/\s+/g, ' ').trim(),
           icons: node.querySelectorAll('i, svg').length
         }));
-        assert.deepEqual(heading, { text: 'Clock Time', icons: 0 });
+        assert.deepEqual(heading, { text: testCase.title, icons: 0 });
         assert.deepEqual(errors, []);
         await page.close();
       }
     }
 
-    console.log('PASS: Attendance Feedback uses the Clock Time heading without a leading icon in both form copies and themes.');
+    console.log('PASS: Shared Attendance Feedback uses Clock Times; Pending Feedback keeps its heading. Both themes have no leading icon.');
   } finally {
     await browser.close();
   }

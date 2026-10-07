@@ -16,7 +16,9 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
-    .main-content { flex: 1; overflow-y: auto; padding: 0 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .attendance-list-view { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; overflow: hidden; margin-bottom: 78px; }
+    .attendance-list-view > .cal-top-header { flex-shrink: 0; }
+    .main-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-padding-top: 96px; margin-bottom: 80px; padding: 0 16px 16px; position: relative; z-index: 10; scrollbar-width: none; }
     .main-content::-webkit-scrollbar { display: none; }
     
     .summary-card {
@@ -370,20 +372,25 @@
       gap: 12px;
     }
     .attendance-update-btn {
-      width: 100%;
-      min-height: 40px;
-      padding: 10px 16px;
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      z-index: 30;
+      min-height: 44px;
+      padding: 12px 24px;
       border: 0;
-      border-radius: 12px;
+      border-radius: 999px;
       background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
       color: #fff;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
       white-space: nowrap;
     }
     .attendance-update-btn:active { transform: scale(0.97); }
+    .attendance-update-btn:disabled { opacity: .5; cursor: default; box-shadow: none; }
+    .attendance-update-btn:focus-visible { outline: 3px solid var(--purple-primary); outline-offset: 3px; }
     .attendance-update-btn[hidden] { display: none; }
 
     .history-card-item.attendance-record-card {
@@ -1240,6 +1247,7 @@
 <body>
   <preview-top-bar active-page="attendance"></preview-top-bar>
   <div class="phone-container">
+    <div class="attendance-list-view">
     <div class="cal-top-header">
       <phone-status-bar time="12:36" style="color: #ffffff;"></phone-status-bar>
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
@@ -1305,7 +1313,6 @@
             </button>
           </div>
         </div>
-        <button class="attendance-update-btn" type="button" id="attendanceUpdateBtn" onclick="updateAttendanceVerification()" hidden>Update</button>
       </div>
 
       <!-- Attendance Card 1 (Normal) -->
@@ -1391,6 +1398,8 @@
            </div>
       </div>
       
+    </div>
+      <button class="attendance-update-btn" type="button" id="attendanceUpdateBtn" onclick="updateAttendanceVerification()" disabled>Update</button>
     </div>
     <phone-bottom-nav active="apps"></phone-bottom-nav>
 
@@ -1613,7 +1622,7 @@
 
            <!-- Section: Clock Data Amendment -->
            <div style="margin-bottom: 20px;">
-              <h4 class="attendance-feedback-clock-title form-section-heading" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Clock Time</h4>
+              <h4 class="attendance-feedback-clock-title form-section-heading" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Clock Times</h4>
               
               <!-- Modern Pill Actions -->
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
@@ -1889,6 +1898,16 @@
           const summary = ['Odd Clocking Days', 'Unapproved OT Hours', 'Absent Days', 'Lost Hours'].includes(requestedSummary) ? requestedSummary : 'Odd Clocking Days';
           returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme, summary });
           window.location.replace(returnUrl.href);
+        } else if (overlayId === 'feedbackModalOverlay' && routeParams.get('feedbackFrom') === 'staff-attendance') {
+          let staffState;
+          try { staffState = JSON.parse(sessionStorage.getItem('staff-attendance:feedback-return')); } catch (error) { /* Direct links can work without storage. */ }
+          if (staffState?.returnToken && staffState.returnToken === routeParams.get('feedbackReturnToken') && window.history.length > 1) {
+            window.history.back();
+            return;
+          }
+          const returnUrl = new URL('staff-attendance.html', window.location.href);
+          returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme });
+          window.location.replace(returnUrl.href);
         } else if (
           (overlayId === 'feedbackModalOverlay' && routeParams.get('feedbackFrom') === 'pending-feedback') ||
           (overlayId === 'shiftChangeModalOverlay' && routeParams.get('shiftFrom') === 'pending-feedback')
@@ -1977,17 +1996,19 @@
       if (label) label.textContent = isVerified ? 'Verified' : 'Verify';
     }
 
+    const attendanceSavedVerification = new Map(Array.from(document.querySelectorAll('.attendance-verify-button'), button => [button, button.getAttribute('aria-pressed') === 'true']));
     function syncAttendanceUpdateButton() {
       const updateButton = document.getElementById('attendanceUpdateBtn');
       if (!updateButton) return;
-      const hasSelection = Array.from(document.querySelectorAll('.attendance-verify-button'))
-        .some(button => button.getAttribute('aria-pressed') === 'true');
-      updateButton.hidden = !hasSelection;
+      const hasChanges = Array.from(document.querySelectorAll('.attendance-verify-button'))
+        .some(button => (button.getAttribute('aria-pressed') === 'true') !== attendanceSavedVerification.get(button));
+      updateButton.disabled = !hasChanges;
     }
 
     function updateAttendanceVerification() {
-      const updateButton = document.getElementById('attendanceUpdateBtn');
-      if (updateButton) updateButton.hidden = true;
+      document.querySelectorAll('.attendance-verify-button').forEach(button => attendanceSavedVerification.set(button, button.getAttribute('aria-pressed') === 'true'));
+      syncAttendanceUpdateButton();
+      document.getElementById('verifyAllBtn')?.focus({ preventScroll: true });
       showToast('Attendance verification updated');
     }
 
@@ -2069,7 +2090,7 @@
     // Reuse this form for linked Feedback actions.
     function openLinkedFeedback() {
       const params = new URLSearchParams(window.location.search);
-      if (!['hours-summary', 'pending-feedback'].includes(params.get('feedbackFrom'))) return;
+      if (!['hours-summary', 'pending-feedback', 'staff-attendance'].includes(params.get('feedbackFrom'))) return;
       const dateStr = params.get('feedbackDate');
       const recordDate = new Date(dateStr);
       if (!dateStr || Number.isNaN(recordDate.getTime())) return;
