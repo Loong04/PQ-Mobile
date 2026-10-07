@@ -103,6 +103,116 @@
         }
       }
 
+      function renderFeedbackApprovalDetails(data) {
+        const group = document.getElementById('attFeedbackDetailsGroup');
+        group.replaceChildren();
+        const clockPanel = document.createElement('section');
+        clockPanel.id = 'attFeedbackClockAmendments';
+        clockPanel.className = 'feedback-approval-clock-panel';
+        clockPanel.setAttribute('aria-label', 'Clock time amendments');
+        const clockTrack = document.createElement('div');
+        clockTrack.className = 'feedback-approval-clock-track';
+        const recordDate = data.date ?? data.attendanceDate ?? data.startDate ?? data.dates;
+        const suppliedPunches = data.punches ?? data.clockAmendments;
+        const punches = Array.isArray(suppliedPunches) && suppliedPunches.length
+          ? suppliedPunches : [{ date: recordDate }];
+        const formatClockDate = value => {
+          if (!value) return '—';
+          const text = String(value);
+          const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          const local = text.match(/(?:^|\s)(\d{2})\/(\d{2})\/(\d{4})$/);
+          const date = iso ? new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
+            : local ? new Date(Number(local[3]), Number(local[2]) - 1, Number(local[1])) : new Date(text);
+          return Number.isNaN(date.getTime()) ? text : date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        };
+        for (const punch of punches) {
+          const card = document.createElement('div');
+          card.className = 'feedback-approval-clock-card';
+          for (const [part, dateValue, timeValue] of [
+            ['original', punch.originalDate ?? punch.date ?? recordDate, punch.original],
+            ['amended', punch.amendedDate ?? punch.date ?? recordDate, punch.amended]
+          ]) {
+            const section = document.createElement('div');
+            section.className = 'feedback-approval-clock-' + (part === 'original' ? 'top' : 'bottom');
+            const date = document.createElement('time');
+            date.textContent = formatClockDate(dateValue);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(String(dateValue))) date.dateTime = dateValue;
+            const time = document.createElement('span');
+            time.className = 'feedback-approval-clock-' + part;
+            time.textContent = timeValue === undefined || timeValue === null || timeValue === '' ? '—' : String(timeValue);
+            time.setAttribute('aria-label', (part === 'original' ? 'Original: ' : 'Amended: ') + time.textContent);
+            if (part === 'original' && timeValue === 'New') time.classList.add('is-new');
+            section.append(date, time);
+            card.append(section);
+          }
+          clockTrack.append(card);
+        }
+        clockPanel.append(clockTrack);
+        const identity = (name, id) => {
+          const block = document.createElement('div');
+          const title = document.createElement('div');
+          title.className = 'feedback-approval-employee-name';
+          title.textContent = name || '—';
+          block.append(title);
+          if (id) {
+            const number = document.createElement('div');
+            number.className = 'feedback-approval-employee-id';
+            number.textContent = '#' + String(id).replace(/^#+/, '');
+            block.append(number);
+          }
+          return block;
+        };
+        let submitter = data.submitter ?? data.submittedBy ?? '—';
+        if (submitter && typeof submitter === 'object') {
+          submitter = identity(submitter.name, submitter.empNo || submitter.empId || submitter.id);
+        } else if (typeof submitter === 'string' && submitter.includes(' - ')) {
+          const [id, ...name] = submitter.split(' - ');
+          submitter = identity(name.join(' - '), id);
+        }
+        const rows = [
+          ['Document Reference', data.docRef],
+          ['Document Status', data.documentStatus ?? data.docStatus ?? data.statusText],
+          ['Employee', identity(data.name, data.empId || data.id)],
+          ['Employee Branch', data.employeeBranch ?? data.branch],
+          ['Employee Department', data.employeeDepartment ?? data.department ?? data.dept],
+          ['Date', data.date ?? data.attendanceDate ?? data.startDate ?? data.dates],
+          ['Shift', data.originalShift ?? data.shift],
+          ['Submitter', submitter],
+          ['Submit Date', data.submitDate ?? data.submittedAt],
+          ['Amended Shift', data.amendedShift],
+          ['Shift Change Reason', data.shiftChangeReason ?? data.reason],
+          ['Remarks', data.remarks ?? data.remark],
+          ['Approver Comments', data.approverComments ?? data.comments]
+        ];
+        const table = document.createElement('table');
+        table.className = 'record-detail-table';
+        const body = table.createTBody();
+        for (const [label, value] of rows) {
+          const row = body.insertRow();
+          const title = row.insertCell();
+          title.className = 'detail-popout-label';
+          title.textContent = label + ':';
+          const cell = row.insertCell();
+          cell.className = 'detail-popout-value';
+          if (value instanceof Node) cell.append(value);
+          else cell.textContent = value === undefined || value === null || value === '' ? '—' : String(value);
+          if (label === 'Amended Shift') cell.classList.add('feedback-approval-amended-shift');
+          if (label === 'Remarks' || label === 'Approver Comments') cell.style.whiteSpace = 'pre-wrap';
+        }
+        const comments = document.createElement('div');
+        comments.className = 'detail-popout-comments';
+        const label = document.createElement('label');
+        label.htmlFor = 'attFeedbackActionComments';
+        label.textContent = 'Approver Action Comments';
+        const input = document.createElement('textarea');
+        input.id = 'attFeedbackActionComments';
+        input.className = 'detail-popout-comment-control';
+        input.rows = 2;
+        input.placeholder = 'Add comments...';
+        comments.append(label, input);
+        group.append(clockPanel, table, comments);
+      }
+
       function triggerAttendanceViewDetails() {
         closeAttendanceThreeDotsMenu();
         if (!currentAttendanceSelectedData) return;
@@ -116,6 +226,14 @@
         let isOtPlanModal = data.category === 'ot_plan' || (data.type && data.type.toLowerCase().includes('ot plan')) || (data.duration && data.duration.includes('('));
         let isFeedbackModal = data.category === 'feedback' || (data.type && data.type.toLowerCase().includes('feedback'));
         let isFinalOtModal = data.category === 'final_ot' || (!isOtPlanModal && !isFeedbackModal && ((data.type && data.type.toLowerCase().includes('ot')) || (data.otType && data.otType.toLowerCase().includes('ot'))));
+        document.getElementById('attendanceDetailsModalOverlay').dataset.approvalCategory = isFeedbackModal ? 'feedback' : isOtPlanModal ? 'ot_plan' : 'final_ot';
+        document.getElementById('attFeedbackDetailsGroup').hidden = !isFeedbackModal;
+        document.getElementById('attOtDetailsGroup').hidden = isFeedbackModal;
+        if (isFeedbackModal) renderFeedbackApprovalDetails(data);
+        for (const fieldId of ['attFieldFinalStatus', 'attFieldApprovalMethod', 'attFieldActionApprovalMethod']) {
+          const row = document.getElementById(fieldId)?.closest('tr');
+          if (row) row.hidden = isOtPlanModal;
+        }
         let planHoursVal = '0.00';
         let otTimesVal = data.otTimes || '0000 ,0500';
         let actualHoursVal = '0.50';
@@ -585,6 +703,86 @@
         -ms-overflow-style: none !important;
         scrollbar-width: none !important;
       }
+
+      #attFeedbackDetailsGroup[hidden], #attOtDetailsGroup[hidden] { display: none !important; }
+      #attendanceDetailsModalOverlay[data-approval-category="feedback"] .detail-popout-title {
+        font-size: 14px !important;
+        white-space: normal !important;
+        line-height: 1.3 !important;
+      }
+      #attFeedbackDetailsGroup .feedback-approval-employee-name { font-weight: 800; }
+      #attFeedbackDetailsGroup .feedback-approval-employee-id {
+        margin-top: 2px;
+        margin-bottom: 4px;
+        color: var(--detail-muted, var(--text-muted));
+        opacity: .8;
+        font: 700 11.5px monospace, sans-serif;
+      }
+      #attFeedbackDetailsGroup .feedback-approval-amended-shift { color: #ef4444 !important; font-weight: 800 !important; }
+      [data-theme="dark"] #attFeedbackDetailsGroup .feedback-approval-amended-shift { color: #f87171 !important; }
+      #attFeedbackDetailsGroup .feedback-approval-clock-panel {
+        min-width: 0;
+        margin-bottom: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        background: var(--bg-input);
+      }
+      .feedback-approval-clock-track { display: flex; gap: 10px; min-width: 0; overflow-x: auto; padding: 2px; }
+      .feedback-approval-clock-card {
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 84px;
+        overflow: hidden;
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        background: var(--bg-card);
+      }
+      .feedback-approval-clock-top, .feedback-approval-clock-bottom {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 78px;
+        padding: 10px 7px;
+      }
+      .feedback-approval-clock-top { background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); }
+      .feedback-approval-clock-bottom { background: linear-gradient(180deg, #10b981, #059669); }
+      .feedback-approval-clock-card time { color: var(--text-secondary); font-size: 12px; font-weight: 800; }
+      .feedback-approval-clock-bottom time { color: #fff; }
+      .feedback-approval-clock-original, .feedback-approval-clock-amended {
+        width: 100%;
+        padding: 3px 6px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.3;
+      }
+      .feedback-approval-clock-original { background: var(--bg-input); color: var(--text-secondary); }
+      .feedback-approval-clock-original.is-new { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; }
+      .feedback-approval-clock-amended { background: #fff; color: #047857; }
+
+      /* Workforce Plan, Attendance Today and Verification share the employee detail card view. */
+      #staffListContent .workforce-employee-card {
+        flex-shrink: 0;
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        overflow: hidden;
+        background: var(--bg-card);
+      }
+      .workforce-employee-header {
+        padding: 11px 14px;
+        background: linear-gradient(110deg, #5b21b6, #7c3aed);
+        color: #fff;
+      }
+      .workforce-employee-name { margin: 0; font-size: 14px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+      .workforce-employee-id { margin: 2px 0 0; color: rgba(255,255,255,.8); opacity: .8; font: 700 11.5px monospace, sans-serif; }
+      .workforce-employee-details { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin: 0; padding: 12px 14px; }
+      .workforce-employee-field { min-width: 0; padding: 10px 11px; border: 1px solid var(--border-subtle); border-radius: 13px; background: var(--bg-input); }
+      .workforce-employee-field dt { margin-bottom: 4px; color: var(--text-muted); font-size: 10px; font-weight: 700; }
+      .workforce-employee-field dd { margin: 0; color: var(--text-primary); font-size: 12.5px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
 
       /* Pending Approval Action Card 4-Button System */
       .pending-action-grid {
@@ -3153,8 +3351,9 @@
 
         <!-- Scrollable Details Content List as Table matching leave.html -->
         <div style="flex: 1; overflow-y: auto; padding: 14px 16px 14px 16px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none; background: var(--bg-sheet);">
-          
-          <div style="background: var(--bg-sheet); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05); flex-shrink: 0;">
+
+          <div id="attFeedbackDetailsGroup" hidden></div>
+          <div id="attOtDetailsGroup" style="background: var(--bg-sheet); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05); flex-shrink: 0;">
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
               <tbody>
                 <tr>
@@ -3193,7 +3392,7 @@
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700;" id="attFieldShift">8.00AM-5.30PM</td>
                 </tr>
                 <tr>
-                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Clocking Times:</td>
+                  <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Clock Time:</td>
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%; font-weight: 700;" id="attFieldClockingTimes">0703,1748</td>
                 </tr>
                 <tr>
@@ -3249,7 +3448,7 @@
                   <td style="padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); font-weight: 700; color: var(--text-muted); background: var(--bg-input); width: 42%;">Action Approval Method:</td>
                   <td style="padding: 6px 10px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); width: 58%;">
                     <div style="position: relative;">
-                      <select style="width: 100%; padding: 6px 24px 6px 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary); font-size: 11.5px; appearance: none; -webkit-appearance: none; cursor: pointer; outline: none;">
+                      <select id="attFieldActionApprovalMethod" style="width: 100%; padding: 6px 24px 6px 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary); font-size: 11.5px; appearance: none; -webkit-appearance: none; cursor: pointer; outline: none;">
                         <option value="">Please Select</option>
                         <option value="auto">Auto Approved</option>
                         <option value="manual">Manual Approved</option>
@@ -3904,6 +4103,7 @@
           const typeStr = item.type || 'Final OT Request';
           const reasonStr = item.reason || 'Operations Closing';
           const startDateStr = item.startDate || 'Wed, 25/02/2026';
+          const claimHoursStr = item.claimHours ?? item.duration ?? '—';
           const actualHoursStr = item.actualHours || item.duration || '2.50 hrs';
           const approvedHoursStr = item.approvedHours || item.duration || '2.50 hrs';
           const clockingStr = item.clocking || '07:03 AM – 07:30 PM';
@@ -3919,6 +4119,8 @@
           // Differentiate OT Plan Requests, Attendance Feedback, and Final OT Requests
           const isOtPlan = item.category === 'ot_plan' || (typeStr && typeStr.toLowerCase().includes('ot plan')) || (item.duration && item.duration.includes('('));
           const isFeedback = item.category === 'feedback' || (typeStr && typeStr.toLowerCase().includes('feedback'));
+          const primaryLabel = isFeedback ? 'Amended Shift' : 'Type';
+          const primaryValue = isFeedback ? (item.amendedShift || item.shift || '—') : typeStr;
 
           let hoursGridHtml = '';
           if (isOtPlan) {
@@ -3942,17 +4144,15 @@
                   </div>
                 </div>`;
           } else if (isFeedback) {
-            const amendedShiftStr = item.amendedShift || item.shift || '08:00 AM – 05:30 PM';
-            hoursGridHtml = `
-                <!-- Amended Shift Only -->
-                <div style="margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
-                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Amended Shift</div>
-                  <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${amendedShiftStr}</div>
-                </div>`;
+            hoursGridHtml = '';
           } else {
             hoursGridHtml = `
-                <!-- 3 & 4: Actual Hours & Approved Hours -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                <!-- Claim Hours, Actual Hours & Approved Hours -->
+                <div class="final-ot-hours-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; background: var(--bg-input); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                  <div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Claim Hours</div>
+                    <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${claimHoursStr}</div>
+                  </div>
                   <div>
                     <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Actual Hours</div>
                     <div style="font-size: 13.5px; font-weight: 900; color: var(--text-primary);">${actualHoursStr}</div>
@@ -4000,11 +4200,11 @@
                   </div>
                 </div>
 
-                <!-- 1 & 2: Type & Reason -->
+                <!-- Primary request field and reason -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                  <div>
-                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Type</div>
-                    <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${typeStr}</div>
+                  <div class="pending-request-primary-field">
+                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">${primaryLabel}</div>
+                    <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${primaryValue}</div>
                   </div>
                   <div>
                     <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">Reason</div>
@@ -4017,13 +4217,13 @@
                 <!-- 5 & 6: Clocking & Shift Box -->
                 <div style="background: var(--bg-input); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
                   <div style="display: flex; justify-content: space-between; font-size: 11.5px; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 700;">Clocking:</span>
+                    <span style="color: var(--text-muted); font-weight: 700;">Clock Time:</span>
                     <strong style="color: var(--text-primary); font-family: monospace, sans-serif; font-size: 12px; font-weight: 700;">${clockingStr}</strong>
                   </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 11.5px; border-top: 1px dashed var(--border-subtle); padding-top: 6px; align-items: center;">
+                  ${!isFeedback ? `<div style="display: flex; justify-content: space-between; font-size: 11.5px; border-top: 1px dashed var(--border-subtle); padding-top: 6px; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 700;">Shift:</span>
                     <strong style="color: var(--text-primary); font-family: monospace, sans-serif; font-size: 12px; font-weight: 700;">${shiftStr}</strong>
-                  </div>
+                  </div>` : ''}
                 </div>
 
                 <!-- 7: Remarks -->
@@ -4137,6 +4337,42 @@
         const container = document.getElementById("staffListContent");
         if (!list || list.length === 0) {
           container.innerHTML = `<div style="text-align: center; padding: 35px 0; color: var(--text-muted); font-size: 13px;">No employee matching filter</div>`;
+          return;
+        }
+
+        if (['scheduled', 'ot', 'present', 'noshow', 'attendance_verification'].includes(currentStaffType)) {
+          const statusLabel = { scheduled: 'Shift', ot: 'OT Plan', present: 'Clocking', noshow: 'Attendance', attendance_verification: 'Verification' }[currentStaffType];
+          container.replaceChildren();
+          for (const item of list) {
+            const card = document.createElement('article');
+            card.className = 'workforce-employee-card';
+            const header = document.createElement('div');
+            header.className = 'workforce-employee-header';
+            const name = document.createElement('h4');
+            name.className = 'workforce-employee-name';
+            name.textContent = item.name;
+            const id = document.createElement('div');
+            id.className = 'workforce-employee-id';
+            id.textContent = '#' + (item.id || '').replace(/^#+/, '');
+            header.append(name, id);
+            const details = document.createElement('dl');
+            details.className = 'workforce-employee-details';
+            for (const [label, value] of [
+              [statusLabel, item.statusText || '—'],
+              ['Department', (item.dept || '—') + (item.branch ? ' • ' + item.branch : '')]
+            ]) {
+              const field = document.createElement('div');
+              field.className = 'workforce-employee-field';
+              const title = document.createElement('dt');
+              title.textContent = label;
+              const text = document.createElement('dd');
+              text.textContent = value;
+              field.append(title, text);
+              details.append(field);
+            }
+            card.append(header, details);
+            container.append(card);
+          }
           return;
         }
 
