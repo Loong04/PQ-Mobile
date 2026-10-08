@@ -249,26 +249,31 @@
     .list-counter { font-size: 12.5px; font-weight: 800; color: var(--text-primary); }
     .select-link { font-size: 12.5px; font-weight: 800; color: var(--purple-primary); background: transparent; border: none; cursor: pointer; }
 
-    /* Employee Card - Reference Matching WhatsApp Image 2026-09-23 at 14.35.34.jpeg */
+    /* Employee Card - Matches Shift Planning staff cards */
     .ot-staff-card {
-      background: var(--bg-card);
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.06) 100%);
       border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      padding: 14px;
+      border-left: 5px solid #10b981;
+      border-radius: 18px;
+      padding: 16px;
       margin-bottom: 12px;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.2s;
-    }
-    .ot-staff-card.selected {
-      border-color: rgba(124, 58, 237, 0.4);
-      background: rgba(124, 58, 237, 0.04);
-    }
-    .ot-staff-top {
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
+    .ot-staff-card:active { transform: scale(0.985); }
+    .ot-staff-card.selected {
+      border-top-color: rgba(124, 58, 237, 0.6);
+      border-right-color: rgba(124, 58, 237, 0.6);
+      border-bottom-color: rgba(124, 58, 237, 0.6);
+      box-shadow: 0 5px 18px rgba(124, 58, 237, 0.12);
+    }
+    .ot-staff-card-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; }
+    .ot-staff-identity { min-width: 0; cursor: pointer; }
+    .ot-staff-name { font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2; }
+    .ot-staff-card-controls { display: flex; align-items: center; justify-content: center; }
     .custom-checkbox {
       width: 22px;
       height: 22px;
@@ -281,7 +286,6 @@
       cursor: pointer;
       transition: all 0.2s;
       flex-shrink: 0;
-      margin-top: 2px;
     }
     .ot-staff-card.selected .custom-checkbox {
       background: #7c3aed;
@@ -302,24 +306,18 @@
       line-height: 1.2;
     }
 
-    .ot-hours-box {
-      display: flex;
-      align-items: center;
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 6px 10px;
-      width: 120px;
-    }
-    .ot-hours-input {
+    .ot-staff-summary-panel {
+      display: grid;
+      gap: 9px;
       width: 100%;
-      background: transparent;
-      border: none;
-      color: var(--text-primary);
-      font-size: 13.5px;
-      font-weight: 800;
-      outline: none;
+      padding: 12px 14px;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      border-radius: 15px;
+      background: rgba(16, 185, 129, 0.05);
     }
+    .ot-staff-detail { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .ot-staff-detail > span { color: var(--text-secondary); font-size: 11.5px; font-weight: 600; }
+    .ot-staff-detail > strong { color: var(--text-primary); font-size: 12px; font-weight: 800; text-align: right; }
 
     /* Grid Calendar Styles (Light Theme) */
     .grid-cal-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 20px 16px; margin-top: 10px; }
@@ -614,7 +612,7 @@
           <div id="otDetailShiftLabel" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">W01 · 8:30 AM – 5:30 PM</div>
           <div id="otDetailTypeLabel" style="font-size: 12px; font-weight: 700; color: var(--purple-primary); margin-top: 3px;">OT 1.5 · Before work</div>
           <div id="otDetailTimeLabel" style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">06:00 – 08:30 · Same day</div>
-          <div id="otDetailHoursLabel" style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Default: 2.5 h per staff</div>
+          <div id="otDetailHoursLabel" style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Hours: 2.5 h</div>
         </div>
 
         <!-- Active Filter Summary Bar -->
@@ -1579,21 +1577,13 @@
           </div>
         </div>
 
-        <!-- Date display text below day dropdowns -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: -6px;">
-          <span id="modalStartDateDisplay">23 Sep 2026</span>
-          <span id="modalEndDateDisplay">23 Sep 2026</span>
-        </div>
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: -6px;">Use Next day when OT ends after midnight.</div>
-
-        <!-- Default OT Hours -->
+        <!-- OT Hours -->
         <div>
-          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Default OT hours</label>
+          <label for="modalDefaultHours" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Hours</label>
           <div style="display: flex; align-items: center; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 14px;">
             <input type="number" id="modalDefaultHours" value="2.5" step="0.5" style="width: 100%; background: transparent; border: none; color: var(--text-primary); font-size: 13.5px; font-weight: 800; outline: none;">
             <span style="font-size: 13px; font-weight: 800; color: var(--text-muted);">h</span>
           </div>
-          <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Individual hours can be adjusted in the staff list.</div>
         </div>
 
       </div>
@@ -1790,8 +1780,6 @@
       const formatted = currentDate.toLocaleDateString('en-GB', options);
       document.getElementById('currentDateDisplay').textContent = formatted;
       document.getElementById('editOtDateSubtext').textContent = `Planning date: ${formatted}`;
-      document.getElementById('modalStartDateDisplay').textContent = formatted;
-      document.getElementById('modalEndDateDisplay').textContent = formatted;
     }
 
     function changeDate(delta) {
@@ -1891,28 +1879,22 @@
         
         // Strict AGENTS.md Employee ID Placement: #empNo directly BELOW employee name
         card.innerHTML = `
-          <div class="ot-staff-top">
-            <div class="custom-checkbox" onclick="toggleStaffSelection('${emp.id}')">
-              <i class="fa-solid fa-check"></i>
+          <div class="ot-staff-card-top">
+            <div class="ot-staff-identity" onclick="toggleStaffSelection('${emp.id}')">
+              <div class="ot-staff-name">${emp.name}</div>
+              <div class="emp-id-label">#${emp.id}</div>
             </div>
-            <div style="flex: 1;" onclick="toggleStaffSelection('${emp.id}')" style="cursor: pointer;">
-              <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${emp.name}</div>
-              <div class="emp-id-label">#${emp.id} · ${emp.dept}</div>
-            </div>
-          </div>
-          
-          <div style="display: flex; justify-content: space-between; align-items: flex-end; pt-2; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
-            <div>
-              <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">OT hours</div>
-              <div class="ot-hours-box">
-                <input type="number" step="0.5" min="0" value="${emp.otHours}" class="ot-hours-input" onchange="updateStaffOtHours('${emp.id}', this.value)" onclick="event.stopPropagation()">
-                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-muted);">h</span>
+            <div class="ot-staff-card-controls">
+              <div class="custom-checkbox" onclick="toggleStaffSelection('${emp.id}')" aria-hidden="true">
+                <i class="fa-solid fa-check"></i>
               </div>
             </div>
-            <div style="text-align: right;">
-              <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">MTD OT</div>
-              <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${emp.mtdOt} h</div>
-            </div>
+          </div>
+          <div class="ot-staff-summary-panel">
+            <div class="ot-staff-detail"><span>Job Title</span><strong>${emp.dept}</strong></div>
+            <div class="ot-staff-detail"><span>Shift</span><strong>${emp.currentShift}</strong></div>
+            <div class="ot-staff-detail"><span>OT Hours</span><strong class="ot-hours-value">${emp.otHours} h</strong></div>
+            <div class="ot-staff-detail"><span>MTD OT</span><strong>${emp.mtdOt} h</strong></div>
           </div>
         `;
         container.appendChild(card);
@@ -1939,15 +1921,6 @@
       if (emp) {
         emp.selected = !emp.selected;
         renderStaffCards();
-        updateStickyBar();
-      }
-    }
-
-    function updateStaffOtHours(id, newHours) {
-      const val = parseFloat(newHours) || 0;
-      const emp = staffDatabase.find(e => e.id === id);
-      if (emp) {
-        emp.otHours = val;
         updateStickyBar();
       }
     }
@@ -2020,7 +1993,7 @@
       document.getElementById('otDetailShiftLabel').textContent = otDetailsState.shift;
       document.getElementById('otDetailTypeLabel').textContent = otDetailsState.type;
       document.getElementById('otDetailTimeLabel').textContent = `${otDetailsState.startTime} – ${otDetailsState.endTime} · ${otDetailsState.startDay}`;
-      document.getElementById('otDetailHoursLabel').textContent = `Default: ${otDetailsState.defaultHours} h per staff`;
+      document.getElementById('otDetailHoursLabel').textContent = `Hours: ${otDetailsState.defaultHours} h`;
 
       // Optionally update all staff otHours to default if user desires
       staffDatabase.forEach(e => { e.otHours = otDetailsState.defaultHours; });

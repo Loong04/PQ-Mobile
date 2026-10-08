@@ -1,0 +1,2410 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - OT Planning</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 14px 100px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    /* Top Purple Header */
+    .shift-top-header { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 10px 16px 14px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28); position: relative; z-index: 20; }
+    .header-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .header-title-wrap { display: flex; align-items: center; gap: 12px; }
+    .icon-btn-ghost { background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; transition: all 0.2s; }
+    .icon-btn-ghost:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.28); }
+
+    /* Executive Date Switcher Card Below Header */
+    .date-switcher-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+    .date-nav-btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      cursor: pointer;
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .date-nav-btn:active {
+      transform: scale(0.92);
+      background: var(--purple-primary);
+      color: #ffffff;
+    }
+    .date-current-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    /* Filter Trigger Button Card */
+    .filter-trigger-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      font-size: 15px;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .filter-trigger-btn:active {
+      transform: scale(0.92);
+      background: var(--purple-primary);
+      color: #ffffff;
+    }
+
+    /* 3 Tabs Navigation Card Below Header */
+    .tabs-nav-card {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-card-btn {
+      flex: 1;
+      padding: 9px 0;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-card-btn.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+    }
+
+    /* Cards */
+    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+
+    /* History-Style Summary Detail Card */
+    .summary-detail-card {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      border-left: 4px solid #a855f7;
+      border-radius: 16px;
+      padding: 15px 16px;
+      margin-bottom: 0;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .summary-detail-card:active { transform: scale(0.98); }
+    [data-theme="dark"] .summary-detail-card, html[data-theme="dark"] .summary-detail-card {
+      background: linear-gradient(135deg, rgba(30, 27, 54, 0.7) 0%, rgba(20, 18, 40, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 4px solid #a855f7;
+    }
+
+    .summary-detail-card.blue-bar {
+      border-left: 4px solid #3b82f6;
+    }
+    [data-theme="dark"] .summary-detail-card.blue-bar, html[data-theme="dark"] .summary-detail-card.blue-bar {
+      border-left: 4px solid #3b82f6;
+    }
+
+    .summary-detail-card.ot-theme {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.03) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-left: 4px solid #f59e0b;
+    }
+    [data-theme="dark"] .summary-detail-card.ot-theme, html[data-theme="dark"] .summary-detail-card.ot-theme {
+      background: linear-gradient(135deg, rgba(38, 28, 15, 0.7) 0%, rgba(26, 20, 10, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 4px solid #f59e0b;
+    }
+
+    .summary-detail-card.feedback-theme {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(244, 114, 182, 0.03) 100%);
+      border: 1px solid rgba(236, 72, 153, 0.25);
+      border-left: 4px solid #ec4899;
+    }
+    [data-theme="dark"] .summary-detail-card.feedback-theme, html[data-theme="dark"] .summary-detail-card.feedback-theme {
+      background: linear-gradient(135deg, rgba(40, 20, 35, 0.7) 0%, rgba(25, 12, 22, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 4px solid #ec4899;
+    }
+
+    .summary-detail-card.nowork-theme {
+      background: linear-gradient(135deg, rgba(107, 114, 128, 0.08) 0%, rgba(156, 163, 175, 0.03) 100%);
+      border: 1px solid rgba(107, 114, 128, 0.25);
+      border-left: 4px solid #6b7280;
+    }
+    [data-theme="dark"] .summary-detail-card.nowork-theme, html[data-theme="dark"] .summary-detail-card.nowork-theme {
+      background: linear-gradient(135deg, rgba(25, 28, 35, 0.7) 0%, rgba(18, 20, 26, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 4px solid #6b7280;
+    }
+
+    .card-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .card-title-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+    .card-chevron {
+      color: var(--text-muted);
+      font-size: 13px;
+      opacity: 0.6;
+    }
+
+    .card-kv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .card-kv-row:last-child {
+      margin-bottom: 0;
+    }
+    .card-kv-val {
+      color: var(--text-primary);
+      font-weight: 800;
+    }
+
+    /* OT details Overview Card (Staff Tab Header) */
+    .ot-details-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .ot-edit-link {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Search Input Bar */
+    .search-bar-wrap { position: relative; margin-bottom: 12px; }
+    .search-input { width: 100%; padding: 11px 14px 11px 38px; border-radius: 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 600; outline: none; transition: border-color 0.2s; }
+    .search-input:focus { border-color: var(--purple-primary); }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; }
+
+    /* Staff List Header */
+    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+    .list-counter { font-size: 12.5px; font-weight: 800; color: var(--text-primary); }
+    .select-link { font-size: 12.5px; font-weight: 800; color: var(--purple-primary); background: transparent; border: none; cursor: pointer; }
+
+    /* Employee Card - Reference Matching WhatsApp Image 2026-09-23 at 14.35.34.jpeg */
+    .ot-staff-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    .ot-staff-card.selected {
+      border-color: rgba(124, 58, 237, 0.4);
+      background: rgba(124, 58, 237, 0.04);
+    }
+    .ot-staff-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-input);
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .ot-staff-card.selected .custom-checkbox {
+      background: #7c3aed;
+      border-color: #7c3aed;
+      color: #ffffff;
+    }
+    .custom-checkbox i { font-size: 12px; display: none; }
+    .ot-staff-card.selected .custom-checkbox i { display: block; }
+
+    /* Strict AGENTS.md Rule Compliance for Employee ID Typography */
+    .emp-id-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.85;
+      font-family: monospace, sans-serif;
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+
+    .ot-hours-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 6px 10px;
+      width: 120px;
+    }
+    .ot-hours-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 800;
+      outline: none;
+    }
+
+    /* Grid Calendar Styles (Light Theme) */
+    .grid-cal-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 20px 16px; margin-top: 10px; }
+    .grid-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .grid-cal-title { font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .grid-cal-toggle { display: flex; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden; }
+    .grid-cal-toggle-btn { padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--text-muted); border: none; background: transparent; cursor: pointer; transition: all 0.2s; }
+    .grid-cal-toggle-btn.active { background: var(--purple-primary); color: var(--text-hero); }
+    .grid-cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .grid-cal-nav-center { display: flex; align-items: center; gap: 16px; font-size: 14px; font-weight: 800; color: var(--text-primary); }
+    .grid-cal-nav-btn { color: var(--text-primary); font-size: 14px; background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; }
+    .grid-cal-today { color: var(--purple-primary); font-size: 12px; font-weight: 700; background: none; border: none; cursor: pointer; }
+    .grid-cal-legend { display: flex; gap: 16px; font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 16px; align-items: center; }
+    .grid-cal-legend span { display: flex; align-items: center; gap: 4px; }
+    .grid-cal-legend .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .grid-cal-legend .dot.blue { background: var(--tag-blue-text); }
+    .grid-cal-legend .dot.teal { background: var(--tag-teal-text); }
+    .grid-cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; margin-bottom: 6px; }
+    .grid-cal-weekday { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); }
+    .grid-cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden; background: var(--bg-card); }
+    .grid-cal-cell { aspect-ratio: 0.85; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-right: 1px solid var(--border-divider); border-bottom: 1px solid var(--border-divider); cursor: pointer; transition: all 0.2s; }
+    .grid-cal-cell:nth-child(7n) { border-right: none; }
+    .grid-cal-cell.empty { background: var(--bg-input); }
+    .grid-cal-cell.selected { border: 1.5px solid var(--purple-primary); background: var(--purple-subtle); border-radius: 6px; z-index: 10; box-shadow: 0 0 0 1px #7c3aed; }
+    .grid-cal-date { font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+    .grid-cal-stat-staff { font-size: 10px; font-weight: 800; color: var(--tag-blue-text); line-height: 1.1; margin-bottom: 1px; }
+    .grid-cal-stat-hours { font-size: 10px; font-weight: 700; color: var(--tag-teal-text); line-height: 1.1; }
+    .grid-cal-empty-text { font-size: 10px; font-weight: 600; color: var(--text-caption); }
+    
+    /* Summary Card below Calendar */
+    .cal-summary-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-top: 10px; }
+    .cal-summary-title { font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; }
+    .cal-summary-stats { display: flex; justify-content: space-between; margin-bottom: 16px; text-align: center; }
+    .cal-summary-stat { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .cal-summary-stat-val { font-size: 20px; font-weight: 800; color: var(--tag-blue-text); }
+    .cal-summary-stat-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+    .cal-summary-ot { font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-subtle); margin-bottom: 16px; }
+    .cal-summary-btn { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--purple-primary); background: transparent; color: var(--purple-primary); font-size: 12.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
+    .cal-summary-btn:active { transform: scale(0.98); background: var(--purple-subtle); }
+
+    /* Sticky Bottom Action Bar */
+    .sticky-bottom-bar {
+      position: absolute;
+      bottom: 78px;
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-subtle);
+      padding: 12px 18px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.18);
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+    }
+    .bar-summary-row { display: flex; justify-content: space-between; align-items: center; }
+    .bar-selected-count { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+    .bar-clear-btn { font-size: 12px; font-weight: 800; color: var(--purple-primary); background: transparent; border: none; cursor: pointer; }
+    .action-btn-primary {
+      width: 100%;
+      padding: 12px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      transition: transform 0.15s;
+    }
+    .action-btn-primary:active { transform: scale(0.98); }
+
+    /* Bottom Sheet Modal Standard */
+    .modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden; }
+    .modal-sheet { width: 100%; max-width: 420px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 35px rgba(0,0,0,0.5); border: 1px solid var(--border-subtle); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
+    .drag-handle { width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 10px auto 4px; opacity: 0.7; }
+    .sheet-header { padding: 12px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; }
+    .sheet-title { font-size: 17px; font-weight: 800; color: var(--text-primary); }
+    .sheet-close-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
+    .sheet-body { padding: 16px 18px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none; }
+    .sheet-body::-webkit-scrollbar { display: none; }
+    .sheet-footer { padding: 14px 18px 20px; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; background: var(--bg-card); }
+    .btn-secondary { flex: 1; padding: 12px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 800; cursor: pointer; text-align: center; }
+    .btn-primary { flex: 1; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 13.5px; font-weight: 800; cursor: pointer; text-align: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); }
+
+    /* AGENTS.md View Chart Button Presentation Standard */
+    .view-chart-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 13px; border-radius: 12px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; font-weight: 800; font-size: 12px; white-space: nowrap; cursor: pointer; }
+
+    
+    /* Modern Enterprise Summary Table Card (Table Show) */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 70px 75px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(109, 40, 217, 0.08) 100%);
+      padding: 13px 14px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1.5px solid var(--border-subtle);
+      align-items: center;
+    }
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 70px 75px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
+
+    .summary-table-footer {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 70px 75px;
+      padding: 12px 14px;
+      background: rgba(124, 58, 237, 0.08);
+      border-top: 1.5px solid var(--purple-border);
+      font-size: 12px;
+      font-weight: 800;
+      align-items: center;
+    }
+
+    .table-shift-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 7px;
+      border-radius: 8px;
+      font-size: 10.5px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .table-shift-badge.amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .table-shift-badge.purple { background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); border: 1px solid rgba(124, 58, 237, 0.3); }
+    .table-shift-badge.blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    /* Hub and Spoke View Container */
+    .view-container { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: var(--bg-body); z-index: 10; overflow: hidden; flex-direction: column; }
+    .view-container.active { display: flex; z-index: 20; }
+
+    /* Toast Notification */
+    .toast-box { position: absolute; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(16, 185, 129, 0.95); backdrop-filter: blur(8px); color: #ffffff; padding: 10px 18px; border-radius: 20px; font-size: 12.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 1200; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+    .toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  
+    /* History Card Styling */
+    .history-card-item {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.05);
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .history-card-item:active { transform: scale(0.98); }
+    [data-theme="dark"] .history-card-item, html[data-theme="dark"] .history-card-item {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(167, 139, 250, 0.05) 100%);
+      border-color: rgba(167, 139, 250, 0.25);
+    }
+    .history-card-item.ot-theme {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.03) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    [data-theme="dark"] .history-card-item.ot-theme, html[data-theme="dark"] .history-card-item.ot-theme {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+    .history-card-item.feedback-theme {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+    }
+    [data-theme="dark"] .history-card-item.feedback-theme, html[data-theme="dark"] .history-card-item.feedback-theme {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(167, 139, 250, 0.05) 100%);
+      border-color: rgba(167, 139, 250, 0.25);
+    }
+    .history-time-row { font-size: 14.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+    [data-theme="dark"] .history-time-row, html[data-theme="dark"] .history-time-row { color: #c084fc; }
+    .history-time-row.ot-time { color: #d97706; }
+    [data-theme="dark"] .history-time-row.ot-time, html[data-theme="dark"] .history-time-row.ot-time { color: #fbbf24; }
+    .history-time-row.feedback-time { color: #7c3aed; }
+    [data-theme="dark"] .history-time-row.feedback-time, html[data-theme="dark"] .history-time-row.feedback-time { color: #a78bfa; }
+    
+    /* Hide scrollbar for sub-view containers */
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .scroll-body::-webkit-scrollbar {
+      display: none;
+    }
+
+  </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+  <div class="phone-container" style="position: relative;">
+    <div id="view-main" class="view-container active" style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+
+    <!-- Toast Component -->
+    <div class="toast-box" id="toastNotice">
+      <i class="fa-solid fa-circle-check"></i> <span id="toastMsg">OT plan submitted successfully!</span>
+    </div>
+
+    <!-- Top Purple Header -->
+    <div class="shift-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div class="header-nav">
+        <div class="header-title-wrap">
+          <button class="icon-btn-ghost" onclick="javascript:history.back()" aria-label="Back">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">OT Planning</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Body -->
+    <div class="main-content">
+      
+      <!-- TOP CONTROL ROW BELOW HEADER: Date Switcher & Filter Info -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
+        
+        <!-- Date Navigator Card -->
+        <div class="date-switcher-card">
+          <button class="date-nav-btn" onclick="changeDate(-1)" aria-label="Previous Date">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div class="date-current-badge">
+            <i class="fa-solid fa-calendar-days" style="color: var(--purple-primary); font-size: 14px;"></i>
+            <span id="currentDateDisplay">Wed, 23 Sep 2026</span>
+          </div>
+          <button class="date-nav-btn" onclick="changeDate(1)" aria-label="Next Date">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Filter Trigger Card -->
+        <div class="date-switcher-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; text-align: left; cursor: pointer;" onclick="openFilterModal()">
+          <div style="display: flex; flex-direction: column; gap: 3px; flex: 1;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Current Filter</div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;" id="currentFilterTextDisplay">23 Sep 2026 • All Companies</div>
+          </div>
+          <button type="button" class="filter-trigger-btn" aria-label="Filter Roster" title="Filter Roster" style="margin: 0; pointer-events: none;">
+            <i class="fa-solid fa-sliders"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main 3 Tabs Bar ("三个 card": Staff | Calendar | Summary) -->
+      <div class="tabs-nav-card">
+        <button class="tab-card-btn active" id="tabStaffBtn" onclick="switchMainTab('staff')">Staff</button>
+        <button class="tab-card-btn" id="tabCalendarBtn" onclick="switchMainTab('calendar')">Calendar</button>
+        <button class="tab-card-btn" id="tabSummaryBtn" onclick="switchMainTab('summary')">Summary</button>
+      </div>
+
+      <!-- ================= 1. STAFF TAB CONTENT ================= -->
+      <div id="staffTabView">
+
+        <!-- OT details Overview Card (Matching Reference Screen 1) -->
+        <div class="ot-details-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">OT details</div>
+            <button type="button" class="ot-edit-link" onclick="openEditOtDetailsModal()">Edit</button>
+          </div>
+          <div id="otDetailShiftLabel" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">W01 · 8:30 AM – 5:30 PM</div>
+          <div id="otDetailTypeLabel" style="font-size: 12px; font-weight: 700; color: var(--purple-primary); margin-top: 3px;">OT 1.5 · Before work</div>
+          <div id="otDetailTimeLabel" style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">06:00 – 08:30 · Same day</div>
+          <div id="otDetailHoursLabel" style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Default: 2.5 h per staff</div>
+        </div>
+
+        <!-- Active Filter Summary Bar -->
+        <div id="activeFilterSummaryBar" style="display: none; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 12px; padding: 8px 12px; margin: 10px 0; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">
+            <i class="fa-solid fa-sliders" style="font-size: 12px; color: var(--purple-primary); flex-shrink: 0;"></i>
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--purple-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="activeFilterSummaryText">Active Filter: Shift: W01</span>
+          </div>
+          <button type="button" onclick="resetFilterRoster()" style="background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+            Clear <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Staff Counter Header -->
+        <div class="list-header">
+          <div class="list-counter" id="listCounterText">274 staff</div>
+          <button type="button" class="select-link" id="selectAllLink" onclick="handleSelectLinkClick()">Select all</button>
+        </div>
+
+        <!-- Staff Cards Container -->
+        <div id="staffCardsContainer">
+          <!-- Dynamically Rendered via JS -->
+        </div>
+
+      </div>
+
+      <!-- ================= 2. CALENDAR TAB CONTENT ================= -->
+      <div id="calendarTabView" style="display: none; padding-bottom: 24px;">
+        <div class="grid-cal-card">
+          <div class="grid-cal-header">
+            <div>
+              <div class="grid-cal-title">Manpower Calendar</div>
+            </div>
+            <div class="grid-cal-toggle">
+              <button class="grid-cal-toggle-btn active">Month</button>
+              <button class="grid-cal-toggle-btn">Week</button>
+            </div>
+          </div>
+          
+          <div class="grid-cal-nav">
+            <button class="grid-cal-nav-btn" onclick="changeGridMonth(-1)">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="grid-cal-nav-center" id="gridCalTitle">September 2026</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button class="grid-cal-nav-btn" onclick="changeGridMonth(1)">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+              <button class="grid-cal-today">Today</button>
+            </div>
+          </div>
+          
+          <div class="grid-cal-legend">
+            <span><div class="dot blue"></div> Staff</span>
+            <span><div class="dot teal"></div> Hours*</span>
+          </div>
+
+          <div class="grid-cal-weekdays">
+            <div class="grid-cal-weekday">Mon</div>
+            <div class="grid-cal-weekday">Tue</div>
+            <div class="grid-cal-weekday">Wed</div>
+            <div class="grid-cal-weekday">Thu</div>
+            <div class="grid-cal-weekday">Fri</div>
+            <div class="grid-cal-weekday">Sat</div>
+            <div class="grid-cal-weekday">Sun</div>
+          </div>
+          
+          <div class="grid-cal-days" id="gridCalDays">
+            <!-- Dynamically generated days go here -->
+          </div>
+        </div>
+
+                <div class="cal-summary-card" id="calSummaryCard" style="display: none;">
+          <div class="cal-summary-title" id="calSummaryTitle">Tue, 15 Sep 2026</div>
+          <div style="display: flex; justify-content: space-around; align-items: center; padding: 4px 0 0 0;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; flex: 1;" onclick="openSummaryViewFromCal('view-approved-ot-summary')">
+              <div style="font-size: 12px; font-weight: 800; color: var(--text-muted);">Approved OT</div>
+              <div style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">28 / 45.00</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; flex: 1;" onclick="openSummaryViewFromCal('view-pending-ot-summary')">
+              <div style="font-size: 12px; font-weight: 800; color: var(--text-muted);">Pending OT</div>
+              <div style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">45 / 82.00</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; flex: 1;" onclick="openSummaryViewFromCal('view-ot-plan-summary')">
+              <div style="font-size: 12px; font-weight: 800; color: var(--text-muted);">Total OT</div>
+              <div style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">73 / 127.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 3. SUMMARY TAB CONTENT ================= -->
+      <div id="summaryTabView" style="display: none; padding-bottom: 24px;">
+
+        <!-- 0. HOURS TYPE SELECTOR DROPDOWN (MATCHING TARGET SCREENSHOT) -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 10px 14px; box-shadow: var(--shadow-sm);">
+          <label for="hoursTypeSelect" style="font-size: 13px; font-weight: 800; color: var(--text-primary); white-space: nowrap;">Hours Type:</label>
+          <select id="hoursTypeSelect" onchange="if(document.getElementById('chartTitleText')) document.getElementById('chartTitleText').innerText = this.value + ' by Shift';" style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none; cursor: pointer;">
+            <option value="Approved Hours" selected>Approved Hours</option>
+            <option value="Planned Hours">Planned Hours</option>
+            <option value="Actual Hours">Actual Hours</option>
+            <option value="Requested Hours">Requested Hours</option>
+          </select>
+        </div>
+
+        <!-- 1. HERO TOTAL OVERVIEW CARD WITH INLINE DONUT CHART (AGENTS.MD STANDARD) -->
+        <div class="history-card-item" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(109, 40, 217, 0.05) 100%); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default; flex-direction: column; align-items: stretch; gap: 16px;">
+          <!-- Top Row Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.6px;">Total Planned Overtime</div>
+              <div style="font-size: 28px; font-weight: 900; color: var(--text-primary); margin: 2px 0;" id="summaryTotalHours">127.00 Hours</div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                <span><i class="fa-regular fa-calendar" style="margin-right: 4px;"></i><span id="summaryTotalStaff">73 Staff Selected</span></span>
+                <span>&bull;</span>
+                <span id="summaryTotalDate">23 Sep 2026</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inline Donut Chart & Legend Display (Outside directly on Summary Tab) -->
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 14px; border-top: 1px dashed var(--border-subtle);">
+            <div style="position: relative; width: 150px; height: 150px;">
+              <svg width="150" height="150" viewBox="0 0 160 160" style="transform: rotate(-90deg);">
+                <circle cx="80" cy="80" r="58" fill="transparent" stroke="var(--border-subtle)" stroke-width="22" opacity="0.3"></circle>
+                <!-- OT 1.5 BEFORE: 35.4% (129.0 of 364.4) -->
+                <circle cx="80" cy="80" r="58" fill="transparent" stroke="#f59e0b" stroke-width="22" stroke-dasharray="129.0 364.4" stroke-dashoffset="0"></circle>
+                <!-- OT 1.5 AFTER: 48.8% (177.8 of 364.4) -->
+                <circle cx="80" cy="80" r="58" fill="transparent" stroke="#7c3aed" stroke-width="22" stroke-dasharray="177.8 364.4" stroke-dashoffset="-129.0"></circle>
+                <!-- OT 2.0 REST DAY: 15.8% (57.6 of 364.4) -->
+                <circle cx="80" cy="80" r="58" fill="transparent" stroke="#3b82f6" stroke-width="22" stroke-dasharray="57.6 364.4" stroke-dashoffset="-306.8"></circle>
+              </svg>
+              <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);">127.0h</div>
+                <div style="font-size: 9.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total OT</div>
+              </div>
+            </div>
+
+            <!-- Subtitle & Subtotal Format Matching Target Reference -->
+            <div style="text-align: center; margin: 2px 0;">
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);" id="chartTitleText">Approved Hours by Shift</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--purple-primary); margin-top: 2px;" id="chartSubtotalText">Total Hours : 127.00 (73)</div>
+            </div>
+
+            <!-- Legend Container -->
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 8px; background: var(--bg-card); padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 10px; height: 10px; background: #f59e0b; border-radius: 3px;"></div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 BEFORE WORK</span>
+                </div>
+                <span style="font-size: 12px; font-weight: 800; color: #f59e0b;">35.4% (45.0h)</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 10px; height: 10px; background: #7c3aed; border-radius: 3px;"></div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 AFTER WORK</span>
+                </div>
+                <span style="font-size: 12px; font-weight: 800; color: var(--purple-primary);">48.8% (62.0h)</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 10px; height: 10px; background: #3b82f6; border-radius: 3px;"></div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 2.0 REST DAY</span>
+                </div>
+                <span style="font-size: 12px; font-weight: 800; color: #3b82f6;">15.8% (20.0h)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. ESTIMATED COST BREAKDOWN CARD -->
+        <div class="card" style="margin-bottom: 14px;">
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-calculator" style="color: var(--purple-primary);"></i>
+            <span>OT Cost Breakdown</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12.5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--text-muted); font-weight: 600;">OT 1.5 Rate (1.5x)</span>
+              <span style="font-weight: 800; color: var(--text-primary);">RM 17.28 / hr</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--text-muted); font-weight: 600;">OT 2.0 Rate (2.0x)</span>
+              <span style="font-weight: 800; color: var(--text-primary);">RM 23.04 / hr</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+              <span style="color: var(--text-muted); font-weight: 600;">Total Estimated Cost</span>
+              <span style="font-weight: 800; color: var(--purple-primary);" id="summaryTotalCost">RM 2,367.36</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. OT BREAKDOWN DATA TABLE HEADER -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-table-list" style="color: var(--purple-primary);"></i>
+            <span>OT Breakdown Table</span>
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+            4 Records
+          </div>
+        </div>
+
+        <!-- 4. OT BREAKDOWN TABLE (3 COLUMNS MATCHING TARGET SCREENSHOT: Shift | Job Title | Hours) -->
+        <div class="summary-table-card">
+          <div class="summary-table-hdr" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+            <div>Shift</div>
+            <div>Job Title</div>
+            <div style="text-align: right;">Hours</div>
+          </div>
+          <div id="summaryOtTableRows">
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge amber">8.30AM-5.30PM (W01)</span></div>
+              <div style="font-weight: 800; font-size: 12px;">ACCOUNT EXECUTIVE</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">10.00 (6)</div>
+            </div>
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge purple">8.30AM-5.30PM (W01)</span></div>
+              <div style="font-weight: 800; font-size: 12px;">ACCOUNT MANAGER</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">2.00 (2)</div>
+            </div>
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge blue">0700:1500 (W02)</span></div>
+              <div style="font-weight: 800; font-size: 12px;">BARISTA OPERATIONS</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">62.00 (35)</div>
+            </div>
+            <div class="summary-table-row" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+              <div><span class="table-shift-badge amber">0830:1730 (W03)</span></div>
+              <div style="font-weight: 800; font-size: 12px;">QA ENGINEER</div>
+              <div style="text-align: right; font-weight: 800; color: var(--purple-primary);">53.00 (30)</div>
+            </div>
+          </div>
+          <div class="summary-table-footer" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
+            <div style="color: var(--text-primary);">Total</div>
+            <div></div>
+            <div style="text-align: right; color: var(--purple-primary);">127.00 (73)</div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- end main-content -->
+
+    <!-- Sticky Bottom Action Bar (Staff Tab) -->
+    <div class="sticky-bottom-bar" id="stickySelectionBar">
+      <div class="bar-summary-row">
+        <div class="bar-selected-count" id="selectedCountAndHoursText">2 staff selected · 5.0 h</div>
+        <button type="button" class="bar-clear-btn" onclick="clearAllSelections()">Clear</button>
+      </div>
+      <div class="bar-summary-row">
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Estimated cost</span>
+        <span style="font-size: 15px; font-weight: 800; color: var(--text-primary);" id="estimatedCostText">RM 86.40</span>
+      </div>
+      <button type="button" class="action-btn-primary" onclick="submitOtPlan()">Submit OT plan</button>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div> <!-- end view-main -->
+
+
+    <!-- ================= VIEW: WORK SHIFT SUMMARY ================= -->
+    <div id="view-work-shift-summary" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Work Shift Summary</h1>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            <i class="fa-regular fa-calendar-check"></i>
+          </div>
+          <div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="wsSummaryDateFilter">23 Sep 2026</div>
+          </div>
+        </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+          6 Records
+        </div>
+      </div>
+      <div class="scroll-body">
+        
+        <!-- Card 1 -->
+        <a href="javascript:void(0)" onclick="openWorkShiftDetail('0700:1500', 22, '176.00', '145.60')" class="history-card-item" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">
+              0700:1500
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">22 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Scheduled Hours: <span style="color: var(--text-primary); font-weight: 700;">176.00</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Work Hours: <span style="color: var(--text-primary); font-weight: 700;">145.60</span>
+          </div>
+        </a>
+
+        <!-- Card 2 -->
+        <a href="javascript:void(0)" onclick="openWorkShiftDetail('0800:1700(B)', 3, '24.00', '24.00')" class="history-card-item" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">
+              0800:1700(B)
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">3 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Scheduled Hours: <span style="color: var(--text-primary); font-weight: 700;">24.00</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Work Hours: <span style="color: var(--text-primary); font-weight: 700;">24.00</span>
+          </div>
+        </a>
+
+        <!-- Card 3 -->
+        <a href="javascript:void(0)" onclick="openWorkShiftDetail('0815:1715', 1, '8.00', '8.00')" class="history-card-item" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">
+              0815:1715
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">1 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Scheduled Hours: <span style="color: var(--text-primary); font-weight: 700;">8.00</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Work Hours: <span style="color: var(--text-primary); font-weight: 700;">8.00</span>
+          </div>
+        </a>
+
+        <!-- Card 4 -->
+        <a href="javascript:void(0)" onclick="openWorkShiftDetail('0830:1730', 1, '8.00', '8.00')" class="history-card-item" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">
+              0830:1730
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">1 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Scheduled Hours: <span style="color: var(--text-primary); font-weight: 700;">8.00</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Work Hours: <span style="color: var(--text-primary); font-weight: 700;">8.00</span>
+          </div>
+        </a>
+
+        <!-- Card 5 -->
+        <a href="javascript:void(0)" onclick="openWorkShiftDetail('1500:2300', 1, '8.00', '0.00')" class="history-card-item" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">
+              1500:2300
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">1 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Scheduled Hours: <span style="color: var(--text-primary); font-weight: 700;">8.00</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Work Hours: <span style="color: var(--text-primary); font-weight: 700;">0.00</span>
+          </div>
+        </a>
+
+        <!-- Card 6 -->
+        <a href="javascript:void(0)" onclick="openWorkShiftDetail('8.30:17.30W', 242, '1,936.00', '1,316.09')" class="history-card-item" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row" style="font-size: 15px; font-weight: 800; color: var(--purple-primary); margin-bottom: 0;">
+              8.30:17.30W
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">242 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Scheduled Hours: <span style="color: var(--text-primary); font-weight: 700;">1,936.00</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Work Hours: <span style="color: var(--text-primary); font-weight: 700;">1,316.09</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ================= VIEW: NO WORK SUMMARY ================= -->
+    <div id="view-no-work-summary" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">No Work Summary</h1>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            <i class="fa-regular fa-calendar-check"></i>
+          </div>
+          <div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="nwSummaryDateFilter">23 Sep 2026</div>
+          </div>
+        </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+          1 Record
+        </div>
+      </div>
+      <div class="scroll-body">
+        
+        <a href="javascript:void(0)" onclick="openNoWorkDetail('Rest / Off Day', 13)" class="history-card-item feedback-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row feedback-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              Rest / Off Day
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+            Headcount: <span style="font-weight: 800;">13 Staff</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ================= VIEW: OT PLAN SUMMARY ================= -->
+    <div id="view-ot-plan-summary" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">OT Plan Summary</h1>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            <i class="fa-regular fa-calendar-check"></i>
+          </div>
+          <div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="otSummaryDateFilter">23 Sep 2026</div>
+          </div>
+        </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+          2 Records
+        </div>
+      </div>
+      <div class="scroll-body">
+        
+        <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', 'OT 1.5 BEFORE WORK', 28, '28.00')" class="history-card-item ot-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row ot-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              8.30:17.30W
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            OT Type: <span style="color: #f59e0b; font-weight: 800; text-transform: uppercase;">OT 1.5 BEFORE WORK</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">28 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Hours: <span style="color: var(--text-primary); font-weight: 700;">28.00 hrs</span>
+          </div>
+        </a>
+
+        <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', '1.5 OT', 59, '106.00')" class="history-card-item ot-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row ot-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              8.30:17.30W
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            OT Type: <span style="color: #f59e0b; font-weight: 800; text-transform: uppercase;">1.5 OT</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">59 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Hours: <span style="color: var(--text-primary); font-weight: 700;">106.00 hrs</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ================= VIEW: APPROVED OT SUMMARY ================= -->
+    <div id="view-approved-ot-summary" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Approved OT Summary</h1>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="approvedOtSummaryDateFilter">15 Sep 2026</div>
+          </div>
+        </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+          1 Record
+        </div>
+      </div>
+      <div class="scroll-body">
+        
+        <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', 'OT 1.5 BEFORE WORK', 28, '45.00')" class="history-card-item ot-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row ot-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              8.30:17.30W
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            OT Type: <span style="color: #f59e0b; font-weight: 800; text-transform: uppercase;">OT 1.5 BEFORE WORK</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">28 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Approved Hours: <span style="color: var(--text-primary); font-weight: 700;">45.00 hrs</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ================= VIEW: PENDING OT SUMMARY ================= -->
+    <div id="view-pending-ot-summary" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Pending OT Summary</h1>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            <i class="fa-solid fa-clock"></i>
+          </div>
+          <div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="pendingOtSummaryDateFilter">15 Sep 2026</div>
+          </div>
+        </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+          2 Records
+        </div>
+      </div>
+      <div class="scroll-body">
+        
+        <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', 'OT 1.5 AFTER WORK', 35, '62.00')" class="history-card-item ot-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row ot-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              8.30:17.30W
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            OT Type: <span style="color: #f59e0b; font-weight: 800; text-transform: uppercase;">OT 1.5 AFTER WORK</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">35 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Pending Hours: <span style="color: var(--text-primary); font-weight: 700;">62.00 hrs</span>
+          </div>
+        </a>
+
+        <a href="javascript:void(0)" onclick="openOtPlanDetail('0700:1500', 'OT 2.0 REST DAY', 10, '20.00')" class="history-card-item ot-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row ot-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              0700:1500
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            OT Type: <span style="color: #f59e0b; font-weight: 800; text-transform: uppercase;">OT 2.0 REST DAY</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+            Headcount: <span style="font-weight: 800;">10 Staff</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Pending Hours: <span style="color: var(--text-primary); font-weight: 700;">20.00 hrs</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ================= VIEW: LEAVE SUMMARY ================= -->
+    <div id="view-leave-summary" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="goBackToCalendar()" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Leave Summary</h1>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            <i class="fa-regular fa-calendar-check"></i>
+          </div>
+          <div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--purple-primary); letter-spacing: 0.5px; text-transform: uppercase;">DATE FILTER</div>
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="lvSummaryDateFilter">23 Sep 2026</div>
+          </div>
+        </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+          3 Records
+        </div>
+      </div>
+      <div class="scroll-body">
+        
+        <a href="javascript:void(0)" onclick="openLeaveDetail('ANNUAL LEAVE', '8.30:17.30W', 3)" class="history-card-item feedback-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row feedback-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              ANNUAL LEAVE
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Shift: <span style="color: var(--text-primary); font-weight: 700;">8.30:17.30W</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+            Headcount: <span style="font-weight: 800;">3.00 Staff</span>
+          </div>
+        </a>
+
+        <a href="javascript:void(0)" onclick="openLeaveDetail('MEDICAL LEAVE', '8.30:17.30W', 2)" class="history-card-item feedback-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row feedback-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              MEDICAL LEAVE
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Shift: <span style="color: var(--text-primary); font-weight: 700;">8.30:17.30W</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+            Headcount: <span style="font-weight: 800;">2.00 Staff</span>
+          </div>
+        </a>
+
+        <a href="javascript:void(0)" onclick="openLeaveDetail('UNPAID LEAVE', '8.30:17.30W', 1)" class="history-card-item feedback-theme" style="display: block; text-decoration: none; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="history-time-row feedback-time" style="font-size: 15px; font-weight: 800; margin-bottom: 0;">
+              UNPAID LEAVE
+            </div>
+            <div style="color: var(--text-muted); font-size: 13px; opacity: 0.6;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Shift: <span style="color: var(--text-primary); font-weight: 700;">8.30:17.30W</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+            Headcount: <span style="font-weight: 800;">1.00 Staff</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ================= VIEW: WORK SHIFT EMPLOYEE DETAIL ================= -->
+    <div id="view-work-shift-detail" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="switchView('view-work-shift-summary')" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Work Shift Employee Detail</h1>
+          </div>
+        </div>
+      </div>
+      <!-- Info Header Card -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 6px; padding: 12px 16px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle);">
+          <i class="fa-regular fa-calendar-check" style="color: var(--purple-primary); font-size: 13px;"></i>
+          <span style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Date:</span>
+          <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="wsDetailDate">23 Sep 2026</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Shift:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="wsDetailShift">0700:1500</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Total Headcount:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="wsDetailHeadcount">22</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Total Scheduled Hours:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="wsDetailScheduledHours">176.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Total Work Hours:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="wsDetailWorkHours">145.60</span>
+          </div>
+        </div>
+      </div>
+      <!-- Scroll Body with Employee Cards -->
+      <div class="scroll-body" id="wsEmployeeCardsContainer" style="flex: 1; overflow-y: auto; padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none; -ms-overflow-style: none;">
+      </div>
+    </div>
+
+    <!-- ================= VIEW: NO WORK EMPLOYEE DETAIL ================= -->
+    <div id="view-no-work-detail" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="switchView('view-no-work-summary')" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">No Work Employee Detail</h1>
+          </div>
+        </div>
+      </div>
+      <!-- Info Header Card -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 6px; padding: 12px 16px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle);">
+          <i class="fa-regular fa-calendar-check" style="color: var(--purple-primary); font-size: 13px;"></i>
+          <span style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Date:</span>
+          <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="nwDetailDate">23 Sep 2026</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Shift:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="nwDetailShift">Rest / Off Day</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Total Headcount:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="nwDetailHeadcount">13</span>
+          </div>
+        </div>
+      </div>
+      <!-- Scroll Body with Employee Cards -->
+      <div class="scroll-body" id="nwEmployeeCardsContainer" style="flex: 1; overflow-y: auto; padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none; -ms-overflow-style: none;">
+      </div>
+    </div>
+
+    <!-- ================= VIEW: OT PLAN EMPLOYEE DETAIL ================= -->
+    <div id="view-ot-plan-detail" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="switchView('view-ot-plan-summary')" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">OT Plan Employee Detail</h1>
+          </div>
+        </div>
+      </div>
+      <!-- Info Header Card -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 6px; padding: 12px 16px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle);">
+          <i class="fa-regular fa-calendar-check" style="color: var(--purple-primary); font-size: 13px;"></i>
+          <span style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Date:</span>
+          <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="otDetailDate">23 Sep 2026</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Shift:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="otDetailShift">8.30:17.30W</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">OT Type:</span>
+            <span style="color: #f59e0b; font-weight: 800;" id="otDetailOtType">OT 1.5 BEFORE WORK</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Total Headcount:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="otDetailHeadcount">28</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Total Hours:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="otDetailTotalHours">28.00</span>
+          </div>
+        </div>
+      </div>
+      <!-- Scroll Body with Employee Cards -->
+      <div class="scroll-body" id="otEmployeeCardsContainer" style="flex: 1; overflow-y: auto; padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none; -ms-overflow-style: none;">
+      </div>
+    </div>
+
+    <!-- ================= VIEW: LEAVE EMPLOYEE DETAIL ================= -->
+    <div id="view-leave-detail" class="view-container">
+      <div class="shift-top-header">
+        <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+        <div class="header-nav">
+          <div class="header-title-wrap">
+            <button type="button" class="icon-btn-ghost" onclick="switchView('view-leave-summary')" aria-label="Back">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Leave Employee Detail</h1>
+          </div>
+        </div>
+      </div>
+      <!-- Info Header Card -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 6px; padding: 12px 16px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle);">
+          <i class="fa-regular fa-calendar-check" style="color: var(--purple-primary); font-size: 13px;"></i>
+          <span style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Date:</span>
+          <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="lvDetailDate">23 Sep 2026</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Shift:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="lvDetailShift">8.30:17.30W</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">Total Headcount:</span>
+            <span style="color: var(--text-primary); font-weight: 800;" id="lvDetailHeadcount">3</span>
+          </div>
+        </div>
+      </div>
+      <!-- Scroll Body with Employee Cards -->
+      <div class="scroll-body" id="lvEmployeeCardsContainer" style="flex: 1; overflow-y: auto; padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none; -ms-overflow-style: none;">
+      </div>
+    </div>
+
+    <!-- ================= BOTTOM SHEET 1: EDIT OT DETAILS ================= -->
+  <div class="modal-overlay" id="editOtDetailsModal" onclick="closeModalOnBackdrop(event, 'editOtDetailsModal')">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="drag-handle"></div>
+      <div class="sheet-header">
+        <div>
+          <div class="sheet-title form-section-heading">OT Plan Approval</div>
+          <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);" id="editOtDateSubtext">Planning date: 23 Sep 2026</div>
+        </div>
+        <button type="button" class="sheet-close-btn" onclick="closeModal('editOtDetailsModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="sheet-body">
+        
+        <!-- Shift Selection -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Shift</label>
+          <select id="modalShiftSelect" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+            <option value="W01 · 8:30 AM – 5:30 PM">W01 · 8:30 AM – 5:30 PM</option>
+            <option value="W02 · 9:00 AM – 6:00 PM">W02 · 9:00 AM – 6:00 PM</option>
+            <option value="W03 · 10:00 PM – 7:00 AM">W03 · 10:00 PM – 7:00 AM</option>
+          </select>
+        </div>
+
+        <!-- OT type Selection -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">OT type</label>
+          <select id="modalOtTypeSelect" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+            <option value="OT 1.5 · Before work">OT 1.5 · Before work</option>
+            <option value="OT 1.5 · After work">OT 1.5 · After work</option>
+            <option value="OT 2.0 · Rest day / Holiday">OT 2.0 · Rest day / Holiday</option>
+          </select>
+        </div>
+
+        <!-- Start Time & End Time (2 columns) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Start time</label>
+            <input type="time" id="modalStartTime" value="06:00" style="width: 100%; padding: 10px 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">End time</label>
+            <input type="time" id="modalEndTime" value="08:30" style="width: 100%; padding: 10px 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+          </div>
+        </div>
+
+        <!-- Day Selection Dropdowns (2 columns) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <select id="modalStartDaySelect" style="width: 100%; padding: 10px 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 700; outline: none;">
+              <option value="Same day">Same day</option>
+              <option value="Next day">Next day</option>
+            </select>
+          </div>
+          <div>
+            <select id="modalEndDaySelect" style="width: 100%; padding: 10px 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12.5px; font-weight: 700; outline: none;">
+              <option value="Same day">Same day</option>
+              <option value="Next day">Next day</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Date display text below day dropdowns -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: -6px;">
+          <span id="modalStartDateDisplay">23 Sep 2026</span>
+          <span id="modalEndDateDisplay">23 Sep 2026</span>
+        </div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: -6px;">Use Next day when OT ends after midnight.</div>
+
+        <!-- Default OT Hours -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Default OT hours</label>
+          <div style="display: flex; align-items: center; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 14px;">
+            <input type="number" id="modalDefaultHours" value="2.5" step="0.5" style="width: 100%; background: transparent; border: none; color: var(--text-primary); font-size: 13.5px; font-weight: 800; outline: none;">
+            <span style="font-size: 13px; font-weight: 800; color: var(--text-muted);">h</span>
+          </div>
+          <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Individual hours can be adjusted in the staff list.</div>
+        </div>
+
+      </div>
+      <div class="sheet-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('editOtDetailsModal')">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveOtDetails()">Apply details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BOTTOM SHEET 2: DATA FILTER ================= -->
+  <div class="modal-overlay" id="filterModal" onclick="closeModalOnBackdrop(event, 'filterModal')">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="drag-handle"></div>
+      <div class="sheet-header" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px 20px; border-bottom: 1px solid var(--border-subtle);">
+        <div class="sheet-title" style="font-size: 18px; font-weight: 800; color: var(--text-primary);">Data Filter</div>
+        <button type="button" onclick="resetFilterRoster()" style="background: rgba(255, 255, 255, 0.07); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 6px 14px; color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+          <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
+        </button>
+      </div>
+      <div class="sheet-body" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; max-height: 65vh; overflow-y: auto;">
+        <!-- 1. Date -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Date</label>
+          <input type="date" id="filterDate" value="2026-09-23" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+        </div>
+
+        <!-- 2. Shift Type -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Shift Type</label>
+          <select id="filterStaffShift" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+            <option value="all">- All Shift Types -</option>
+            <option value="W01">W01 · Morning Shift (8:30 AM – 5:30 PM)</option>
+            <option value="W02">W02 · Regular Day (9:00 AM – 6:00 PM)</option>
+            <option value="W03">W03 · Night Shift (10:00 PM – 7:00 AM)</option>
+            <option value="OFF">OFF · Rest / Off Day</option>
+          </select>
+        </div>
+
+        <!-- 3. Department -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Department</label>
+          <select id="filterDepartment" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+            <option value="all">- All Departments -</option>
+            <option value="Operations">Operations</option>
+            <option value="Finance & Accounting">Finance & Accounting</option>
+            <option value="Human Resource">Human Resource</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Logistics">Logistics & Warehouse</option>
+          </select>
+        </div>
+
+        <!-- 4. Branch -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Branch</label>
+          <select id="filterBranch" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+            <option value="all">- All Branches -</option>
+            <option value="HQ">Headquarters (HQ)</option>
+            <option value="TS">Times Square Branch</option>
+            <option value="MV">Mid Valley Branch</option>
+            <option value="SP">Sunway Pyramid Branch</option>
+          </select>
+        </div>
+
+        <!-- 5. Section -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Section</label>
+          <select id="filterSection" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+            <option value="all">- All Sections -</option>
+            <option value="Admin">Admin Executive</option>
+            <option value="Barista">Barista Operations</option>
+            <option value="Account">Finance & Accounting</option>
+            <option value="IT">IT Support & QA</option>
+            <option value="HR">Human Resource</option>
+          </select>
+        </div>
+
+        <!-- 6. Cost Centre -->
+        <div>
+          <label style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Cost Centre</label>
+          <select id="filterCostCentre" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
+            <option value="all">- All Cost Centres -</option>
+            <option value="CC1001">CC1001 · HQ Admin</option>
+            <option value="CC2002">CC2002 · TS Retail Store</option>
+            <option value="CC3003">CC3003 · MV Retail Store</option>
+            <option value="CC4004">CC4004 · SP Retail Store</option>
+            <option value="CC5005">CC5005 · Central Warehouse</option>
+          </select>
+        </div>
+      </div>
+      <div class="sheet-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-subtle);">
+        <button type="button" class="btn-primary" onclick="applyFilterRoster()" style="width: 100%; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+          <i class="fa-solid fa-filter"></i> Apply Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+    <!-- CHART POPUP MODAL (AGENTS.md View Chart Standard + Donut Chart Display) -->
+  <div class="modal-overlay" id="chartModal" onclick="closeModalOnBackdrop(event, 'chartModal')" style="align-items: center; justify-content: center; padding: 16px;">
+    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 360px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin: 0;">
+          <i class="fa-solid fa-chart-pie" style="color: #f59e0b;"></i> OT Distribution Chart
+        </h3>
+        <button onclick="closeModal('chartModal')" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Donut Chart & Legend -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+        <div style="position: relative; width: 160px; height: 160px;">
+          <svg width="160" height="160" viewBox="0 0 160 160" style="transform: rotate(-90deg);">
+            <circle cx="80" cy="80" r="58" fill="transparent" stroke="var(--border-subtle)" stroke-width="24" opacity="0.3"></circle>
+            <!-- OT 1.5 BEFORE: 35.4% (129.0 of 364.4) -->
+            <circle cx="80" cy="80" r="58" fill="transparent" stroke="#f59e0b" stroke-width="24" stroke-dasharray="129.0 364.4" stroke-dashoffset="0"></circle>
+            <!-- OT 1.5 AFTER: 48.8% (177.8 of 364.4) -->
+            <circle cx="80" cy="80" r="58" fill="transparent" stroke="#7c3aed" stroke-width="24" stroke-dasharray="177.8 364.4" stroke-dashoffset="-129.0"></circle>
+            <!-- OT 2.0 REST DAY: 15.8% (57.6 of 364.4) -->
+            <circle cx="80" cy="80" r="58" fill="transparent" stroke="#3b82f6" stroke-width="24" stroke-dasharray="57.6 364.4" stroke-dashoffset="-306.8"></circle>
+          </svg>
+          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);">127.0h</div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total OT</div>
+          </div>
+        </div>
+
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; background: var(--bg-input); padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 3px;"></div>
+              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 BEFORE WORK</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 800; color: #f59e0b;">35.4% (45.0h)</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 12px; height: 12px; background: #7c3aed; border-radius: 3px;"></div>
+              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 AFTER WORK</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 800; color: var(--purple-primary);">48.8% (62.0h)</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 3px;"></div>
+              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 2.0 REST DAY</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 800; color: #3b82f6;">15.8% (20.0h)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // State variables
+    let currentDate = new Date(2026, 8, 23); // 23 Sep 2026
+    let currentMainTab = 'staff';
+    let currentGridMonth = new Date(2026, 8, 1);    
+    // OT Details Master State
+    let otDetailsState = {
+      shift: 'W01 · 8:30 AM – 5:30 PM',
+      type: 'OT 1.5 · Before work',
+      startTime: '06:00',
+      endTime: '08:30',
+      startDay: 'Same day',
+      endDay: 'Same day',
+      defaultHours: 2.5
+    };
+
+    // Employee Master Mock Data
+    const staffDatabase = [
+      { id: '000008', name: 'Aqilah Antasha', dept: 'Admin Executive', section: 'Admin', jobTitle: 'Executive', branch: 'HQ', currentShift: 'W01', otHours: 2.5, mtdOt: 0, hourlyRate: 17.28, selected: true },
+      { id: '000009', name: 'Chan Mee Ling', dept: 'Barista Operations', section: 'Barista', jobTitle: 'Senior Barista', branch: 'TS', currentShift: 'W01', otHours: 2.5, mtdOt: 0, hourlyRate: 17.28, selected: true },
+      { id: '000100', name: 'Loh Siew Hong', dept: 'Account Executive', section: 'Account', jobTitle: 'Executive', branch: 'MV', currentShift: 'W01', otHours: 2.5, mtdOt: 0, hourlyRate: 17.28, selected: false },
+      { id: '000101', name: 'Lee Soon Hock', dept: 'Account Manager', section: 'Account', jobTitle: 'Manager', branch: 'HQ', currentShift: 'W01', otHours: 2.5, mtdOt: 4.5, hourlyRate: 22.00, selected: false },
+      { id: '000102', name: 'Muhammad Danial', dept: 'IT Support Engineer', section: 'IT', jobTitle: 'QA Engineer', branch: 'SP', currentShift: 'W02', otHours: 2.5, mtdOt: 2.0, hourlyRate: 19.50, selected: false },
+      { id: '000103', name: 'Siti Nurhaliza', dept: 'Human Resource Officer', section: 'HR', jobTitle: 'HR Officer', branch: 'HQ', currentShift: 'W03', otHours: 2.5, mtdOt: 6.0, hourlyRate: 18.00, selected: false }
+    ];
+
+    // Initialization on DOM Load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDateDisplay();
+      renderStaffCards();
+      renderGridCalendar();
+      updateStickyBar();
+    });
+
+    // Date Navigation
+    function updateDateDisplay() {
+      const options = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
+      const formatted = currentDate.toLocaleDateString('en-GB', options);
+      document.getElementById('currentDateDisplay').textContent = formatted;
+      document.getElementById('editOtDateSubtext').textContent = `Planning date: ${formatted}`;
+      document.getElementById('modalStartDateDisplay').textContent = formatted;
+      document.getElementById('modalEndDateDisplay').textContent = formatted;
+    }
+
+    function changeDate(delta) {
+      currentDate.setDate(currentDate.getDate() + delta);
+      updateDateDisplay();
+    }
+
+    // Tab Switching
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      document.getElementById('tabStaffBtn').classList.toggle('active', tab === 'staff');
+      document.getElementById('tabCalendarBtn').classList.toggle('active', tab === 'calendar');
+      document.getElementById('tabSummaryBtn').classList.toggle('active', tab === 'summary');
+
+      document.getElementById('staffTabView').style.display = tab === 'staff' ? 'block' : 'none';
+      document.getElementById('calendarTabView').style.display = tab === 'calendar' ? 'block' : 'none';
+      document.getElementById('summaryTabView').style.display = tab === 'summary' ? 'block' : 'none';
+
+      document.getElementById('stickySelectionBar').style.display = tab === 'staff' ? 'flex' : 'none';
+    }
+
+    // Render Staff Cards List
+    function renderStaffCards() {
+      const container = document.getElementById('staffCardsContainer');
+      if (!container) return;
+
+      const filterStaffShift = document.getElementById('filterStaffShift') ? document.getElementById('filterStaffShift').value : 'all';
+      const filterSearchKeyword = document.getElementById('filterSearchKeyword') ? document.getElementById('filterSearchKeyword').value.toLowerCase().trim() : '';
+      const filterBranch = document.getElementById('filterBranch') ? document.getElementById('filterBranch').value : 'all';
+      const filterSection = document.getElementById('filterSection') ? document.getElementById('filterSection').value : 'all';
+      const filterJobTitle = document.getElementById('filterJobTitle') ? document.getElementById('filterJobTitle').value : 'all';
+
+      const isFilterActive = (filterStaffShift !== 'all') || (filterSearchKeyword !== '') || (filterBranch !== 'all') || (filterSection !== 'all') || (filterJobTitle !== 'all');
+
+      const filterDisplayText = document.getElementById('currentFilterTextDisplay');
+      if (filterDisplayText) {
+        if (isFilterActive) {
+          const parts = [];
+          if (filterStaffShift !== 'all') parts.push(`Shift: ${filterStaffShift}`);
+          if (filterBranch !== 'all') parts.push(`Branch: ${filterBranch}`);
+          if (filterSection !== 'all') parts.push(`Section: ${filterSection}`);
+          if (filterJobTitle !== 'all') parts.push(`Title: ${filterJobTitle}`);
+          if (filterSearchKeyword !== '') parts.push(`"${filterSearchKeyword}"`);
+          filterDisplayText.textContent = parts.join(' • ');
+        } else {
+          filterDisplayText.textContent = '23 Sep 2026 • All Companies';
+        }
+      }
+
+      const summaryBar = document.getElementById('activeFilterSummaryBar');
+      const summaryText = document.getElementById('activeFilterSummaryText');
+      if (summaryBar && summaryText) {
+        if (isFilterActive) {
+          summaryBar.style.display = 'flex';
+          const parts = [];
+          if (filterStaffShift !== 'all') parts.push(`Shift: ${filterStaffShift}`);
+          if (filterBranch !== 'all') parts.push(`Branch: ${filterBranch}`);
+          if (filterSection !== 'all') parts.push(`Section: ${filterSection}`);
+          if (filterJobTitle !== 'all') parts.push(`Title: ${filterJobTitle}`);
+          if (filterSearchKeyword !== '') parts.push(`"${filterSearchKeyword}"`);
+          summaryText.textContent = `Active Filter: ${parts.join(' · ')}`;
+        } else {
+          summaryBar.style.display = 'none';
+        }
+      }
+
+      container.innerHTML = '';
+
+      let totalCount = 0;
+      let selectedCount = 0;
+
+      staffDatabase.forEach(emp => {
+        // Keyword Search (Name or ID)
+        if (filterSearchKeyword) {
+          const matchName = emp.name.toLowerCase().includes(filterSearchKeyword);
+          const matchId = emp.id.toLowerCase().includes(filterSearchKeyword);
+          if (!matchName && !matchId) return;
+        }
+
+        // Staff Shift Filter
+        if (filterStaffShift !== 'all' && emp.currentShift !== filterStaffShift) return;
+
+        // Branch Filter
+        if (filterBranch !== 'all' && emp.branch && emp.branch !== filterBranch) return;
+
+        // Section Filter
+        if (filterSection !== 'all' && emp.section && emp.section !== filterSection) return;
+
+        // Job Title Filter
+        if (filterJobTitle !== 'all' && emp.jobTitle && emp.jobTitle !== filterJobTitle) return;
+
+        totalCount++;
+        if (emp.selected) selectedCount++;
+
+        const card = document.createElement('div');
+        card.className = `ot-staff-card ${emp.selected ? 'selected' : ''}`;
+        
+        // Strict AGENTS.md Employee ID Placement: #empNo directly BELOW employee name
+        card.innerHTML = `
+          <div class="ot-staff-top">
+            <div class="custom-checkbox" onclick="toggleStaffSelection('${emp.id}')">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <div style="flex: 1;" onclick="toggleStaffSelection('${emp.id}')" style="cursor: pointer;">
+              <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${emp.name}</div>
+              <div class="emp-id-label">#${emp.id} · ${emp.dept}</div>
+            </div>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; pt-2; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
+            <div>
+              <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">OT hours</div>
+              <div class="ot-hours-box">
+                <input type="number" step="0.5" min="0" value="${emp.otHours}" class="ot-hours-input" onchange="updateStaffOtHours('${emp.id}', this.value)" onclick="event.stopPropagation()">
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-muted);">h</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">MTD OT</div>
+              <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">${emp.mtdOt} h</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      if (totalCount === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 32px 16px; background: var(--bg-card); border: 1px dashed var(--border-subtle); border-radius: 18px; margin: 12px 0;">
+            <i class="fa-solid fa-filter-circle-xmark" style="font-size: 28px; color: var(--purple-primary); margin-bottom: 8px; opacity: 0.8;"></i>
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">No staff match the criteria</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Try broadening or resetting your filter options</div>
+            <button type="button" onclick="resetFilterRoster()" style="margin-top: 12px; padding: 8px 16px; border-radius: 12px; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); font-size: 12px; font-weight: 800; cursor: pointer;">Reset Filter</button>
+          </div>
+        `;
+      }
+
+      document.getElementById('listCounterText').textContent = `${totalCount} staff`;
+      const allSelected = totalCount > 0 && selectedCount === totalCount;
+      document.getElementById('selectAllLink').textContent = allSelected ? 'Deselect all' : 'Select all';
+    }
+
+    function toggleStaffSelection(id) {
+      const emp = staffDatabase.find(e => e.id === id);
+      if (emp) {
+        emp.selected = !emp.selected;
+        renderStaffCards();
+        updateStickyBar();
+      }
+    }
+
+    function updateStaffOtHours(id, newHours) {
+      const val = parseFloat(newHours) || 0;
+      const emp = staffDatabase.find(e => e.id === id);
+      if (emp) {
+        emp.otHours = val;
+        updateStickyBar();
+      }
+    }
+
+    function handleSelectLinkClick() {
+      const selectedEn = staffDatabase.filter(e => e.selected);
+      const shouldSelectAll = selectedEn.length < staffDatabase.length;
+      staffDatabase.forEach(emp => { emp.selected = shouldSelectAll; });
+      renderStaffCards();
+      updateStickyBar();
+    }
+
+    function clearAllSelections() {
+      staffDatabase.forEach(emp => { emp.selected = false; });
+      renderStaffCards();
+      updateStickyBar();
+    }
+
+    function updateStickyBar() {
+      const selectedEn = staffDatabase.filter(e => e.selected);
+      const count = selectedEn.length;
+      let totalHours = 0;
+      let totalCost = 0;
+
+      selectedEn.forEach(emp => {
+        totalHours += emp.otHours;
+        totalCost += (emp.otHours * emp.hourlyRate);
+      });
+
+      document.getElementById('selectedCountAndHoursText').textContent = `${count} staff selected · ${totalHours.toFixed(1)} h`;
+      document.getElementById('estimatedCostText').textContent = `RM ${totalCost.toFixed(2)}`;
+
+      // Update Summary Tab metrics
+      document.getElementById('summaryTotalHours').textContent = `${totalHours.toFixed(1)} Hours`;
+      document.getElementById('summaryTotalStaff').textContent = `${count} Staff Selected`;
+      document.getElementById('summaryTotalCost').textContent = `RM ${totalCost.toFixed(2)}`;
+    }
+
+    function submitOtPlan() {
+      const selectedEn = staffDatabase.filter(e => e.selected);
+      if (selectedEn.length === 0) {
+        showToast('Please select at least 1 staff member for OT.');
+        return;
+      }
+      showToast('OT plan submitted successfully!');
+    }
+
+    // Edit OT Details Modal Functions (Matching Reference Screen 2)
+    function openEditOtDetailsModal() {
+      document.getElementById('modalShiftSelect').value = otDetailsState.shift;
+      document.getElementById('modalOtTypeSelect').value = otDetailsState.type;
+      document.getElementById('modalStartTime').value = otDetailsState.startTime;
+      document.getElementById('modalEndTime').value = otDetailsState.endTime;
+      document.getElementById('modalStartDaySelect').value = otDetailsState.startDay;
+      document.getElementById('modalEndDaySelect').value = otDetailsState.endDay;
+      document.getElementById('modalDefaultHours').value = otDetailsState.defaultHours;
+      openModal('editOtDetailsModal');
+    }
+
+    function saveOtDetails() {
+      otDetailsState.shift = document.getElementById('modalShiftSelect').value;
+      otDetailsState.type = document.getElementById('modalOtTypeSelect').value;
+      otDetailsState.startTime = document.getElementById('modalStartTime').value;
+      otDetailsState.endTime = document.getElementById('modalEndTime').value;
+      otDetailsState.startDay = document.getElementById('modalStartDaySelect').value;
+      otDetailsState.endDay = document.getElementById('modalEndDaySelect').value;
+      otDetailsState.defaultHours = parseFloat(document.getElementById('modalDefaultHours').value) || 2.5;
+
+      // Update Header Card Labels
+      document.getElementById('otDetailShiftLabel').textContent = otDetailsState.shift;
+      document.getElementById('otDetailTypeLabel').textContent = otDetailsState.type;
+      document.getElementById('otDetailTimeLabel').textContent = `${otDetailsState.startTime} – ${otDetailsState.endTime} · ${otDetailsState.startDay}`;
+      document.getElementById('otDetailHoursLabel').textContent = `Default: ${otDetailsState.defaultHours} h per staff`;
+
+      // Optionally update all staff otHours to default if user desires
+      staffDatabase.forEach(e => { e.otHours = otDetailsState.defaultHours; });
+
+      closeModal('editOtDetailsModal');
+      renderStaffCards();
+      updateStickyBar();
+      showToast('OT details updated!');
+    }
+
+    // Modal Control Functions
+    function openModal(modalId) {
+      const m = document.getElementById(modalId);
+      if (!m) return;
+      m.style.display = 'flex';
+      void m.offsetHeight; // Reflow
+      m.style.opacity = '1';
+      const sheet = m.querySelector('.modal-sheet');
+      if (sheet) sheet.style.transform = 'translateY(0)';
+    }
+
+    function closeModal(modalId) {
+      const m = document.getElementById(modalId);
+      if (!m) return;
+      m.style.opacity = '0';
+      const sheet = m.querySelector('.modal-sheet');
+      if (sheet) sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => { m.style.display = 'none'; }, 280);
+    }
+
+    function closeModalOnBackdrop(e, modalId) {
+      if (e.target === e.currentTarget) {
+        closeModal(modalId);
+      }
+    }
+
+    // Filter Modal Functions
+    function openFilterModal() {
+      const filterDateInput = document.getElementById('filterDate');
+      if (filterDateInput) {
+        const yyyy = currentDate.getFullYear();
+        const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(currentDate.getDate()).padStart(2, '0');
+        filterDateInput.value = `${yyyy}-${mm}-${dd}`;
+      }
+      openModal('filterModal');
+    }
+
+    function resetFilterRoster() {
+      const yyyy = currentDate.getFullYear();
+      const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(currentDate.getDate()).padStart(2, '0');
+      if (document.getElementById('filterDate')) document.getElementById('filterDate').value = `${yyyy}-${mm}-${dd}`;
+      if (document.getElementById('filterStaffShift')) document.getElementById('filterStaffShift').value = 'all';
+      if (document.getElementById('filterDepartment')) document.getElementById('filterDepartment').value = 'all';
+      if (document.getElementById('filterBranch')) document.getElementById('filterBranch').value = 'all';
+      if (document.getElementById('filterSection')) document.getElementById('filterSection').value = 'all';
+      if (document.getElementById('filterCostCentre')) document.getElementById('filterCostCentre').value = 'all';
+      if (document.getElementById('filterJobTitle')) document.getElementById('filterJobTitle').value = 'all';
+      renderStaffCards();
+      showToast('Filters reset!');
+    }
+
+    function applyFilterRoster() {
+      closeModal('filterModal');
+      renderStaffCards();
+      showToast('Filter applied!');
+    }
+
+    // Chart Modal Function (AGENTS.md View Chart Standard)
+    function openChartModal() { openModal('chartModal'); }
+
+    // Grid Calendar Functions
+    function changeGridMonth(delta) {
+      currentGridMonth.setMonth(currentGridMonth.getMonth() + delta);
+      renderGridCalendar();
+    }
+    
+    function renderGridCalendar() {
+      const year = currentGridMonth.getFullYear();
+      const month = currentGridMonth.getMonth();
+      
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      document.getElementById('gridCalTitle').textContent = `${monthNames[month]} ${year}`;
+      
+      const daysContainer = document.getElementById('gridCalDays');
+      daysContainer.innerHTML = '';
+      
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      
+      // Calculate day of week of 1st day (0 = Sun, 1 = Mon, ..., 6 = Sat)
+      let firstDayIndex = firstDay.getDay() - 1;
+      if (firstDayIndex === -1) firstDayIndex = 6; // Make Monday index 0
+      
+      const daysInMonth = lastDay.getDate();
+      
+      // Fill empty slots before 1st of month
+      for (let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'grid-cal-cell empty';
+        daysContainer.appendChild(emptyCell);
+      }
+      
+      // Mock Data: specific days with custom numbers
+      const mockData = {
+        15: { staff: 287, hours: '2,192h' },
+        16: { staff: 287, hours: '2,192h' },
+        17: { staff: 287, hours: '8h' },
+        18: { staff: 287, hours: '8.5h' },
+        24: { staff: 287, hours: '0h' },
+        25: { staff: 287, hours: '0h' }
+      };
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cal-cell';
+        if (day === 15) cell.classList.add('selected'); // Hardcoded selected state for demo
+        
+        cell.onclick = () => {
+          document.querySelectorAll('.grid-cal-cell').forEach(c => c.classList.remove('selected'));
+          cell.classList.add('selected');
+          document.getElementById('calSummaryCard').style.display = 'block';
+          selectedCalDateText = new Date(year, month, day).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'});
+          document.getElementById('calSummaryTitle').textContent = `${new Date(year, month, day).toLocaleDateString('en-GB', {weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'})}`;
+        };
+        
+        const dateEl = document.createElement('div');
+        dateEl.className = 'grid-cal-date';
+        dateEl.textContent = day;
+        cell.appendChild(dateEl);
+        
+        // Mocking some blank states for realism (e.g. weekends)
+        const isWeekend = ((day + firstDayIndex - 1) % 7) >= 5;
+        if (day > 28) {
+          const blankEl = document.createElement('div');
+          blankEl.className = 'grid-cal-empty-text';
+          blankEl.textContent = '--';
+          cell.appendChild(blankEl);
+        } else {
+          const staffCount = mockData[day] ? mockData[day].staff : (isWeekend ? 78 : 287);
+          const hoursCount = mockData[day] ? mockData[day].hours : (isWeekend ? '132h' : '2,192h');
+          
+          const staffEl = document.createElement('div');
+          staffEl.className = 'grid-cal-stat-staff';
+          staffEl.textContent = staffCount;
+          
+          const hoursEl = document.createElement('div');
+          hoursEl.className = 'grid-cal-stat-hours';
+          hoursEl.textContent = hoursCount;
+          
+          cell.appendChild(staffEl);
+          cell.appendChild(hoursEl);
+        }
+        
+        daysContainer.appendChild(cell);
+      }
+      
+      // Select 15th by default in demo
+      document.getElementById('calSummaryCard').style.display = 'block';
+    }
+
+    // Helper Toast
+    
+    // Employee Detail Datasets for Summary Drill-downs
+    const workShiftEmployeeDataset = [
+      { name: "Anderson ng", id: "000054", jobTitle: "ACCOUNT EXECUTIVE", scheduledHours: "8.00", workHours: "7.18" },
+      { name: "Yee seong liew", id: "000070", jobTitle: "PAYABLES EXECUTIVE", scheduledHours: "8.00", workHours: "7.23" },
+      { name: "Hanis", id: "0099", jobTitle: "ADMIN EXECUTIVE", scheduledHours: "8.00", workHours: "7.25" },
+      { name: "Danial", id: "500006", jobTitle: "FINANCE AUDIT MANAGER", scheduledHours: "8.00", workHours: "6.50" },
+      { name: "Tony", id: "500007", jobTitle: "HR MANAGER", scheduledHours: "8.00", workHours: "7.10" },
+      { name: "Sim", id: "500012", jobTitle: "RECRUITMENT OFFICER", scheduledHours: "8.00", workHours: "7.17" },
+      { name: "Muhammad ali bin man", id: "EBB01", jobTitle: "OPERATION DIRECTOR", scheduledHours: "8.00", workHours: "6.87" },
+      { name: "Farhan binti rahmat", id: "EBB12", jobTitle: "QUALITY ASSURANCE LEAD", scheduledHours: "8.00", workHours: "7.50" },
+      { name: "Chong Wei Lun", id: "000112", jobTitle: "SENIOR BARISTA", scheduledHours: "8.00", workHours: "8.00" },
+      { name: "Rachel Tan", id: "000145", jobTitle: "BARISTA", scheduledHours: "8.00", workHours: "7.80" },
+      { name: "Siti Nurhaliza", id: "000210", jobTitle: "BARISTA", scheduledHours: "8.00", workHours: "8.00" },
+      { name: "Kevin Lim", id: "000234", jobTitle: "SHIFT SUPERVISOR", scheduledHours: "8.00", workHours: "7.45" },
+      { name: "Amirul Hakim", id: "000305", jobTitle: "OPERATIONS ASSISTANT", scheduledHours: "8.00", workHours: "7.20" },
+      { name: "Nurul Izzah", id: "000318", jobTitle: "CASHIER", scheduledHours: "8.00", workHours: "6.90" },
+      { name: "David Low", id: "000340", jobTitle: "INVENTORY CLERK", scheduledHours: "8.00", workHours: "7.30" },
+      { name: "Grace Wong", id: "000388", jobTitle: "BARISTA", scheduledHours: "8.00", workHours: "7.15" },
+      { name: "Hassan Basri", id: "000412", jobTitle: "MAINTENANCE TECH", scheduledHours: "8.00", workHours: "8.00" },
+      { name: "Jenny Koh", id: "000450", jobTitle: "STORE SUPERVISOR", scheduledHours: "8.00", workHours: "7.60" },
+      { name: "Marcus Lee", id: "000489", jobTitle: "BARISTA", scheduledHours: "8.00", workHours: "6.80" },
+      { name: "Syed Saddiq", id: "000512", jobTitle: "LOGISTICS ASST", scheduledHours: "8.00", workHours: "7.10" },
+      { name: "Wendy Tan", id: "000555", jobTitle: "CUSTOMER SERVICE", scheduledHours: "8.00", workHours: "7.40" },
+      { name: "Zulhazmi bin Yusof", id: "000590", jobTitle: "SECURITY OFFICER", scheduledHours: "8.00", workHours: "7.50" }
+    ];
+
+    const noWorkEmployeeDataset = [
+      { name: "TEST", id: "00012345", jobTitle: "ACCOUNT EXECUTIVE" },
+      { name: "hey", id: "012345", jobTitle: "BARTENDER" },
+      { name: "BHIM BAHADUR TAMANG", id: "620578", jobTitle: "PRODUCTION OPERATOR" },
+      { name: "PRITIMAN GURUNG", id: "620657", jobTitle: "PRODUCTION OPERATOR" },
+      { name: "HAFIZUR RAHMAN", id: "620675", jobTitle: "OPERATION DIRECTOR" },
+      { name: "MD SHOHEL", id: "620717", jobTitle: "PRODUCTION OPERATOR" },
+      { name: "SHER BAHADUR THAPA MAGAR", id: "620803", jobTitle: "PRODUCTION OPERATOR" },
+      { name: "DAN BAHADUR THAPA", id: "620836", jobTitle: "PRODUCTION OPERATOR" },
+      { name: "SANJIT KUMAR", id: "620890", jobTitle: "PRODUCTION OPERATOR" },
+      { name: "KISHOR TAMANG", id: "620912", jobTitle: "WAREHOUSE HELPER" },
+      { name: "MOHD FAHMI", id: "620945", jobTitle: "PACKING ASSISTANT" },
+      { name: "KAVITHA RAMASAMY", id: "620980", jobTitle: "QUALITY CHECKER" },
+      { name: "SURESH BABU", id: "621004", jobTitle: "CLEANING SPECIALIST" }
+    ];
+
+    const otPlanEmployeeDataset = [
+      { name: "Jason ling soon kam", id: "000023", jobTitle: "ACCOUNT EXECUTIVE", hours: "1.00" },
+      { name: "Michael", id: "000074", jobTitle: "BFT & COM.EXECUTIVE", hours: "1.00" },
+      { name: "Priyanka oberoi", id: "00032", jobTitle: "RECRUITMENT EXECUTIVE", hours: "1.00" },
+      { name: "Tan mun loong", id: "00038", jobTitle: "BENEFITS & COMPENSATION MANAGER", hours: "1.00" },
+      { name: "Aliff", id: "00042", jobTitle: "ACCOUNT EXECUTIVE", hours: "1.00" },
+      { name: "Sazali Samad", id: "001988", jobTitle: "ACCOUNT MANAGER", hours: "1.00" },
+      { name: "Alex Tan", id: "001002", jobTitle: "OPERATIONS EXEC", hours: "1.00" },
+      { name: "Sarah Lim", id: "001015", jobTitle: "PRODUCTION LEAD", hours: "1.00" },
+      { name: "David Miller", id: "001052", jobTitle: "ASSEMBLY SUPERVISOR", hours: "1.00" },
+      { name: "Kevin Wong", id: "001031", jobTitle: "QUALITY CONTROLLER", hours: "1.00" },
+      { name: "Michelle Chen", id: "001048", jobTitle: "SENIOR ENGINEER", hours: "1.00" },
+      { name: "Rachel Adams", id: "001102", jobTitle: "QA TESTER", hours: "1.00" },
+      { name: "John Smith", id: "001175", jobTitle: "QC INSPECTOR", hours: "1.00" },
+      { name: "Amanda Lee", id: "001140", jobTitle: "WAREHOUSE COORDINATOR", hours: "1.00" },
+      { name: "Victor Hugo", id: "001115", jobTitle: "SAFETY SPECIALIST", hours: "1.00" },
+      { name: "Daniel Park", id: "001094", jobTitle: "IT SUPPORT SPECIALIST", hours: "1.00" },
+      { name: "Kenji Sato", id: "001073", jobTitle: "MAINTENANCE TECH", hours: "1.00" },
+      { name: "Chung Wei", id: "001158", jobTitle: "PRODUCTION SPECIALIST", hours: "1.00" },
+      { name: "Leong Wai Kit", id: "001220", jobTitle: "LOGISTICS OFFICER", hours: "1.00" },
+      { name: "Faridah Ismail", id: "001255", jobTitle: "ADMIN ASSISTANT", hours: "1.00" },
+      { name: "Rajesh Kumar", id: "001280", jobTitle: "MACHINE OPERATOR", hours: "1.00" },
+      { name: "Tan Li Hua", id: "001305", jobTitle: "PACKAGING EXEC", hours: "1.00" },
+      { name: "Siti Aminah", id: "001340", jobTitle: "ACCOUNTS CLERK", hours: "1.00" },
+      { name: "Wong Kar Wai", id: "001375", jobTitle: "DISPATCH SUPERVISOR", hours: "1.00" },
+      { name: "Lim Swee Keong", id: "001410", jobTitle: "FACILITIES ASST", hours: "1.00" },
+      { name: "Goh Mei Ling", id: "001435", jobTitle: "HR COORDINATOR", hours: "1.00" },
+      { name: "Bala Murugan", id: "001460", jobTitle: "STOREKEEPER", hours: "1.00" },
+      { name: "Nur Aini", id: "001490", jobTitle: "DATA ENTRY CLERK", hours: "1.00" }
+    ];
+
+    const leaveEmployeeDataset = [
+      { name: "Tee ang lung", id: "000019", jobTitle: "ACCOUNT EXECUTIVE", leaveType: "ANNUAL LEAVE", leaveDay: "1.00" },
+      { name: "Tan li", id: "27637", jobTitle: "PRODUCTION OPERATOR", leaveType: "ANNUAL LEAVE", leaveDay: "1.00" },
+      { name: "Ahmad bin ali", id: "EBB55", jobTitle: "PRODUCTION WORKER", leaveType: "ANNUAL LEAVE", leaveDay: "1.00" }
+    ];
+
+    function openWorkShiftDetail(shiftTitle, count, schedHrs, workHrs) {
+      document.getElementById('wsDetailShift').textContent = shiftTitle;
+      document.getElementById('wsDetailHeadcount').textContent = count;
+      document.getElementById('wsDetailScheduledHours').textContent = schedHrs;
+      document.getElementById('wsDetailWorkHours').textContent = workHrs;
+      
+      const container = document.getElementById('wsEmployeeCardsContainer');
+      const list = count <= 3 ? workShiftEmployeeDataset.slice(0, count) : workShiftEmployeeDataset;
+      
+      container.innerHTML = list.map(emp => `
+        <div class="history-card-item" style="display: block; width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 0;">
+          <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${emp.name}</div>
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 6px; margin-top: 2px;">#${emp.id}</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Job Title: <span style="color: var(--text-primary); font-weight: 700;">${emp.jobTitle}</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Scheduled Hours: <span style="color: var(--text-primary); font-weight: 700;">${emp.scheduledHours || schedHrs}</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Work Hours: <span style="color: var(--text-primary); font-weight: 700;">${emp.workHours || '8.00'}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      switchView('view-work-shift-detail');
+    }
+
+    function openNoWorkDetail(shiftTitle, count) {
+      document.getElementById('nwDetailShift').textContent = shiftTitle;
+      document.getElementById('nwDetailHeadcount').textContent = count;
+      
+      const container = document.getElementById('nwEmployeeCardsContainer');
+      container.innerHTML = noWorkEmployeeDataset.map(emp => `
+        <div class="history-card-item feedback-theme" style="display: block; width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 0;">
+          <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${emp.name}</div>
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 6px; margin-top: 2px;">#${emp.id}</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Job Title: <span style="color: var(--text-primary); font-weight: 700;">${emp.jobTitle}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      switchView('view-no-work-detail');
+    }
+
+    function openOtPlanDetail(shiftTitle, otType, count, totalHrs) {
+      document.getElementById('otDetailShift').textContent = shiftTitle;
+      document.getElementById('otDetailOtType').textContent = otType;
+      document.getElementById('otDetailHeadcount').textContent = count;
+      document.getElementById('otDetailTotalHours').textContent = totalHrs;
+      
+      const container = document.getElementById('otEmployeeCardsContainer');
+      const list = count <= 28 ? otPlanEmployeeDataset.slice(0, count) : otPlanEmployeeDataset;
+      
+      container.innerHTML = list.map(emp => `
+        <div class="history-card-item ot-theme" style="display: block; width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 0;">
+          <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${emp.name}</div>
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 6px; margin-top: 2px;">#${emp.id}</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Job Title: <span style="color: var(--text-primary); font-weight: 700;">${emp.jobTitle}</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Hours: <span style="color: var(--text-primary); font-weight: 700;">${emp.hours || '1.00'}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      switchView('view-ot-plan-detail');
+    }
+
+    function openLeaveDetail(leaveType, shiftTitle, count) {
+      document.getElementById('lvDetailShift').textContent = shiftTitle;
+      document.getElementById('lvDetailHeadcount').textContent = count;
+      
+      const container = document.getElementById('lvEmployeeCardsContainer');
+      const list = leaveEmployeeDataset.map(emp => ({ ...emp, leaveType: leaveType }));
+      
+      container.innerHTML = list.map(emp => `
+        <div class="history-card-item feedback-theme" style="display: block; width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 0;">
+          <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${emp.name}</div>
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 6px; margin-top: 2px;">#${emp.id}</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Job Title: <span style="color: var(--text-primary); font-weight: 700;">${emp.jobTitle}</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
+            Leave Type: <span style="color: var(--purple-primary); font-weight: 800;">${emp.leaveType}</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            Leave Day: <span style="color: var(--text-primary); font-weight: 700;">${emp.leaveDay}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      switchView('view-leave-detail');
+    }
+
+    let selectedCalDateText = "15 Sep 2026";
+
+    function openSummaryViewFromCal(viewId) {
+      if (document.getElementById('wsSummaryDateFilter')) document.getElementById('wsSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('nwSummaryDateFilter')) document.getElementById('nwSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('otSummaryDateFilter')) document.getElementById('otSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('approvedOtSummaryDateFilter')) document.getElementById('approvedOtSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('pendingOtSummaryDateFilter')) document.getElementById('pendingOtSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('lvSummaryDateFilter')) document.getElementById('lvSummaryDateFilter').textContent = selectedCalDateText;
+      if (document.getElementById('wsDetailDate')) document.getElementById('wsDetailDate').textContent = selectedCalDateText;
+      if (document.getElementById('nwDetailDate')) document.getElementById('nwDetailDate').textContent = selectedCalDateText;
+      if (document.getElementById('otDetailDate')) document.getElementById('otDetailDate').textContent = selectedCalDateText;
+      if (document.getElementById('lvDetailDate')) document.getElementById('lvDetailDate').textContent = selectedCalDateText;
+      switchView(viewId);
+    }
+
+    function goBackToCalendar() {
+      switchView('view-main');
+      if (typeof switchMainTab === 'function') {
+        switchMainTab('calendar');
+      }
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view-container').forEach(el => {
+        el.classList.remove('active');
+        // also ensure inline display is updated for safety
+        el.style.display = 'none';
+      });
+      const target = document.getElementById(viewId);
+      if (target) {
+        target.classList.add('active');
+        target.style.display = 'flex';
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotice');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+  </script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

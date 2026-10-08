@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Attendance</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .attendance-list-view { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; overflow: hidden; margin-bottom: 78px; }
+    .attendance-list-view > .cal-top-header { flex-shrink: 0; }
+    .main-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-padding-top: 96px; margin-bottom: 80px; padding: 0 16px 16px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    .summary-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .summary-card:active { transform: scale(0.96); }
+    .summary-card.theme-green::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #10b981, #34d399); }
+    .summary-card.theme-blue::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .summary-card.theme-red::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #ef4444, #f87171); }
+    .summary-card.theme-orange::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .card-top-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; }
+    .card-value { font-size: 26px; font-weight: 900; color: var(--text-primary); line-height: 1; }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); line-height: 1.3; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    
+    .bottom-sheet {
+      position: absolute;
+      bottom: -100%; left: 0; right: 0;
+      background: var(--bg-phone);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      z-index: 101;
+      transition: bottom 0.4s cubic-bezier(0.3, 1.05, 0.4, 1);
+      display: flex;
+      flex-direction: column;
+      max-height: 85%;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+    }
+    .bottom-sheet.active { bottom: 0; }
+    
+    .sheet-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
+      padding: 18px 20px;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 2;
+    }
+    .sheet-content {
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .close-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; cursor: pointer;
+    }
+
+    /* Custom Sleek Scrollbar / Slider */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(124, 58, 237, 0.35);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(124, 58, 237, 0.65);
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(124, 58, 237, 0.35) transparent;
+    }
+
+    /* Jump Bar & Pill Slider */
+    .me-jump-bar-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      background: var(--bg-phone);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .me-jump-bar-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .me-jump-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 5px;
+      scroll-behavior: smooth;
+    }
+    .me-jump-bar::-webkit-scrollbar { display: none; }
+    .me-jump-pill {
+      padding: 7px 15px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+    }
+    .me-jump-pill:hover {
+      color: var(--text-primary);
+      background: rgba(124, 58, 237, 0.08);
+    }
+    .me-jump-pill.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      border-color: transparent;
+    }
+
+    /* Modal Headers & Styles */
+    .modal-header-purple {
+      background: linear-gradient(135deg, #3b0764 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+    .modal-header-purple h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.2px;
+    }
+    .modal-close-round {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-close-round:hover {
+      background: rgba(0, 0, 0, 0.5);
+      transform: scale(1.05);
+    }
+    .attendance-details-empty-label {
+      margin: 10px 0 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* Details Table */
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    .details-table td {
+      padding: 12px 4px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .details-table tr:last-child td {
+      border-bottom: none;
+    }
+    .details-table td:first-child {
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 45%;
+    }
+    .details-table td:last-child {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Custom Select */
+    .custom-select { position: relative; }
+    .custom-select select { appearance: none; padding-right: 40px; }
+
+    /* ================= ENTERPRISE TOAST FILTER BAR ================= */
+    .enterprise-toast-bar {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.75) 0%, rgba(17, 24, 39, 0.85) 100%);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      border-radius: 22px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: relative;
+    }
+    .toast-info-col {
+      flex: 1;
+      min-width: 0;
+    }
+    .toast-subtitle {
+      font-size: 10px;
+      font-weight: 800;
+      color: #a78bfa;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .toast-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .toast-filter-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(124, 58, 237, 0.18);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      color: #c4b5fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast-filter-btn:active {
+      transform: scale(0.92);
+      background: rgba(124, 58, 237, 0.35);
+    }
+
+    .attendance-meta-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .attendance-meta-item {
+      min-width: 0;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+    .attendance-meta-item:last-child { text-align: left; }
+    .attendance-meta-item strong { color: var(--purple-primary); font-weight: 800; }
+
+    .attendance-total-bar {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+      background: var(--bg-card);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+    }
+    .attendance-total-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .attendance-total-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .attendance-total-value {
+      margin-top: 2px;
+      color: var(--text-primary);
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .attendance-total-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .attendance-update-btn {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      z-index: 30;
+      min-height: 44px;
+      padding: 12px 24px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .attendance-update-btn:active { transform: scale(0.97); }
+    .attendance-update-btn:disabled { opacity: .5; cursor: default; box-shadow: none; }
+    .attendance-update-btn:focus-visible { outline: 3px solid var(--purple-primary); outline-offset: 3px; }
+    .attendance-update-btn[hidden] { display: none; }
+
+    .history-card-item.attendance-record-card {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.06) 100%);
+      border: 1px solid var(--border-subtle);
+      border-left: 5px solid #10b981;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s;
+    }
+    html[data-theme="dark"] .history-card-item.attendance-record-card {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.06) 100%);
+      border-color: var(--border-subtle);
+      border-left-color: #10b981;
+    }
+    .history-card-item.attendance-record-card.exception-theme {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(245, 158, 11, 0.06) 100%);
+      border-color: var(--border-subtle);
+      border-left-color: #f59e0b;
+      box-shadow: var(--shadow-sm);
+    }
+    html[data-theme="dark"] .history-card-item.attendance-record-card.exception-theme {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(245, 158, 11, 0.06) 100%);
+      border-color: var(--border-subtle);
+      border-left-color: #f59e0b;
+    }
+    .history-card-item.attendance-record-card[hidden] { display: none !important; }
+    .attendance-record-card:active { transform: scale(0.985); }
+    .attendance-record-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .attendance-record-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 9px;
+    }
+    .attendance-exception-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border: 1px solid rgba(16, 185, 129, 0.34);
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      font-size: 10.5px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .attendance-exception-status.is-exception {
+      border-color: rgba(245, 158, 11, 0.36);
+      background: rgba(245, 158, 11, 0.14);
+      color: #d97706;
+    }
+    html[data-theme="dark"] .attendance-exception-status { color: #34d399; }
+    html[data-theme="dark"] .attendance-exception-status.is-exception { color: #fbbf24; }
+    .attendance-card-details-trigger {
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .attendance-card-details-trigger > span {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .attendance-record-card .history-time-row {
+      color: var(--text-primary);
+      font-size: 14.5px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+    html[data-theme="dark"] .attendance-record-card .history-time-row,
+    .attendance-record-card.exception-theme .history-time-row { color: var(--text-primary); }
+    .attendance-record-reference {
+      color: var(--purple-primary);
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+    .attendance-verify-button,
+    .verify-btn-all {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+    }
+    .attendance-verify-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .attendance-verify-button [data-verify-label] {
+      color: var(--text-muted);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.45px;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .attendance-verify-button[aria-pressed="true"] [data-verify-label] { color: var(--purple-primary); }
+    .attendance-card-details-trigger:focus-visible,
+    .attendance-verify-button:focus-visible,
+    .verify-btn-all:focus-visible {
+      outline: 3px solid rgba(124, 58, 237, 0.3);
+      outline-offset: 4px;
+      border-radius: 10px;
+    }
+    .attendance-record-summary-panel {
+      display: grid;
+      gap: 9px;
+      padding: 12px 14px;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      border-radius: 15px;
+      background: rgba(16, 185, 129, 0.05);
+    }
+    .exception-theme .attendance-record-summary-panel {
+      border-color: rgba(245, 158, 11, 0.18);
+      background: rgba(245, 158, 11, 0.05);
+    }
+    .attendance-record-detail {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .attendance-record-detail span {
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .attendance-record-detail strong {
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: right;
+    }
+    .attendance-card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 0;
+      border-top: 0;
+    }
+    .attendance-card-actions .card-action-btn { flex: 0 0 auto !important; min-width: 96px; border-radius: 999px; }
+
+    .attendance-filter-field { margin-bottom: 16px; }
+    .attendance-filter-field label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--purple-text);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .attendance-filter-control {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      outline: none;
+    }
+    .attendance-filter-control:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.13);
+    }
+
+    /* View Mode Tabs */
+    .view-mode-switcher {
+      display: flex; background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px; border-radius: 12px;
+      margin-bottom: 16px; overflow-x: auto; scrollbar-width: none;
+    }
+    .view-mode-tab {
+      flex: 1; min-width: max-content; padding: 10px 14px;
+      border-radius: 8px; border: none; font-size: 12.5px;
+      font-weight: 700; background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+    }
+    .view-mode-tab.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #fff; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+    }
+
+    /* Checkbox & Verify Interaction */
+    .verify-btn-all {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease;
+    }
+    .verify-btn-all:active {
+      transform: scale(0.94);
+    }
+    .verify-checkbox-box {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 2px solid var(--border-subtle);
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .verify-checkbox-box svg,
+    .verify-checkbox-box i {
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .verify-checkbox-box.checked {
+      background: var(--purple-primary);
+      border-color: var(--purple-primary);
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+    }
+    .verify-checkbox-box.checked svg,
+    .verify-checkbox-box.checked i {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .verify-all-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      border: 2px solid var(--purple-primary);
+      background: rgba(124, 58, 237, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .verify-all-box svg,
+    .verify-all-box i {
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .verify-all-box.checked {
+      background: var(--purple-primary);
+      box-shadow: 0 3px 10px rgba(124, 58, 237, 0.45);
+    }
+    .verify-all-box.checked svg,
+    .verify-all-box.checked i {
+      opacity: 1;
+      transform: scale(1);
+      color: #ffffff;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(15, 23, 42, 0.94);
+      color: #ffffff;
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 500;
+      color: var(--text-primary); outline: none; resize: none; min-height: 80px;
+    }
+    textarea::placeholder { color: var(--text-muted); }
+
+    /* Buttons */
+    .action-btn {
+      padding: 8px 16px; font-size: 12.5px; border-radius: 8px; 
+      background: var(--purple-primary); border: none; color: #fff; 
+      font-weight: 700; cursor: pointer; display: inline-flex; justify-content: center; align-items: center;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .action-btn:hover { background: var(--purple-hover); }
+
+    /* Attendance Card Action Buttons */
+    .card-action-btn {
+      padding: 11px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+    .card-action-btn:active {
+      transform: scale(0.97);
+    }
+    
+    .btn-shift-change,
+    .btn-feedback {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: 0;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+    }
+    .btn-shift-change:hover,
+    .btn-feedback:hover {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: #ffffff;
+      box-shadow: 0 6px 16px rgba(124, 58, 237, 0.34);
+    }
+    [data-theme="light"] .info-block-label { color: #64748b; }
+    
+    [data-theme="light"] .enterprise-toast-bar {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12);
+    }
+    [data-theme="light"] .toast-subtitle {
+      color: #7c3aed;
+    }
+    [data-theme="light"] .toast-filter-btn {
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid #ddd6fe;
+      color: #7c3aed;
+    }
+
+    /* Attendance Feedback Modern Clock Tool Styles */
+    .fb-clock-track {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 6px 2px;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+    }
+    .fb-clock-track::-webkit-scrollbar { display: none; }
+
+    .fb-clock-card {
+      width: 84px;
+      min-width: 84px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1.5px solid var(--border-subtle);
+      background: var(--bg-card);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .fb-clock-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+    .fb-clock-card.selected {
+      border: 2px solid #ef4444;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25), 0 8px 20px rgba(0, 0, 0, 0.2);
+      transform: scale(1.03);
+    }
+    [data-theme="dark"] .fb-clock-card.selected {
+      border-color: #f87171;
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);
+    }
+
+    .fb-clock-top {
+      padding: 8px 6px;
+      background: var(--bg-input);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.2s;
+    }
+    .fb-clock-card.selected .fb-clock-top {
+      background: rgba(239, 68, 68, 0.08);
+    }
+    .fb-clock-date-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      line-height: 1;
+    }
+    .fb-clock-pill-blue {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fb-clock-pill-blue.new-badge {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    }
+
+    .fb-clock-bottom {
+      padding: 8px 6px;
+      background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .fb-clock-bottom-date {
+      font-size: 11px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
+    }
+    .fb-clock-pill-white {
+      background: #ffffff;
+      color: #047857;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+      white-space: nowrap;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .fb-clock-pill-white.dashed {
+      border: 1.5px dashed #047857;
+      background: rgba(255, 255, 255, 0.95);
+      color: #047857;
+    }
+
+      /* Modern Line-by-Line Form Design */
+      .hero-info-banner {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.02));
+        border-radius: 20px;
+        padding: 18px 20px;
+        border: 1px solid rgba(124, 58, 237, 0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .feedback-meta-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .feedback-meta-row .label { margin-bottom: 0; }
+      .feedback-meta-row [data-feedback-meta-value] { text-align: right; }
+      .hero-stat .label {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+      .hero-stat .value {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--text-primary);
+      }
+      .hero-stat .accent {
+        font-size: 18px;
+        font-weight: 900;
+        color: #7c3aed;
+      }
+      
+      .modern-form-group {
+        margin-bottom: 20px;
+      }
+      .modern-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        margin-bottom: 10px;
+      }
+      .modern-label .required {
+        color: #ef4444;
+        margin-left: 2px;
+      }
+      
+      /* Summary Grid for exception fields */
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .summary-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 24px;
+        padding: 16px 14px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+      }
+      .summary-card:focus-within {
+        border-color: rgba(124, 58, 237, 0.5);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.15);
+      }
+
+      /* Modern Color Edge Indicators */
+      .summary-card.theme-green::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #10b981, #34d399); }
+      .summary-card.theme-blue::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+      .summary-card.theme-red::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #ef4444, #f87171); }
+      .summary-card.theme-orange::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+      
+      /* Stats Layout */
+      .card-top-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 8px; }
+      
+      .card-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+      .theme-green .card-badge { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+      .theme-blue .card-badge { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+      .theme-red .card-badge { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+      .theme-orange .card-badge { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+      
+      .card-title { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); line-height: 1.3; }
+
+      .card-input {
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        font-weight: 900;
+        color: var(--text-primary);
+        width: 100%;
+        outline: none;
+        padding: 0;
+      margin: 0;
+    }
+
+    /* Consistent Attendance Form Page */
+    .attendance-form-page {
+      width: 100%;
+      height: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-left: 1px solid var(--border-subtle);
+      background: var(--bg-phone);
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .attendance-form-header {
+      flex-shrink: 0;
+      padding: 12px 16px 16px;
+      border-bottom-right-radius: 24px;
+      border-bottom-left-radius: 24px;
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      color: #ffffff;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+    }
+    .attendance-form-header phone-status-bar {
+      display: block;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+    .attendance-form-header-row {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) 36px;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .attendance-form-back {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .attendance-form-header h3 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .attendance-form-header-title {
+      min-width: 0;
+      text-align: center;
+    }
+    .attendance-form-header-subtitle {
+      margin-top: 2px;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .attendance-form-header-spacer {
+      width: 36px;
+      height: 36px;
+    }
+    .attendance-form-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 16px 104px;
+      background: var(--bg-phone);
+    }
+    .attendance-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .attendance-form-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-card);
+    }
+    .attendance-form-summary {
+      display: grid;
+      gap: 9px;
+      padding: 15px 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--bg-input);
+      box-shadow: none;
+    }
+    .attendance-form-summary-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 12.5px;
+    }
+    .attendance-form-summary-row span {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .attendance-form-summary-row strong {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+    }
+    .attendance-form-shift-times {
+      display: grid;
+      gap: 8px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--bg-input);
+    }
+    .attendance-form-shift-time-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 12.5px;
+    }
+    .attendance-form-shift-time-row span {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .attendance-form-shift-time-row strong {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+    }
+    .attendance-form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .attendance-form-field label {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .attendance-form-select-wrap { position: relative; }
+    .attendance-form-control {
+      width: 100%;
+      min-height: 50px;
+      padding: 13px 42px 13px 15px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 15px;
+      outline: none;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      appearance: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    textarea.attendance-form-control {
+      min-height: 112px;
+      padding-right: 15px;
+      resize: vertical;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+    .attendance-form-control:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+    }
+    .attendance-form-select-chevron {
+      position: absolute;
+      top: 50%;
+      right: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+    .attendance-form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .attendance-form-cancel,
+    .attendance-form-draft,
+    .attendance-form-submit {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .attendance-form-cancel {
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .attendance-form-draft {
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .attendance-form-submit {
+      border: 0;
+      padding-inline: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+    }
+    .attendance-form-cancel:active,
+    .attendance-form-draft:active,
+    .attendance-form-submit:active,
+    .attendance-form-back:active { transform: scale(0.97); }
+      .card-input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.5;
+      }
+      .card-select {
+        appearance: none;
+        background: transparent;
+        border: none;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--text-primary);
+        width: 100%;
+        outline: none;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        text-overflow: ellipsis;
+      }
+  </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+</head>
+<body>
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+  <div class="phone-container">
+    <div class="attendance-list-view">
+    <div class="cal-top-header">
+      <phone-status-bar time="12:36" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="../index.html" class="header-btn" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; text-decoration: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </a>
+          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Attendance</h1>
+        </div>
+
+      </div>
+    </div>
+    
+    <div class="main-content" style="padding-top: 20px;">
+      
+      <!-- Profile/Group Info Card -->
+      <div class="attendance-meta-bar" id="attendanceMetaBar">
+        <div class="attendance-meta-item">Shift Group: <strong>GROUP A</strong></div>
+        <div class="attendance-meta-item">Supervisor: <strong>EBB04</strong></div>
+      </div>
+
+      <!-- Sticky Horizontal Category Navigation Bar -->
+      <div class="me-jump-bar-wrapper" style="margin: -12px -16px 16px -16px; border-radius: 0 0 16px 16px; padding: 12px 16px;">
+        <div class="me-jump-bar-container">
+          <div class="me-jump-bar" id="meJumpBar">
+            <button class="me-jump-pill active">This Week</button>
+            <button class="me-jump-pill">Last Week</button>
+            <button class="me-jump-pill">This Month</button>
+            <button class="me-jump-pill">Last Month</button>
+          </div>
+          <div class="me-jump-bar-fade" id="meJumpFade">›</div>
+        </div>
+      </div>
+
+      <!-- Enterprise Toast Filter Bar -->
+      <div class="enterprise-toast-bar" onclick="openModal('filterModalOverlay')" style="margin-top: 0; margin-bottom: 12px; cursor: pointer;">
+        <div class="toast-info-col" style="padding-left: 2px;">
+          <div class="enterprise-toast-label">
+            CURRENT FILTER
+          </div>
+          <div class="enterprise-toast-value" id="attendanceCurrentFilterValue">
+            All Exceptions
+          </div>
+        </div>
+        <button class="enterprise-toast-btn" type="button" onclick="event.stopPropagation(); openModal('filterModalOverlay')" title="Open Filter Options">
+          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
+        </button>
+      </div>
+
+      <!-- Total Hours & Verify All -->
+      <div class="attendance-total-bar">
+        <div class="attendance-total-summary-row">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+              <span class="attendance-total-label" id="attendanceTotalHoursLabel">Total Hours</span>
+              <div class="attendance-total-value" id="attendanceTotalHoursValue">8.00/2.00</div>
+          </div>
+          <div class="attendance-total-actions">
+            <button class="verify-btn-all" type="button" onclick="toggleVerifyAll()" id="verifyAllBtn" title="Verify all attendance records" aria-pressed="false">
+                <div class="verify-all-box" id="verifyAllIcon">
+                   <i class="fa-solid fa-check" style="color: #ffffff; font-size: 11px;"></i>
+                </div>
+                <span id="verifyAllText" style="font-size: 10.5px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.3px;">Verify All</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Card 1 (Normal) -->
+      <div class="history-card-item attendance-record-card" data-exception="none" data-date="2026-09-15">
+           <div class="attendance-record-top">
+              <button class="attendance-card-details-trigger" type="button" onclick="openModal('attendanceDetailsModalOverlay')" aria-label="View attendance details for 15 September 2026">
+                 <span>
+                    <span class="history-time-row">W01: 8.30AM – 5.30PM</span>
+                    <span class="attendance-record-reference">Date: Tue, 15 Sep 2026</span>
+                 </span>
+              </button>
+              <div class="attendance-record-controls">
+                <button class="attendance-verify-button" type="button" onclick="toggleSingleVerify(this)" title="Verify this record" aria-pressed="false">
+                    <span class="verify-checkbox-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                    <span data-verify-label>Verify</span>
+                </button>
+                <span class="attendance-exception-status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>No Exception</span>
+              </div>
+           </div>
+
+           <div class="attendance-record-summary-panel">
+               <div class="attendance-record-detail">
+                   <span>Times</span>
+                   <strong>07:38</strong>
+               </div>
+               <div class="attendance-record-detail">
+                   <span>Normal Hours</span>
+                   <strong>0.00</strong>
+               </div>
+               <div class="attendance-record-detail">
+                   <span>OT Hours</span>
+                   <strong>0.00</strong>
+               </div>
+           </div>
+
+           <div class="attendance-card-actions">
+               <button onclick="event.stopPropagation(); openModal('shiftChangeModalOverlay')" class="card-action-btn btn-shift-change">
+                 Change Shift
+               </button>
+               <button onclick="event.stopPropagation(); openFeedbackModal('15 Sep 2026', '8.30AM–5.30PM (W01)', '')" class="card-action-btn btn-feedback">
+                 Feedback
+               </button>
+           </div>
+      </div>
+
+      <!-- Attendance Card 2 (Exception) -->
+      <div class="history-card-item attendance-record-card exception-theme" data-exception="unapproved-ot" data-date="2026-09-14">
+           <div class="attendance-record-top">
+              <button class="attendance-card-details-trigger" type="button" onclick="openModal('attendanceDetailsModalOverlay')" aria-label="View attendance details for 14 September 2026">
+                 <span>
+                    <span class="history-time-row">W01: 8.30AM – 5.30PM</span>
+                    <span class="attendance-record-reference">Date: Mon, 14 Sep 2026</span>
+                 </span>
+              </button>
+              <div class="attendance-record-controls">
+                <button class="attendance-verify-button" type="button" onclick="toggleSingleVerify(this)" title="Verify this record" aria-pressed="false">
+                    <span class="verify-checkbox-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                    <span data-verify-label>Verify</span>
+                </button>
+                <span class="attendance-exception-status is-exception"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Unapproved OT</span>
+              </div>
+           </div>
+
+           <div class="attendance-record-summary-panel">
+               <div class="attendance-record-detail">
+                   <span>Times</span>
+                   <strong>08:09 • 19:40</strong>
+               </div>
+               <div class="attendance-record-detail">
+                   <span>Normal Hours</span>
+                   <strong>8.00</strong>
+               </div>
+               <div class="attendance-record-detail">
+                   <span>OT Hours</span>
+                   <strong style="color: #ef4444;">2.00</strong>
+               </div>
+           </div>
+           
+           <div class="attendance-card-actions">
+               <button onclick="event.stopPropagation(); openFeedbackModal('14 Sep 2026', '8.30AM–5.30PM (W01)', 'Unapproved OT')" class="card-action-btn btn-feedback">
+                 Feedback
+               </button>
+           </div>
+      </div>
+      
+    </div>
+      <button class="attendance-update-btn" type="button" id="attendanceUpdateBtn" onclick="updateAttendanceVerification()" disabled>Update</button>
+    </div>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Modals Section -->
+
+    <!-- Attendance Details Modal -->
+    <div id="attendanceDetailsModalOverlay" onclick="closeModal('attendanceDetailsModalOverlay', event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+
+      <div class="popup-modal-content" onclick="event.stopPropagation()"
+        style="width: 90%; max-width: 390px; background: var(--bg-sheet); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85%; overflow: hidden; display: flex; flex-direction: column;">
+        
+        <!-- Purple Gradient Modal Header -->
+        <div class="modal-header-purple">
+          <h3>Attendance Details</h3>
+          <button class="modal-close-round" onclick="closeModal('attendanceDetailsModalOverlay', event)" aria-label="Close">
+            <i class="fa-solid fa-xmark" style="font-size: 16px;"></i>
+          </button>
+        </div>
+        
+        <!-- Non-transparent Solid Scrollable Content -->
+        <div class="sheet-content" style="padding: 18px 20px 24px; overflow-y: auto; background: var(--bg-sheet); flex: 1;">
+           <div class="attendance-details-main" style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Employee #</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">EBB12</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Name</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">Farhan binti rahmat</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Date</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">15 Sep 2026</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Shift</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">8.30AM-5.30PM (W01)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Day Type</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">Work Day</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Shift Group</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">GROUP A</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Supervisor</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">EBB04</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Clock Times</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">0738</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Normal Hours</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Late In</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Early Out</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Time Off</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Absent</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">No</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Approved OT Hours</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">0.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Unapproved OT Hours</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">0.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Exception</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Document #</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+           </div>
+           <p class="attendance-details-empty-label">Leave Info</p>
+           <p class="attendance-details-empty-label">Overtime Info</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Shift Change Request Modal -->
+    <div id="shiftChangeModalOverlay" onclick="closeModal('shiftChangeModalOverlay', event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 9999; display: none; justify-content: flex-end; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+
+      <div class="side-page-content attendance-form-page" onclick="event.stopPropagation()">
+        <header class="attendance-form-header">
+          <phone-status-bar time="12:36"></phone-status-bar>
+          <div class="attendance-form-header-row">
+            <button class="attendance-form-back" type="button" data-shift-change-back onclick="closeModal('shiftChangeModalOverlay', event)" aria-label="Back">
+              <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <div class="attendance-form-header-title">
+              <h3>Shift Change Request</h3>
+            </div>
+            <span class="attendance-form-header-spacer" aria-hidden="true"></span>
+          </div>
+        </header>
+
+        <div class="attendance-form-body">
+          <form class="attendance-form" id="shiftChangeRequestForm" onsubmit="submitShiftChangeRequest(event)">
+            <div class="attendance-form-card">
+              <h2 class="form-section-heading form-section-heading--new">Shift Change Details</h2>
+              <section class="attendance-form-summary" aria-label="Current shift details">
+                <div class="attendance-form-summary-row"><span>Date</span><strong id="shiftMetaDate">15 Sep 2026</strong></div>
+                <div class="attendance-form-summary-row"><span>Original Shift</span><strong id="shiftMetaOriginal">8.30AM–5.30PM (W01)</strong></div>
+              </section>
+
+              <div class="attendance-form-field">
+                <label for="shiftChangeNewShift">New Shift</label>
+                <div class="attendance-form-select-wrap">
+                  <select class="attendance-form-control" id="shiftChangeNewShift" name="newShift" onchange="updateShiftChangeSummary(this.value)">
+                    <option value="">– Select Shift –</option>
+                    <option value="W02">9.00AM–6.00PM (W02)</option>
+                    <option value="W03">10.00AM–7.00PM (W03)</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down attendance-form-select-chevron" aria-hidden="true"></i>
+                </div>
+              </div>
+
+              <section class="attendance-form-shift-times" aria-label="Selected new shift times" aria-live="polite">
+                <div class="attendance-form-shift-time-row"><span>New Shift Start</span><strong id="shiftChangeStart">–</strong></div>
+                <div class="attendance-form-shift-time-row"><span>New Shift End</span><strong id="shiftChangeEnd">–</strong></div>
+              </section>
+
+              <div class="attendance-form-field">
+                <label for="shiftChangeReason">Reason</label>
+                <div class="attendance-form-select-wrap">
+                  <select class="attendance-form-control" id="shiftChangeReason" name="reason">
+                    <option value="">– Select Reason –</option>
+                    <option value="personal">Personal Matter</option>
+                    <option value="project">Project Requirement</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down attendance-form-select-chevron" aria-hidden="true"></i>
+                </div>
+              </div>
+
+              <div class="attendance-form-field">
+                <label for="shiftChangeRemarks">Remarks</label>
+                <textarea class="attendance-form-control" id="shiftChangeRemarks" name="remarks" placeholder="Type your remarks here..."></textarea>
+              </div>
+            </div>
+
+            <div class="attendance-form-actions">
+              <button class="attendance-form-cancel" type="button" onclick="closeModal('shiftChangeModalOverlay', event)">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span>
+              </button>
+              <button class="attendance-form-draft" type="button" onclick="saveShiftChangeDraft()">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Draft</span>
+              </button>
+              <button class="attendance-form-submit" type="submit">
+                <span>Submit</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+        <phone-bottom-nav active="apps"></phone-bottom-nav>
+      </div>
+    </div>
+
+    <!-- Attendance Feedback Modal (Completely New Premium Design) -->
+    <div id="feedbackModalOverlay" onclick="closeModal('feedbackModalOverlay', event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 9999; display: none; justify-content: flex-end; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+
+      <div class="side-page-content" onclick="event.stopPropagation()"
+        style="width: 100%; height: 100%; max-width: 480px; background: var(--bg-phone); display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.3); border-left: 1px solid var(--border-subtle); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden;">
+        
+        <!-- Clean Modern Header -->
+        <div style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 20px 16px; display: flex; flex-direction: column; flex-shrink: 0; position: relative; z-index: 10;">
+          <phone-status-bar time="16:25" style="color: #ffffff; margin-bottom: 12px;"></phone-status-bar>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button class="header-btn" data-feedback-back type="button" onclick="closeModal('feedbackModalOverlay', event)" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; padding: 0; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+              </button>
+              <h3 style="font-size: 20px; font-weight: 700; color: #ffffff; margin: 0; letter-spacing: -0.2px;">Attendance Feedback</h3>
+            </div>
+          </div>
+        </div>
+        
+        <div class="sheet-content" style="padding: 16px 16px 30px; flex: 1; overflow-y: auto; background: var(--bg-phone); display: flex; flex-direction: column;">
+           
+           <!-- Hero Info Banner (from overtime design) -->
+           <div class="hero-info-banner" style="margin-bottom: 20px; background: var(--bg-card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);">
+              <div class="hero-stat feedback-meta-row">
+                <div class="label">Original Shift</div>
+                <div class="value" id="fbMetaShift" data-feedback-meta-value>8.30AM - 5.30PM (W01)</div>
+              </div>
+              <div class="hero-stat feedback-meta-row">
+                <div class="label">Date</div>
+                <div class="value" id="fbMetaDate" data-feedback-meta-value>14 Sep</div>
+              </div>
+              <div class="hero-stat feedback-meta-row">
+                <div class="label">Employee</div>
+                <div class="value" data-feedback-meta-value>
+                  <span id="fbMetaEmployeeName" style="display: block;">Farhan binti rahmat</span>
+                  <span id="fbMetaEmployeeNo" style="display: block; font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: .8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EBB12</span>
+                </div>
+              </div>
+           </div>
+
+           <!-- Section: Clock Data Amendment -->
+           <div style="margin-bottom: 20px;">
+              <h4 class="attendance-feedback-clock-title form-section-heading" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Clock Times</h4>
+              
+              <!-- Modern Pill Actions -->
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                 <div style="display: flex; align-items: center; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; flex: 0 1 auto; min-width: 0;">
+                    <!-- Action Pills -->
+                    <button type="button" class="pill-tab" onclick="addClockCard('13 Sep', '#ef4444')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 10px 16px; border-radius: 20px; display: flex; align-items: center; gap: 6px; font-weight: 800; cursor: pointer; white-space: nowrap;">
+                       <span style="font-size: 15px; line-height: 1;">+</span> 13 Sep
+                    </button>
+                    <button type="button" class="pill-tab" onclick="addClockCard('14 Sep', '#10b981')" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 10px 16px; border-radius: 20px; display: flex; align-items: center; gap: 6px; font-weight: 800; cursor: pointer; white-space: nowrap;">
+                       <span style="font-size: 15px; line-height: 1;">+</span> 14 Sep
+                    </button>
+                    <button type="button" class="pill-tab" onclick="addClockCard('15 Sep', '#3b82f6')" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 10px 16px; border-radius: 20px; display: flex; align-items: center; gap: 6px; font-weight: 800; cursor: pointer; white-space: nowrap;">
+                       <span style="font-size: 15px; line-height: 1;">+</span> 15 Sep
+                    </button>
+                 </div>
+                 <button type="button" onclick="deleteSelectedClockCard()" style="background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px; box-shadow: var(--shadow-sm); transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                    <i class="fa-solid fa-trash-can" style="font-size: 16px;"></i>
+                 </button>
+              </div>
+
+              <!-- Clock Cards Track Container -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 16px; box-shadow: var(--shadow-sm);">
+                 <div id="fbClockCardsTrack" class="fb-clock-track">
+                    <!-- Generated by JS -->
+                 </div>
+              </div>
+           </div>
+
+           <!-- Section: Feedback Details Card (Matching leave.html Image 2 Pattern) -->
+           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 20px;">
+              <h4 class="form-section-heading" style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 18px;">Feedback Details</h4>
+
+              <!-- Amended Shift (Line 1) -->
+              <div class="modern-form-group">
+                 <label class="modern-label" style="margin-bottom: 8px;">Amended Shift</label>
+                 <div class="custom-select" style="position: relative;">
+                    <select id="fbAmendedShiftSelect" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 14px 16px; font-size: 13.5px; font-weight: 700; color: var(--text-primary); outline: none; appearance: none; box-sizing: border-box; cursor: pointer;">
+                       <option value="">-- Select Amended Shift --</option>
+                       <option value="W01">8.30AM - 5.30PM (W01) - Default</option>
+                       <option value="W02">8.00AM - 5.00PM (W02)</option>
+                       <option value="W03">9.00AM - 6.00PM (W03)</option>
+                       <option value="FLEX">Flexible Hours</option>
+                       <option value="CUSTOM">Custom Shift...</option>
+                    </select>
+                    <div class="arrow" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted);">
+                       <i class="fa-solid fa-chevron-down" style="font-size: 13px;"></i>
+                    </div>
+                 </div>
+              </div>
+
+              <!-- Time Amend Reason (Line 2) -->
+              <div class="modern-form-group">
+                 <label class="modern-label" style="margin-bottom: 8px;">Time Amend Reason</label>
+                 <div class="custom-select" style="position: relative;">
+                    <select id="fbAmendReasonSelect" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 14px 16px; font-size: 13.5px; font-weight: 700; color: var(--text-primary); outline: none; appearance: none; box-sizing: border-box; cursor: pointer;">
+                       <option value="">- Select Amend Reason -</option>
+                       <option value="forgot" selected>Forgot to Clock</option>
+                       <option value="device">Device Offline / Biometric Reader Issue</option>
+                       <option value="meeting">Official Business / Client Meeting</option>
+                       <option value="urgent">Urgent Production Support</option>
+                       <option value="network">Network / Mobile App Glitch</option>
+                       <option value="other">Other Official Reason</option>
+                    </select>
+                    <div class="arrow" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted);">
+                       <i class="fa-solid fa-chevron-down" style="font-size: 13px;"></i>
+                    </div>
+                 </div>
+              </div>
+
+              <!-- Remarks (Line 11) -->
+              <div class="modern-form-group" style="margin-bottom: 24px;">
+                 <label class="modern-label" style="margin-bottom: 6px;">Remarks</label>
+                 <textarea id="fbRemarksInput" placeholder="Enter remarks or justification for supervisor review..." style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; font-weight: 500; color: var(--text-primary); outline: none; box-sizing: border-box; min-height: 100px; resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+              </div>
+
+              <!-- Section: Upload Attachments (Integrated inside card matching leave.html) -->
+              <div>
+                 <label class="form-section-heading" style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px;">Attachments</label>
+                         <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0 4px;">
+                     <!-- Circular Option 1: Select File(s) -->
+                     <div onclick="triggerFbFileUpload('file')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" title="Select Files">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                           <i class="fa-solid fa-file-arrow-up" style="font-size: 24px;"></i>
+                        </div>
+                        <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-text);">Select File(s)</span>
+                     </div>
+
+                     <!-- Circular Option 2: Take a Picture -->
+                     <div onclick="triggerFbFileUpload('camera')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" title="Take Photo">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform 0.2s; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                           <i class="fa-solid fa-camera" style="font-size: 24px;"></i>
+                        </div>
+                        <span style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">Take a Picture</span>
+                     </div>
+                  </div>            
+                 <input type="file" id="hiddenFbFileInput" style="display: none;" onchange="handleFbFileSelected(this)">
+                 
+                 <!-- Uploaded Chips List -->
+                 <div id="fbUploadedChipsList" style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; margin-top: 16px;"></div>
+              </div>
+           </div>
+
+           <!-- Form Actions -->
+           <div class="attendance-feedback-actions attendance-form-actions" style="margin: 10px 4px 24px;">
+              <button type="button" class="attendance-form-cancel" onclick="closeModal('feedbackModalOverlay', event)">
+                 <i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span>
+              </button>
+              <button type="button" class="attendance-form-draft" onclick="saveFbDraft()">
+                 <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Draft</span>
+              </button>
+              <button type="button" class="attendance-form-submit" onclick="submitFbForm()">
+                 <span>Submit</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+              </button>
+           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Feedback Information Guide Modal -->
+    <div id="fbInfoModalOverlay" onclick="closeModal('fbInfoModalOverlay', event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 10000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+      <div class="popup-modal-content" onclick="event.stopPropagation()"
+        style="width: 90%; max-width: 360px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; display: flex; flex-direction: column;">
+        
+        <div class="modal-header-purple" style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0;">Feedback Guide</h3>
+          <button class="modal-close-round" onclick="closeModal('fbInfoModalOverlay', event)" aria-label="Close" style="width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="fa-solid fa-xmark" style="font-size: 14px;"></i>
+          </button>
+        </div>
+        
+        <div style="padding: 18px 20px; color: var(--text-primary); font-size: 13px; line-height: 1.5; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <div style="width: 22px; text-align: center; color: var(--purple-primary); font-size: 15px; flex-shrink: 0;"><i class="fa-solid fa-clock"></i></div>
+            <div><strong>Clock In/Out Pairs:</strong> Top block represents Clock In; bottom green block represents Clock Out.</div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <div style="width: 22px; text-align: center; color: var(--purple-primary); font-size: 15px; flex-shrink: 0;"><i class="fa-solid fa-plus"></i></div>
+            <div><strong>Add Dates:</strong> Use the colored date buttons (+13 Sep, +14 Sep, +15 Sep) to insert missing clock entries.</div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <div style="width: 22px; text-align: center; color: var(--purple-primary); font-size: 15px; flex-shrink: 0;"><i class="fa-solid fa-pen"></i></div>
+            <div><strong>Edit Times:</strong> Tap any time pill on a card to adjust the specific clock timestamp.</div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <div style="width: 22px; text-align: center; color: var(--purple-primary); font-size: 15px; flex-shrink: 0;"><i class="fa-solid fa-trash-can"></i></div>
+            <div><strong>Delete:</strong> Select a card and tap the trash icon to remove unwanted clock amendments.</div>
+          </div>
+          <button type="button" onclick="closeModal('fbInfoModalOverlay', event)" style="margin-top: 8px; width: 100%; padding: 12px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #fff; border: none; border-radius: 14px; font-weight: 800; cursor: pointer;">Got It</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Edit Modal Popup -->
+    <div id="fbTimeEditModalOverlay" onclick="closeModal('fbTimeEditModalOverlay', event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 10001; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+      <div class="popup-modal-content" onclick="event.stopPropagation()"
+        style="width: 90%; max-width: 340px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; display: flex; flex-direction: column;">
+        
+        <div class="modal-header-purple" style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
+          <h3 class="form-section-heading" style="font-size: 15px; font-weight: 800; color: #ffffff; margin: 0;" id="fbTimeEditTitle">Edit Clock Time</h3>
+          <button class="modal-close-round" onclick="closeModal('fbTimeEditModalOverlay', event)" aria-label="Close" style="width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="fa-solid fa-xmark" style="font-size: 13px;"></i>
+          </button>
+        </div>
+        
+        <div style="padding: 16px 18px; display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block;">Select or Type Time (HH:MM)</label>
+            <input type="time" id="fbTimeEditInput" value="08:30" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 14px; font-size: 16px; font-weight: 800; color: var(--text-primary); outline: none; box-sizing: border-box;">
+          </div>
+          
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button type="button" onclick="setQuickTime('08:09')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: var(--text-primary); cursor: pointer;">08:09</button>
+            <button type="button" onclick="setQuickTime('08:30')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: var(--text-primary); cursor: pointer;">08:30</button>
+            <button type="button" onclick="setQuickTime('12:00')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: var(--text-primary); cursor: pointer;">12:00</button>
+            <button type="button" onclick="setQuickTime('17:30')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: var(--text-primary); cursor: pointer;">17:30</button>
+            <button type="button" onclick="setQuickTime('19:40')" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: var(--text-primary); cursor: pointer;">19:40</button>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 4px;">
+            <button type="button" onclick="closeModal('fbTimeEditModalOverlay', event)" style="flex: 1; padding: 10px; background: transparent; border: 1px solid var(--border-subtle); color: var(--text-secondary); border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer;">Cancel</button>
+            <button type="button" onclick="applyClockTimeEdit()" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer;">Save Time</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div id="filterModalOverlay" onclick="closeModal('filterModalOverlay', event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 9999; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+
+      <div class="filter-bottom-sheet-content" onclick="event.stopPropagation()"
+        style="width: 100%; max-width: 480px; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-bottom: none; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85%; overflow: hidden; display: flex; flex-direction: column;">
+        
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h2>
+          <button id="attendanceFilterReset" type="button" onclick="resetAttendanceFilter(event)" style="background: rgba(255,255,255,0.08); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <i class="fa-solid fa-rotate-left" style="font-size: 12px;"></i>
+            Reset
+          </button>
+        </div>
+        
+        <div class="sheet-content" style="padding: 24px; overflow-y: auto; background: var(--bg-card); flex: 1;">
+          <div class="attendance-filter-field">
+            <label for="attendanceExceptionFilter">Exception</label>
+            <select id="attendanceExceptionFilter" class="attendance-filter-control">
+              <option value="all">All Exceptions</option>
+              <option value="none">No Exception</option>
+              <option value="missing-clock">Missing Clock</option>
+              <option value="unapproved-ot">Unapproved OT</option>
+              <option value="late-in">Late In</option>
+              <option value="early-out">Early Out</option>
+            </select>
+          </div>
+
+          <div style="display: flex; margin-top: 32px;">
+            <button id="attendanceApplyFilter" class="action-btn" type="button" onclick="applyAttendanceFilter(event)" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #fff; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; text-align: center;">Apply Filter</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  
+  <script>
+    function openModal(overlayId) {
+      const overlay = document.getElementById(overlayId);
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.style.opacity = '1';
+        
+        const sheet = overlay.querySelector('.filter-bottom-sheet-content');
+        if (sheet) sheet.style.transform = 'translateY(0)';
+        
+        const popup = overlay.querySelector('.popup-modal-content');
+        if (popup) {
+           popup.style.transform = 'scale(1)';
+           popup.style.opacity = '1';
+        }
+        
+        const sidePage = overlay.querySelector('.side-page-content');
+        if (sidePage) sidePage.style.transform = 'translateX(0)';
+      }, 10);
+    }
+    
+    function closeModal(overlayId, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const overlay = document.getElementById(overlayId);
+      overlay.style.opacity = '0';
+      
+      const sheet = overlay.querySelector('.filter-bottom-sheet-content');
+      if (sheet) sheet.style.transform = 'translateY(100%)';
+      
+      const popup = overlay.querySelector('.popup-modal-content');
+      if (popup) {
+         popup.style.transform = 'scale(0.95)';
+         popup.style.opacity = '0';
+      }
+      
+      const sidePage = overlay.querySelector('.side-page-content');
+      if (sidePage) sidePage.style.transform = 'translateX(100%)';
+      
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        const routeParams = new URLSearchParams(window.location.search);
+        if (overlayId === 'feedbackModalOverlay' && routeParams.get('feedbackFrom') === 'hours-summary') {
+          const returnUrl = new URL('hours-summary.html', window.location.href);
+          const requestedSummary = routeParams.get('feedbackSummary');
+          const summary = ['Odd Clocking Days', 'Unapproved OT Hours', 'Absent Days', 'Lost Hours'].includes(requestedSummary) ? requestedSummary : 'Odd Clocking Days';
+          returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme, summary });
+          window.location.replace(returnUrl.href);
+        } else if (overlayId === 'feedbackModalOverlay' && routeParams.get('feedbackFrom') === 'staff-attendance') {
+          let staffState;
+          try { staffState = JSON.parse(sessionStorage.getItem('staff-attendance:feedback-return')); } catch (error) { /* Direct links can work without storage. */ }
+          if (staffState?.returnToken && staffState.returnToken === routeParams.get('feedbackReturnToken') && window.history.length > 1) {
+            window.history.back();
+            return;
+          }
+          const returnUrl = new URL('staff-attendance.html', window.location.href);
+          returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme });
+          window.location.replace(returnUrl.href);
+        } else if (
+          (overlayId === 'feedbackModalOverlay' && routeParams.get('feedbackFrom') === 'pending-feedback') ||
+          (overlayId === 'shiftChangeModalOverlay' && routeParams.get('shiftFrom') === 'pending-feedback')
+        ) {
+          const returnUrl = new URL('feedback-history.html', window.location.href);
+          returnUrl.search = new URLSearchParams({ theme: document.documentElement.dataset.theme });
+          window.location.replace(returnUrl.href);
+        }
+      }, 300);
+    }
+
+    function updateAttendanceFilterLabel() {
+      const exception = document.getElementById('attendanceExceptionFilter');
+      const label = exception?.options[exception.selectedIndex]?.text || 'All Exceptions';
+      const current = document.getElementById('attendanceCurrentFilterValue');
+      if (current) current.textContent = label;
+    }
+
+    function resetAttendanceFilter(event) {
+      event?.preventDefault();
+      event?.stopPropagation();
+      document.getElementById('attendanceExceptionFilter').value = 'all';
+      updateAttendanceFilterLabel();
+      filterAttendanceRecords();
+    }
+
+    function applyAttendanceFilter(event) {
+      updateAttendanceFilterLabel();
+      filterAttendanceRecords();
+      closeModal('filterModalOverlay', event);
+    }
+
+    function filterAttendanceRecords() {
+      const exception = document.getElementById('attendanceExceptionFilter')?.value || 'all';
+      document.querySelectorAll('.attendance-record-card').forEach(card => {
+        const matchesException = exception === 'all' || card.dataset.exception === exception;
+        card.hidden = !matchesException;
+      });
+    }
+
+    // Toast notification
+    function showToast(msg) {
+      let toast = document.getElementById('appToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToast';
+        toast.className = 'toast-msg';
+        document.querySelector('.phone-container').appendChild(toast);
+      }
+      toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 16px;"></i> ${msg}`;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    function updateShiftChangeSummary(shiftCode) {
+      const shifts = {
+        W02: { start: '9.00AM', end: '6.00PM' },
+        W03: { start: '10.00AM', end: '7.00PM' }
+      };
+      const selectedShift = shifts[shiftCode];
+      const start = document.getElementById('shiftChangeStart');
+      const end = document.getElementById('shiftChangeEnd');
+      if (start) start.textContent = selectedShift?.start || '–';
+      if (end) end.textContent = selectedShift?.end || '–';
+    }
+
+    function submitShiftChangeRequest(event) {
+      event.preventDefault();
+      closeModal('shiftChangeModalOverlay');
+      showToast('Shift change request submitted');
+    }
+
+    function saveShiftChangeDraft() {
+      showToast('Shift change request saved to drafts');
+    }
+
+    // Toggle Verify All
+    function setAttendanceVerifyState(button, isVerified) {
+      button.setAttribute('aria-pressed', String(isVerified));
+      button.classList.toggle('checked', isVerified);
+      const label = button.querySelector('[data-verify-label]');
+      const checkbox = button.querySelector('.verify-checkbox-box');
+      if (checkbox) checkbox.classList.toggle('checked', isVerified);
+      if (label) label.textContent = isVerified ? 'Verified' : 'Verify';
+    }
+
+    const attendanceSavedVerification = new Map(Array.from(document.querySelectorAll('.attendance-verify-button'), button => [button, button.getAttribute('aria-pressed') === 'true']));
+    function syncAttendanceUpdateButton() {
+      const updateButton = document.getElementById('attendanceUpdateBtn');
+      if (!updateButton) return;
+      const hasChanges = Array.from(document.querySelectorAll('.attendance-verify-button'))
+        .some(button => (button.getAttribute('aria-pressed') === 'true') !== attendanceSavedVerification.get(button));
+      updateButton.disabled = !hasChanges;
+    }
+
+    function updateAttendanceVerification() {
+      document.querySelectorAll('.attendance-verify-button').forEach(button => attendanceSavedVerification.set(button, button.getAttribute('aria-pressed') === 'true'));
+      syncAttendanceUpdateButton();
+      document.getElementById('verifyAllBtn')?.focus({ preventScroll: true });
+      showToast('Attendance verification updated');
+    }
+
+    function toggleVerifyAll() {
+      const verifyAllIcon = document.getElementById('verifyAllIcon');
+      const verifyAllText = document.getElementById('verifyAllText');
+      const verifyAllButton = document.getElementById('verifyAllBtn');
+      const recordButtons = document.querySelectorAll('.attendance-verify-button');
+      
+      const isCurrentlyChecked = verifyAllIcon.classList.contains('checked');
+      const newState = !isCurrentlyChecked;
+      
+      if (newState) {
+        verifyAllIcon.classList.add('checked');
+        verifyAllText.textContent = 'Verified All';
+        recordButtons.forEach(button => setAttendanceVerifyState(button, true));
+        showToast('All attendance items verified');
+      } else {
+        verifyAllIcon.classList.remove('checked');
+        verifyAllText.textContent = 'Verify All';
+        recordButtons.forEach(button => setAttendanceVerifyState(button, false));
+        showToast('Unverified all items');
+      }
+      verifyAllButton?.setAttribute('aria-pressed', String(newState));
+      syncAttendanceUpdateButton();
+    }
+
+    // Toggle Single Card Verify
+    function toggleSingleVerify(container) {
+      const isChecked = container.getAttribute('aria-pressed') !== 'true';
+      setAttendanceVerifyState(container, isChecked);
+      
+      const recordButtons = Array.from(document.querySelectorAll('.attendance-verify-button'));
+      const allVerified = recordButtons.length > 0 && recordButtons.every(button => button.getAttribute('aria-pressed') === 'true');
+      const verifyAllIcon = document.getElementById('verifyAllIcon');
+      const verifyAllText = document.getElementById('verifyAllText');
+      const verifyAllButton = document.getElementById('verifyAllBtn');
+      
+      if (allVerified) {
+        verifyAllIcon.classList.add('checked');
+        verifyAllText.textContent = 'Verified All';
+      } else {
+        verifyAllIcon.classList.remove('checked');
+        verifyAllText.textContent = 'Verify All';
+      }
+      verifyAllButton?.setAttribute('aria-pressed', String(allVerified));
+      syncAttendanceUpdateButton();
+      
+      if (isChecked) {
+        showToast('Attendance record verified');
+      }
+    }
+
+    // Interactive Jump-Bar Pill Slider
+    document.addEventListener('DOMContentLoaded', () => {
+      const pills = document.querySelectorAll('.me-jump-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', function() {
+          pills.forEach(p => p.classList.remove('active'));
+          this.classList.add('active');
+          this.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        });
+      });
+      renderFeedbackClockCards();
+      openLinkedFeedback();
+      openLinkedShiftChange();
+    });
+
+    /* ================= Attendance Feedback Logic ================= */
+    let feedbackClockCards = [
+      { id: 1, inDate: '14 Sep', inTime: '08:09', isNewIn: false, outDate: '14 Sep', outTime: '00:00', isDashedOut: false },
+      { id: 2, inDate: '14 Sep', inTime: 'New', isNewIn: true, outDate: '14 Sep', outTime: '--:--', isDashedOut: true },
+      { id: 3, inDate: '14 Sep', inTime: 'New', isNewIn: true, outDate: '14 Sep', outTime: '03:00', isDashedOut: false },
+      { id: 4, inDate: '14 Sep', inTime: '19:40', isNewIn: false, outDate: '14 Sep', outTime: '19:40', isDashedOut: false }
+    ];
+    let selectedClockCardIndex = 1; // Card 2 selected initially
+    let editingCardTarget = null; // { cardIndex, field: 'inTime'|'outTime' }
+
+    // Reuse this form for linked Feedback actions.
+    function openLinkedFeedback() {
+      const params = new URLSearchParams(window.location.search);
+      if (!['hours-summary', 'pending-feedback', 'staff-attendance'].includes(params.get('feedbackFrom'))) return;
+      const dateStr = params.get('feedbackDate');
+      const recordDate = new Date(dateStr);
+      if (!dateStr || Number.isNaN(recordDate.getTime())) return;
+      const shortDate = date => `${date.getDate()} ${date.toLocaleDateString('en-US', { month: 'short' })}`;
+      const currentDate = shortDate(recordDate);
+      const colors = ['#ef4444', '#10b981', '#3b82f6'];
+      document.querySelectorAll('#feedbackModalOverlay .pill-tab').forEach((button, index) => {
+        const date = new Date(recordDate);
+        date.setDate(date.getDate() + index - 1);
+        const label = shortDate(date);
+        const plus = document.createElement('span');
+        plus.style.cssText = 'font-size: 15px; line-height: 1;';
+        plus.textContent = '+';
+        button.replaceChildren(plus, document.createTextNode(` ${label}`));
+        button.onclick = () => addClockCard(label, colors[index]);
+      });
+      const times = (params.get('feedbackClockTimes') || '').split(/[,\s]+/)
+        .filter(time => /^([01]\d|2[0-3]):[0-5]\d$/.test(time));
+      feedbackClockCards = (times.length ? times : ['New']).map((time, index) => ({
+        id: index + 1, inDate: currentDate, inTime: time, isNewIn: time === 'New',
+        outDate: currentDate, outTime: time === 'New' ? '--:--' : time, isDashedOut: time === 'New'
+      }));
+      selectedClockCardIndex = 0;
+      document.getElementById('fbMetaEmployeeName').textContent = params.get('feedbackEmployeeName') || 'Farhan binti rahmat';
+      document.getElementById('fbMetaEmployeeNo').textContent = `#${(params.get('feedbackEmployeeNo') || 'EBB12').replace(/^#+/, '')}`;
+      document.getElementById('fbAmendReasonSelect').value = '';
+      openFeedbackModal(dateStr, params.get('feedbackShift') || '', '');
+    }
+
+    function openLinkedShiftChange() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('shiftFrom') !== 'pending-feedback') return;
+      document.getElementById('shiftChangeRequestForm').reset();
+      document.getElementById('shiftMetaDate').textContent = params.get('shiftDate') || '15 Sep 2026';
+      document.getElementById('shiftMetaOriginal').textContent = params.get('shiftOriginal') || '8.30AM–5.30PM (W01)';
+      updateShiftChangeSummary('');
+      openModal('shiftChangeModalOverlay');
+    }
+
+    function renderFeedbackClockCards() {
+      const track = document.getElementById('fbClockCardsTrack');
+      if (!track) return;
+      track.innerHTML = '';
+      
+      feedbackClockCards.forEach((card, index) => {
+        const isSelected = index === selectedClockCardIndex;
+        const cardEl = document.createElement('div');
+        cardEl.className = `fb-clock-card ${isSelected ? 'selected' : ''}`;
+        cardEl.onclick = () => selectClockCard(index);
+        
+        cardEl.innerHTML = `
+          <div class="fb-clock-top">
+            <span class="fb-clock-date-label">${card.inDate}</span>
+            <div class="fb-clock-pill-blue ${card.isNewIn ? 'new-badge' : ''}" onclick="event.stopPropagation(); openClockTimeEditor(${index}, 'inTime')">
+              ${card.inTime}
+            </div>
+          </div>
+          <div class="fb-clock-bottom">
+            <span class="fb-clock-bottom-date">${card.outDate}</span>
+            <div class="fb-clock-pill-white ${card.isDashedOut ? 'dashed' : ''}" onclick="event.stopPropagation(); openClockTimeEditor(${index}, 'outTime')">
+              ${card.outTime}
+            </div>
+          </div>
+        `;
+        track.appendChild(cardEl);
+      });
+    }
+
+    function selectClockCard(index) {
+      selectedClockCardIndex = index;
+      renderFeedbackClockCards();
+    }
+
+    function addClockCard(dateStr, accentColor) {
+      const newId = Date.now();
+      const newCard = {
+        id: newId,
+        inDate: dateStr,
+        inTime: 'New',
+        isNewIn: true,
+        outDate: dateStr,
+        outTime: '--:--',
+        isDashedOut: true
+      };
+      feedbackClockCards.push(newCard);
+      selectedClockCardIndex = feedbackClockCards.length - 1;
+      renderFeedbackClockCards();
+      
+      showToast(`Added clock entry for ${dateStr}`);
+      
+      setTimeout(() => {
+        const track = document.getElementById('fbClockCardsTrack');
+        if (track) track.scrollTo({ left: track.scrollWidth, behavior: 'smooth' });
+      }, 50);
+    }
+
+    function deleteSelectedClockCard() {
+      if (feedbackClockCards.length <= 1) {
+        showToast('At least one clock record must remain');
+        return;
+      }
+      const removed = feedbackClockCards.splice(selectedClockCardIndex, 1);
+      selectedClockCardIndex = Math.max(0, selectedClockCardIndex - 1);
+      renderFeedbackClockCards();
+      showToast(`Removed clock entry for ${removed[0].inDate}`);
+    }
+
+    function scrollClockTrack(dir) {
+      const track = document.getElementById('fbClockCardsTrack');
+      if (track) {
+        track.scrollBy({ left: dir === 'left' ? -100 : 100, behavior: 'smooth' });
+      }
+    }
+
+    function openClockTimeEditor(index, field) {
+      editingCardTarget = { cardIndex: index, field };
+      const card = feedbackClockCards[index];
+      const titleEl = document.getElementById('fbTimeEditTitle');
+      const inputEl = document.getElementById('fbTimeEditInput');
+      
+      const isFieldIn = field === 'inTime';
+      if (titleEl) {
+        titleEl.textContent = isFieldIn ? `Edit Clock In (${card.inDate})` : `Edit Clock Out (${card.outDate})`;
+      }
+      
+      const currentVal = isFieldIn ? card.inTime : card.outTime;
+      if (inputEl) {
+        inputEl.value = (currentVal === 'New' || currentVal === '--:--') ? '08:30' : currentVal;
+      }
+      
+      openModal('fbTimeEditModalOverlay');
+    }
+
+    function setQuickTime(timeStr) {
+      const inputEl = document.getElementById('fbTimeEditInput');
+      if (inputEl) inputEl.value = timeStr;
+    }
+
+    function applyClockTimeEdit() {
+      if (!editingCardTarget) return;
+      const inputEl = document.getElementById('fbTimeEditInput');
+      const newTime = inputEl ? inputEl.value : '08:30';
+      
+      const { cardIndex, field } = editingCardTarget;
+      if (feedbackClockCards[cardIndex]) {
+        feedbackClockCards[cardIndex][field] = newTime;
+        if (field === 'inTime') feedbackClockCards[cardIndex].isNewIn = false;
+        if (field === 'outTime') feedbackClockCards[cardIndex].isDashedOut = false;
+      }
+      
+      renderFeedbackClockCards();
+      closeModal('fbTimeEditModalOverlay');
+      showToast(`Time updated to ${newTime}`);
+      editingCardTarget = null;
+    }
+
+    function openFeedbackModal(dateStr, shiftStr, exceptionStr) {
+      const dateEl = document.getElementById('fbMetaDate');
+      const shiftEl = document.getElementById('fbMetaShift');
+      if (dateEl && dateStr) dateEl.textContent = dateStr;
+      if (shiftEl && shiftStr) shiftEl.textContent = shiftStr;
+      
+      renderFeedbackClockCards();
+      openModal('feedbackModalOverlay');
+    }
+
+    function triggerFbFileUpload(type) {
+      const fileInput = document.getElementById('hiddenFbFileInput');
+      if (type === 'camera') {
+        showToast('📷 Launching device camera...');
+      }
+      if (fileInput) fileInput.click();
+    }
+
+    function handleFbFileSelected(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const container = document.getElementById('fbUploadedChipsList');
+        if (container) {
+          const chip = document.createElement('div');
+          chip.style.cssText = 'background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 12px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #a78bfa; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);';
+          chip.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-paperclip"></i> ${file.name}</span> <span style="cursor:pointer; opacity: 0.7; margin-left: 4px; display:inline-flex;align-items:center;" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></span>`;
+          container.appendChild(chip);
+        }
+        showToast(`<i class="fa-regular fa-file-lines" style="color:var(--purple-primary); margin-right:6px;"></i>Attached: ${file.name}`);
+      }
+    }
+
+    function saveFbDraft() {
+      showToast('<i class="fa-solid fa-floppy-disk" style="color:#10b981; margin-right:6px;"></i>Attendance feedback draft saved!');
+      setTimeout(() => {
+        closeModal('feedbackModalOverlay');
+      }, 700);
+    }
+
+    function submitFbForm() {
+      showToast('<i class="fa-solid fa-paper-plane" style="color:#10b981; margin-right:6px;"></i>Feedback submitted to supervisor successfully!');
+      setTimeout(() => {
+        closeModal('feedbackModalOverlay');
+      }, 700);
+    }
+  </script>
+</body>
+</html>

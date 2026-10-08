@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - History</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 0 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* Segmented Tab Switcher */
+    .hist-tab-switcher {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      gap: 4px;
+    }
+    .hist-tab-btn {
+      flex: 1;
+      padding: 9px 6px;
+      border-radius: 16px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .hist-tab-btn.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+
+    /* Enterprise Toast Filter Bar */
+    .enterprise-toast-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      cursor: pointer;
+    }
+    .toast-info-col { flex: 1; min-width: 0; padding-left: 2px; }
+    .toast-subtitle { font-size: 10px; font-weight: 800; color: var(--purple-primary, #7c3aed); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 2px; display: flex; align-items: center; }
+    .toast-title { font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    html[data-theme="light"] .enterprise-toast-bar {
+      background: #ffffff !important;
+      border: 1px solid var(--border-subtle, #e2e8f0) !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+    }
+    html[data-theme="light"] .toast-title { color: var(--text-primary) !important; }
+    html[data-theme="light"] .toast-filter-btn {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #7c3aed !important;
+    }
+    html[data-theme="light"] select option { background-color: #ffffff; color: #0f172a; }
+    html[data-theme="dark"] select option { background-color: #181b37; color: #ffffff; }
+    html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
+    html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+    /* History Cards */
+    .history-card-item {
+      background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(52,211,153,0.03) 100%);
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(16,185,129,0.05);
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    html[data-theme="dark"] .history-card-item {
+      background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(52,211,153,0.05) 100%);
+      border-color: rgba(16,185,129,0.2);
+    }
+    
+    .history-card-item.ot-theme {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(251,191,36,0.03) 100%);
+      border: 1px solid rgba(245,158,11,0.3);
+    }
+    html[data-theme="dark"] .history-card-item.ot-theme {
+      background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,191,36,0.05) 100%);
+      border-color: rgba(245,158,11,0.25);
+    }
+
+    .history-card-item.feedback-theme {
+      background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(167,139,250,0.03) 100%);
+      border: 1px solid rgba(124,58,237,0.3);
+    }
+    html[data-theme="dark"] .history-card-item.feedback-theme {
+      background: linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(167,139,250,0.05) 100%);
+      border-color: rgba(124,58,237,0.25);
+    }
+
+    .history-date-badge {
+      width: 52px; height: 56px; border-radius: 14px;
+      background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; color: #059669;
+    }
+    html[data-theme="dark"] .history-date-badge { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.3); color: #34d399; }
+
+    .history-date-badge.ot-badge {
+      background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #d97706;
+    }
+    html[data-theme="dark"] .history-date-badge.ot-badge { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.3); color: #fbbf24; }
+
+    .history-date-badge.feedback-badge {
+      background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.4); color: #7c3aed;
+    }
+    html[data-theme="dark"] .history-date-badge.feedback-badge { background: rgba(124, 58, 237, 0.2); border-color: rgba(124, 58, 237, 0.3); color: #a78bfa; }
+
+    .history-date-month { font-size: 11px; font-weight: 800; text-transform: uppercase; line-height: 1; margin-bottom: 2px; }
+    .history-date-day { font-size: 18px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
+    .history-date-year { font-size: 10px; font-weight: 700; line-height: 1; opacity: 0.9; }
+
+    .history-time-row { font-size: 14.5px; font-weight: 800; color: #059669; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+    html[data-theme="dark"] .history-time-row { color: #34d399; }
+
+    .history-time-row.ot-time { color: #d97706; }
+    html[data-theme="dark"] .history-time-row.ot-time { color: #fbbf24; }
+
+    .history-time-row.feedback-time { color: #7c3aed; }
+    html[data-theme="dark"] .history-time-row.feedback-time { color: #a78bfa; }
+
+    /* Purple Modal Header Styling */
+    .modal-header-purple {
+      background: linear-gradient(135deg, #3b0764 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+    .modal-header-purple h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+    }
+    .modal-close-round {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-close-round:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+    }
+
+    /* Modal Overlay Styling */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 44px;
+      overflow: hidden;
+    }
+    /* Detail Table Card (User Reference Image Style) */
+    .detail-table-card {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-sheet);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 10px;
+    }
+    .detail-table-card tr {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .detail-table-card tr:last-child {
+      border-bottom: none;
+    }
+    .detail-table-card td.detail-label {
+      width: 36%;
+      padding: 11px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: rgba(124, 58, 237, 0.05);
+      border-right: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+    .detail-table-card td.detail-value {
+      width: 64%;
+      padding: 11px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      vertical-align: middle;
+      word-break: break-word;
+    }
+  </style>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Executive Purple Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back" title="Back"
+          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        
+        <div style="text-align: center;">
+          <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;">History</h1>
+        </div>
+        
+        <div style="width: 36px;"></div>
+      </div>
+    </div>
+
+    <div class="main-content" style="padding-top: 20px;">
+
+      <!-- Segmented 3-Tab Switcher (Clocking | OT Plan | Attendance Feedback) -->
+      <div class="hist-tab-switcher">
+         <button id="tabClocking" class="hist-tab-btn active" onclick="switchMainTab('clocking')">
+            <i class="fa-solid fa-clock-rotate-left"></i> Clocking
+         </button>
+         <button id="tabOt" class="hist-tab-btn" onclick="switchMainTab('ot')">
+            <i class="fa-solid fa-business-time"></i> OT Plan
+         </button>
+         <button id="tabFeedback" class="hist-tab-btn" onclick="switchMainTab('feedback')">
+            <i class="fa-solid fa-clipboard-check"></i> Attendance Feedback
+         </button>
+      </div>
+
+      <!-- Consistent Standard Filter Bar -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Filter</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary);" id="filterSummaryTitle">16/08/2026 - 14/09/2026</div>
+        </div>
+        <button type="button" onclick="openFilterModal()" style="width: 40px; height: 40px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s;" title="Open Filter Options" onmousedown="this.style.transform='scale(0.94)'" onmouseup="this.style.transform='scale(1)'">
+          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
+        </button>
+      </div>
+
+      <!-- Clocking History List View (Separated Clock In & Clock Out) -->
+      <div id="viewClockingHistory">
+        
+        <!-- 17 SEP Clock Out -->
+        <a href="javascript:void(0)" onclick="openClockDetailsModal('CLK-910482', 'Clock Out', '17/09/2026 (Tue)', '17:35:12 PM', 'HQ Main Gate (GPS: 3.1390, 101.6869)', 'CC-101 HQ Ops', 'No', 'No')" class="history-card-item">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge">
+              <div class="history-date-month">TUE</div>
+              <div class="history-date-day">17</div>
+              <div class="history-date-year">SEP</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row" style="color: #ef4444;">
+                Clock Out
+              </div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                Time: <span style="font-weight: 800;">17:35</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px;">
+                Cost Center: <span style="color: var(--text-primary); font-weight: 700;">CC-101 HQ Ops</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Excp: <span style="color: #10b981; font-weight: 700;">Normal</span>
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- 17 SEP Clock In -->
+        <a href="javascript:void(0)" onclick="openClockDetailsModal('CLK-910481', 'Clock In', '17/09/2026 (Tue)', '08:15:04 AM', 'HQ Main Gate (GPS: 3.1390, 101.6869)', 'CC-101 HQ Ops', 'No', 'No')" class="history-card-item">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge">
+              <div class="history-date-month">TUE</div>
+              <div class="history-date-day">17</div>
+              <div class="history-date-year">SEP</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row">
+                Clock In
+              </div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                Time: <span style="font-weight: 800;">08:15</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px;">
+                Cost Center: <span style="color: var(--text-primary); font-weight: 700;">CC-101 HQ Ops</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Excp: <span style="color: #10b981; font-weight: 700;">Normal</span>
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- 16 SEP Clock Out -->
+        <a href="javascript:void(0)" onclick="openClockDetailsModal('CLK-910399', 'Clock Out', '16/09/2026 (Mon)', '19:40:55 PM', 'HQ Rear Lobby', 'CC-101 HQ Ops', 'No', 'No')" class="history-card-item">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge">
+              <div class="history-date-month">MON</div>
+              <div class="history-date-day">16</div>
+              <div class="history-date-year">SEP</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row" style="color: #f59e0b;">
+                Clock Out
+              </div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                Time: <span style="font-weight: 800;">19:40</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px;">
+                Cost Center: <span style="color: var(--text-primary); font-weight: 700;">CC-101 HQ Ops</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Excp: <span style="color: #f59e0b; font-weight: 700;">Overtime (2.17 Hrs)</span>
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- 16 SEP Clock In -->
+        <a href="javascript:void(0)" onclick="openClockDetailsModal('CLK-910398', 'Clock In', '16/09/2026 (Mon)', '08:09:12 AM', 'HQ Main Turnstile #2', 'CC-101 HQ Ops', 'No', 'No')" class="history-card-item">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge">
+              <div class="history-date-month">MON</div>
+              <div class="history-date-day">16</div>
+              <div class="history-date-year">SEP</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row">
+                Clock In
+              </div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                Time: <span style="font-weight: 800;">08:09</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px;">
+                Cost Center: <span style="color: var(--text-primary); font-weight: 700;">CC-101 HQ Ops</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Excp: <span style="color: #10b981; font-weight: 700;">Normal</span>
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- 13 SEP Clock Out -->
+        <a href="javascript:void(0)" onclick="openClockDetailsModal('CLK-909877', 'Clock Out', '13/09/2026 (Fri)', '17:15:30 PM', 'Site Project Office (GPS: 3.129, 101.678)', 'CC-202 Tech Dept', 'No', 'No')" class="history-card-item">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge">
+              <div class="history-date-month">FRI</div>
+              <div class="history-date-day">13</div>
+              <div class="history-date-year">SEP</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row" style="color: #ef4444;">
+                Clock Out
+              </div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                Time: <span style="font-weight: 800;">17:15</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px;">
+                Cost Center: <span style="color: var(--text-primary); font-weight: 700;">CC-202 Tech Dept</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Excp: <span style="color: #ef4444; font-weight: 700;">Early Out (15 mins)</span>
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- 13 SEP Clock In -->
+        <a href="javascript:void(0)" onclick="openClockDetailsModal('CLK-909876', 'Clock In', '13/09/2026 (Fri)', '08:42:10 AM', 'Site Project Office (GPS: 3.129, 101.678)', 'CC-202 Tech Dept', 'No', 'No')" class="history-card-item">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge">
+              <div class="history-date-month">FRI</div>
+              <div class="history-date-day">13</div>
+              <div class="history-date-year">SEP</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row">
+                Clock In
+              </div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                Time: <span style="font-weight: 800;">08:42</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px;">
+                Cost Center: <span style="color: var(--text-primary); font-weight: 700;">CC-202 Tech Dept</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Excp: <span style="color: #f59e0b; font-weight: 700;">Late In (12 mins)</span>
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- OT History List View -->
+      <div id="viewOtHistory" style="display: none;">
+        
+        <!-- OT Card 1: Pending (AXT000000000101) -->
+        <a href="javascript:void(0)" data-status="pending" onclick="openOtDetailsModal('AXT000000000101', 'Pending Approve', 'SP013 - Angeline loren alan', 'EBB04 - Tech Lead', '12 Jul 2024', '12/07/2024', '8.00AM-5.30PM', '0750', '06:00', '08:00', '0', '16.00', 'OT 1.5 BEFORE WORK', 'URGENT SYSTEM MIGRATION', 'Database Maintenance', 'No', 'Yes', 'Work started before normal hours', 'Please resubmit with signed supervisor logs')" class="history-card-item ot-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge ot-badge">
+              <div class="history-date-month">FRI</div>
+              <div class="history-date-day">12</div>
+              <div class="history-date-year">JUL</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row ot-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">AXT000000000101</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Pending Approve</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                SP013 - Angeline loren alan • <span style="color: var(--text-primary);">OT 1.5 BEFORE WORK</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Plan = <span style="font-weight: 800; color: var(--text-primary);">16.00 Hrs</span> • Actual = <span style="font-weight: 800; color: var(--text-primary);">0.00 Hrs</span>
+              </div>
+            </div>
+            <div style="color: rgba(245, 158, 11, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- OT Card 2: Pending (OTB000000001604) -->
+        <a href="javascript:void(0)" data-status="pending" onclick="openOtDetailsModal('OTB000000001604', 'Pending Approve', 'SP013 - Angeline loren alan', 'EBB04', '24 Oct 2023', '24/10/2023', '8.00AM-5.30PM', '0758', '20:00', '23:00', '0', '3.00', '1.5 OT', 'MATERIAL', '- SELECT TASK -', 'No', 'Yes', 'Emergency material checking', 'asd')" class="history-card-item ot-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge ot-badge">
+              <div class="history-date-month">TUE</div>
+              <div class="history-date-day">24</div>
+              <div class="history-date-year">OCT</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row ot-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">OTB000000001604</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Pending Approve</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                SP013 - Angeline loren alan • <span style="color: var(--text-primary);">1.5 OT</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Plan = <span style="font-weight: 800; color: var(--text-primary);">3.00 Hrs</span> • Actual = <span style="font-weight: 800; color: var(--text-primary);">0.00 Hrs</span> • Submitted: 24/10/2023
+              </div>
+            </div>
+            <div style="color: rgba(245, 158, 11, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- OT Card 3: Approved (OTB000000001620) -->
+        <a href="javascript:void(0)" data-status="approved" onclick="openOtDetailsModal('OTB000000001620', 'Approved', 'SP013 - Angeline loren alan', 'EBB04', '05 Sep 2026', '05/09/2026', '8.00AM-5.30PM', '0752', '18:00', '21:00', '0', '3.00', '1.5 OT', 'SYSTEM UPGRADE', 'Server Patching', 'Yes', 'No', 'Scheduled maintenance', 'Approved by Manager')" class="history-card-item ot-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge ot-badge">
+              <div class="history-date-month">SAT</div>
+              <div class="history-date-day">05</div>
+              <div class="history-date-year">SEP</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row ot-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">OTB000000001620</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Approved</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                SP013 - Angeline loren alan • <span style="color: var(--text-primary);">1.5 OT</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Plan = <span style="font-weight: 800; color: var(--text-primary);">3.00 Hrs</span> • Actual = <span style="font-weight: 800; color: var(--text-primary);">3.00 Hrs</span> • Approved: 05/09/2026
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- OT Card 4: Rejected (OTB000000001630) -->
+        <a href="javascript:void(0)" data-status="rejected" onclick="openOtDetailsModal('OTB000000001630', 'Rejected', 'SP013 - Angeline loren alan', 'EBB04', '10 Aug 2026', '10/08/2026', '8.00AM-5.30PM', '0800', '18:00', '20:00', '0', '2.00', '1.5 OT', 'OTHER', 'Documentation', 'No', 'No', 'General documentation', 'Overtime budget exceeded')" class="history-card-item ot-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge ot-badge">
+              <div class="history-date-month">MON</div>
+              <div class="history-date-day">10</div>
+              <div class="history-date-year">AUG</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row ot-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">OTB000000001630</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Rejected</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                SP013 - Angeline loren alan • <span style="color: var(--text-primary);">1.5 OT</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Plan = <span style="font-weight: 800; color: var(--text-primary);">2.00 Hrs</span> • Actual = <span style="font-weight: 800; color: var(--text-primary);">0.00 Hrs</span> • Declined: 10/08/2026
+              </div>
+            </div>
+            <div style="color: rgba(239, 68, 68, 0.6); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- Feedback History List View -->
+      <div id="viewFeedbackHistory" style="display: none;">
+         
+        <!-- Feedback Card 1: Pending (ATT000000000432) -->
+        <a href="javascript:void(0)" data-status="pending" onclick="openFeedbackDetailsModal('ATT000000000432', 'Pending Approve', 'EBB12 - Farhan binti rahmat', 'TIMES SQUARE BRANCH', 'HUMAN RESOURCE', '31 Dec 2025', '8.00AM-5.30PM', 'EBB12 - Farhan binti rahmat', '26/02/2026', '[Comment by FARHAN BIN RAHMAT (EBB12)]\nokay')" class="history-card-item feedback-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge feedback-badge">
+              <div class="history-date-month">DEC</div>
+              <div class="history-date-day">31</div>
+              <div class="history-date-year">2025</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row feedback-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">ATT000000000432</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Pending Approve</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                EBB12 - Farhan binti rahmat • <span style="color: var(--text-primary);">Attendance Advice</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Submitted Date = 26/02/2026
+              </div>
+            </div>
+            <div style="color: rgba(167, 139, 250, 0.7); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- Feedback Card 2: Pending (ATT000000000435) -->
+        <a href="javascript:void(0)" data-status="pending" onclick="openFeedbackDetailsModal('ATT000000000435', 'Pending Review', 'SP013 - Angeline loren alan', 'HQ MAIN BRANCH', 'TECH DEPT', '14 Sep 2026', '8.30AM-5.30PM', 'SP013 - Angeline', '14/09/2026', 'Pending supervisor review')" class="history-card-item feedback-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge feedback-badge">
+              <div class="history-date-month">SEP</div>
+              <div class="history-date-day">14</div>
+              <div class="history-date-year">2026</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row feedback-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">ATT000000000435</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Pending Approve</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                SP013 - Angeline loren alan • <span style="color: var(--text-primary);">Attendance Advice</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Submitted Date = 14/09/2026
+              </div>
+            </div>
+            <div style="color: rgba(167, 139, 250, 0.7); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- Feedback Card 3: Approved (ATT000000000440) -->
+        <a href="javascript:void(0)" data-status="approved" onclick="openFeedbackDetailsModal('ATT000000000440', 'Approved', 'SP013 - Angeline loren alan', 'HQ MAIN BRANCH', 'TECH DEPT', '02 Sep 2026', '8.30AM-5.30PM', 'SP013 - Angeline', '02/09/2026', 'Approved by HR')" class="history-card-item feedback-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge feedback-badge">
+              <div class="history-date-month">SEP</div>
+              <div class="history-date-day">02</div>
+              <div class="history-date-year">2026</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row feedback-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">ATT000000000440</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Approved</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                SP013 - Angeline loren alan • <span style="color: var(--text-primary);">Attendance Advice</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Approved Date = 02/09/2026
+              </div>
+            </div>
+            <div style="color: rgba(16, 185, 129, 0.7); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- Feedback Card 4: Rejected (ATT000000000445) -->
+        <a href="javascript:void(0)" data-status="rejected" onclick="openFeedbackDetailsModal('ATT000000000445', 'Rejected', 'SP013 - Angeline loren alan', 'HQ MAIN BRANCH', 'TECH DEPT', '18 Jul 2026', '8.30AM-5.30PM', 'SP013 - Angeline', '18/07/2026', 'Invalid reason provided')" class="history-card-item feedback-theme">
+          <div style="display: flex; gap: 14px; align-items: center; width: 100%;">
+            <div class="history-date-badge feedback-badge">
+              <div class="history-date-month">JUL</div>
+              <div class="history-date-day">18</div>
+              <div class="history-date-year">2026</div>
+            </div>
+            <div style="flex: 1;">
+<div class="history-time-row feedback-time" style="font-size: 13px; margin-bottom: 3px;">
+                Ref: <span style="font-weight: 800;">ATT000000000445</span>
+                <span style="font-size: 10.5px; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">Rejected</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                SP013 - Angeline loren alan • <span style="color: var(--text-primary);">Attendance Advice</span>
+              </div>
+              <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">
+                Declined Date = 18/07/2026
+              </div>
+            </div>
+            <div style="color: rgba(239, 68, 68, 0.7); display: flex; align-items: center;">
+              <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- Clock In Out Details Modal -->
+    <div class="modal-overlay" id="clockDetailsModal" onclick="closeClockDetailsModal(event)">
+      <div class="modal-content" onclick="event.stopPropagation()"
+        style="width: 100%; max-width: 380px; background: var(--bg-sheet); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.85); opacity: 0; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; max-height: 85%; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box;">
+        
+        <!-- Purple Modal Header -->
+        <div class="modal-header-purple" style="border-top-left-radius: 24px; border-top-right-radius: 24px;">
+          <h3>Clocking Detail</h3>
+          <button class="modal-close-round" onclick="closeClockDetailsDirect()" aria-label="Close modal">
+            <i class="fa-solid fa-xmark" style="font-size: 15px;"></i>
+          </button>
+        </div>
+
+        <!-- Detail Table Body -->
+        <div style="padding: 16px; overflow-y: auto; flex: 1; background: var(--bg-sheet);">
+          <table class="detail-table-card">
+            <tbody>
+              <tr>
+                <td class="detail-label">Reference #</td>
+                <td class="detail-value" id="modalClkId">CLK-804291</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Emp #</td>
+                <td class="detail-value" id="modalClkEmpNo">EBB12</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Name</td>
+                <td class="detail-value" id="modalClkEmpName">Farhan binti rahmat</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Type</td>
+                <td class="detail-value" id="modalClkType"><span style="color: #10b981;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Clock In</span></td>
+              </tr>
+              <tr>
+                <td class="detail-label">Date</td>
+                <td class="detail-value" id="modalClkDate">17 Sep 2026 (Tue)</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Time</td>
+                <td class="detail-value" id="modalClkTime" style="color: var(--purple-primary); font-weight: 800;">08:15:04 AM</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Location</td>
+                <td class="detail-value" id="modalClkLocation"><i class="fa-solid fa-location-dot" style="color: #ef4444; margin-right: 4px;"></i> HQ Main Gate (GPS: 3.1390, 101.6869)</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Cost Center</td>
+                <td class="detail-value" id="modalClkCostCenter">CC-101 HQ Ops</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Is Voided</td>
+                <td class="detail-value" id="modalClkIsVoided"><span style="color: #10b981; font-weight: 800;">No</span></td>
+              </tr>
+              <tr>
+                <td class="detail-label">Is Invalid</td>
+                <td class="detail-value" id="modalClkIsInvalid"><span style="color: #10b981; font-weight: 800;">No</span></td>
+              </tr>
+              <tr>
+                <td class="detail-label">Status</td>
+                <td class="detail-value" id="modalClkStatus"><span style="color: #10b981; font-weight: 800;">Normal</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- OT Document Detail Modal -->
+    <div class="modal-overlay" id="otDetailsModal" onclick="closeOtDetailsModal(event)">
+      <div class="modal-content" onclick="event.stopPropagation()"
+        style="width: 100%; max-width: 380px; background: var(--bg-sheet); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.85); opacity: 0; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; max-height: 85%; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box;">
+        
+        <!-- Purple Modal Header -->
+        <div class="modal-header-purple" style="border-top-left-radius: 24px; border-top-right-radius: 24px;">
+          <h3>Time Off Detail</h3>
+          <button class="modal-close-round" onclick="closeOtDetailsDirect()" aria-label="Close modal">
+            <i class="fa-solid fa-xmark" style="font-size: 15px;"></i>
+          </button>
+        </div>
+
+        <!-- Detail Table Body -->
+        <div style="padding: 16px; overflow-y: auto; flex: 1; background: var(--bg-sheet);">
+          <table class="detail-table-card">
+            <tbody>
+              <tr>
+                <td class="detail-label">Reference #</td>
+                <td class="detail-value" id="modalOtDocRef">OTB000000001604</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Emp #</td>
+                <td class="detail-value" id="modalOtEmpNo">SP013</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Name</td>
+                <td class="detail-value" id="modalOtEmpName">Angeline loren alan</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Supervisor</td>
+                <td class="detail-value" id="modalOtSupervisor">EBB04</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Submit Date</td>
+                <td class="detail-value" id="modalOtSubmitDate">24 Oct 2023</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Date</td>
+                <td class="detail-value" id="modalOtDate">24 Oct 2023</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Shift</td>
+                <td class="detail-value" id="modalOtShift">8.00AM-5.30PM</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Clocking Times</td>
+                <td class="detail-value" id="modalOtClockingTimes" style="color: var(--purple-primary); font-weight: 800;">0758</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Start Time</td>
+                <td class="detail-value" id="modalOtStartTime">20:00</td>
+              </tr>
+              <tr>
+                <td class="detail-label">End Time</td>
+                <td class="detail-value" id="modalOtEndTime">23:00</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Hours</td>
+                <td class="detail-value" id="modalOtPlanHours" style="font-weight: 800;">3.00</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Reason</td>
+                <td class="detail-value" id="modalOtReason">MATERIAL</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Task</td>
+                <td class="detail-value" id="modalOtTask">Material handling & inventory check</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Remarks</td>
+                <td class="detail-value" id="modalOtRemarks">Urgent overtime for material shipment</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Status</td>
+                <td class="detail-value" id="modalOtPlanStatus"><span style="color: #3b82f6; font-weight: 800;">Approved</span></td>
+              </tr>
+              <tr>
+                <td class="detail-label" colspan="2" style="border-right: none; background: rgba(124, 58, 237, 0.08); font-weight: 800; color: var(--text-primary);">Attachments</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="padding: 10px 14px; background: var(--bg-input); border-radius: 12px; border: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 8px; color: #3b82f6; font-size: 12.5px; font-weight: 700; cursor: pointer;">
+            <i class="fa-solid fa-file-lines" style="font-size: 14px;"></i>
+            <span>1302f11d5a254abbb2b9a10cb3b8f00f.jpg</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Attendance Advice Detail Modal -->
+    <div class="modal-overlay" id="feedbackDetailsModal" onclick="closeFeedbackDetailsModal(event)">
+      <div class="modal-content" onclick="event.stopPropagation()"
+        style="width: 100%; max-width: 380px; background: var(--bg-sheet); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.85); opacity: 0; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; max-height: 85%; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box;">
+        
+        <!-- Purple Modal Header -->
+        <div class="modal-header-purple" style="border-top-left-radius: 24px; border-top-right-radius: 24px;">
+          <h3>Attendance Advice Detail</h3>
+          <button class="modal-close-round" onclick="closeFeedbackDetailsDirect()" aria-label="Close modal">
+            <i class="fa-solid fa-xmark" style="font-size: 15px;"></i>
+          </button>
+        </div>
+
+        <!-- Detail Table Body -->
+        <div style="padding: 16px; overflow-y: auto; flex: 1; background: var(--bg-sheet);">
+          <table class="detail-table-card">
+            <tbody>
+              <tr>
+                <td class="detail-label">Reference #</td>
+                <td class="detail-value" id="modalFbkDocRef">ATT000000000432</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Emp #</td>
+                <td class="detail-value" id="modalFbkEmpNo">EBB12</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Name</td>
+                <td class="detail-value" id="modalFbkEmpName">Farhan binti rahmat</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Branch</td>
+                <td class="detail-value" id="modalFbkBranch">TIMES SQUARE BRANCH</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Department</td>
+                <td class="detail-value" id="modalFbkDepartment">HUMAN RESOURCE</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Date</td>
+                <td class="detail-value" id="modalFbkDate">31 Dec 2025</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Shift</td>
+                <td class="detail-value" id="modalFbkShift">8.00AM-5.30PM</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Submitter & Date</td>
+                <td class="detail-value" id="modalFbkSubmitter">EBB12 (26 Feb 2026)</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Amended Shift</td>
+                <td class="detail-value" id="modalFbkAmendedShift">W01 (8.00AM-5.30PM)</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Shift Reason</td>
+                <td class="detail-value" id="modalFbkShiftReason">Swapped Shift with Teammate</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Edit Reason</td>
+                <td class="detail-value" id="modalFbkEditTimeReason">Forgotten Clock Out</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Remarks</td>
+                <td class="detail-value" id="modalFbkRemarks">Doctor appointment in the morning</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Approver</td>
+                <td class="detail-value" id="modalFbkApproverComments">[Comment by FARHAN BIN RAHMAT (EBB12)] okay</td>
+              </tr>
+              <tr>
+                <td class="detail-label">Status</td>
+                <td class="detail-value" id="modalFbkDocStatus"><span style="color: #3b82f6; font-weight: 800;">Approved</span></td>
+              </tr>
+              <tr>
+                <td class="detail-label" colspan="2" style="border-right: none; background: rgba(124, 58, 237, 0.08); font-weight: 800; color: var(--text-primary);">Attachments</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="padding: 10px 14px; background: var(--bg-input); border-radius: 12px; border: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 8px; color: #3b82f6; font-size: 12.5px; font-weight: 700; cursor: pointer;">
+            <i class="fa-solid fa-file-image" style="font-size: 14px;"></i>
+            <span>1302f11d5a254abbb2b9a10cb3b8f00f.jpg</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Filter Modal (Bottom Sheet) -->
+    <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)" style="align-items: flex-end; padding: 0;">
+      <div class="modal-content" onclick="event.stopPropagation()"
+        style="width: 100%; max-width: 480px; margin: 0 auto; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-bottom: none; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box;">
+        
+        <!-- Drag Handle Pill -->
+        <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
+
+        <!-- Clean Bottom Sheet Header (Title + Reset only) -->
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
+          <button type="button" onclick="resetFilterModal()"
+            style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
+          </button>
+        </div>
+
+        <!-- Form Body -->
+        <div style="padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; background: var(--bg-card);">
+          <div>
+            <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Start Date</label>
+            <input type="date" id="filterFromDate" value="2026-08-16"
+              style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">End Date</label>
+            <input type="date" id="filterToDate" value="2026-09-14"
+              style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <label style="font-size: 13px; font-weight: 700; color: var(--purple-text); margin-bottom: 8px; display: block;">Status</label>
+            <div style="position: relative;">
+              <select id="filterStatusSelect" onchange="applyStatusFilter()"
+                style="width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13.5px; font-weight: 700; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; box-sizing: border-box;">
+                <option value="all">All Status</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+                <option value="resubmit">Pending Resubmit</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-primary);">
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" onclick="applyFilterModal()"
+            style="width: 100%; margin-top: 10px; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; font-size: 15px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);">
+            Apply Filter
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+  </div>
+
+    <script>
+      function openClockDetailsModal(id, type, date, time, location, costCenter, isVoided, isInvalid) {
+        if (document.getElementById('modalClkId')) document.getElementById('modalClkId').innerText = id || 'CLK-804291';
+        if (document.getElementById('modalClkEmpNo')) document.getElementById('modalClkEmpNo').innerText = 'EBB12';
+        if (document.getElementById('modalClkEmpName')) document.getElementById('modalClkEmpName').innerText = 'Farhan binti rahmat';
+        if (document.getElementById('modalClkType')) document.getElementById('modalClkType').innerHTML = type === 'Clock Out'
+          ? '<span style="color: #ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Clock Out</span>'
+          : '<span style="color: #10b981;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Clock In</span>';
+        if (document.getElementById('modalClkDate')) document.getElementById('modalClkDate').innerText = date || '17 Sep 2026 (Tue)';
+        if (document.getElementById('modalClkTime')) document.getElementById('modalClkTime').innerText = time || '08:15:04 AM';
+        if (document.getElementById('modalClkLocation')) document.getElementById('modalClkLocation').innerHTML = `<i class="fa-solid fa-location-dot" style="color: #ef4444; font-size: 12px;"></i> ${location || 'HQ Main Gate (GPS: 3.1390, 101.6869)'}`;
+        if (document.getElementById('modalClkCostCenter')) document.getElementById('modalClkCostCenter').innerText = costCenter || 'CC-101 HQ Ops';
+        if (document.getElementById('modalClkIsVoided')) document.getElementById('modalClkIsVoided').innerHTML = isVoided === 'Yes'
+          ? '<span style="color: #ef4444; font-weight: 800;">Yes</span>'
+          : '<span style="color: #10b981; font-weight: 800;">No</span>';
+        if (document.getElementById('modalClkIsInvalid')) document.getElementById('modalClkIsInvalid').innerHTML = isInvalid === 'Yes'
+          ? '<span style="color: #ef4444; font-weight: 800;">Yes</span>'
+          : '<span style="color: #10b981; font-weight: 800;">No</span>';
+
+        const m = document.getElementById('clockDetailsModal');
+        m.style.display = 'flex';
+        setTimeout(() => {
+          m.style.opacity = '1';
+          const mc = m.querySelector('.modal-content');
+          if (mc) { mc.style.transform = 'scale(1)'; mc.style.opacity = '1'; }
+        }, 10);
+      }
+
+      function closeClockDetailsModal(e) {
+        if (e && e.target !== e.currentTarget) return;
+        closeClockDetailsDirect();
+      }
+
+      function closeClockDetailsDirect() {
+        const m = document.getElementById('clockDetailsModal');
+        const mc = m.querySelector('.modal-content');
+        m.style.opacity = '0';
+        if (mc) { mc.style.transform = 'scale(0.85)'; mc.style.opacity = '0'; }
+        setTimeout(() => { m.style.display = 'none'; }, 250);
+      }
+
+      function openOtDetailsModal(docRef, planStatus, emp, supervisor, submitDate, otDate, shift, clkTimes, startTime, endTime, breakHrs, planHrs, otType, otReason, task, allowLeaveCredit, needTransport, remarks, approverComments) {
+        if (document.getElementById('modalOtDocRef')) document.getElementById('modalOtDocRef').innerText = docRef || 'OTB000000001604';
+        const empParts = (emp || 'SP013 - Angeline loren alan').split(' - ');
+        if (document.getElementById('modalOtEmpNo')) document.getElementById('modalOtEmpNo').innerText = empParts[0] || 'SP013';
+        if (document.getElementById('modalOtEmpName')) document.getElementById('modalOtEmpName').innerText = empParts[1] || 'Angeline loren alan';
+        if (document.getElementById('modalOtSupervisor')) document.getElementById('modalOtSupervisor').innerText = supervisor || 'EBB04';
+        if (document.getElementById('modalOtSubmitDate')) document.getElementById('modalOtSubmitDate').innerText = submitDate || '24 Oct 2023';
+        if (document.getElementById('modalOtDate')) document.getElementById('modalOtDate').innerText = otDate || '24 Oct 2023';
+        if (document.getElementById('modalOtShift')) document.getElementById('modalOtShift').innerText = shift || '8.00AM-5.30PM';
+        if (document.getElementById('modalOtClockingTimes')) document.getElementById('modalOtClockingTimes').innerText = clkTimes || '0758';
+        if (document.getElementById('modalOtStartTime')) document.getElementById('modalOtStartTime').innerText = startTime || '20:00';
+        if (document.getElementById('modalOtEndTime')) document.getElementById('modalOtEndTime').innerText = endTime || '23:00';
+        if (document.getElementById('modalOtPlanHours')) document.getElementById('modalOtPlanHours').innerText = planHrs || '3.00';
+        if (document.getElementById('modalOtType')) document.getElementById('modalOtType').innerText = otType || '1.5 OT';
+        if (document.getElementById('modalOtReason')) document.getElementById('modalOtReason').innerText = otReason || 'MATERIAL';
+        if (document.getElementById('modalOtTask')) document.getElementById('modalOtTask').innerText = task || 'Material handling & inventory check';
+        if (document.getElementById('modalOtRemarks')) document.getElementById('modalOtRemarks').innerText = remarks || 'Urgent overtime for material shipment';
+        if (document.getElementById('modalOtPlanStatus')) document.getElementById('modalOtPlanStatus').innerHTML = (planStatus === 'Approved' || planStatus === 'Approved')
+          ? '<span style="color: #3b82f6; font-weight: 800;">Approved</span>'
+          : `<span style="color: #f59e0b; font-weight: 800;">${planStatus || 'To Resubmit'}</span>`;
+
+        const m = document.getElementById('otDetailsModal');
+        m.style.display = 'flex';
+        setTimeout(() => {
+          m.style.opacity = '1';
+          const mc = m.querySelector('.modal-content');
+          if (mc) { mc.style.transform = 'scale(1)'; mc.style.opacity = '1'; }
+        }, 10);
+      }
+
+      function closeOtDetailsModal(e) {
+        if (e && e.target !== e.currentTarget) return;
+        closeOtDetailsDirect();
+      }
+
+      function closeOtDetailsDirect() {
+        const m = document.getElementById('otDetailsModal');
+        const mc = m.querySelector('.modal-content');
+        m.style.opacity = '0';
+        if (mc) { mc.style.transform = 'scale(0.85)'; mc.style.opacity = '0'; }
+        setTimeout(() => { m.style.display = 'none'; }, 250);
+      }
+
+      function submitOtDetailsForm() {
+        if (typeof showToast === 'function') showToast('<i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>OT Plan Details Submitted');
+        closeOtDetailsDirect();
+      }
+
+      function openFeedbackDetailsModal(docRef, docStatus, emp, branch, dept, date, shift, submitter, submitDate, comments) {
+        if (document.getElementById('modalFbkDocRef')) document.getElementById('modalFbkDocRef').innerText = docRef || 'ATT000000000432';
+        const empParts = (emp || 'EBB12 - Farhan binti rahmat').split(' - ');
+        if (document.getElementById('modalFbkEmpNo')) document.getElementById('modalFbkEmpNo').innerText = empParts[0] || 'EBB12';
+        if (document.getElementById('modalFbkEmpName')) document.getElementById('modalFbkEmpName').innerText = empParts[1] || 'Farhan binti rahmat';
+        if (document.getElementById('modalFbkBranch')) document.getElementById('modalFbkBranch').innerText = branch || 'TIMES SQUARE BRANCH';
+        if (document.getElementById('modalFbkDepartment')) document.getElementById('modalFbkDepartment').innerText = dept || 'HUMAN RESOURCE';
+        if (document.getElementById('modalFbkDate')) document.getElementById('modalFbkDate').innerText = date || '31 Dec 2025';
+        if (document.getElementById('modalFbkShift')) document.getElementById('modalFbkShift').innerText = shift || '8.00AM-5.30PM';
+        if (document.getElementById('modalFbkSubmitter')) document.getElementById('modalFbkSubmitter').innerText = `${submitter || 'EBB12'} (${submitDate || '26 Feb 2026'})`;
+        if (document.getElementById('modalFbkApproverComments')) document.getElementById('modalFbkApproverComments').innerText = comments || '[Comment by FARHAN BIN RAHMAT (EBB12)] okay';
+        if (document.getElementById('modalFbkDocStatus')) document.getElementById('modalFbkDocStatus').innerHTML = docStatus === 'Approved'
+          ? '<span style="color: #3b82f6; font-weight: 800;">Approved</span>'
+          : `<span style="color: #f59e0b; font-weight: 800;">${docStatus || 'To Resubmit'}</span>`;
+
+        const m = document.getElementById('feedbackDetailsModal');
+        m.style.display = 'flex';
+        setTimeout(() => {
+          m.style.opacity = '1';
+          const mc = m.querySelector('.modal-content');
+          if (mc) { mc.style.transform = 'scale(1)'; mc.style.opacity = '1'; }
+        }, 10);
+      }
+
+      function closeFeedbackDetailsModal(e) {
+        if (e && e.target !== e.currentTarget) return;
+        closeFeedbackDetailsDirect();
+      }
+
+      function closeFeedbackDetailsDirect() {
+        const m = document.getElementById('feedbackDetailsModal');
+        const mc = m.querySelector('.modal-content');
+        m.style.opacity = '0';
+        if (mc) { mc.style.transform = 'scale(0.85)'; mc.style.opacity = '0'; }
+        setTimeout(() => { m.style.display = 'none'; }, 250);
+      }
+
+      function submitFeedbackDetailsForm() {
+        if (typeof showToast === 'function') showToast('<i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>Attendance Advice Submitted');
+        closeFeedbackDetailsDirect();
+      }
+
+      function switchMainTab(tab) {
+        const btnClocking = document.getElementById('tabClocking');
+        const btnOt = document.getElementById('tabOt');
+        const btnFeedback = document.getElementById('tabFeedback');
+        const viewClocking = document.getElementById('viewClockingHistory');
+        const viewOt = document.getElementById('viewOtHistory');
+        const viewFeedback = document.getElementById('viewFeedbackHistory');
+
+        btnClocking.classList.remove('active');
+        btnOt.classList.remove('active');
+        if (btnFeedback) btnFeedback.classList.remove('active');
+
+        viewClocking.style.display = 'none';
+        viewOt.style.display = 'none';
+        if (viewFeedback) viewFeedback.style.display = 'none';
+
+        if (tab === 'clocking') {
+          btnClocking.classList.add('active');
+          viewClocking.style.display = 'block';
+        } else if (tab === 'ot') {
+          btnOt.classList.add('active');
+          viewOt.style.display = 'block';
+        } else if (tab === 'feedback') {
+          if (btnFeedback) btnFeedback.classList.add('active');
+          if (viewFeedback) viewFeedback.style.display = 'block';
+        }
+      }
+
+      function openFilterModal() {
+        const m = document.getElementById('filterModal');
+        if (!m) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const statusParam = urlParams.get('status');
+        const statusGroup = document.getElementById('filterStatusGroup');
+        if (statusGroup) {
+          // Hide Status dropdown inside filter modal for pending approve, approved, rejected views
+          if (statusParam && statusParam.toLowerCase() !== 'all') {
+            statusGroup.style.display = 'none';
+          } else {
+            statusGroup.style.display = 'none';
+          }
+        }
+
+        m.style.display = 'flex';
+        setTimeout(() => {
+          m.style.opacity = '1';
+          const mc = m.querySelector('.modal-content');
+          if (mc) { mc.style.transform = 'translateY(0)'; }
+        }, 10);
+      }
+
+      function closeFilterModal(e) {
+        if (e && e.target !== e.currentTarget && !e.target.closest('.fa-xmark')) return;
+        closeFilterModalDirect();
+      }
+
+      function closeFilterModalDirect() {
+        const m = document.getElementById('filterModal');
+        if (!m) return;
+        const mc = m.querySelector('.modal-content');
+        m.style.opacity = '0';
+        if (mc) { mc.style.transform = 'translateY(100%)'; }
+        setTimeout(() => { m.style.display = 'none'; }, 280);
+      }
+
+      function applyStatusFilter(selectedStatus) {
+        if (!selectedStatus) {
+          const statusSel = document.getElementById('filterStatusSelect');
+          selectedStatus = statusSel ? statusSel.value.toLowerCase() : 'all';
+        }
+
+        const tabClocking = document.getElementById('tabClocking');
+
+        if (selectedStatus !== 'all') {
+          // Hide Clocking tab since Clocking events are not applications and have no approval status
+          if (tabClocking) tabClocking.style.display = 'none';
+          // Switch to OT Plan tab if currently on Clocking
+          const viewClocking = document.getElementById('viewClockingHistory');
+          if (viewClocking && viewClocking.style.display !== 'none') {
+            switchMainTab('ot');
+          }
+        } else {
+          // Show Clocking tab button when showing All status
+          if (tabClocking) tabClocking.style.display = 'inline-flex';
+        }
+
+        const allCards = document.querySelectorAll('.history-card-item');
+        allCards.forEach(card => {
+          const cardStatus = (card.getAttribute('data-status') || '').toLowerCase();
+          if (selectedStatus === 'all') {
+            card.style.display = 'block';
+          } else if (cardStatus === selectedStatus) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        // Handle empty state message per active tab view
+        ['viewClockingHistory', 'viewOtHistory', 'viewFeedbackHistory'].forEach(viewId => {
+          const container = document.getElementById(viewId);
+          if (!container) return;
+          const cardsInView = container.querySelectorAll('.history-card-item');
+          const visibleCards = Array.from(cardsInView).filter(c => c.style.display !== 'none');
+
+          let emptyEl = container.querySelector('.empty-filter-state');
+          if (visibleCards.length === 0 && selectedStatus !== 'all') {
+            if (!emptyEl) {
+              emptyEl = document.createElement('div');
+              emptyEl.className = 'empty-filter-state card';
+              emptyEl.style.cssText = 'text-align: center; padding: 36px 16px; margin-top: 16px; background: var(--bg-card); border-radius: 16px; border: 1px dashed var(--border-subtle);';
+              container.appendChild(emptyEl);
+            }
+            const labelMap = { pending: 'Pending Approve', resubmit: 'Pending Resubmit', approved: 'Approved', rejected: 'Rejected' };
+            const displayLabel = labelMap[selectedStatus] || selectedStatus;
+            emptyEl.innerHTML = `
+              <div style="font-size: 36px; color: var(--text-muted); margin-bottom: 8px;"><i class="fa-solid fa-folder-open"></i></div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No ${displayLabel} Records</div>
+              <div style="font-size: 12px; color: var(--text-muted);">There are no requests matching "${displayLabel}".</div>
+            `;
+            emptyEl.style.display = 'block';
+          } else if (emptyEl) {
+            emptyEl.style.display = 'none';
+          }
+        });
+      }
+
+      function resetFilterModal() {
+        document.getElementById('filterFromDate').value = '2026-08-16';
+        document.getElementById('filterToDate').value = '2026-09-14';
+        const statusSel = document.getElementById('filterStatusSelect');
+        if (statusSel) statusSel.value = 'all';
+        document.getElementById('filterSummaryTitle').innerText = '16/08/2026 - 14/09/2026';
+        applyStatusFilter('all');
+        if (typeof showToast === 'function') showToast('<i class="fa-solid fa-rotate-left" style="color: var(--purple-primary); margin-right: 6px;"></i>Filter Reset');
+        closeFilterModalDirect();
+      }
+
+      function applyFilterModal() {
+        const fromVal = document.getElementById('filterFromDate').value;
+        const toVal = document.getElementById('filterToDate').value;
+        if (fromVal && toVal) {
+          const fD = fromVal.split('-').reverse().join('/');
+          const tD = toVal.split('-').reverse().join('/');
+          document.getElementById('filterSummaryTitle').innerText = `${fD} - ${tD}`;
+        }
+        applyStatusFilter();
+        if (typeof showToast === 'function') showToast('<i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>Filter Applied');
+        closeFilterModalDirect();
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const statusParam = urlParams.get('status');
+        if (statusParam) {
+          const statusSel = document.getElementById('filterStatusSelect');
+          if (statusSel) {
+            statusSel.value = statusParam.toLowerCase();
+          }
+          switchMainTab('ot');
+          applyStatusFilter(statusParam.toLowerCase());
+          const labelMap = { pending: 'Pending Approve', resubmit: 'Pending Resubmit', approved: 'Approved', rejected: 'Rejected' };
+          const statusLabel = labelMap[statusParam.toLowerCase()] || statusParam;
+          setTimeout(() => {
+            if (typeof showToast === 'function') showToast(`<i class="fa-solid fa-magnifying-glass" style="color: var(--purple-primary); margin-right: 6px;"></i>Filtered by: ${statusLabel}`);
+          }, 300);
+        }
+      });
+    </script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

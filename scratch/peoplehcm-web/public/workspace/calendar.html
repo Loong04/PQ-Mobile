@@ -1,0 +1,715 @@
+
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css"><!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - My Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+
+<body>
+
+  <!-- Desktop Switcher Bar -->
+  <preview-top-bar active-page="calendar"></preview-top-bar>
+
+  <div class="phone-container">
+    <!-- Top Header Bar (Executive Purple Header) -->
+    <div class="cal-top-header" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 14px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);">
+      <!-- Status Bar (White icons on Purple) -->
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <!-- Calendar Navigation Title -->
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+        <button class="me-back-btn" onclick="navTo('home', event)" aria-label="Back to Home" title="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">My Calendar</h1>
+      </div>
+    </div>
+
+    <!-- Sub-Calendar Category Selector Strip (Ultra-short pill labels: All, Leave, Roster, Book, Train, Meet, Staff) -->
+    <div class="cal-category-strip">
+      <button class="cal-category-pill active" id="pillSubAll" onclick="setSubCalendar('all')">
+        <i class="fa-solid fa-layer-group"></i> All
+      </button>
+      <button class="cal-category-pill" id="pillSubLeave" onclick="setSubCalendar('leave')">
+        <i class="fa-solid fa-umbrella-beach"></i> Leave
+      </button>
+      <button class="cal-category-pill" id="pillSubRoster" onclick="setSubCalendar('roster')">
+        <i class="fa-solid fa-clock"></i> Roster
+      </button>
+      <button class="cal-category-pill" id="pillSubBooking" onclick="setSubCalendar('booking')">
+        <i class="fa-solid fa-building"></i> Book
+      </button>
+      <button class="cal-category-pill" id="pillSubTraining" onclick="setSubCalendar('training')">
+        <i class="fa-solid fa-graduation-cap"></i> Train
+      </button>
+      <button class="cal-category-pill" id="pillSubMeeting" onclick="setSubCalendar('meeting')">
+        <i class="fa-solid fa-handshake"></i> Meet
+      </button>
+      <button class="cal-category-pill" id="pillSubSubordinate" onclick="setSubCalendar('subordinate')">
+        <i class="fa-solid fa-users"></i> Staff
+      </button>
+    </div>
+
+    <!-- Scrollable Main Content -->
+    <div class="main-content" style="padding: 10px 0 90px;">
+
+      <!-- Interactive Month Calendar Card (Matching User Reference Screenshot) -->
+      <div class="cal-card-box">
+        <!-- Top Header & Controls Strip -->
+        <div class="cal-card-header-bar">
+          <div class="cal-card-title-group" style="display: flex; align-items: center; gap: 8px;">
+            <h2 class="cal-card-month-text" id="calMonthTitleText">August 2026</h2>
+            <!-- Arrow Stepper (< >) -->
+            <div class="cal-stepper-wrap">
+              <button class="cal-stepper-btn" onclick="shiftPeriod(-1)" title="Previous">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <button class="cal-stepper-btn" onclick="shiftPeriod(1)" title="Next">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="cal-card-ctrls">
+            <!-- Month / Week Switcher -->
+            <div class="cal-view-switch">
+              <button class="cal-switch-btn active" id="btnViewMonth" onclick="setViewMode('month')">Month</button>
+              <button class="cal-switch-btn" id="btnViewWeek" onclick="setViewMode('week')">Week</button>
+            </div>
+
+            <!-- Filter Bottom Sheet Trigger Button -->
+            <button class="cal-filter-btn" onclick="openCalFilter()" title="Filter Settings">
+              <i class="fa-solid fa-sliders"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Filter Status Sub-header -->
+        <div style="text-align: center; margin-bottom: 6px;">
+          <span class="cal-active-filter-sub" id="calActiveFilterSub">Attendance • Myself • August 2026</span>
+        </div>
+
+        <!-- Weekday Headers (Sunday to Saturday, matching Screenshot 1) -->
+        <div class="cal-weekdays">
+          <span class="cal-weekday-name weekend">Sun</span>
+          <span class="cal-weekday-name">Mon</span>
+          <span class="cal-weekday-name">Tue</span>
+          <span class="cal-weekday-name">Wed</span>
+          <span class="cal-weekday-name">Thu</span>
+          <span class="cal-weekday-name">Fri</span>
+          <span class="cal-weekday-name weekend">Sat</span>
+        </div>
+
+        <!-- 7-Column Days Grid -->
+        <div class="cal-days-grid" id="calDaysGrid">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
+      <!-- Status Dot Legend Bar -->
+      <div class="cal-status-legend-bar" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 16px 0; padding: 8px 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; font-size: 10.5px; font-weight: 600; color: var(--text-secondary); flex-wrap: wrap;">
+        <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #64748b; display: inline-block;"></span> Draft</span>
+        <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #3b82f6; display: inline-block;"></span> Submitted</span>
+        <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span> Pending</span>
+        <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span> Approved</span>
+        <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #ef4444; display: inline-block;"></span> Rejected</span>
+      </div>
+
+
+
+
+
+    </div>
+
+    <!-- Bottom Navigation Bar with Calendar Active -->
+    <phone-bottom-nav active="calendar"></phone-bottom-nav>
+
+    <!-- Slide-in Left Profile Drawer -->
+    <left-profile-drawer></left-profile-drawer>
+
+    <!-- For You Notification Bottom Sheet Drawer -->
+    <notification-sheet></notification-sheet>
+
+    <!-- Calendar Filter Bottom Sheet (Matching Screenshot 2) -->
+    <div class="cal-filter-overlay" id="calFilterOverlay" onclick="closeCalFilter()">
+      <div class="cal-filter-sheet" onclick="event.stopPropagation()">
+        <div class="cal-filter-drag-handle"></div>
+
+        <div class="cal-filter-header">
+          <span class="cal-filter-title">Filter</span>
+          <button class="cal-filter-reset-btn" onclick="resetCalFilter()">Reset</button>
+        </div>
+
+
+        <!-- Status Section (Draft, Submitted, Pending Next/Final, Approved, Rejected) -->
+        <div class="cal-filter-section">
+          <div class="cal-filter-label">Status</div>
+          <div class="cal-filter-pill-group" style="flex-wrap: wrap;">
+            <button class="cal-filter-option-pill active" id="filterStatusAll" onclick="selectFilterStatus('All')">
+              All
+            </button>
+            <button class="cal-filter-option-pill" id="filterStatusDraft" onclick="selectFilterStatus('Draft')">
+              📝 Draft
+            </button>
+            <button class="cal-filter-option-pill" id="filterStatusSubmitted" onclick="selectFilterStatus('Submitted')">
+              📩 Submitted
+            </button>
+            <button class="cal-filter-option-pill" id="filterStatusPending" onclick="selectFilterStatus('Pending')">
+              ⏳ Pending Approval
+            </button>
+            <button class="cal-filter-option-pill" id="filterStatusApproved" onclick="selectFilterStatus('Approved')">
+              ✅ Approved
+            </button>
+            <button class="cal-filter-option-pill" id="filterStatusRejected" onclick="selectFilterStatus('Rejected')">
+              ❌ Rejected
+            </button>
+          </div>
+        </div>
+
+
+        <!-- Period Section -->
+        <div class="cal-filter-section">
+          <div class="cal-filter-label">
+            <i class="fa-solid fa-calendar-days" style="margin-right: 4px;"></i>
+            Period
+          </div>
+          <div class="cal-filter-select-row">
+            <select class="cal-filter-select" id="selectFilterYear" onchange="updatePeriodFromSelect()">
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+            </select>
+
+            <select class="cal-filter-select" id="selectFilterMonth" onchange="updatePeriodFromSelect()">
+              <option value="August" selected>August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Apply Filter Primary Button -->
+        <button class="cal-filter-apply-btn" onclick="applyCalFilter()">Apply Filter</button>
+      </div>
+    </div>
+
+    <!-- Date Event Detail Bottom Sheet (Slide-up Card on Date Click) -->
+    <div class="cal-event-sheet-overlay" id="calEventSheetOverlay" onclick="closeCalEventSheet()">
+      <div class="cal-event-sheet" onclick="event.stopPropagation()">
+        <!-- Drag Handle -->
+        <div class="cal-sheet-drag-handle"></div>
+
+        <!-- Header Row with Date & Close ✕ -->
+        <div class="cal-sheet-header-row">
+          <div>
+            <span class="cal-sheet-date-subtitle" id="sheetDateSubtitle">Scheduled Status & Shift</span>
+            <h3 class="cal-sheet-date-title" id="sheetDateTitle">Thursday, 20 Aug 2026</h3>
+          </div>
+          <button class="cal-sheet-close-btn" onclick="closeCalEventSheet()" aria-label="Close sheet">✕</button>
+        </div>
+
+        <!-- Dynamic Event Card Content Area -->
+        <div class="cal-sheet-body" id="sheetEventContent">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Quick Actions Row -->
+        <div class="cal-sheet-actions-row">
+          <button class="cal-sheet-action-btn primary" id="sheetPrimaryActionBtn" onclick="handleSheetPrimaryAction()">
+            <span id="sheetActionIcon">🌴</span>
+            <span id="sheetPrimaryActionText">Apply Leave for this Day</span>
+          </button>
+          <button class="cal-sheet-action-btn secondary" onclick="closeCalEventSheet()">
+            <span>Done</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // State management matching user screenshot defaults
+    let filterState = {
+      status: 'All', // Default: All (Draft, Submitted, Pending, Approved, Rejected)
+      year: '2026',
+      month: 'August'
+    };
+
+    let viewMode = 'month'; // 'month' or 'week'
+    let selectedDateStr = '2026-08-17';
+    let currentSelectedData = null;
+    let activeSubCalendar = 'all'; // 'all', 'leave', 'roster', 'booking', 'training', 'meeting', 'subordinate'
+
+    // Category switching function
+    function setSubCalendar(category) {
+      activeSubCalendar = category;
+      const pills = ['All', 'Leave', 'Roster', 'Booking', 'Training', 'Meeting', 'Subordinate'];
+      pills.forEach(p => {
+        const el = document.getElementById(`pillSub${p}`);
+        if (el) el.classList.toggle('active', category === p.toLowerCase());
+      });
+      renderCalendar();
+    }
+
+    // Calendar data store with full enterprise HCM categories & statuses
+    const AUGUST_2026_DAYS = [
+      { day: 1, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 2, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 3, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift: Morning Ops (09:00 - 18:00)' },
+      { day: 4, type: 'meeting', cat: 'meeting', status: 'Approved', label: 'MEET', full: '👥 Sprint Sync & Team Alignment (10:00 AM)' },
+      { day: 5, type: 'work', cat: 'booking', status: 'Draft', label: 'BOOK', full: '🏢 Conference Room 3B (Draft Reservation)' },
+      { day: 6, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift: Standby Shift (09:00 - 18:00)' },
+      { day: 7, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift: Regular (09:00 - 18:00)' },
+      { day: 8, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 9, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 10, type: 'event', cat: 'training', status: 'Approved', label: 'TRAIN', span: 'start', full: '🎓 Leadership & Management Workshop (Day 1/4)' },
+      { day: 11, type: 'event', cat: 'training', status: 'Approved', label: 'TRAIN', span: 'mid', full: '🎓 Leadership & Management Workshop (Day 2/4)' },
+      { day: 12, type: 'event', cat: 'training', status: 'Approved', label: 'TRAIN', span: 'mid', full: '🎓 Leadership & Management Workshop (Day 3/4)' },
+      { day: 13, type: 'event', cat: 'training', status: 'Approved', label: 'TRAIN', span: 'end', full: '🎓 Leadership & Management Workshop (Day 4/4)' },
+      { day: 14, type: 'work', cat: 'booking', status: 'Submitted', label: 'BOOK', full: '🚗 Company Vehicle #WXX8892 (Submitted)' },
+      { day: 15, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 16, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 17, type: 'al', cat: 'leave', status: 'Approved', label: 'AL', span: 'start', full: '🌴 Annual Leave Approved (Day 1/3)' },
+      { day: 18, type: 'al', cat: 'leave', status: 'Approved', label: 'AL', span: 'mid', full: '🌴 Annual Leave Approved (Day 2/3)' },
+      { day: 19, type: 'al', cat: 'leave', status: 'Approved', label: 'AL', span: 'end', full: '🌴 Annual Leave Approved (Day 3/3)' },
+      { day: 20, type: 'work', cat: 'roster', status: 'Draft', label: '', full: 'Working Shift: Night On-Call (Draft Schedule)' },
+      { day: 21, type: 'mc', cat: 'subordinate', status: 'Pending', label: 'MC', full: '👥 Alex Tan (Subordinate) - Medical Leave (Pending Next Approval)' },
+      { day: 22, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 23, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 24, type: 'event', cat: 'training', status: 'Submitted', label: 'TRAIN', full: '💻 ISO Security Training (Submitted)' },
+      { day: 25, type: 'ph', cat: 'all', status: 'Approved', label: 'PH', full: '🇲🇾 Public Holiday (State Day)' },
+      { day: 26, type: 'al', cat: 'leave', status: 'Rejected', label: 'AL', full: '🌴 Emergency Leave Application (Rejected)' },
+      { day: 27, type: 'meeting', cat: 'meeting', status: 'Approved', label: 'MEET', full: '🤝 Executive Steering Committee (Approved)' },
+      { day: 28, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift: Regular (09:00 - 18:00)' },
+      { day: 29, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 30, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 31, type: 'ph', cat: 'all', status: 'Approved', label: 'PH', full: '🇲🇾 Hari Kebangsaan (National Day)' }
+    ];
+
+    const SEPTEMBER_2026_DAYS = [
+      { day: 1, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 2, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 3, type: 'work', cat: 'booking', status: 'Pending', label: 'BOOK', full: '🏢 Innovation Lab Room (Pending Final)' },
+      { day: 4, type: 'meeting', cat: 'meeting', status: 'Approved', label: 'MEET', full: '👥 Q3 Townhall & Strategy Meeting (2:30 PM)' },
+      { day: 5, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 6, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 7, type: 'event', cat: 'training', status: 'Approved', label: 'TRAIN', full: '🎓 Cloud Architecture Masterclass' },
+      { day: 8, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 9, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 10, type: 'al', cat: 'leave', status: 'Draft', label: 'AL', full: '🌴 Emergency Leave (Draft)' },
+      { day: 11, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 12, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 13, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 14, type: 'mc', cat: 'subordinate', status: 'Approved', label: 'MC', full: '👥 Sarah Lee (Subordinate) - Sick Leave' },
+      { day: 15, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 16, type: 'ph', cat: 'all', status: 'Approved', label: 'PH', full: '🇲🇾 Malaysia Day Public Holiday' },
+      { day: 17, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 18, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 19, type: 'off', label: 'OFF', full: 'Saturday Off Day' },
+      { day: 20, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 21, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 22, type: 'meeting', cat: 'meeting', status: 'Approved', label: 'MEET', full: '🤝 Monthly Project Review' },
+      { day: 23, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 24, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 25, type: 'al', cat: 'subordinate', status: 'Rejected', label: 'AL', span: 'start', full: '👥 David Chen (Subordinate) - AL (Rejected)' },
+      { day: 26, type: 'al', cat: 'subordinate', status: 'Rejected', label: 'AL', span: 'end', full: '👥 David Chen (Subordinate) - AL (Rejected)' },
+      { day: 27, type: 'rest', label: 'REST', full: 'Sunday Rest Day' },
+      { day: 28, type: 'ph', cat: 'all', status: 'Approved', label: 'PH', full: '🕌 Maulidur Rasul Holiday' },
+      { day: 29, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' },
+      { day: 30, type: 'work', cat: 'roster', status: 'Approved', label: '', full: 'Working Shift (09:00 - 18:00)' }
+    ];
+
+    // Render Calendar Grid
+    function renderCalendar() {
+      const grid = document.getElementById('calDaysGrid');
+      const titleEl = document.getElementById('calMonthTitleText');
+      const subEl = document.getElementById('calActiveFilterSub');
+      grid.innerHTML = '';
+      const subNameMap = { all: 'All Summary', leave: 'Leave', roster: 'Roster', booking: 'Book', training: 'Train', meeting: 'Meet', subordinate: 'Staff' };
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const monthIndex = monthNames.indexOf(filterState.month);
+      const year = Number(filterState.year);
+      const dayCount = new Date(year, monthIndex + 1, 0).getDate();
+      titleEl.innerText = filterState.month + ' ' + filterState.year;
+      subEl.innerText = subNameMap[activeSubCalendar] + ' ? Status: ' + filterState.status + ' ? ' + filterState.month + ' ' + filterState.year;
+      const source = year === 2026 && filterState.month === 'August' ? AUGUST_2026_DAYS : year === 2026 && filterState.month === 'September' ? SEPTEMBER_2026_DAYS : [];
+      const events = new Map(source.map(item => [item.day, item]));
+      let displayDays = Array.from({ length: dayCount }, (_, index) => index + 1);
+      const leadCount = viewMode === 'month' ? new Date(year, monthIndex, 1).getDay() : 0;
+      if (viewMode === 'week') displayDays = displayDays.slice(15, 22);
+      for (let index = 0; index < leadCount; index++) {
+        const emptyCell = document.createElement('div'); emptyCell.className = 'cal-day-cell other-month'; grid.appendChild(emptyCell);
+      }
+      displayDays.forEach(day => {
+        const item = events.get(day) || { day, type: 'work', cat: 'roster', full: 'Working Shift (09:00 - 18:00)' };
+        const dateStr = String(year) + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+        const categoryMatches = activeSubCalendar === 'all' || item.cat === activeSubCalendar;
+        const statusMatches = filterState.status === 'All' || item.status === filterState.status;
+        const highlighted = categoryMatches && statusMatches;
+        const cellEl = document.createElement('div');
+        cellEl.className = highlighted ? 'cal-day-cell status-' + item.type : 'cal-day-cell';
+        if (dateStr === selectedDateStr) cellEl.classList.add('selected');
+        const statusDot = highlighted && item.status ? '<span class="cal-status-dot dot-' + item.status.toLowerCase() + '" title="Status: ' + item.status + '"></span>' : '';
+        cellEl.innerHTML = '<span class="cal-date-num">' + day + '</span>' + (highlighted && item.label ? '<span class="cal-cell-tag">' + item.label + '</span>' : '') + statusDot;
+        cellEl.onclick = () => selectDate(dateStr, item);
+        grid.appendChild(cellEl);
+      });
+    }
+
+    // Select date cell & trigger the Event Detail Bottom Sheet
+    function selectDate(dateStr, itemData) {
+      selectedDateStr = dateStr;
+      currentSelectedData = itemData;
+      renderCalendar();
+      openCalEventSheet(dateStr, itemData);
+    }
+
+    // Open Event Detail Bottom Sheet
+    function openCalEventSheet(dateStr, itemData) {
+      const overlay = document.getElementById('calEventSheetOverlay');
+      const titleEl = document.getElementById('sheetDateTitle');
+      const subEl = document.getElementById('sheetDateSubtitle');
+      const contentEl = document.getElementById('sheetEventContent');
+      const actionIcon = document.getElementById('sheetActionIcon');
+      const actionText = document.getElementById('sheetPrimaryActionText');
+
+      const d = new Date(dateStr);
+      const options = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
+      const formattedDate = d.toLocaleDateString('en-US', options);
+
+      titleEl.innerText = formattedDate;
+
+      const st = itemData ? (itemData.status || 'Approved') : 'Approved';
+      subEl.innerText = `Status: ${st} • Event & Shift Details`;
+
+      // Status Badge HTML Helper
+      const getStatusBadgeHTML = (statusStr) => {
+        if (statusStr === 'Draft') return `<span class="sheet-tag-badge amber">📝 Draft</span>`;
+        if (statusStr === 'Submitted') return `<span class="sheet-tag-badge blue">📩 Submitted</span>`;
+        if (statusStr === 'Pending') return `<span class="sheet-tag-badge amber">⏳ Pending Approval</span>`;
+        if (statusStr === 'Rejected') return `<span class="sheet-tag-badge red">❌ Rejected</span>`;
+        return `<span class="sheet-tag-badge green">✅ Approved</span>`;
+      };
+
+      const type = itemData ? itemData.type : 'work';
+
+      if (type === 'al') {
+        actionIcon.innerText = '📄';
+        actionText.innerText = 'View Leave Application';
+        contentEl.innerHTML = `
+          <div class="cal-detail-card" style="border-left: 4.5px solid #f97316;">
+            <div class="cal-detail-badge-strip">
+              <div class="cal-detail-icon-title">
+                <div class="cal-detail-icon al">🌴</div>
+                <div>
+                  <div class="cal-detail-name">Annual Leave (Full Day)</div>
+                  <div class="cal-detail-time">All Day • 8.0 hrs deducted</div>
+                </div>
+              </div>
+              ${getStatusBadgeHTML(st)}
+            </div>
+            <div class="cal-detail-info-grid">
+              <div class="cal-info-item">
+                <span class="cal-info-label">Approver</span>
+                <span class="cal-info-val">Marcus Wong (Lead)</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Covering Person</span>
+                <span class="cal-info-val">Alex Tan</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Leave Reason</span>
+                <span class="cal-info-val">Family Vacation</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Remaining Balance</span>
+                <span class="cal-info-val">12.5 Days</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'ph') {
+        actionIcon.innerText = '📅';
+        actionText.innerText = 'View Holiday Calendar';
+        contentEl.innerHTML = `
+          <div class="cal-detail-card" style="border-left: 4.5px solid #0ea5e9;">
+            <div class="cal-detail-badge-strip">
+              <div class="cal-detail-icon-title">
+                <div class="cal-detail-icon ph">🇲🇾</div>
+                <div>
+                  <div class="cal-detail-name">${itemData.full || 'Public Holiday'}</div>
+                  <div class="cal-detail-time">Gazetted National Holiday</div>
+                </div>
+              </div>
+              <span class="sheet-tag-badge amber">Public Holiday</span>
+            </div>
+            <div class="cal-detail-info-grid">
+              <div class="cal-info-item">
+                <span class="cal-info-label">Offices Status</span>
+                <span class="cal-info-val">Closed (All Branches)</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Coverage</span>
+                <span class="cal-info-val">National & Regional</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Substitute Off</span>
+                <span class="cal-info-val">N/A (Falls on Weekday)</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Pay Status</span>
+                <span class="cal-info-val">Paid Public Holiday</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'event' || type === 'meeting') {
+        actionIcon.innerText = '🔗';
+        actionText.innerText = 'Join Meeting Room / Agenda';
+        contentEl.innerHTML = `
+          <div class="cal-detail-card" style="border-left: 4.5px solid #6366f1;">
+            <div class="cal-detail-badge-strip">
+              <div class="cal-detail-icon-title">
+                <div class="cal-detail-icon event">👥</div>
+                <div>
+                  <div class="cal-detail-name">${itemData.full || 'Team Meeting'}</div>
+                  <div class="cal-detail-time">10:00 AM – 11:30 AM (1.5 hrs)</div>
+                </div>
+              </div>
+              <span class="sheet-tag-badge purple">Meeting Event</span>
+            </div>
+            <div class="cal-detail-info-grid">
+              <div class="cal-info-item">
+                <span class="cal-info-label">Venue / Room</span>
+                <span class="cal-info-val">Meeting Room 3B & Google Meet</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Organizer</span>
+                <span class="cal-info-val">Product & Tech Ops</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Attendees</span>
+                <span class="cal-info-val">12 Members (Confirmed)</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Agenda</span>
+                <span class="cal-info-val">Q3 Roadmap & Deliverables</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'mc') {
+        actionIcon.innerText = '📋';
+        actionText.innerText = 'View Medical Certificate';
+        contentEl.innerHTML = `
+          <div class="cal-detail-card" style="border-left: 4.5px solid #f43f5e;">
+            <div class="cal-detail-badge-strip">
+              <div class="cal-detail-icon-title">
+                <div class="cal-detail-icon mc">💊</div>
+                <div>
+                  <div class="cal-detail-name">Medical Leave (MC)</div>
+                  <div class="cal-detail-time">Full Day • 1.0 Day MC</div>
+                </div>
+              </div>
+              <span class="sheet-tag-badge red">Medical Leave</span>
+            </div>
+            <div class="cal-detail-info-grid">
+              <div class="cal-info-item">
+                <span class="cal-info-label">Clinic / Provider</span>
+                <span class="cal-info-val">Klinik Mediviron</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">MC Ref No.</span>
+                <span class="cal-info-val">MC-2026-08912</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Status</span>
+                <span class="cal-info-val">Verified & Submitted</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Remaining MC</span>
+                <span class="cal-info-val">10 Days Left</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'rest' || type === 'off') {
+        actionIcon.innerText = '⏰';
+        actionText.innerText = 'Request OT / Standby';
+        contentEl.innerHTML = `
+          <div class="cal-detail-card" style="border-left: 4.5px solid #f43f5e;">
+            <div class="cal-detail-badge-strip">
+              <div class="cal-detail-icon-title">
+                <div class="cal-detail-icon rest">🛌</div>
+                <div>
+                  <div class="cal-detail-name">${type === 'off' ? 'Saturday Off Day' : 'Sunday Rest Day'}</div>
+                  <div class="cal-detail-time">Non-Working Schedule</div>
+                </div>
+              </div>
+              <span class="sheet-tag-badge red">Off Duty</span>
+            </div>
+            <div class="cal-detail-info-grid">
+              <div class="cal-info-item">
+                <span class="cal-info-label">Status</span>
+                <span class="cal-info-val">Weekend Rest</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Next Shift</span>
+                <span class="cal-info-val">Monday 09:00 AM</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Emergency Line</span>
+                <span class="cal-info-val">Available 24/7</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Overtime Rate</span>
+                <span class="cal-info-val">1.5x / 2.0x Standard</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // Standard Work Day
+        actionIcon.innerText = '🌴';
+        actionText.innerText = 'Apply Leave for this Day';
+        contentEl.innerHTML = `
+          <div class="cal-detail-card" style="border-left: 4.5px solid #22c55e;">
+            <div class="cal-detail-badge-strip">
+              <div class="cal-detail-icon-title">
+                <div class="cal-detail-icon work">📅</div>
+                <div>
+                  <div class="cal-detail-name">Standard Working Shift</div>
+                  <div class="cal-detail-time">09:00 AM – 06:00 PM (8.0 hrs)</div>
+                </div>
+              </div>
+              <span class="sheet-tag-badge green">Scheduled</span>
+            </div>
+            <div class="cal-detail-info-grid">
+              <div class="cal-info-item">
+                <span class="cal-info-label">Assigned Location</span>
+                <span class="cal-info-val">HQ Cyberjaya Office</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Shift Policy</span>
+                <span class="cal-info-val">Flexible ±30 mins</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Meal Break</span>
+                <span class="cal-info-val">13:00 – 14:00 (1 hr)</span>
+              </div>
+              <div class="cal-info-item">
+                <span class="cal-info-label">Punctual Punch Window</span>
+                <span class="cal-info-val">08:30 – 09:30 AM</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      overlay.classList.add('open');
+    }
+
+    // Close Event Detail Bottom Sheet
+    function closeCalEventSheet() {
+      const overlay = document.getElementById('calEventSheetOverlay');
+      if (overlay) overlay.classList.remove('open');
+    }
+
+    // Primary Action Handler
+    function handleSheetPrimaryAction() {
+      if (currentSelectedData && currentSelectedData.type === 'al') {
+        window.location.href = 'leave.html';
+      } else if (currentSelectedData && currentSelectedData.type === 'work') {
+        window.location.href = 'leave.html';
+      } else {
+        closeCalEventSheet();
+      }
+    }
+
+    // Switch Month / Week view mode
+    function setViewMode(mode) {
+      viewMode = mode;
+      document.getElementById('btnViewMonth').classList.toggle('active', mode === 'month');
+      document.getElementById('btnViewWeek').classList.toggle('active', mode === 'week');
+      renderCalendar();
+    }
+
+    // Shift period stepper arrows (< >)
+    function shiftPeriod(delta) {
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      let index = monthNames.indexOf(filterState.month) + delta;
+      let year = Number(filterState.year);
+      if (index < 0) { index = 11; year -= 1; }
+      if (index > 11) { index = 0; year += 1; }
+      filterState.month = monthNames[index];
+      filterState.year = String(year);
+      const monthSelect = document.getElementById('selectFilterMonth');
+      if (![...monthSelect.options].some(option => option.value === filterState.month)) {
+        const option = document.createElement('option'); option.value = filterState.month; option.textContent = filterState.month; monthSelect.appendChild(option);
+      }
+      document.getElementById('selectFilterYear').value = filterState.year;
+      monthSelect.value = filterState.month;
+      renderCalendar();
+    }
+
+    // Open & Close Filter Bottom Sheet Drawer
+    function openCalFilter() {
+      document.getElementById('calFilterOverlay').classList.add('open');
+    }
+
+    function closeCalFilter() {
+      document.getElementById('calFilterOverlay').classList.remove('open');
+    }
+
+    // Select Status Pill inside Filter Drawer
+    function selectFilterStatus(statusVal) {
+      filterState.status = statusVal;
+      const statusPills = ['All', 'Draft', 'Submitted', 'Pending', 'Approved', 'Rejected'];
+      statusPills.forEach(st => {
+        const btn = document.getElementById(`filterStatus${st}`);
+        if (btn) btn.classList.toggle('active', statusVal === st);
+      });
+    }
+
+    // Update dropdown selections
+    function updatePeriodFromSelect() {
+      filterState.year = document.getElementById('selectFilterYear').value;
+      filterState.month = document.getElementById('selectFilterMonth').value;
+    }
+
+    // Reset filter to defaults (All Status, 2026 August)
+    function resetCalFilter() {
+      selectFilterStatus('All');
+      document.getElementById('selectFilterYear').value = '2026';
+      document.getElementById('selectFilterMonth').value = 'August';
+      updatePeriodFromSelect();
+    }
+
+    // Apply Filter Button Action
+    function applyCalFilter() {
+      updatePeriodFromSelect();
+      renderCalendar();
+      closeCalFilter();
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCalendar();
+    });
+  </script>
+
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+
+</html>

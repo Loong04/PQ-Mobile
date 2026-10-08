@@ -1,0 +1,511 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Claim Summary</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/claims/claims-config.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
+  <link rel="stylesheet" href="../../../css/claim-summary-details.css">
+  <link rel="stylesheet" href="../../../css/claim-summary-cards.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* Standard Enterprise Filter Bar */
+    .enterprise-toast-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+    
+    .filter-slider-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* History Card Container Style */
+    .history-card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+    }
+
+    .history-time-row {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .status-pill {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .status-pill.submitted { background: rgba(59, 130, 246, 0.16); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-pill.pending { background: rgba(245, 158, 11, 0.16); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-pill.approved { background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-pill.rejected { background: rgba(239, 68, 68, 0.16); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* The purple modal header now contains only the category name and close action. */
+    #summaryDetailsModalOverlay .summary-details-header { margin-bottom: 0; }
+
+
+    .summary-filter-period-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 10px;
+    }
+
+    /* Remove unused checkbox CSS */
+
+  </style>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="../index.html" class="me-back-btn" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </a>
+          <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">Claim Summary</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      
+      <!-- Standard Enterprise Toast Bar -->
+      <div class="enterprise-toast-bar" onclick="openFilterModal()">
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">
+            Filter
+          </div>
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i class="filter-summary-icon fa-solid fa-filter" aria-hidden="true" style="color: var(--purple-primary);"></i>
+            <span id="claimSummaryFilterText">Period: 202605 &bull; Include Pending</span>
+          </div>
+        </div>
+        <button type="button" class="filter-slider-btn">
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+      </div>
+
+      <!-- KPI Bar -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: center;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Claim Amount</span>
+          <span id="totalAmountText" style="font-size: 20px; font-weight: 900; color: var(--text-primary);">RM 0.00</span>
+        </div>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: center;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Records Found</span>
+          <span id="totalRecordsCountText" style="font-size: 20px; font-weight: 900; color: var(--text-primary);">0</span>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div id="summaryCardsContainer"></div>
+
+    </div>
+
+    <!-- Claim Summary filter: uses the shared claim filter design. -->
+    <div class="claim-filter-sheet" id="filterModalOverlay" onclick="if(event.target===this) closeFilterModalForce()">
+      <div class="claim-filter-panel" onclick="event.stopPropagation()">
+        <div class="claim-filter-handle"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title">Filter</h2>
+          <div class="claim-filter-header-actions">
+            <button type="button" class="claim-filter-reset" onclick="resetFilters()"><i class="fa-solid fa-rotate-left"></i><span>Reset</span></button>
+            <button type="button" class="claim-filter-close" onclick="closeFilterModalForce()" aria-label="Close filter" title="Close filter">&times;</button>
+          </div>
+        </div>
+        <div class="claim-filter-fields">
+          <div>
+            <label class="claim-filter-label">Claim Period</label>
+            <div class="summary-filter-period-grid">
+              <div class="claim-filter-select-wrap">
+                <select id="periodYearSelect" class="claim-filter-select" aria-label="Claim period year">
+                  <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+                </select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+              </div>
+              <div class="claim-filter-select-wrap">
+                <select id="periodMonthSelect" class="claim-filter-select" aria-label="Claim period month">
+                  <option value="01">January</option><option value="02">February</option><option value="03">March</option><option value="04">April</option><option value="05" selected>May</option><option value="06">June</option><option value="07">July</option><option value="08">August</option><option value="09">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                </select><i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="claim-filter-label">Include Pending</label>
+            <label class="claim-filter-checkbox-row" for="includePendingSelect">
+              <input id="includePendingSelect" class="claim-filter-checkbox-input" type="checkbox" checked>
+              <span class="claim-filter-checkbox-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+              <span class="claim-filter-checkbox-text">Include pending claims</span>
+            </label>
+          </div>
+        </div>
+        <button type="button" class="claim-filter-apply" onclick="applyFiltersAndClose()">Apply Filter</button>
+      </div>
+    </div>
+
+    <!-- Category Details Modal -->
+    <div class="modal-overlay" id="summaryDetailsModalOverlay" aria-hidden="true" onclick="if(event.target===this) closeDetailsModalForce()">
+      <div class="modal-sheet summary-details-sheet" role="dialog" aria-modal="true" aria-labelledby="modalCategoryTitle" onclick="event.stopPropagation()">
+        <div class="summary-details-top">
+          <div class="summary-details-handle" aria-hidden="true"></div>
+
+          <div class="summary-details-header">
+            <div class="summary-details-category">
+              <h2 id="modalCategoryTitle" class="summary-details-title">Category details</h2>
+            </div>
+            <button type="button" class="summary-details-close" onclick="closeDetailsModalForce()" aria-label="Close details" title="Close details"></button>
+          </div>
+        </div>
+
+        <div class="summary-details-records-header">
+          <h3 class="summary-details-section-title">Itemized records</h3>
+          <span id="modalRecordsCount" class="summary-details-record-count"></span>
+        </div>
+        <div id="modalRecordsListContainer" class="summary-details-records" tabindex="0" aria-label="Itemized claim records"></div>
+      </div>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+
+  <script>
+    const SUMMARY_CATEGORIES = Object.values((window.CLAIM_SUMMARY_RECORDS || []).reduce((groups, record) => {
+      const key = record.expense;
+      if (!groups[key]) {
+        groups[key] = { id: key.replace(/[^A-Z0-9]+/g, '_'), title: key, icon: '•', period: record.period, records: [] };
+      }
+      groups[key].records.push(record);
+      return groups;
+    }, {})).map(category => {
+      const currentAmount = category.records.reduce((sum, record) => sum + Number(record.amount || 0), 0);
+      return {
+        ...category,
+        currentAmount,
+        lastAmount: currentAmount,
+        averageAmount: currentAmount / category.records.length,
+        ytdAmount: currentAmount
+      };
+    });
+
+    let currentPeriod = '2026-05';
+
+    function syncSummaryPeriodControls() {
+      const [year, month] = currentPeriod.split('-');
+      const yearSelect = document.getElementById('periodYearSelect');
+      const monthSelect = document.getElementById('periodMonthSelect');
+      if (yearSelect) yearSelect.value = year || '2026';
+      if (monthSelect) monthSelect.value = month || '05';
+    }
+
+    function openFilterModal() {
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) {
+        syncSummaryPeriodControls();
+        modal.style.display = 'flex';
+        // Small delay to allow display to apply before fading in
+        setTimeout(() => modal.classList.add('active'), 10);
+      }
+    }
+
+    function closeFilterModalForce() {
+      const modal = document.getElementById('filterModalOverlay');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300); // Wait for transition
+      }
+    }
+
+    function resetFilters() {
+      currentPeriod = '2026-05';
+      syncSummaryPeriodControls();
+      document.getElementById('includePendingSelect').checked = true;
+      applyFilters();
+      closeFilterModalForce();
+    }
+
+    function applyFiltersAndClose() {
+      const year = document.getElementById('periodYearSelect').value || '2026';
+      const month = document.getElementById('periodMonthSelect').value || '05';
+      currentPeriod = `${year}-${month}`;
+      applyFilters();
+      closeFilterModalForce();
+    }
+
+    function applyFilters() {
+      const includePending = document.getElementById('includePendingSelect').checked;
+      
+      let targetStatus = null;
+      if (window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        targetStatus = hashParams.get('status');
+      } else if (window.location.search) {
+        const urlParams = new URLSearchParams(window.location.search);
+        targetStatus = urlParams.get('status');
+      }
+
+      const container = document.getElementById('summaryCardsContainer');
+      container.innerHTML = '';
+
+      // Format currentPeriod (YYYY-MM to YYYYMM) for display compatibility
+      let displayPeriod = currentPeriod.replace('-', '');
+      let displayPeriodLabel = currentPeriod;
+      
+      // Convert "2026-05" into "May 2026" for the filter toast display
+      if (currentPeriod.includes('-')) {
+        const parts = currentPeriod.split('-');
+        if (parts.length === 2) {
+          const dateObj = new Date(parts[0], parseInt(parts[1]) - 1, 1);
+          displayPeriodLabel = dateObj.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+        }
+      }
+
+      let totalCat = 0;
+      let totalRec = 0;
+      let totalAmt = 0;
+
+      SUMMARY_CATEGORIES.forEach(cat => {
+        const validRecords = cat.records.filter(r => {
+          if (targetStatus && targetStatus !== 'all') {
+            return r.status.toLowerCase() === targetStatus.toLowerCase();
+          }
+          return includePending || (r.status !== 'pending' && r.status !== 'submitted');
+        });
+        let catCurrentAmount = validRecords.reduce((sum, r) => sum + r.amount, 0);
+
+        if (validRecords.length > 0) {
+          totalCat++;
+          totalRec += validRecords.length;
+          totalAmt += catCurrentAmount;
+
+          const card = document.createElement('div');
+          card.className = 'history-card-item claim-summary-card';
+          card.onclick = () => openDetailsModal(cat.id, targetStatus);
+
+          let variance = 0;
+          if (cat.lastAmount > 0) {
+            variance = ((catCurrentAmount - cat.lastAmount) / cat.lastAmount) * 100;
+          }
+          let varianceColor = 'var(--text-primary)';
+          let varianceSign = '';
+          if (variance > 0) {
+            varianceColor = '#ef4444';
+            varianceSign = '+';
+          } else if (variance < 0) {
+            varianceColor = '#10b981';
+            varianceSign = '-';
+          } else {
+            varianceColor = 'var(--text-muted)';
+            varianceSign = '';
+          }
+          let varianceDisplay = variance === 0 ? '-' : `${varianceSign}${Math.abs(variance).toFixed(1)}%`;
+
+          card.innerHTML = `
+            <div class="claim-summary-card-head">
+              <div style="min-width: 0;">
+                <div class="claim-summary-card-title">${cat.title}</div>
+                <div class="claim-summary-card-subtitle">${validRecords.length} record${validRecords.length === 1 ? '' : 's'} in ${displayPeriod}</div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 13px; opacity: 0.9;"></i>
+            </div>
+            <div class="claim-summary-card-body">
+              <div class="claim-summary-total">
+                <span class="claim-summary-total-label">Current Amount</span>
+                <span class="claim-summary-total-value">RM ${catCurrentAmount.toFixed(2)}</span>
+              </div>
+              <div class="claim-summary-stat-grid">
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">Last Amount</span><span class="claim-summary-stat-value">RM ${cat.lastAmount.toFixed(2)}</span></div>
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">Variance %</span><span class="claim-summary-stat-value" style="color: ${varianceColor};">${varianceDisplay}</span></div>
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">YTD Amount</span><span class="claim-summary-stat-value">RM ${cat.ytdAmount.toFixed(2)}</span></div>
+                <div class="claim-summary-stat"><span class="claim-summary-stat-label">Average Amount</span><span class="claim-summary-stat-value">RM ${cat.averageAmount.toFixed(2)}</span></div>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        }
+      });
+
+      let statusFilterText = includePending ? 'Include Pending' : 'Approved Only';
+      if (targetStatus && targetStatus !== 'all') {
+        statusFilterText = `Status: ${targetStatus.charAt(0).toUpperCase() + targetStatus.slice(1)}`;
+      }
+
+      document.getElementById('claimSummaryFilterText').innerHTML = `Period: ${displayPeriodLabel} &bull; ${statusFilterText}`;
+      if (document.getElementById('totalCategoriesCountText')) {
+        document.getElementById('totalCategoriesCountText').textContent = totalCat;
+      }
+      document.getElementById('totalRecordsCountText').textContent = totalRec;
+      document.getElementById('totalAmountText').textContent = `RM ${totalAmt.toFixed(2)}`;
+    }
+
+    let summaryDetailsOpener = null;
+
+    function openDetailsModal(catId, targetStatus) {
+      const cat = SUMMARY_CATEGORIES.find(c => c.id === catId);
+      if (!cat) return;
+
+      const includePending = document.getElementById('includePendingSelect').checked;
+      const recordsToDisplay = cat.records.filter(r => {
+        if (targetStatus && targetStatus !== 'all') {
+          return r.status.toLowerCase() === targetStatus.toLowerCase();
+        }
+        return includePending || (r.status !== 'pending' && r.status !== 'submitted');
+      });
+
+      document.getElementById('modalCategoryTitle').textContent = cat.title;
+      document.getElementById('modalRecordsCount').textContent = `${recordsToDisplay.length} record${recordsToDisplay.length === 1 ? '' : 's'}`;
+      
+      const recordsContainer = document.getElementById('modalRecordsListContainer');
+      recordsContainer.innerHTML = '';
+      
+      recordsToDisplay.forEach(r => {
+        const recItem = document.createElement('article');
+        recItem.className = 'claim-summary-record summary-colored-record claim-summary-detail-card';
+        
+        recItem.innerHTML = `
+          <dl class="summary-record-fields claim-summary-detail-body">
+            <div class="summary-record-field summary-record-date"><dd>${r.dateRange}</dd></div>
+            <div class="summary-record-field summary-record-period summary-detail-metric-card"><dt>Period</dt><dd>${r.period}</dd></div>
+            <div class="summary-record-field summary-record-expense summary-detail-metric-card"><dt>Expense</dt><dd>${r.expense}</dd></div>
+            <div class="summary-record-field summary-record-amount summary-detail-metric-card summary-detail-metric-amount"><dt>Amount</dt><dd>RM ${r.amount.toFixed(2)}</dd></div>
+          </dl>
+        `;
+        recordsContainer.appendChild(recItem);
+      });
+      if (!recordsToDisplay.length) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.className = 'summary-details-empty';
+        emptyMessage.textContent = 'No records match the selected filters.';
+        recordsContainer.appendChild(emptyMessage);
+      }
+
+      summaryDetailsOpener = document.activeElement;
+      recordsContainer.scrollTop = 0;
+      const modal = document.getElementById('summaryDetailsModalOverlay');
+      modal.setAttribute('aria-hidden', 'false');
+      modal.classList.add('active');
+      modal.querySelector('.summary-details-close').focus({ preventScroll: true });
+    }
+
+    function closeDetailsModalForce() {
+      const modal = document.getElementById('summaryDetailsModalOverlay');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      if (summaryDetailsOpener?.isConnected) summaryDetailsOpener.focus({ preventScroll: true });
+    }
+
+    document.addEventListener('keydown', event => {
+      const modal = document.getElementById('summaryDetailsModalOverlay');
+      if (!modal.classList.contains('active')) return;
+      if (event.key === 'Escape') closeDetailsModalForce();
+      if (event.key !== 'Tab') return;
+      const first = modal.querySelector('.summary-details-close');
+      const last = document.getElementById('modalRecordsListContainer');
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus({ preventScroll: true });
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus({ preventScroll: true });
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', applyFilters);
+  </script>
+</body>
+</html>
+
+
+

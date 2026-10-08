@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Daily Manpower Summary</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    /* Top Header Bar */
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.15s ease;
+      backdrop-filter: blur(4px);
+    }
+    .header-btn-icon:active { transform: scale(0.94); }
+
+    /* Consistent Filter Summary Bar */
+    .filter-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-summary-bar:hover {
+      border-color: rgba(124, 58, 237, 0.35);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+    }
+    .filter-summary-bar:active {
+      transform: scale(0.99);
+    }
+    .filter-bar-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .filter-bar-value {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 270px;
+    }
+    .filter-trigger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+      flex-shrink: 0;
+    }
+    .filter-trigger-btn:active { transform: scale(0.92); }
+
+    /* Modern Executive Date Switcher */
+    .date-switcher-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 6px 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+    .date-nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .date-nav-btn:hover {
+      background: var(--purple-subtle);
+      color: var(--purple-primary);
+      border-color: var(--purple-border);
+    }
+    .date-nav-btn:active { transform: scale(0.92); }
+    .date-current-badge {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+    .date-current-badge:hover {
+      background: var(--bg-input);
+    }
+
+    /* Executive KPI Card */
+    .kpi-overview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .kpi-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .kpi-title-col {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .kpi-icon-bubble {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.22);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+    .kpi-main-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kpi-total-badge {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      background: var(--purple-subtle);
+      border: 1px solid var(--purple-border);
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+
+    /* 4 Metric Bento Pillars */
+    .kpi-pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .kpi-pillar {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 9px 4px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease;
+    }
+    .kpi-pillar:hover { transform: translateY(-1px); }
+    .kpi-pillar-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+    .kpi-pillar-value {
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+    .val-work-shift { color: #10b981; }
+    .val-no-work { color: #f59e0b; }
+    .val-ot-plan { color: #8b5cf6; }
+    .val-on-leave { color: #f43f5e; }
+
+    /* Section Section Title */
+    .section-header-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      padding: 0 2px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Top Header Bar */
+    .cal-top-header {
+      background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(46, 16, 101, 0.3);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* Modern Executive Manpower Group Card */
+    .manpower-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 15px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .manpower-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3.5px;
+      background: var(--purple-primary);
+      opacity: 0.8;
+    }
+
+    .card-meta-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding-left: 2px;
+    }
+    .card-company-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 3px;
+    }
+    .card-dept-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.25;
+    }
+
+    .card-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: var(--bg-input);
+      padding: 9px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+    .card-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .card-info-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .card-info-val {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 4 Counters Row - Clean Executive Styling */
+    .card-counters-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+    .card-count-box {
+      padding: 7px 4px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .card-count-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      margin-bottom: 2px;
+    }
+    .card-count-num {
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text-primary);
+    }
+    .card-count-num.num-zero {
+      color: var(--text-muted);
+      opacity: 0.45;
+      font-weight: 700;
+    }
+    .card-count-num.num-green { color: #10b981; }
+    .card-count-num.num-amber { color: #f59e0b; }
+    .card-count-num.num-purple { color: #a78bfa; }
+    .card-count-num.num-rose { color: #f43f5e; }
+
+    /* Modal Overlay (Full Phone Frame) */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 44px;
+      overflow: hidden;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+    }
+
+    /* Bottom Sheet Container */
+    .bottom-sheet-content {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      padding: 16px 20px 28px;
+      box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.45);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 84vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .modal-overlay.active .bottom-sheet-content {
+      transform: translateY(0);
+    }
+    .sheet-handle-pill {
+      width: 38px;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: 4px;
+      margin: 0 auto 16px;
+      opacity: 0.7;
+    }
+
+    /* Filter Form Elements */
+    .filter-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .filter-modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .filter-reset-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .filter-reset-btn:hover {
+      background: var(--purple-subtle);
+      color: var(--purple-primary);
+      border-color: var(--purple-border);
+    }
+
+    .form-group-item {
+      margin-bottom: 14px;
+    }
+    .form-field-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .form-field-select, .form-field-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-field-select:focus, .form-field-input:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    #filterModal .form-field-select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 40px !important;
+    }
+    #filterModal .standard-filter-header { padding: 0 0 16px !important; flex-shrink: 0; }
+    .manpower-filter-fields { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; padding: 2px 2px 8px 0; }
+    .manpower-filter-fields .form-group-item:last-child { margin-bottom: 0; }
+    .manpower-filter-footer { flex: 0 0 auto; padding-top: 10px; }
+    .manpower-filter-footer .form-apply-btn { margin-top: 0; }
+    .select-chevron-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--purple-primary);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .form-apply-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      font-size: 14.5px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-apply-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+    }
+
+
+
+    /* Toast Notification */
+    .feedback-toast {
+      position: absolute;
+      bottom: 85px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .feedback-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .manpower-card-list { display: flex; flex-direction: column; gap: 12px; }
+    .manpower-group-card.history-card-item { padding: 0; border: 1px solid var(--border-subtle); border-radius: 18px; overflow: hidden; background: var(--bg-card); }
+    .manpower-company-header { margin: 0; padding: 12px 14px; background: linear-gradient(110deg,#5b21b6,#7c3aed); color: #fff; font-size: 14px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+    .manpower-group-content { padding: 12px 14px; }
+    .manpower-group-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-bottom: 10px; }
+    .manpower-group-field { display: flex; flex-direction: column; gap: 4px; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 13px; background: var(--bg-input); }
+    .manpower-group-field small { color: var(--text-muted); font-size: 10px; font-weight: 700; }
+    .manpower-group-field strong { color: var(--text-primary); font-size: 11.5px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+    .manpower-group-actions { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); padding: 10px 0; border: 1px solid var(--border-subtle); border-radius: 13px; background: var(--bg-input); }
+    .manpower-group-actions button { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 3px; border: 0; background: transparent; color: var(--text-muted); font-size: 10.5px; font-weight: 700; line-height: 1.4; white-space: nowrap; }
+    .manpower-group-actions button + button { border-left: 1px solid var(--border-subtle); }
+    .manpower-group-actions button:hover { background: var(--purple-subtle); color: var(--purple-text); }
+    .manpower-group-actions button:focus-visible { outline: 2px solid var(--purple-primary); outline-offset: -2px; border-radius: 6px; }
+    .manpower-group-actions strong { font-size: 15px; font-weight: 800; }
+    .manpower-summary-actions { margin-bottom: 20px; padding: 14px 0; border-radius: 18px; background: var(--bg-card); }
+
+    /* Collapsible Filter Accordion Card */
+    .filter-accordion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s;
+    }
+    .filter-header-bar {
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.05) 100%);
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .filter-header-bar.expanded {
+      border-bottom-color: var(--border-subtle);
+    }
+    .filter-badge-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      letter-spacing: 0.3px;
+    }
+    .filter-toggle-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.15);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      transition: transform 0.25s ease;
+    }
+    .filter-toggle-icon.open {
+      transform: rotate(180deg);
+    }
+    .filter-body-container {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Modern Enterprise Summary Table Card (Table Show) */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 110px 1fr 90px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(109, 40, 217, 0.08) 100%);
+      padding: 13px 16px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1.5px solid var(--purple-border);
+      align-items: center;
+    }
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 90px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
+    .summary-table-row:active { transform: scale(0.995); background: rgba(124, 58, 237, 0.08); }
+    
+    .summary-table-footer {
+      display: grid;
+      grid-template-columns: 110px 1fr 90px;
+      padding: 13px 16px;
+      background: rgba(124, 58, 237, 0.08);
+      border-top: 1.5px solid var(--purple-border);
+      font-size: 12.5px;
+      font-weight: 800;
+      align-items: center;
+    }
+  </style>
+<link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+<link rel="stylesheet" href="../../../css/attendance-manpower-details.css">
+<script src="../../../js/attendance-manpower-data.js"></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="attendance-highlight-page manpower-page">
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Executive Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="13:15" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="header-btn-icon" onclick="goBack()" aria-label="Back" title="Back">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <div>
+            <h1 id="headerTitle" style="font-size: 18.5px; font-weight: 800; color: #ffffff; margin: 0;">Daily Manpower Summary</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Content -->
+    <div class="main-content">
+      <div id="view-dashboard">
+        <!-- 1. Modern Executive Date Switcher (Top) -->
+        <div class="date-switcher-card">
+          <button class="date-nav-btn" onclick="shiftDate(-1)" title="Previous Day" aria-label="Previous Day">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div class="date-current-badge">
+            <i class="fa-solid fa-calendar-day" style="color: var(--purple-primary); font-size: 14px;"></i>
+            <span id="currentDateDisplay">20 Sep 2026</span>
+          </div>
+          <button class="date-nav-btn" onclick="shiftDate(1)" title="Next Day" aria-label="Next Day">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- 2. Consistent Standard Filter Summary Bar (Below Date) -->
+        <div class="filter-summary-bar" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter manpower records">
+          <div style="flex: 1; min-width: 0; padding-right: 8px;">
+            <div class="filter-bar-label">
+              <span>CURRENT FILTER</span>
+            </div>
+            <div class="filter-bar-value" id="filterSummaryText">
+              20 Sep 2026 • All Companies
+            </div>
+          </div>
+          <button type="button" class="filter-trigger-btn" onclick="event.stopPropagation(); openFilterModal();" title="Filter Options" aria-label="Filter Options">
+            <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
+          </button>
+        </div>
+
+        <div class="attendance-report-summary"><div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label">Total Records</span><strong class="attendance-report-summary-value" id="totalRecordsVal">26</strong></div></div></div>
+        <div class="history-card-item manpower-group-actions manpower-summary-actions" role="group" aria-label="Manpower summary for the current filter">
+          <button type="button" id="boxkpiWorkShift" onclick="openKpiDetails('workShift')"><span>Work Shift</span><strong id="kpiWorkShift" class="val-work-shift">16</strong></button>
+          <button type="button" id="boxkpiNoWork" onclick="openKpiDetails('noWork')"><span>No Work</span><strong id="kpiNoWork" class="val-no-work">10</strong></button>
+          <button type="button" id="boxkpiOtPlan" onclick="openKpiDetails('otPlan')"><span>OT Plan</span><strong id="kpiOtPlan" class="val-zero">0</strong></button>
+          <button type="button" id="boxkpiOnLeave" onclick="openKpiDetails('onLeave')"><span>On Leave</span><strong id="kpiOnLeave" class="val-zero">0</strong></button>
+        </div>
+        <div id="manpowerListContainer" class="manpower-card-list"></div>
+        <p id="manpowerEmpty" class="attendance-report-empty" hidden>No records match the current filter.</p>
+
+      </div> <!-- End view-dashboard -->
+
+      <!-- Details View -->
+      <div id="view-details" style="display: none;">
+        <div class="manpower-detail-info-card">
+          <div class="manpower-detail-date"><span>Date</span><strong id="manpowerDetailDate"></strong></div>
+          <div id="manpowerDetailOverview" class="manpower-detail-overview"></div>
+        </div>
+        <p id="manpowerDetailScope" class="manpower-detail-scope" hidden></p>
+        <div id="manpowerDetailList" class="manpower-detail-list"></div>
+        <p id="manpowerDetailEmpty" class="attendance-report-empty" hidden></p>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Feedback Toast -->
+    <div class="feedback-toast" id="feedbackToast">
+      <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+      <span id="toastMessage">Filter applied</span>
+    </div>
+
+    <!-- ========================================================
+         MODAL 1: BOTTOM SHEET DATA FILTER MODAL
+         ======================================================== -->
+    <div class="modal-overlay" id="filterModal" onclick="closeFilterModal(event)">
+      <div class="bottom-sheet-content" onclick="event.stopPropagation()">
+        <div class="sheet-handle-pill"></div>
+        
+        <!-- Modal Header -->
+        <div class="filter-header-row">
+          <h3 class="filter-modal-title">Data Filter</h3>
+          <button type="button" class="filter-reset-btn" onclick="resetFilterModal()">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
+          </button>
+        </div>
+
+        <!-- Filter Inputs Container -->
+        <div class="manpower-filter-fields">
+          
+          <!-- 1. Company -->
+          <div class="form-group-item">
+            <label class="form-field-label">Company</label>
+            <div style="position: relative;">
+              <select id="filterCompanySelect" class="form-field-select">
+                <option value="all" selected>- All Companies -</option>
+                <option value="GROUP OF COMPANIES (demoAPI)">GROUP OF COMPANIES (demoAPI)</option>
+                <option value="KOZATO KIZAI (M) SDN. BHD.">KOZATO KIZAI (M) SDN. BHD.</option>
+                <option value="PEOPLE EDGE SDN BHD">PEOPLE EDGE SDN BHD</option>
+                <option value="ACME LOGISTICS SDN BHD">ACME LOGISTICS SDN BHD</option>
+                <option value="TECH HUB SOLUTIONS">TECH HUB SOLUTIONS</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 2. Department -->
+          <div class="form-group-item">
+            <label class="form-field-label">Department</label>
+            <div style="position: relative;">
+              <select id="filterDeptSelect" class="form-field-select">
+                <option value="all" selected>- All Departments -</option>
+                <option value="ALL DEPARTMENTS">ALL DEPARTMENTS</option>
+                <option value="HUMAN RESOURCE">Human Resources Department</option>
+                <option value="ACCOUNTS">Accounts Department</option>
+                <option value="PLANT OPERATIONS">Plant Operations Department</option>
+                <option value="GENERAL MANAGEMENT">General Management</option>
+                <option value="SUPPLY CHAIN">Supply Chain Department</option>
+                <option value="TECH & IT">Tech & IT Department</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 3. Section -->
+          <div class="form-group-item">
+            <label class="form-field-label">Section</label>
+            <div style="position: relative;">
+              <select id="filterSectionSelect" class="form-field-select">
+                <option value="all" selected>- All Sections -</option>
+                <option value="CORPORATE">Corporate Section</option>
+                <option value="GENERAL HR">General HR Section</option>
+                <option value="ASSEMBLY">Assembly Section</option>
+                <option value="EXECUTIVE">Executive Section</option>
+                <option value="FOREX">FOREX Section</option>
+                <option value="WAREHOUSE">Warehouse Section</option>
+                <option value="SOFTWARE ENGINEERING">Software Engineering</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 4. Cost Center -->
+          <div class="form-group-item">
+            <label class="form-field-label">Cost Center</label>
+            <div style="position: relative;">
+              <select id="filterCostCenterSelect" class="form-field-select">
+                <option value="all" selected>- All Cost Centers -</option>
+                <option value="CC-101 MANAGEMENT">CC-101 MANAGEMENT</option>
+                <option value="CC-501 HR & OPS">CC-501 HR & OPS</option>
+                <option value="CC-301 PRODUCTION">CC-301 PRODUCTION</option>
+                <option value="CC-100 ADMIN">CC-100 ADMIN</option>
+                <option value="MANAGEMENT">MANAGEMENT</option>
+                <option value="CC-401 LOGISTICS">CC-401 LOGISTICS</option>
+                <option value="CC-201 IT DEVELOPMENT">CC-201 IT DEVELOPMENT</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Apply Filter Button -->
+        <div class="manpower-filter-footer">
+          <button type="button" class="form-apply-btn" onclick="applyFilterModal()">
+            <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
+            <span>Apply Filter</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <script>
+    // Master Dataset of Daily Manpower Groups
+    const masterManpowerDataset = [
+      {
+        id: 1,
+        company: 'GROUP OF COMPANIES (demoAPI)',
+        dept: 'ALL DEPARTMENTS',
+        section: 'CORPORATE',
+        costCenter: 'CC-101 MANAGEMENT',
+        staff: [
+          { name: 'Lee Soon Hock', empNo: '#EBB01', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Morning Shift' },
+          { name: 'Siti Nurhaliza', empNo: '#004177', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Morning Shift' },
+          { name: 'Tan Wei Ming', empNo: '#0000101', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:30 AM – 05:30 PM • General Shift' },
+          { name: 'Michael Chen', empNo: '#EBB04', status: 'Work Shift', badgeClass: 'status-badge-green', info: '09:00 AM – 06:00 PM • Flexi Shift' }
+        ]
+      },
+      {
+        id: 2,
+        company: 'GROUP OF COMPANIES (demoAPI)',
+        dept: 'HUMAN RESOURCE',
+        section: 'GENERAL HR',
+        costCenter: 'CC-501 HR & OPS',
+        staff: [
+          { name: 'Wong Kah Fai', empNo: '#EBB02', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:30 AM – 05:30 PM • HR Operations' }
+        ]
+      },
+      {
+        id: 3,
+        company: 'KOZATO KIZAI (M) SDN. BHD.',
+        dept: 'PLANT OPERATIONS',
+        section: 'ASSEMBLY',
+        costCenter: 'CC-301 PRODUCTION',
+        staff: [
+          { name: 'Chok Ching Hou', empNo: '#EBB03', status: 'No Work', badgeClass: 'status-badge-amber', info: 'Scheduled Rest Day Off' },
+          { name: 'Kavitha Raj', empNo: '#004199', status: 'No Work', badgeClass: 'status-badge-amber', info: 'Public Holiday Off' }
+        ]
+      },
+      {
+        id: 4,
+        company: 'PEOPLE EDGE SDN BHD',
+        dept: 'GENERAL MANAGEMENT',
+        section: 'EXECUTIVE',
+        costCenter: 'CC-100 ADMIN',
+        staff: [
+          { name: 'David Miller', empNo: '#EBB05', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Management' },
+          { name: 'Jessica Taylor', empNo: '#EBB06', status: 'Work Shift', badgeClass: 'status-badge-green', info: '08:00 AM – 05:00 PM • Executive' }
+        ]
+      },
+      {
+        id: 5,
+        company: 'PEOPLE EDGE SDN BHD',
+        dept: 'ACCOUNTS',
+        section: 'FOREX',
+        costCenter: 'MANAGEMENT',
+        staff: [
+          { name: 'Lee Soon Hock', empNo: '#EBB01', status: 'Work Shift', badgeClass: 'status-badge-green', info: 'FOREX Management • 08:30 – 17:30' }
+        ]
+      }
+    ].map(group => ({ ...group, ...getManpowerPreviewCounts(group.id) }));
+
+    let currentDateObj = new Date(2026, 8, 20); // 20 Sep 2026
+
+    function formatDateDisplay(d) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = d.getDate();
+      const month = months[d.getMonth()];
+      const year = d.getFullYear();
+      return `${day < 10 ? '0' + day : day} ${month} ${year}`;
+    }
+
+    function formatDateISO(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function shiftDate(deltaDays) {
+      currentDateObj.setDate(currentDateObj.getDate() + deltaDays);
+      const displayStr = formatDateDisplay(currentDateObj);
+      document.getElementById('currentDateDisplay').innerText = displayStr;
+      updateFilterSummaryDisplay();
+      renderManpowerList();
+      showToastNotification(`Date shifted to ${displayStr}`);
+    }
+
+    function updateFilterSummaryDisplay() {
+      const dateStr = formatDateDisplay(currentDateObj);
+      const comp = document.getElementById('filterCompanySelect')?.value || 'all';
+      const dept = document.getElementById('filterDeptSelect')?.value || 'all';
+      const sec = document.getElementById('filterSectionSelect')?.value || 'all';
+      const cc = document.getElementById('filterCostCenterSelect')?.value || 'all';
+
+      let parts = [dateStr];
+      if (comp !== 'all') {
+        parts.push(comp.length > 20 ? comp.substring(0, 18) + '...' : comp);
+      } else if (dept !== 'all') {
+        parts.push(dept);
+      } else if (sec !== 'all') {
+        parts.push(sec);
+      } else if (cc !== 'all') {
+        parts.push(cc);
+      } else {
+        parts.push('All Companies');
+      }
+
+      document.getElementById('filterSummaryText').innerText = parts.join(' • ');
+    }
+
+    function renderManpowerList() {
+      const companyFilter = document.getElementById('filterCompanySelect')?.value || 'all';
+      const deptFilter = document.getElementById('filterDeptSelect')?.value || 'all';
+      const sectionFilter = document.getElementById('filterSectionSelect')?.value || 'all';
+      const costCenterFilter = document.getElementById('filterCostCenterSelect')?.value || 'all';
+
+      const filtered = masterManpowerDataset.filter(item => {
+        const matchCompany = (companyFilter === 'all' || item.company === companyFilter);
+        const matchDept = (deptFilter === 'all' || item.dept === deptFilter);
+        const matchSection = (sectionFilter === 'all' || item.section === sectionFilter);
+        const matchCostCenter = (costCenterFilter === 'all' || item.costCenter === costCenterFilter);
+        return matchCompany && matchDept && matchSection && matchCostCenter;
+      });
+
+      // Update Total Summary KPIs
+      let totWorkShift = 0, totNoWork = 0, totOtPlan = 0, totOnLeave = 0;
+      filtered.forEach(it => {
+        totWorkShift += it.workShift;
+        totNoWork += it.noWork;
+        totOtPlan += it.otPlan;
+        totOnLeave += it.onLeave;
+      });
+
+      const totalRecords = totWorkShift + totNoWork + totOtPlan + totOnLeave;
+      document.getElementById('totalRecordsVal').innerText = totalRecords;
+      for (const [id, count, colorClass] of [
+        ['kpiWorkShift', totWorkShift, 'val-work-shift'],
+        ['kpiNoWork', totNoWork, 'val-no-work'],
+        ['kpiOtPlan', totOtPlan, 'val-ot-plan'],
+        ['kpiOnLeave', totOnLeave, 'val-on-leave']
+      ]) {
+        const value = document.getElementById(id);
+        value.textContent = count;
+        value.className = count > 0 ? colorClass : 'val-zero';
+      }
+
+      const container = document.getElementById('manpowerListContainer');
+      if (!container) return;
+
+      document.getElementById('manpowerEmpty').hidden = filtered.length > 0;
+      renderManpowerCards(container, filtered);
+    }
+    // Modal Operations
+    function openFilterModal() {
+      const modal = document.getElementById('filterModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      setTimeout(() => { modal.classList.add('active'); }, 10);
+    }
+
+    function closeFilterModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const modal = document.getElementById('filterModal');
+      if (!modal) return;
+      modal.classList.remove('active');
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
+    }
+
+    function resetFilterModal() {
+      document.getElementById('filterCompanySelect').value = 'all';
+      document.getElementById('filterDeptSelect').value = 'all';
+      document.getElementById('filterSectionSelect').value = 'all';
+      document.getElementById('filterCostCenterSelect').value = 'all';
+      updateFilterSummaryDisplay();
+      closeFilterModal();
+      renderManpowerList();
+      showToastNotification('Filters reset to default');
+    }
+
+    function applyFilterModal() {
+      updateFilterSummaryDisplay();
+      closeFilterModal();
+      renderManpowerList();
+      showToastNotification('Filter applied successfully');
+    }
+
+    function showToastNotification(msg) {
+      const toast = document.getElementById('feedbackToast');
+      const text = document.getElementById('toastMessage');
+      if (!toast || !text) return;
+      text.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2200);
+    }
+
+    // Keyboard navigation (ESC closes open modal)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (currentView !== 'dashboard') goBack();
+        else closeFilterModal();
+      }
+    });
+
+    let currentView = 'dashboard';
+    let selectedManpowerGroup = null;
+    
+    function goBack() {
+      if (!backManpowerDetails()) history.back();
+    }
+
+    function openKpiDetails(type, group = null) {
+      openManpowerSummary(type, group);
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateFilterSummaryDisplay();
+      renderManpowerList();
+    });
+  </script>
+<script src="../../../js/attendance-manpower-report.js"></script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

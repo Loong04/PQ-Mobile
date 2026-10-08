@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Workplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="../../css/app.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="../../css/history-cards.css">
+  <link rel="stylesheet" href="../../css/attendance-schedule-calendar.css">
+  <link rel="stylesheet" href="css/workplace-calendar.css">
+  <script src="../../js/components.js"></script>
+  <script src="../../js/app.js" defer></script>
+  <script src="js/workplace-history-store.js" defer></script>
+  <script src="js/book-resource-store.js" defer></script>
+  <script src="js/admin-app.js" defer></script>
+  <script src="../../js/attendance-schedule-calendar.js" defer></script>
+  <script src="js/workplace-calendar.js" defer></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="admin-page">
+  <preview-top-bar active-page="workplace"></preview-top-bar>
+  <div class="phone-container">
+    <header class="admin-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="admin-header-row">
+        <a class="admin-back" href="../../appdark.html" onclick="navTo('nav_apps', event)" aria-label="Back to apps"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <div class="admin-heading"><h1>Workplace</h1></div>
+        <span aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content admin-content">
+      <div class="workplace-scope" role="tablist" aria-label="Workplace scope">
+        <button type="button" id="workplaceTabIndividual" class="workplace-scope-tab active" role="tab" aria-selected="true" aria-controls="workplaceIndividualPanel"><i class="fa-solid fa-user" aria-hidden="true"></i><span>Individual</span></button>
+        <button type="button" id="workplaceTabTeam" class="workplace-scope-tab" role="tab" aria-selected="false" aria-controls="workplaceTeamPanel" tabindex="-1"><i class="fa-solid fa-users" aria-hidden="true"></i><span>Team</span></button>
+      </div>
+      <div id="workplaceIndividualPanel" class="workplace-scope-panel" role="tabpanel" aria-labelledby="workplaceTabIndividual">
+      <section id="workplaceDocumentStatus" class="workplace-document-status" aria-labelledby="workplaceDocumentStatusTitle">
+        <h2 id="workplaceDocumentStatusTitle">My Document Status</h2>
+        <div class="workplace-status-grid">
+          <a class="workplace-status-card submitted" data-document-status="submitted" href="options/history.html"><strong>0</strong><span>Submitted</span><small>In Review</small></a>
+          <a class="workplace-status-card resubmit" data-document-status="resubmit" href="options/history.html"><strong>0</strong><span>Resubmit</span><small>Needs Action</small></a>
+          <a class="workplace-status-card approved" data-document-status="approved" href="options/history.html"><strong>0</strong><span>Approved</span><small>Confirmed</small></a>
+          <a class="workplace-status-card rejected" data-document-status="rejected" href="options/history.html"><strong>0</strong><span>Rejected</span><small>Declined</small></a>
+        </div>
+        <p id="workplaceStatusError" role="status" hidden></p>
+      </section>
+      <section aria-labelledby="adminOptionsTitle">
+        <h2 class="admin-section-title" id="adminOptionsTitle">OPTIONS</h2>
+        <div class="admin-options">
+          <a class="admin-option" data-tone="purple" href="options/news.html">
+            <span class="admin-option-icon"><i class="fa-solid fa-newspaper" aria-hidden="true"></i></span>
+            <span class="admin-option-title">News</span>
+          </a>
+          <a class="admin-option" data-tone="purple" href="options/book-resource.html">
+            <span class="admin-option-icon"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span>
+            <span class="admin-option-title">Book Resource</span>
+          </a>
+          <a class="admin-option" data-tone="purple" href="options/letter-request.html">
+            <span class="admin-option-icon"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i></span>
+            <span class="admin-option-title">Letter Request</span>
+          </a>
+          <a class="admin-option" data-tone="purple" href="options/guest-visit.html">
+            <span class="admin-option-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
+            <span class="admin-option-title">Guest Visit</span>
+          </a>
+          <a class="admin-option" data-tone="purple" data-option-id="inventory-request" href="options/inventory-request.html?scope=individual">
+            <span class="admin-option-icon"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></span>
+            <span class="admin-option-title">Inventory Request</span>
+          </a>
+          <a class="admin-option" data-tone="purple" href="options/policy-sop.html">
+            <span class="admin-option-icon"><i class="fa-solid fa-file-shield" aria-hidden="true"></i></span>
+            <span class="admin-option-title">Policy / SOP</span>
+          </a>
+          <a class="admin-option" data-tone="purple" data-option-id="history" href="options/history.html">
+            <span class="admin-option-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+            <span class="admin-option-title">History</span>
+          </a>
+        </div>
+      </section>
+      <section id="workplaceCalendar" class="workplace-calendar" aria-label="Calendar">
+        <div class="calendar-card">
+          <div class="attendance-schedule-header">
+            <h3 id="workplaceCalendarMonth" class="attendance-schedule-month" aria-live="polite"></h3>
+            <div class="attendance-schedule-controls">
+              <button type="button" id="workplaceCalendarInfo" class="attendance-schedule-info-trigger" data-schedule-info-trigger aria-haspopup="dialog" aria-controls="attendanceScheduleInfo"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button>
+              <button type="button" id="workplaceCalendarPrevious" aria-label="Previous month"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+              <button type="button" id="workplaceCalendarNext" aria-label="Next month"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="attendance-schedule-weekdays" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+          <div id="workplaceCalendarGrid" class="attendance-schedule-grid" role="group" aria-label="Calendar dates"></div>
+          <p id="workplaceCalendarError" class="workplace-calendar-error" role="status" hidden></p>
+        </div>
+      </section>
+      </div>
+      <div id="workplaceTeamPanel" class="workplace-scope-panel" role="tabpanel" aria-labelledby="workplaceTabTeam" hidden>
+        <section class="team-action-required-card workplace-team-actions" aria-labelledby="workplaceTeamActionTitle">
+          <div class="team-action-required-header">
+            <div class="team-action-required-heading">
+              <span class="team-action-required-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+              <span class="team-action-required-copy">
+                <strong class="team-action-required-title" id="workplaceTeamActionTitle">Action Required</strong>
+                <span class="team-action-required-description">Items that require your action</span>
+              </span>
+            </div>
+          </div>
+          <div class="team-action-required-items">
+            <a class="team-pending-approval-action" id="workplaceTeamPendingApproval" href="options/pending-approval.html?scope=team">
+              <span class="team-pending-approval-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+              <span class="team-pending-approval-copy">
+                <strong class="team-pending-approval-title">Pending Approval</strong>
+                <span class="team-pending-approval-description">Workplace requests awaiting review</span>
+              </span>
+              <span class="team-pending-approval-end"><i class="fa-solid fa-chevron-right team-pending-approval-chevron" aria-hidden="true"></i></span>
+            </a>
+          </div>
+        </section>
+        <section aria-labelledby="workplaceTeamOptionsTitle">
+          <h2 class="admin-section-title" id="workplaceTeamOptionsTitle">OPTIONS</h2>
+          <div class="admin-options">
+            <a class="admin-option" data-tone="purple" data-option-id="asset-highlight" href="options/asset-highlight.html?scope=team">
+              <span class="admin-option-icon"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span>
+              <span class="admin-option-title">Asset Highlight</span>
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <dialog id="workplaceBookingDetails" class="attendance-schedule-info-dialog workplace-booking-dialog" aria-labelledby="workplaceBookingDetailsTitle">
+      <section class="attendance-schedule-info-panel">
+        <div class="attendance-schedule-info-handle" aria-hidden="true"></div>
+        <div class="attendance-schedule-info-header">
+          <h3 id="workplaceBookingDetailsTitle">Resource Booking Details</h3>
+          <form method="dialog"><button type="submit" class="attendance-schedule-info-close" aria-label="Close booking details"></button></form>
+        </div>
+        <time id="workplaceBookingDate" class="workplace-booking-date"></time>
+        <p id="workplaceBookingFeedback" class="workplace-booking-feedback" role="status" aria-live="polite" hidden></p>
+        <div id="workplaceBookingRecords"></div>
+      </section>
+    </dialog>
+    <dialog id="attendanceScheduleInfo" class="attendance-schedule-info-dialog" aria-labelledby="workplaceCalendarInfoTitle">
+      <div class="attendance-schedule-info-panel">
+        <div class="attendance-schedule-info-handle" aria-hidden="true"></div>
+        <div class="attendance-schedule-info-header">
+          <h3 id="workplaceCalendarInfoTitle">Calendar Information</h3>
+          <form method="dialog"><button type="submit" class="attendance-schedule-info-close" aria-label="Close calendar information"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>
+        </div>
+        <div class="attendance-schedule-info-list">
+          <div><span class="attendance-schedule-info-today">7</span><span>Today</span></div>
+          <div><span class="leave-calendar-info-date is-selected">10</span><span>Selected Date</span></div>
+          <div><span class="leave-calendar-info-date is-other-month">31</span><span>Other Month</span></div>
+          <div><span class="workplace-booking-count">1</span><span>Resource Bookings</span></div>
+        </div>
+      </div>
+    </dialog>
+  </div>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

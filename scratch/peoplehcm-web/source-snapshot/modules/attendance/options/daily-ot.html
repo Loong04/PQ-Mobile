@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Daily OT</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/history-cards.css">
+  <link rel="stylesheet" href="../../../css/attendance-history.css">
+  <link rel="stylesheet" href="daily-ot-chart.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    /* Top Executive Purple Header Bar */
+    .cal-top-header { 
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); 
+      padding: 12px 16px 14px; 
+      border-bottom-left-radius: 26px; 
+      border-bottom-right-radius: 26px; 
+      box-shadow: 0 10px 28px rgba(124, 58, 237, 0.35); 
+      position: relative; 
+      z-index: 20; 
+    }
+
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.15); 
+      border: 1px solid rgba(255, 255, 255, 0.22); 
+      width: 38px; 
+      height: 38px; 
+      border-radius: 12px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      cursor: pointer; 
+      color: #ffffff; 
+      transition: all 0.2s ease;
+      backdrop-filter: blur(6px);
+    }
+    .header-btn-icon:active { transform: scale(0.92); }
+
+    /* Standard Current Filter Summary Bar */
+    .filter-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .daily-ot-date-switcher {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sm);
+    }
+    .daily-ot-date-nav {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.2s ease;
+    }
+    .daily-ot-date-nav:active { transform: scale(0.92); }
+    .daily-ot-date-trigger {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 0;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .daily-ot-date-trigger .fa-calendar-check { color: var(--purple-primary); font-size: 15px; }
+    .daily-ot-date-switcher :is(button):focus-visible {
+      outline: 2px solid var(--purple-primary);
+      outline-offset: 2px;
+    }
+
+    /* Reuse Attendance History's card, header, status and detail surfaces. */
+    .attendance-history-page .daily-ot-card { width: 100%; border-radius: 18px; color: var(--text-primary); text-align: left; font: inherit; }
+    .daily-ot-card .card-status-badge { gap: 5px; }
+    .daily-ot-card .card-status-badge i { font-size: 10px; }
+    .popout-modal-card.approved-ot-dialog { width: 100%; max-width: 380px; max-height: 85%; border-radius: 18px; }
+    .approved-ot-close { width: 30px; height: 30px; border: 1px solid rgba(255,255,255,.25); border-radius: 50%; background: rgba(255,255,255,.18); color: #fff; font-size: 20px; cursor: pointer; }
+    .approved-ot-records { padding: 14px; overflow-y: auto; min-height: 0; }
+    .approved-ot-table-shell { overflow-x: auto; background: transparent; }
+    .approved-ot-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .approved-ot-table th { padding: 12px 10px; border: 0; background: var(--purple-subtle); color: var(--purple-primary); font-size: 10px; font-weight: 800; letter-spacing: .02em; text-align: left; }
+    .approved-ot-table th:first-child { width: 46%; }
+    .approved-ot-table td { padding: 15px 10px; border: 0; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; line-height: 1.35; text-align: left; vertical-align: middle; }
+    .approved-ot-table tbody tr:nth-child(even) { background: var(--bg-input); }
+    .approved-ot-table td:first-child { overflow-wrap: anywhere; }
+    .approved-ot-value { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .approved-ot-close:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    .daily-ot-card-id {
+      margin-top: 2px;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+      font-family: monospace, sans-serif;
+      font-size: 11.5px;
+      font-weight: 700;
+      opacity: 0.8;
+    }
+
+    .daily-ot-detail-value.approved { color: #059669; }
+    .daily-ot-detail-value.unapproved { color: #d97706; }
+    [data-theme="dark"] .daily-ot-detail-value.approved { color: #34d399; }
+    [data-theme="dark"] .daily-ot-detail-value.unapproved { color: #fbbf24; }
+
+    /* Modal Backdrop Overlay */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 44px;
+      overflow: hidden;
+      padding: 16px;
+    }
+    .modal-overlay.bottom-sheet {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    /* POP-OUT MODAL CARD */
+    .popout-modal-card {
+      background: var(--bg-sheet);
+      width: 92%;
+      max-width: 390px;
+      max-height: 85vh;
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid var(--border-subtle);
+      transform: scale(0.95);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Bottom Sheet Filter Modal Content */
+    .bottom-sheet-content {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.35);
+      border: 1px solid var(--border-subtle);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Purple Gradient Modal Header */
+    .modal-header-gradient {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-header-title {
+      color: #ffffff;
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+    }
+    .modal-close-icon {
+      background: rgba(255, 255, 255, 0.2);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+      transition: background 0.2s;
+    }
+    .modal-close-icon:hover { background: rgba(255, 255, 255, 0.35); }
+
+    /* Pop-out Modal Table View */
+    .popup-details-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-sheet);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      margin-top: 8px;
+    }
+    .popup-details-table th {
+      background: rgba(168, 85, 247, 0.18);
+      color: var(--purple-primary);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    [data-theme="light"] .popup-details-table th {
+      background: #e9d5ff;
+      color: #4c1d95;
+    }
+    .popup-details-table td {
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .popup-details-table tr:last-child td { border-bottom: none; }
+
+    /* MULTI-RECORD INTERACTIVE APPROVAL TABLE DESIGN */
+    .view-mode-pill {
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .view-mode-pill.active {
+      background: rgba(124, 58, 237, 0.15);
+      color: var(--purple-primary);
+      border-color: rgba(124, 58, 237, 0.35);
+      font-weight: 800;
+    }
+
+    .approval-interactive-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      font-size: 12px;
+    }
+    .approval-interactive-table th {
+      background: rgba(168, 85, 247, 0.18);
+      color: var(--purple-primary);
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    [data-theme="light"] .approval-interactive-table th {
+      background: #e9d5ff;
+      color: #4c1d95;
+    }
+    .approval-interactive-table td {
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+    .approval-interactive-table tr:last-child td { border-bottom: none; }
+
+    .table-input-hhmm {
+      width: 68px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--purple-primary);
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 800;
+      font-family: monospace;
+      text-align: center;
+      outline: none;
+    }
+    .table-quick-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: none;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 1px;
+      transition: transform 0.15s;
+    }
+    .table-quick-btn:active { transform: scale(0.9); }
+    .table-quick-btn.match {
+      background: rgba(16, 185, 129, 0.18);
+      color: #10b981;
+    }
+    .table-quick-btn.zero {
+      background: rgba(239, 68, 68, 0.18);
+      color: #ef4444;
+    }
+
+    /* Ultra-Modern OT Approval Card */
+    .ot-approval-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .ot-approval-item-card:hover {
+      border-color: rgba(124, 58, 237, 0.3);
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.08);
+    }
+    .ot-approval-card-header {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(109, 40, 217, 0.03) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    [data-theme="dark"] .ot-approval-card-header {
+      background: rgba(124, 58, 237, 0.15);
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+    .ot-approval-card-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ot-approval-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .ot-field-col {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ot-field-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ot-field-label.purple {
+      color: var(--purple-primary);
+    }
+    .ot-actual-box {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-family: monospace;
+      font-size: 15px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .ot-approve-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 2px solid var(--purple-primary);
+      color: var(--text-primary);
+      font-family: monospace;
+      font-size: 15px;
+      font-weight: 800;
+      text-align: center;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .ot-approve-input:focus {
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+    }
+    .ot-quick-pills-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .ot-quick-pill {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .ot-quick-pill:active {
+      transform: scale(0.95);
+    }
+    .ot-quick-pill.match {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    [data-theme="light"] .ot-quick-pill.match {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+    .ot-quick-pill.zero {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    [data-theme="light"] .ot-quick-pill.zero {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .form-input-box {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .btn-purple-action {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 24px;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-purple-action:active { transform: scale(0.95); }
+
+    .toast-popup {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .toast-popup.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* AGENTS.md View Chart Button Presentation Standard */
+    .view-chart-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 12px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .view-chart-btn:active {
+      transform: scale(0.95);
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    /* Modern Enterprise Summary Table Card (Table Show) */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 110px 1fr 90px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(109, 40, 217, 0.08) 100%);
+      padding: 13px 16px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1.5px solid var(--purple-border);
+      align-items: center;
+    }
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 90px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
+    .summary-table-row:active { transform: scale(0.995); background: rgba(124, 58, 237, 0.08); }
+    
+    .summary-table-footer {
+      display: grid;
+      grid-template-columns: 110px 1fr 90px;
+      padding: 13px 16px;
+      background: rgba(124, 58, 237, 0.08);
+      border-top: 1.5px solid var(--purple-border);
+      font-size: 12.5px;
+      font-weight: 800;
+      align-items: center;
+    }
+  </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+</head>
+<body class="attendance-history-page">
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+  
+  <div class="phone-container">
+    
+    <!-- Top Executive Purple Nav Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" id="dailyOtBackButton" class="header-btn-icon" onclick="handleDailyOtBack()" aria-label="Back">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <div>
+            <h1 id="dailyOtPageTitle" style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 0;">Daily OT</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Content -->
+    <div class="main-content">
+      <section id="dailyOtListView">
+
+      <div id="dailyOtDateSwitcher" class="daily-ot-date-switcher">
+        <button type="button" class="daily-ot-date-nav" data-daily-ot-date-shift="-1" onclick="shiftDailyOtDate(-1)" aria-label="Previous Day">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button type="button" id="dailyOtDateTrigger" class="daily-ot-date-trigger" onclick="openFilterModal()" title="Change Date">
+          <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+          <span id="dailyOtCurrentDate">16 Sep 2026</span>
+        </button>
+        <button type="button" class="daily-ot-date-nav" data-daily-ot-date-shift="1" onclick="shiftDailyOtDate(1)" aria-label="Next Day">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- Standard Current Filter Summary Bar -->
+      <div class="filter-summary-bar">
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px;">
+            Current Filter
+          </div>
+          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);" id="filterSummaryText">
+            16/09/2026
+          </div>
+        </div>
+        <!-- Sliders Filter Button Trigger -->
+        <button type="button" onclick="openFilterModal()" title="Open Filter Options"
+          style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
+        </button>
+      </div>
+
+      <!-- Executive KPI Summary Card -->
+      <div class="action-summary-bar" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 14px;">
+        <!-- Top: Total Records & View Chart Button -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div>
+              <div style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Total Records</div>
+              <div style="font-size: 20px; font-weight: 900; color: var(--text-primary); line-height: 1.1;" id="kpiTotalRecordsText">130</div>
+            </div>
+          </div>
+
+          <button type="button" class="view-chart-btn" onclick="showDailyOtView('chart')">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            <span>View Chart</span>
+          </button>
+        </div>
+
+        <!-- 3 KPI Metric Pillars Grid -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+          <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 8px; text-align: center; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Unapproved OT</div>
+            <div style="font-size: 14.5px; font-weight: 900; color: #f59e0b; line-height: 1.1;" id="kpiUnapprovedHoursText">135.50</div>
+            <div style="font-size: 9.5px; font-weight: 700; color: var(--text-muted); margin-top: 2px;">Hours</div>
+          </div>
+
+          <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 8px; text-align: center; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Approved OT</div>
+            <div style="font-size: 14.5px; font-weight: 900; color: #10b981; line-height: 1.1;" id="kpiApprovedHoursText">37.50</div>
+            <div style="font-size: 9.5px; font-weight: 700; color: var(--text-muted); margin-top: 2px;">Hours</div>
+          </div>
+
+          <div style="background: var(--bg-input); border-radius: 14px; padding: 10px 8px; text-align: center; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Approve OT Cost</div>
+            <div style="font-size: 14.5px; font-weight: 900; color: var(--purple-primary); line-height: 1.1;" id="kpiApprovedCostText">773.86</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee List Container -->
+      <div id="employeeCardList">
+        <!-- Dynamically rendered by JS -->
+      </div>
+      </section>
+
+      <section id="dailyOtChartView" class="daily-ot-analytics-view" aria-label="Daily OT analytics" hidden>
+        <div class="daily-ot-analytics-card daily-ot-breakdown-card">
+          <label for="dailyOtChartMetricSelect">BREAKDOWN BY</label>
+          <div class="daily-ot-select-wrap">
+            <select id="dailyOtChartMetricSelect" onchange="changeDailyOtChartMetric(this.value)">
+              <option value="status" selected>Approval Status</option>
+              <option value="section">Section</option>
+              <option value="job">Job Title</option>
+            </select>
+            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <div class="daily-ot-analytics-card daily-ot-donut-card">
+          <div class="daily-ot-chart-heading">
+            <div>
+              <h2 id="dailyOtChartTitle">OT hours by approval status</h2>
+              <p>Share of total OT hours</p>
+            </div>
+            <button type="button" id="dailyOtViewTrend" class="daily-ot-trend-action" onclick="showDailyOtView('trend')">
+              <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+              <span>View Trend</span>
+            </button>
+          </div>
+
+          <div class="daily-ot-chart-donut" role="img" aria-label="Daily OT hours breakdown">
+            <svg viewBox="0 0 180 180" aria-hidden="true">
+              <circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle>
+              <g id="dailyOtDonutSegments"></g>
+            </svg>
+            <div class="daily-ot-chart-center">
+              <strong id="dailyOtChartTotal">173.00</strong>
+              <span id="dailyOtChartBadge">Total OT Hours</span>
+            </div>
+          </div>
+
+          <div class="daily-ot-chart-note">
+            <span class="daily-ot-chart-note-dot"></span>
+            <span id="dailyOtChartNote">Share of total OT hours</span>
+          </div>
+        </div>
+
+        <div class="daily-ot-analytics-card daily-ot-details-card">
+          <div id="dailyOtChartLegendHead" class="daily-ot-chart-legend-head" aria-hidden="true">
+            <span>STATUS</span><span>HOURS</span><span>% OF TOTAL</span>
+          </div>
+          <div id="dailyOtChartLegend" class="daily-ot-chart-legend"></div>
+        </div>
+      </section>
+
+      <section id="dailyOtTrendView" class="daily-ot-analytics-view" aria-label="Daily OT monthly trend" hidden>
+        <div class="daily-ot-analytics-card daily-ot-range-card">
+          <small>LAST 12 MONTHS</small>
+          <div class="daily-ot-range-date">
+            <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+            <strong>1 Oct 2025 – 30 Sep 2026</strong>
+          </div>
+        </div>
+
+        <button type="button" id="dailyOtTrendSummary" class="daily-ot-analytics-card daily-ot-total-card" onclick="openDailyOtLatestDetail()">
+          <span class="daily-ot-total-accent" aria-hidden="true"></span>
+          <span class="daily-ot-total-copy">
+            <strong>Total OT hours</strong>
+            <small>Selected 12 months</small>
+          </span>
+          <strong id="dailyOtTrendTotal" class="daily-ot-range-total">0.00</strong>
+        </button>
+
+        <div class="daily-ot-analytics-card daily-ot-monthly-card">
+          <div class="daily-ot-trend-heading">
+            <h2>Monthly OT hours</h2>
+            <p>October 2025 – September 2026</p>
+          </div>
+          <div class='daily-ot-trend-column-head' aria-hidden='true'>
+            <span>MONTH</span>
+            <span>HOURS</span>
+          </div>
+          <div id="dailyOtTrendBars" class="daily-ot-trend-bars"></div>
+        </div>
+      </section>
+
+      <section id="dailyOtTrendDetailView" class="daily-ot-analytics-view" aria-label="Monthly OT details" hidden>
+        <div class="daily-ot-analytics-card daily-ot-breakdown-card daily-ot-analysis-filter-card">
+          <label for="dailyOtAnalysisMetricSelect">BREAKDOWN BY</label>
+          <div class="daily-ot-select-wrap">
+            <select id="dailyOtAnalysisMetricSelect" onchange="changeDailyOtAnalysisMetric(this.value)">
+              <option value="status" selected>Approval Status</option>
+              <option value="section">Section</option>
+              <option value="job">Job Title</option>
+            </select>
+            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <div class="daily-ot-analytics-card daily-ot-analysis-donut-card">
+          <h2 id="dailyOtAnalysisTitle">OT hours by approval status</h2>
+          <p id="dailyOtAnalysisSubtitle">As At Oct 2025</p>
+          <div class="daily-ot-analysis-donut" role="img" aria-label="Selected period OT hours breakdown">
+            <svg viewBox="0 0 180 180" aria-hidden="true">
+              <circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="24"></circle>
+              <g id="dailyOtAnalysisSegments"></g>
+            </svg>
+            <div class="daily-ot-analysis-center">
+              <strong id="dailyOtAnalysisTotal">56.00</strong>
+              <span>Total OT hours</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="daily-ot-analytics-card daily-ot-details-card daily-ot-analysis-details-card">
+          <div id="dailyOtAnalysisLegendHead" class="daily-ot-chart-legend-head" aria-hidden="true">
+            <span>STATUS</span>
+            <span>HOURS</span>
+            <span>% OF TOTAL</span>
+          </div>
+          <div id="dailyOtAnalysisLegend" class="daily-ot-chart-legend"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <div class="modal-overlay" id="approvedOtDetailsModal" aria-hidden="true">
+      <section class="popout-modal-card approved-ot-dialog" role="dialog" aria-modal="true" aria-labelledby="approvedOtDetailsTitle">
+        <div class="modal-header-gradient">
+          <h2 class="modal-header-title" id="approvedOtDetailsTitle">Daily OT Details</h2>
+          <button type="button" id="approvedOtDetailsClose" class="approved-ot-close" aria-label="Close OT details">&times;</button>
+        </div>
+        <div id="approvedOtDetailsRecords" class="approved-ot-records"></div>
+      </section>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+       MODAL 1: BOTTOM SHEET FILTER MODAL (No Arrows)
+       ======================================================== -->
+  <div class="modal-overlay bottom-sheet" id="filterModalOverlay" onclick="closeFilterModal(event)">
+    <div class="bottom-sheet-content" onclick="event.stopPropagation()">
+      <div style="width: 36px; height: 4px; background: var(--border-subtle); border-radius: 4px; margin: 12px auto 0; opacity: 0.7;"></div>
+      
+      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Data Filter</h3>
+        <button type="button" onclick="resetFilterModal()" style="padding: 6px 14px; border-radius: 20px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
+        </button>
+      </div>
+
+      <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 14px; overflow-y: auto;">
+        
+        <!-- Date Input (No Arrows) -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Date:</label>
+          <input type="text" id="filterDateInput" value="16/09/2026" class="form-input-box" style="font-family: inherit; font-size: 13.5px; font-weight: 700;">
+        </div>
+
+        <!-- Search Keyword -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Search Keyword:</label>
+          <input type="text" id="filterKeywordInput" placeholder="Employee Number or Name" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
+        </div>
+
+        <!-- Section -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Section:</label>
+          <select id="filterSectionSelect" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
+            <option value="all">- All Sections -</option>
+            <option value="production">Production</option>
+            <option value="assembly">Assembly</option>
+            <option value="qc">Quality Control</option>
+          </select>
+        </div>
+
+        <!-- Job Title -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Job Title:</label>
+          <select id="filterJobSelect" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
+            <option value="all">- All Jobs -</option>
+            <option value="technician">Technician</option>
+            <option value="operator">Operator</option>
+            <option value="supervisor">Supervisor</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Status:</label>
+          <select id="filterStatusSelect" class="form-input-box" style="font-family: inherit; font-size: 13.5px;">
+            <option value="all">All</option>
+            <option value="approved">Approved</option>
+            <option value="unapproved">Unapproved</option>
+          </select>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <button type="button" onclick="applyFilterModal()" style="width: 100%; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35); transition: all 0.2s ease;">
+            <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
+            <span>Apply Filter</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+       MODAL 4: VIEW CHART MODAL
+       ======================================================== -->
+  <div class="modal-overlay" id="legacyDailyOtChartPopup" hidden aria-hidden="true">
+    <div class="popout-modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header-gradient">
+        <h2 class="modal-header-title">OT Distribution Chart</h2>
+        <div class="modal-close-icon" onclick="closeModalDirect('chartModal')">
+          <i class="fa-solid fa-xmark" style="color: #ffffff; font-size: 14px;"></i>
+        </div>
+      </div>
+      <div style="padding: 24px; text-align: center;">
+        <div style="width: 130px; height: 130px; border-radius: 50%; background: conic-gradient(#10b981 0% 22%, #f59e0b 22% 100%); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">
+            173.0h Total
+          </div>
+        </div>
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; justify-content: center; gap: 12px;">
+          <span style="color: #10b981;">● Approved: 37.5h</span>
+          <span style="color: #f59e0b;">● Unapproved: 135.5h</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastPopup" class="toast-popup">Action completed successfully!</div>
+
+
+  <script src="daily-ot-data.js"></script>
+  <script src="daily-ot-chart.js"></script>
+
+  <!-- JavaScript Core Engine -->
+  <script>
+    let masterStaffList = window.createDailyOtRecords();
+    let dailyOtCurrentDate = new Date(2026, 8, 16);
+    const dailyOtMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    function formatDailyOtDate(date) {
+      return `${date.getDate()} ${dailyOtMonthNames[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function formatDailyOtFilterDate(date) {
+      return [
+        String(date.getDate()).padStart(2, '0'),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        date.getFullYear()
+      ].join('/');
+    }
+
+    function syncDailyOtDateUi() {
+      const displayDate = formatDailyOtDate(dailyOtCurrentDate);
+      const filterDate = formatDailyOtFilterDate(dailyOtCurrentDate);
+      document.getElementById('dailyOtCurrentDate').textContent = displayDate;
+      document.getElementById('filterDateInput').value = filterDate;
+      document.getElementById('filterSummaryText').textContent = filterDate;
+    }
+
+    function shiftDailyOtDate(deltaDays) {
+      dailyOtCurrentDate.setDate(dailyOtCurrentDate.getDate() + deltaDays);
+      syncDailyOtDateUi();
+    }
+
+    function syncDailyOtDateFromFilter() {
+      const value = document.getElementById('filterDateInput').value.trim();
+      const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!match) return;
+      const nextDate = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+      if (Number.isNaN(nextDate.getTime())) return;
+      dailyOtCurrentDate = nextDate;
+      syncDailyOtDateUi();
+    }
+
+    // Render Employee Cards
+    function renderList(listData) {
+      const container = document.getElementById('employeeCardList');
+      if (!container) return;
+      container.innerHTML = '';
+      const params = new URLSearchParams(window.location.search);
+      const currentTheme = document.documentElement.dataset.theme || params.get('theme') || 'dark';
+
+      listData.forEach(emp => {
+        const isUnapproved = parseFloat(emp.unapprovedHours) > 0;
+
+        const card = document.createElement(isUnapproved ? 'a' : 'button');
+        card.className = `history-card-item daily-ot-card ${isUnapproved ? 'unapproved' : ''}`;
+        card.dataset.status = isUnapproved ? 'pending-review' : 'normal';
+        if (isUnapproved) {
+          card.href = `daily-ot-details.html?employee=${encodeURIComponent(emp.id)}&theme=${encodeURIComponent(currentTheme)}`;
+          card.addEventListener('click', () => {
+            const theme = document.documentElement.dataset.theme || 'dark';
+            card.href = `daily-ot-details.html?employee=${encodeURIComponent(emp.id)}&theme=${encodeURIComponent(theme)}`;
+          });
+        } else {
+          card.type = 'button';
+          card.setAttribute('aria-haspopup', 'dialog');
+          card.setAttribute('aria-controls', 'approvedOtDetailsModal');
+          card.addEventListener('click', () => openApprovedOtDetails(emp.id, card));
+        }
+
+        card.innerHTML = `
+          <div class="history-card-header daily-ot-card-header">
+            <div class="history-card-heading">
+              <div class="history-card-title daily-ot-card-name">${emp.name}</div>
+              <div class="daily-ot-card-id">#${emp.id}</div>
+            </div>
+            <span class="card-status-badge ${isUnapproved ? 'unapproved' : 'approved'}">
+              <i class="fa-solid ${isUnapproved ? 'fa-clock-rotate-left' : 'fa-circle-check'}" aria-hidden="true"></i>
+              ${isUnapproved ? 'Unapproved' : 'Approved'}
+            </span>
+          </div>
+          <div class="history-card-details daily-ot-card-details">
+            <div class="attendance-history-fact daily-ot-detail-row">
+              <span class="attendance-history-fact-label daily-ot-detail-label">Shift</span>
+              <span class="attendance-history-fact-value daily-ot-detail-value">${emp.shift}</span>
+            </div>
+            <div class="attendance-history-fact daily-ot-detail-row">
+              <span class="attendance-history-fact-label daily-ot-detail-label">Clock Time</span>
+              <span class="attendance-history-fact-value daily-ot-detail-value">${emp.clockTime}</span>
+            </div>
+            <div class="attendance-history-fact daily-ot-detail-row">
+              <span class="attendance-history-fact-label daily-ot-detail-label">Actual Hours</span>
+              <span class="attendance-history-fact-value daily-ot-detail-value">${emp.actualHours}</span>
+            </div>
+            <div class="attendance-history-fact daily-ot-detail-row">
+              <span class="attendance-history-fact-label daily-ot-detail-label">Approved Hours</span>
+              <span class="attendance-history-fact-value daily-ot-detail-value approved">${emp.approvedHours}</span>
+            </div>
+            <div class="attendance-history-fact daily-ot-detail-row">
+              <span class="attendance-history-fact-label daily-ot-detail-label">Unapproved Hours</span>
+              <span class="attendance-history-fact-value daily-ot-detail-value ${isUnapproved ? 'unapproved' : ''}">${emp.unapprovedHours}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    let approvedOtTrigger = null;
+    function openApprovedOtDetails(employeeId, trigger) {
+      const employee = window.createDailyOtRecords().find(record => record.id === employeeId);
+      if (!employee) return;
+      approvedOtTrigger = trigger;
+      const container = document.getElementById('approvedOtDetailsRecords');
+      container.replaceChildren();
+      const tableShell = document.createElement('div');
+      tableShell.className = 'approved-ot-table-shell';
+      const table = document.createElement('table');
+      table.className = 'approved-ot-table';
+      const tableHead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      ['Description', 'Actual', 'Approve'].forEach(title => {
+        const header = document.createElement('th');
+        header.scope = 'col';
+        header.textContent = title;
+        headerRow.appendChild(header);
+      });
+      tableHead.appendChild(headerRow);
+      const tableBody = document.createElement('tbody');
+      employee.items.forEach(item => {
+        const row = document.createElement('tr');
+        const description = document.createElement('td');
+        description.textContent = item.description;
+        row.appendChild(description);
+        [item.actual, item.approve].forEach(value => {
+          const cell = document.createElement('td');
+          cell.className = 'approved-ot-value';
+          cell.textContent = value;
+          row.appendChild(cell);
+        });
+        tableBody.appendChild(row);
+      });
+      table.append(tableHead, tableBody);
+      tableShell.appendChild(table);
+      container.appendChild(tableShell);
+      document.getElementById('approvedOtDetailsModal').setAttribute('aria-hidden', 'false');
+      openModal('approvedOtDetailsModal');
+      document.querySelectorAll('.phone-container > .main-content, .phone-container > .cal-top-header, .phone-container > phone-bottom-nav').forEach(node => { node.inert = true; });
+      document.getElementById('approvedOtDetailsClose').focus();
+    }
+    function closeApprovedOtDetails() {
+      document.querySelectorAll('.phone-container > .main-content, .phone-container > .cal-top-header, .phone-container > phone-bottom-nav').forEach(node => { node.inert = false; });
+      approvedOtTrigger?.focus({ preventScroll: true });
+      document.getElementById('approvedOtDetailsModal').setAttribute('aria-hidden', 'true');
+      closeModalDirect('approvedOtDetailsModal');
+    }
+    document.getElementById('approvedOtDetailsClose').addEventListener('click', closeApprovedOtDetails);
+    document.getElementById('approvedOtDetailsModal').addEventListener('click', event => {
+      if (event.target === event.currentTarget) closeApprovedOtDetails();
+    });
+    document.addEventListener('keydown', event => {
+      if (document.getElementById('approvedOtDetailsModal').getAttribute('aria-hidden') !== 'false') return;
+      if (event.key === 'Escape') closeApprovedOtDetails();
+      if (event.key === 'Tab') { event.preventDefault(); document.getElementById('approvedOtDetailsClose').focus(); }
+    });
+
+    // Update KPI Header Text
+    function updateKpiTotals() {
+      let unappSum = 0;
+      let appSum = 0;
+      masterStaffList.forEach(e => {
+        unappSum += parseFloat(e.unapprovedHours);
+        appSum += parseFloat(e.approvedHours);
+      });
+
+      const unappEl = document.getElementById('kpiUnapprovedHoursText');
+      if (unappEl) unappEl.innerText = unappSum.toFixed(2);
+
+      const appEl = document.getElementById('kpiApprovedHoursText');
+      if (appEl) appEl.innerText = appSum.toFixed(2);
+    }
+
+    // Modal Display Logic
+    function openFilterModal() {
+      openModal('filterModalOverlay');
+    }
+    function closeFilterModal(e) {
+      if (e.target.id === 'filterModalOverlay' || e === true) {
+        closeModalDirect('filterModalOverlay');
+      }
+    }
+    function resetFilterModal() {
+      document.getElementById('filterDateInput').value = '16/09/2026';
+      dailyOtCurrentDate = new Date(2026, 8, 16);
+      syncDailyOtDateUi();
+      document.getElementById('filterKeywordInput').value = '';
+      document.getElementById('filterSectionSelect').value = 'all';
+      document.getElementById('filterJobSelect').value = 'all';
+      document.getElementById('filterStatusSelect').value = 'all';
+      closeModalDirect('filterModalOverlay');
+      renderList(masterStaffList);
+    }
+    function applyFilterModal() {
+      syncDailyOtDateFromFilter();
+      const keyword = (document.getElementById('filterKeywordInput')?.value || '').toLowerCase().trim();
+      const section = document.getElementById('filterSectionSelect')?.value || 'all';
+      const job = document.getElementById('filterJobSelect')?.value || 'all';
+      const status = document.getElementById('filterStatusSelect')?.value || 'all';
+
+      let filtered = masterStaffList.filter(emp => {
+        const matchKw = !keyword || emp.id.toLowerCase().includes(keyword) || emp.name.toLowerCase().includes(keyword);
+        const matchSec = section === 'all' || emp.section === section;
+        const matchJob = job === 'all' || emp.job === job;
+        const isUnapp = parseFloat(emp.unapprovedHours) > 0;
+        const matchStatus = status === 'all' || (status === 'approved' && !isUnapp) || (status === 'unapproved' && isUnapp);
+        return matchKw && matchSec && matchJob && matchStatus;
+      });
+
+      renderList(filtered);
+      closeModalDirect('filterModalOverlay');
+      showToastPopup('Filter applied');
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = 'flex';
+      void el.offsetHeight; // Force layout reflow for instant 60fps CSS transitions
+      el.style.opacity = '1';
+      const inner = el.querySelector('.popout-modal-card, .bottom-sheet-content');
+      if (inner) {
+        inner.style.transform = inner.classList.contains('bottom-sheet-content') ? 'translateY(0)' : 'scale(1)';
+        inner.style.opacity = '1';
+      }
+    }
+
+    function closeModalOnOverlay(e, id) {
+      if (e.target.classList.contains('modal-overlay')) {
+        closeModalDirect(id);
+      }
+    }
+
+    function closeModalDirect(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.opacity = '0';
+      const inner = el.querySelector('.popout-modal-card, .bottom-sheet-content');
+      if (inner) {
+        inner.style.transform = inner.classList.contains('bottom-sheet-content') ? 'translateY(100%)' : 'scale(0.95)';
+        inner.style.opacity = '0';
+      }
+      setTimeout(() => { el.style.display = 'none'; }, 250);
+    }
+
+    function showToastPopup(msg) {
+      const toast = document.getElementById('toastPopup');
+      if (!toast) return;
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderList(masterStaffList);
+    });
+  </script>
+</body>
+</html>

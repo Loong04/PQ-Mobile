@@ -1,0 +1,642 @@
+
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css"><!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Behaviour &amp; KPI Analytics - PeopleHCM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
+  <script>
+    const savedTheme = localStorage.getItem('peoplehcm_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body style="background: var(--bg-body); color: var(--text-primary); font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;">
+
+  <!-- Desktop Switcher Bar (Light/Dark Mode outside phone frame) -->
+  <preview-top-bar active-page="me"></preview-top-bar>
+
+  <!-- Outer Mobile Viewport Frame -->
+  <div class="phone-container" style="background: var(--bg-phone); width: 100%; max-width: 420px; min-height: 915px; border-radius: 44px; position: relative; overflow: hidden; box-shadow: var(--shadow-phone); border: 1px solid var(--border-subtle); display: flex; flex-direction: column;">
+    
+    <!-- Phone Top Status Bar -->
+    <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+    <!-- Executive Gradient Header Block -->
+    <div class="wb-header-wrapper" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 14px 16px 16px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);">
+      
+      <!-- Top Row: Back Button & Centered Title -->
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <button class="bonus-back-btn" onclick="handleHeaderBack()" aria-label="Go Back" title="Return" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 10px; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+
+        <div style="text-align: center; flex: 1; padding: 0 8px;">
+          <h2 id="topHeaderTitle" style="font-size: 16px; font-weight: 900; color: #ffffff; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Attendance Rate</h2>
+        </div>
+
+        <div style="width: 36px; flex-shrink: 0;"></div>
+      </div>
+
+    </div>
+
+    <!-- Scrollable Main Body Content -->
+    <div class="main-content" style="overflow-y: auto; flex: 1; padding: 16px;">
+      <div class="wb-analytics-container">
+
+        <!-- Main Clean Beautified Chart Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 16px;">
+          
+          <!-- Filter Dropdown Select (9 Specified Metrics) -->
+          <div id="metricFilterBlock">
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px;">Select Behaviour Metric</label>
+            <div style="position: relative;">
+              <select id="metricFilterSelect" onchange="changeFilterMetric(this.value)" style="width: 100%; padding: 12px 14px; background: var(--bg-phone); color: var(--text-primary); border: 1.5px solid var(--border-subtle); border-radius: 14px; font-size: 13px; font-weight: 800; outline: none; cursor: pointer; appearance: auto; transition: all 0.2s ease;">
+                <option value="attendance" selected>Attendance Rate</option>
+                <option value="mc_leave">MC Leave Days</option>
+                <option value="late_in">Late In Hours</option>
+                <option value="absent_days">Absent Days</option>
+                <option value="short_notice">Short Notice Leave Days</option>
+                <option value="overtime">Overtime Hours</option>
+                <option value="ir_cases">IR Cases</option>
+                <option value="training_hours">Training Hours</option>
+                <option value="performance">Performance Scores</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Chart Title Header (Centered) -->
+          <div style="text-align: center; padding-top: 2px;">
+            <div id="chartTitleWrap">
+              <h3 id="chartMainTitle" style="font-size: 17px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px; line-height: 1.2;">Attendance Rate</h3>
+            </div>
+            <p id="chartSubTitle" style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin: 0;">Between 2022 and 2026 for EBB01</p>
+          </div>
+
+          <!-- Legend Row -->
+          <div id="chartLegendRow" style="display: flex; align-items: center; justify-content: center; gap: 20px; background: var(--bg-phone); padding: 10px 16px; border-radius: 14px; border: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 800; color: var(--text-primary);">
+              <span style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%); display: inline-block; box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);"></span>
+              <span>Staff Total</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 800; color: var(--text-primary);">
+              <span style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%); display: inline-block; box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);"></span>
+              <span>Company Average</span>
+            </div>
+          </div>
+
+          <!-- Beautified Container (Bars for L1/L2, Pie Chart for L3) -->
+          <div id="beautifiedChartBody" style="display: flex; flex-direction: column; gap: 16px; padding: 4px 0;">
+            <!-- Dynamically populated by JS -->
+          </div>
+
+          <!-- Axis Scale Footer -->
+          <div id="chartScaleFooter" style="border-top: 1px dashed var(--border-subtle); padding-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <div id="scaleTicksRow" style="width: 100%; display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 800; color: var(--text-muted); padding: 0 48px 4px 38px;">
+              <span>0</span>
+              <span>50</span>
+              <span>100</span>
+            </div>
+            <span id="chartFooterMetricName" style="font-size: 11.5px; font-weight: 900; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.8px;">Attendance Rate</span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Options Bottom Sheet Modal -->
+    <div class="indicators-overlay" id="workOptionsOverlay" onclick="toggleWorkOptions(false)" style="display: none;">
+      <div class="indicators-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div class="sheet-title">
+            <h3>Behaviour Analytics Options</h3>
+            <p>Manage reports or settings</p>
+          </div>
+          <button class="sheet-close-btn" onclick="toggleWorkOptions(false)">✕</button>
+        </div>
+        <div style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+          <button class="change-history-item" style="cursor: pointer; margin-bottom: 0; text-align: left; width: 100%; border: 1px solid var(--border-subtle);" onclick="toggleWorkOptions(false); showToast('📄', 'Exporting KPI Report...')">
+            <div style="font-size: 20px; margin-bottom: 4px;">📄</div>
+            <div class="change-history-title">Export PDF Report</div>
+            <div class="change-history-date">Download full KPI &amp; Behaviour Audit</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Toast Alert -->
+    <div class="bonus-toast" id="bonusToast">
+      <span id="toastIcon">📄</span>
+      <span id="toastMessage">Report exported successfully!</span>
+    </div>
+
+  </div>
+
+  <script>
+    // State Variables for 3-Layer System
+    let currentLayer = 1; // 1: Annual (Years), 2: Monthly (Months), 3: Weekly (Pie Chart)
+    let selectedYear = '2026';
+    let selectedMonth = 'Mar';
+    let currentMetricKey = 'attendance';
+
+    // Header Back Navigation Helper (3-Layer Navigation)
+    function handleHeaderBack() {
+      if (currentLayer === 3) {
+        currentLayer = 2;
+        renderChart();
+        showToast('📅', `Returned to ${selectedYear} Monthly View`);
+      } else if (currentLayer === 2) {
+        currentLayer = 1;
+        renderChart();
+        showToast('📊', 'Returned to Annual View');
+      } else {
+        location.href = 'me.html';
+      }
+    }
+
+    // Universal Overlay Toggle helper
+    function toggleOverlay(overlayId, open) {
+      const overlay = document.getElementById(overlayId);
+      if (overlay) {
+        if (open) {
+          overlay.style.display = 'flex';
+          void overlay.offsetHeight;
+          overlay.classList.add('active');
+        } else {
+          overlay.classList.remove('active');
+          setTimeout(() => {
+            if (!overlay.classList.contains('active')) {
+              overlay.style.display = 'none';
+            }
+          }, 200);
+        }
+      }
+    }
+
+    function toggleWorkOptions(open) {
+      toggleOverlay('workOptionsOverlay', open);
+    }
+
+    function showToast(icon, message) {
+      const toast = document.getElementById('bonusToast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastMessage = document.getElementById('toastMessage');
+      if (!toast) return;
+
+      if (toastIcon) toastIcon.innerText = icon;
+      if (toastMessage) toastMessage.innerText = message;
+
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+
+    // Historical Datasets for all 9 Filter Metrics
+    const METRIC_DATASETS = {
+      attendance: {
+        title: 'Attendance Rate',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Attendance Rate',
+        unit: '%',
+        max: 100,
+        ticks: ['0', '50', '100'],
+        years: [
+          { year: '2026', company: 75.48, staff: 89.56 },
+          { year: '2025', company: 94.03, staff: 91.90 },
+          { year: '2024', company: 64.22, staff: 66.02 },
+          { year: '2023', company: 94.43, staff: 93.82 },
+          { year: '2022', company: 83.99, staff: 83.52 }
+        ]
+      },
+      mc_leave: {
+        title: 'MC Leave Days',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'MC Leave Days (Days)',
+        unit: ' Days',
+        max: 10,
+        ticks: ['0', '5', '10 Days'],
+        years: [
+          { year: '2026', company: 5.2, staff: 3.0 },
+          { year: '2025', company: 4.8, staff: 2.5 },
+          { year: '2024', company: 7.1, staff: 6.0 },
+          { year: '2023', company: 4.5, staff: 2.0 },
+          { year: '2022', company: 5.0, staff: 4.0 }
+        ]
+      },
+      late_in: {
+        title: 'Late In Hours',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Late In Hours (Hours)',
+        unit: ' hrs',
+        max: 10,
+        ticks: ['0', '5', '10 hrs'],
+        years: [
+          { year: '2026', company: 4.2, staff: 1.5 },
+          { year: '2025', company: 3.8, staff: 2.0 },
+          { year: '2024', company: 6.4, staff: 5.5 },
+          { year: '2023', company: 3.5, staff: 1.0 },
+          { year: '2022', company: 4.9, staff: 3.0 }
+        ]
+      },
+      absent_days: {
+        title: 'Absent Days',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Absent Days (Days)',
+        unit: ' Days',
+        max: 5,
+        ticks: ['0', '2.5', '5 Days'],
+        years: [
+          { year: '2026', company: 1.2, staff: 0.0 },
+          { year: '2025', company: 1.0, staff: 0.0 },
+          { year: '2024', company: 2.1, staff: 1.0 },
+          { year: '2023', company: 0.8, staff: 0.0 },
+          { year: '2022', company: 1.5, staff: 1.0 }
+        ]
+      },
+      short_notice: {
+        title: 'Short Notice Leave Days',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Short Notice Leave Days (Days)',
+        unit: ' Days',
+        max: 5,
+        ticks: ['0', '2.5', '5 Days'],
+        years: [
+          { year: '2026', company: 2.5, staff: 1.0 },
+          { year: '2025', company: 2.2, staff: 1.0 },
+          { year: '2024', company: 3.8, staff: 3.0 },
+          { year: '2023', company: 2.0, staff: 0.5 },
+          { year: '2022', company: 2.7, staff: 2.0 }
+        ]
+      },
+      overtime: {
+        title: 'Overtime Hours',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Overtime Hours (Hours)',
+        unit: ' hrs',
+        max: 50,
+        ticks: ['0', '25', '50 hrs'],
+        years: [
+          { year: '2026', company: 18.5, staff: 28.5 },
+          { year: '2025', company: 22.5, staff: 34.0 },
+          { year: '2024', company: 14.8, staff: 15.0 },
+          { year: '2023', company: 26.0, staff: 42.0 },
+          { year: '2022', company: 19.5, staff: 20.0 }
+        ]
+      },
+      ir_cases: {
+        title: 'IR Cases',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Industrial Relations Cases',
+        unit: ' Cases',
+        max: 2,
+        ticks: ['0', '1', '2 Cases'],
+        years: [
+          { year: '2026', company: 0.4, staff: 0.0 },
+          { year: '2025', company: 0.3, staff: 0.0 },
+          { year: '2024', company: 0.6, staff: 0.0 },
+          { year: '2023', company: 0.2, staff: 0.0 },
+          { year: '2022', company: 0.5, staff: 0.0 }
+        ]
+      },
+      training_hours: {
+        title: 'Training Hours',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Training Hours (Hours)',
+        unit: ' hrs',
+        max: 60,
+        ticks: ['0', '30', '60 hrs'],
+        years: [
+          { year: '2026', company: 32.0, staff: 45.0 },
+          { year: '2025', company: 35.5, staff: 50.0 },
+          { year: '2024', company: 28.0, staff: 24.0 },
+          { year: '2023', company: 30.0, staff: 40.0 },
+          { year: '2022', company: 29.5, staff: 36.0 }
+        ]
+      },
+      performance: {
+        title: 'Performance Scores',
+        subtitle: 'Between 2022 and 2026 for EBB01',
+        footer: 'Performance Scores (Points)',
+        unit: ' pts',
+        max: 100,
+        ticks: ['0', '50', '100 pts'],
+        years: [
+          { year: '2026', company: 85.20, staff: 98.50 },
+          { year: '2025', company: 86.00, staff: 96.00 },
+          { year: '2024', company: 80.50, staff: 88.00 },
+          { year: '2023', company: 84.80, staff: 94.50 },
+          { year: '2022', company: 82.00, staff: 90.00 }
+        ]
+      }
+    };
+
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const MONTH_OFFSETS_COMPANY = [-2.1, +1.4, -0.8, +2.5, +0.6, -1.9, +1.2, -2.4, +0.9, +1.8, -0.5, +0.3];
+    const MONTH_OFFSETS_STAFF   = [+1.5, -0.9, +2.2, -1.4, +1.8, +0.5, -2.1, +1.0, -1.6, +2.0, -0.8, +1.2];
+
+    function getMonthlyData(metricKey, yearStr) {
+      const dataset = METRIC_DATASETS[metricKey] || METRIC_DATASETS.attendance;
+      const yearObj = dataset.years.find(y => y.year === yearStr) || dataset.years[0];
+
+      return MONTH_NAMES.map((mName, idx) => {
+        let compOffset = MONTH_OFFSETS_COMPANY[idx];
+        let staffOffset = MONTH_OFFSETS_STAFF[idx];
+
+        if (dataset.max <= 5) {
+          compOffset *= 0.15;
+          staffOffset *= 0.15;
+        } else if (dataset.max <= 10) {
+          compOffset *= 0.3;
+          staffOffset *= 0.3;
+        } else if (dataset.max <= 60) {
+          compOffset *= 0.6;
+          staffOffset *= 0.6;
+        }
+
+        let companyVal = Math.min(dataset.max, Math.max(0, yearObj.company + compOffset));
+        let staffVal = Math.min(dataset.max, Math.max(0, yearObj.staff + staffOffset));
+
+        return {
+          label: mName,
+          company: companyVal,
+          staff: staffVal
+        };
+      });
+    }
+
+    function getWeeklyData(metricKey, yearStr, monthName) {
+      const dataset = METRIC_DATASETS[metricKey] || METRIC_DATASETS.attendance;
+      const yearObj = dataset.years.find(y => y.year === yearStr) || dataset.years[0];
+      const mIndex = MONTH_NAMES.indexOf(monthName);
+      
+      let compOffset = MONTH_OFFSETS_COMPANY[mIndex >= 0 ? mIndex : 0];
+      let staffOffset = MONTH_OFFSETS_STAFF[mIndex >= 0 ? mIndex : 0];
+      if (dataset.max <= 5) { compOffset *= 0.15; staffOffset *= 0.15; }
+      else if (dataset.max <= 10) { compOffset *= 0.3; staffOffset *= 0.3; }
+      else if (dataset.max <= 60) { compOffset *= 0.6; staffOffset *= 0.6; }
+
+      const monthStaff = Math.min(dataset.max, Math.max(0, yearObj.staff + staffOffset));
+
+      if (dataset.unit === '%' || dataset.unit === ' pts') {
+        const totalMonthHours = 160 * (monthStaff / (dataset.max || 100));
+        return [
+          { week: 'Week 1', staff: Math.round(totalMonthHours * 0.26 * 10) / 10 },
+          { week: 'Week 2', staff: Math.round(totalMonthHours * 0.24 * 10) / 10 },
+          { week: 'Week 3', staff: Math.round(totalMonthHours * 0.27 * 10) / 10 },
+          { week: 'Week 4', staff: Math.round(totalMonthHours * 0.23 * 10) / 10 }
+        ];
+      } else {
+        const weekFactors = [0.26, 0.24, 0.27, 0.23];
+        return [1, 2, 3, 4].map(wNum => ({
+          week: `Week ${wNum}`,
+          staff: Math.round(monthStaff * weekFactors[wNum - 1] * 10) / 10
+        }));
+      }
+    }
+
+    function changeFilterMetric(metricKey) {
+      if (currentLayer > 1) return; // Metric is locked during drilldown
+      currentMetricKey = metricKey;
+      renderChart();
+    }
+
+    function selectYearDrilldown(year) {
+      selectedYear = year;
+      currentLayer = 2;
+      renderChart();
+      showToast('📅', `Viewing ${year} monthly breakdown`);
+    }
+
+    function selectMonthDrilldown(month) {
+      selectedMonth = month;
+      currentLayer = 3;
+      renderChart();
+      showToast('🥧', `Viewing ${month} ${selectedYear} weekly breakdown`);
+    }
+
+        function renderLayer3PieChart(weeksData, dataset) {
+      const colors = ['#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#8b5cf6'];
+      const totalStaffSum = weeksData.reduce((acc, w) => acc + w.staff, 0);
+      const totalStaffStr = Number.isInteger(totalStaffSum) ? totalStaffSum : totalStaffSum.toFixed(1);
+
+      const layer3Unit = (dataset.unit === '%' || dataset.unit === ' pts') ? ' hrs' : dataset.unit;
+      const layer3Label = layer3Unit.includes('Days') ? 'Total Days' : (layer3Unit.includes('Cases') ? 'Total Cases' : 'Total Hours');
+
+      const C = 439.82; // 2 * pi * 70
+      let currentOffset = 0;
+
+      const circles = weeksData.map((w, idx) => {
+        const pct = totalStaffSum > 0 ? (w.staff / totalStaffSum) : 0.25;
+        const dashLen = pct * C;
+        const dashOffset = -currentOffset;
+        currentOffset += dashLen;
+
+        return `<circle cx="90" cy="90" r="70" fill="transparent" stroke="${colors[idx % colors.length]}" stroke-width="22" stroke-dasharray="${dashLen.toFixed(2)} ${(C - dashLen).toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}" style="transition: all 0.5s ease;"></circle>`;
+      }).join('');
+
+      return `
+        <div style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+          
+          <!-- Donut Chart Card -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 20px 24px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center;">
+
+            <!-- SVG Donut Chart -->
+            <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 195px; height: 195px; margin: 10px 0 14px;">
+              <svg width="195" height="195" viewBox="0 0 180 180" style="transform: rotate(-90deg); filter: drop-shadow(0 6px 20px rgba(16, 185, 129, 0.15));">
+                <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22"></circle>
+                ${circles}
+              </svg>
+              <div style="position: absolute; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 105px;">
+                <div style="font-size: 20px; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap;">${totalStaffStr}<span style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-left: 2px;">${layer3Unit}</span></div>
+                <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.2px;">${layer3Label}</div>
+              </div>
+            </div>
+
+            <!-- Note under chart -->
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple-primary);"></span>
+              <span>Weekly breakdown for ${selectedMonth} ${selectedYear}</span>
+            </div>
+          </div>
+
+          <!-- Structured Data Table Listing Card ("整齐的数据表格") -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 28px; padding: 22px 18px 18px; box-shadow: var(--shadow-card);">
+            <!-- Table Header -->
+            <div style="display: grid; grid-template-columns: 1fr 75px 85px; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">
+              <div>WEEK</div>
+              <div style="text-align: right;">AMOUNT</div>
+              <div style="text-align: right;">% OF TOTAL</div>
+            </div>
+
+            <!-- Table Body Rows -->
+            <div style="display: flex; flex-direction: column; gap: 16px; padding-top: 16px;">
+              ${weeksData.map((w, idx) => {
+                const sStr = Number.isInteger(w.staff) ? w.staff : w.staff.toFixed(1);
+                const pctVal = totalStaffSum > 0 ? (w.staff / totalStaffSum * 100).toFixed(2) : '25.00';
+                return `
+                  <div style="display: grid; grid-template-columns: 1fr 75px 85px; gap: 10px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: ${colors[idx % colors.length]}; flex-shrink: 0;"></span>
+                      <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${w.week}</span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: right;">${sStr}${layer3Unit}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: right;">${pctVal}%</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function selectYearDrilldown(year) {
+      selectedYear = year;
+      currentLayer = 2;
+      renderChart();
+      showToast('📅', `Viewing ${year} monthly breakdown`);
+    }
+
+    function selectMonthDrilldown(month) {
+      selectedMonth = month;
+      currentLayer = 3;
+      renderChart();
+      showToast('🥧', `Viewing ${month} ${selectedYear} weekly breakdown`);
+    }
+
+
+
+    function renderChart() {
+      const dataset = METRIC_DATASETS[currentMetricKey] || METRIC_DATASETS.attendance;
+      const topTitleEl = document.getElementById('topHeaderTitle');
+      const titleWrapEl = document.getElementById('chartTitleWrap');
+      const subEl = document.getElementById('chartSubTitle');
+      const filterBlockEl = document.getElementById('metricFilterBlock');
+      const legendRowEl = document.getElementById('chartLegendRow');
+      const scaleFooterEl = document.getElementById('chartScaleFooter');
+      const footerEl = document.getElementById('chartFooterMetricName');
+      const ticksRow = document.getElementById('scaleTicksRow');
+      const container = document.getElementById('beautifiedChartBody');
+
+      // Metric Filter Block Visibility (Visible in L1, Hidden during drilldown in L2 & L3)
+      if (filterBlockEl) {
+        filterBlockEl.style.display = currentLayer === 1 ? 'block' : 'none';
+      }
+
+      // Update Top Purple Header Title & Subtitles according to Layer
+      if (currentLayer === 1) {
+        if (topTitleEl) topTitleEl.innerText = dataset.title;
+        if (titleWrapEl) titleWrapEl.innerHTML = `<h3 style="font-size: 17px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px; line-height: 1.2;">${dataset.title}</h3>`;
+        if (subEl) subEl.innerText = `Between 2022 and 2026 for EBB01`;
+        if (legendRowEl) legendRowEl.style.display = 'flex';
+        if (scaleFooterEl) scaleFooterEl.style.display = 'flex';
+        if (footerEl) footerEl.innerText = dataset.footer;
+      } else if (currentLayer === 2) {
+        if (topTitleEl) topTitleEl.innerText = `Monthly ${dataset.title} (${selectedYear})`;
+        if (titleWrapEl) titleWrapEl.innerHTML = `<h3 style="font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px; line-height: 1.2;">Monthly ${dataset.title} (${selectedYear})</h3>`;
+        if (subEl) subEl.innerText = `Jan to Dec ${selectedYear} for EBB01`;
+        if (legendRowEl) legendRowEl.style.display = 'flex';
+        if (scaleFooterEl) scaleFooterEl.style.display = 'flex';
+        if (footerEl) footerEl.innerText = `Monthly ${dataset.footer} (${selectedYear})`;
+      } else if (currentLayer === 3) {
+        if (topTitleEl) topTitleEl.innerText = `Weekly ${dataset.title} (${selectedMonth} ${selectedYear})`;
+        if (titleWrapEl) titleWrapEl.innerHTML = `<h3 style="font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px; line-height: 1.2;">Weekly ${dataset.title} (${selectedMonth} ${selectedYear})</h3>`;
+        if (subEl) subEl.innerText = `Weekly Breakdown for ${selectedMonth} ${selectedYear}`;
+        if (legendRowEl) legendRowEl.style.display = 'none'; // Donut chart includes custom legend
+        if (scaleFooterEl) scaleFooterEl.style.display = 'none';
+      }
+
+      if (ticksRow && dataset.ticks) {
+        ticksRow.innerHTML = `<span>${dataset.ticks[0]}</span><span>${dataset.ticks[1]}</span><span>${dataset.ticks[2]}</span>`;
+      }
+
+      if (!container) return;
+
+      // Render Body: Dual Bars for L1 & L2, Pie Chart for L3
+      if (currentLayer === 1) {
+        const itemsToRender = dataset.years.map(y => ({ label: y.year, company: y.company, staff: y.staff }));
+        container.innerHTML = itemsToRender.map(item => {
+          const companyPct = Math.min(100, Math.max(3, (item.company / dataset.max) * 100));
+          const staffPct = Math.min(100, Math.max(3, (item.staff / dataset.max) * 100));
+
+          const compStr = Number.isInteger(item.company) ? item.company : item.company.toFixed(2);
+          const staffStr = Number.isInteger(item.staff) ? item.staff : item.staff.toFixed(2);
+
+          return `
+            <div onclick="selectYearDrilldown('${item.label}')" onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'" style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: opacity 0.15s ease;" title="Click to view ${item.label} monthly breakdown">
+              <div style="width: 34px; font-size: 11.5px; font-weight: 800; color: var(--purple-primary); text-align: right;">
+                <span>${item.label}</span>
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; background: var(--bg-phone); border-radius: 999px; height: 22px; overflow: hidden; position: relative; border: 1px solid var(--border-subtle);">
+                    <div style="background: linear-gradient(90deg, #f43f5e 0%, #ec4899 100%); width: ${companyPct}%; height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 800; font-style: italic; color: var(--text-primary); min-width: 44px; text-align: left;">${compStr}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; background: var(--bg-phone); border-radius: 999px; height: 22px; overflow: hidden; position: relative; border: 1px solid var(--border-subtle);">
+                    <div style="background: linear-gradient(90deg, #38bdf8 0%, #3b82f6 100%); width: ${staffPct}%; height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 800; font-style: italic; color: var(--text-primary); min-width: 44px; text-align: left;">${staffStr}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else if (currentLayer === 2) {
+        const itemsToRender = getMonthlyData(currentMetricKey, selectedYear);
+        container.innerHTML = itemsToRender.map(item => {
+          const companyPct = Math.min(100, Math.max(3, (item.company / dataset.max) * 100));
+          const staffPct = Math.min(100, Math.max(3, (item.staff / dataset.max) * 100));
+
+          const compStr = Number.isInteger(item.company) ? item.company : item.company.toFixed(2);
+          const staffStr = Number.isInteger(item.staff) ? item.staff : item.staff.toFixed(2);
+
+          return `
+            <div onclick="selectMonthDrilldown('${item.label}')" onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'" style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: opacity 0.15s ease;" title="Click to view ${item.label} ${selectedYear} weekly pie chart">
+              <div style="width: 34px; font-size: 11.5px; font-weight: 800; color: var(--purple-primary); text-align: right;">
+                <span>${item.label}</span>
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; background: var(--bg-phone); border-radius: 999px; height: 22px; overflow: hidden; position: relative; border: 1px solid var(--border-subtle);">
+                    <div style="background: linear-gradient(90deg, #f43f5e 0%, #ec4899 100%); width: ${companyPct}%; height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 800; font-style: italic; color: var(--text-primary); min-width: 44px; text-align: left;">${compStr}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; background: var(--bg-phone); border-radius: 999px; height: 22px; overflow: hidden; position: relative; border: 1px solid var(--border-subtle);">
+                    <div style="background: linear-gradient(90deg, #38bdf8 0%, #3b82f6 100%); width: ${staffPct}%; height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 800; font-style: italic; color: var(--text-primary); min-width: 44px; text-align: left;">${staffStr}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else if (currentLayer === 3) {
+        const weeksData = getWeeklyData(currentMetricKey, selectedYear, selectedMonth);
+        container.innerHTML = renderLayer3PieChart(weeksData, dataset);
+      }
+    }
+
+    // Auto-render default attendance chart on load
+    document.addEventListener('DOMContentLoaded', () => {
+      changeFilterMetric('attendance');
+    });
+  </script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

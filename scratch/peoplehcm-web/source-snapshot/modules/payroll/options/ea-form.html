@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - EA Form</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/payroll/payroll-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/payroll-documents.css">
+  <link rel="stylesheet" href="../../../css/ea-form.css">
+</head>
+<body>
+  <preview-top-bar></preview-top-bar>
+
+  <div class="phone-container payroll-document-phone">
+    <header class="payroll-document-header">
+      <div class="status-bar"><span>9:41</span><span><i class="fa-solid fa-signal"></i>&nbsp; <i class="fa-solid fa-wifi"></i>&nbsp; <i class="fa-solid fa-battery-three-quarters"></i></span></div>
+      <div class="payroll-header-row">
+        <button class="payroll-header-button" type="button" onclick="history.back()" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="payroll-header-copy"><h1>EA Form</h1></div>
+      </div>
+    </header>
+
+    <main class="payroll-document-content">
+      <button id="eaFilterTrigger" class="payroll-filter-trigger" type="button" onclick="openEAFilter()">
+        <span><small>YEAR &amp; TAX RELIEF</small><strong id="eaFilterSummary">2024 · T01 (TAX)</strong></span>
+        <i class="fa-solid fa-sliders"></i>
+      </button>
+
+      <section class="ea-form-preview-card" aria-label="Official document">
+        <div class="ea-form-preview-heading">
+          <div>
+            <span>Official document</span>
+          </div>
+        </div>
+        <button class="ea-form-preview-frame" type="button" onclick="openAndPrintEA()" aria-label="Open EA form preview">
+          <img id="eaFormPreview" src="../../../assets/img/ea-form-preview.jpeg" alt="EA form preview">
+          <span id="eaPreviewYear" style="position:absolute;left:12px;bottom:12px;padding:5px 9px;border-radius:999px;background:rgba(15,23,42,.82);color:#fff;font-size:11px;font-weight:800;">Year 2024</span>
+          <span class="ea-preview-corner" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
+        </button>
+      </section>
+
+      <button class="ea-open-print-action" type="button" onclick="openAndPrintEA()">
+        <span class="ea-open-print-icon" aria-hidden="true"><i class="fa-solid fa-print"></i></span>
+        <span class="ea-open-print-copy"><strong>Open + Print</strong><small>View the official form in print layout</small></span>
+        <span class="ea-open-print-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+      </button>
+    </main>
+
+    <div id="eaFilterModal" class="modal-overlay standard-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="eaFilterTitle" onclick="if(event.target===this) closeEAFilter()">
+      <div class="standard-filter-panel">
+        <div class="standard-filter-handle"></div>
+        <div class="standard-filter-header">
+          <h2 id="eaFilterTitle">Filter</h2>
+          <div class="standard-filter-header-actions">
+            <button class="standard-filter-reset" type="button" data-filter-reset onclick="resetEAFilter()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            <button class="standard-filter-close" type="button" data-filter-close onclick="closeEAFilter()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="payroll-filter-body">
+          <label for="eaYearSelect">Year</label>
+          <select id="eaYearSelect"></select>
+          <label for="eaTaxReliefSelect">Tax Relief</label>
+          <select id="eaTaxReliefSelect"></select>
+        </div>
+        <div class="payroll-filter-footer"><button class="standard-filter-apply" type="button" onclick="applyEAFilter()">Apply Filter</button></div>
+      </div>
+    </div>
+
+    <app-bottom-nav active="hub"></app-bottom-nav>
+  </div>
+
+  <script>
+    let selectedEAYear = 2024;
+    let selectedTaxRelief = 'T01 (TAX)';
+    const eaData = () => window.PAYROLL_DATA?.eaForms?.[selectedEAYear] || window.PAYROLL_DATA?.eaForms?.[String(selectedEAYear)] || Object.values(window.PAYROLL_DATA?.eaForms || {})[0] || {};
+
+    function renderEA() {
+      const data = eaData();
+      selectedTaxRelief = data.taxRef || selectedTaxRelief;
+      document.getElementById('eaFilterSummary').textContent = `${selectedEAYear} · ${selectedTaxRelief}`;
+      const preview = document.getElementById('eaFormPreview');
+      preview.dataset.year = String(selectedEAYear);
+      preview.alt = 'EA form preview';
+      document.getElementById('eaPreviewYear').textContent = 'Year ' + selectedEAYear;
+    }
+
+    function openEAFilter() {
+      document.getElementById('eaYearSelect').value = String(selectedEAYear);
+      document.getElementById('eaTaxReliefSelect').value = selectedTaxRelief;
+      document.getElementById('eaFilterModal').classList.add('is-open');
+    }
+    function closeEAFilter() { document.getElementById('eaFilterModal').classList.remove('is-open'); }
+    function resetEAFilter() { document.getElementById('eaYearSelect').value = '2024'; document.getElementById('eaTaxReliefSelect').value = 'T01 (TAX)'; }
+    function applyEAFilter() {
+      selectedEAYear = Number(document.getElementById('eaYearSelect').value);
+      selectedTaxRelief = document.getElementById('eaTaxReliefSelect').value;
+      renderEA();
+      closeEAFilter();
+    }
+    function openAndPrintEA() {
+      document.body.classList.add('ea-print-mode');
+      window.print();
+      window.setTimeout(() => document.body.classList.remove('ea-print-mode'), 0);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const forms = window.PAYROLL_DATA?.eaForms || {};
+      const yearSelect = document.getElementById('eaYearSelect');
+      const taxReliefSelect = document.getElementById('eaTaxReliefSelect');
+      Object.keys(forms).sort((a, b) => Number(b) - Number(a)).forEach(year => {
+        const option = document.createElement('option'); option.value = year; option.textContent = year; yearSelect.appendChild(option);
+      });
+      [...new Set(Object.values(forms).map(form => form.taxRef).filter(Boolean))].forEach(taxRelief => {
+        const option = document.createElement('option'); option.value = taxRelief; option.textContent = taxRelief; taxReliefSelect.appendChild(option);
+      });
+      yearSelect.value = String(selectedEAYear);
+      taxReliefSelect.value = selectedTaxRelief;
+      renderEA();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeEAFilter();
+    });
+  </script>
+</body>
+</html>

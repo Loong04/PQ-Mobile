@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Guest Visit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+  <link rel="stylesheet" href="../css/guest-visit.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../js/admin-app.js" defer></script>
+  <script src="../js/workplace-history-store.js" defer></script>
+  <script src="../js/guest-visit.js" defer></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="admin-page guest-visit-page">
+  <preview-top-bar active-page="workplace"></preview-top-bar>
+  <div class="phone-container">
+    <header class="admin-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="admin-header-row">
+        <a class="admin-back" data-admin-back href="../index.html" aria-label="Back to Workplace"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <div class="admin-heading"><h1>Guest Visit</h1></div>
+        <span aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content admin-content">
+      <form id="guestVisitForm" novalidate>
+        <div class="visit-stepper" role="tablist" aria-label="Guest Visit sections">
+          <span class="visit-step-line" aria-hidden="true"></span><span id="visitStepFill" class="visit-step-fill" aria-hidden="true"></span>
+          <button id="visitTab-general" class="visit-step active" type="button" role="tab" data-visit-tab="general" aria-controls="visitPanel-general" aria-selected="true" tabindex="0"><span class="visit-step-circle" aria-hidden="true">1</span><span class="visit-step-label">General</span></button>
+          <button id="visitTab-guest" class="visit-step" type="button" role="tab" data-visit-tab="guest" aria-controls="visitPanel-guest" aria-selected="false" tabindex="-1"><span class="visit-step-circle" aria-hidden="true">2</span><span class="visit-step-label">Guest</span></button>
+          <button id="visitTab-attendee" class="visit-step" type="button" role="tab" data-visit-tab="attendee" aria-controls="visitPanel-attendee" aria-selected="false" tabindex="-1"><span class="visit-step-circle" aria-hidden="true">3</span><span class="visit-step-label">Attendee</span></button>
+          <button id="visitTab-other" class="visit-step" type="button" role="tab" data-visit-tab="other" aria-controls="visitPanel-other" aria-selected="false" tabindex="-1"><span class="visit-step-circle" aria-hidden="true">4</span><span class="visit-step-label">Other</span></button>
+        </div>
+        <section id="visitPanel-general" role="tabpanel" aria-labelledby="visitTab-general" tabindex="0">
+          <div class="claim-form-card">
+            <h2 class="form-section-heading">Visit Details</h2>
+            <div class="claim-form-stack">
+              <div class="claim-field"><label class="claim-field-label" for="visitDate">Visit Date<span class="claim-required" aria-hidden="true">*</span></label><input id="visitDate" name="visitDate" class="claim-control" type="date" required></div>
+              <div class="claim-field"><span id="visitTimeLabel" class="claim-field-label">Visit Time<span class="claim-required" aria-hidden="true">*</span></span><div class="claim-field-grid visit-time-grid" role="group" aria-labelledby="visitTimeLabel">
+                <div class="claim-field"><input id="visitStartTime" name="visitStartTime" class="claim-control" type="time" value="00:00" aria-label="Visit start time" required></div>
+                <div class="claim-field"><input id="visitEndTime" name="visitEndTime" class="claim-control" type="time" value="00:00" aria-label="Visit end time" required></div>
+              </div></div>
+              <div class="claim-field"><label class="claim-field-label" for="visitTotalGuest">Total Guest<span class="claim-required" aria-hidden="true">*</span></label><input id="visitTotalGuest" name="visitTotalGuest" class="claim-control" type="number" value="0" min="1" step="1" required></div>
+              <div class="claim-field"><label class="claim-field-label" for="visitLocation">Location<span class="claim-required" aria-hidden="true">*</span></label><div class="visit-select"><select id="visitLocation" name="visitLocation" class="claim-control" required><option value="">Select Location</option><option value="head-office">Head Office</option><option value="branch-office">Branch Office</option><option value="meeting-room">Meeting Room</option></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div></div>
+              <label class="visit-choice" for="visitMeal"><span>Meal?</span><span class="visit-switch"><input id="visitMeal" name="meal" type="checkbox" role="switch"><span class="visit-switch-track" aria-hidden="true"></span></span></label>
+              <div class="claim-field visit-upload-section">
+                <h2 class="form-section-heading visit-upload-heading">Upload Attachments</h2>
+                <div class="visit-upload-actions"><button type="button" class="visit-upload" data-file-picker="visitFiles"><span class="visit-upload-icon"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span><span>Select File(s)</span></button><button type="button" class="visit-upload" data-file-picker="visitCamera"><span class="visit-upload-icon visit-camera-icon"><i class="fa-solid fa-camera" aria-hidden="true"></i></span><span>Take Picture</span></button></div>
+                <input id="visitFiles" type="file" multiple hidden><input id="visitCamera" type="file" accept="image/*" capture="environment" hidden>
+                <div id="visitAttachments" class="visit-record-list"></div>
+              </div>
+            </div>
+          </div>
+          <button id="visitSummaryDetails" class="visit-summary-card" type="button" aria-controls="visitCategories">
+            <span class="visit-summary-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
+            <span class="visit-summary-copy"><span class="visit-summary-label">TOTAL GUESTS</span><strong id="visitGuestSummaryCount">0</strong><span id="visitSummarySubtitle">0 guests, 0 attendees added</span></span>
+            <span class="visit-details-pill">Details <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
+          </button>
+        </section>
+        <section id="visitPanel-guest" role="tabpanel" aria-labelledby="visitTab-guest" tabindex="0" hidden>
+          <div id="visitGuestListView" class="claim-form-card visit-list-card">
+            <div class="visit-list-heading"><span class="visit-list-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span><div class="visit-list-heading-copy"><h2 class="form-section-heading">Guest</h2><span id="visitGuestListCount" class="visit-list-count">Total Records: 0</span></div><button id="visitOpenGuest" type="button" class="claim-button claim-button-primary visit-add-record" aria-label="Add Guest"><i class="fa-solid fa-plus" aria-hidden="true"></i></button></div>
+            <div class="visit-list-body"><div id="visitGuestEmpty" class="visit-empty-state"><span class="visit-empty-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span><p class="visit-empty-title">No guests added yet</p><p class="visit-empty-description">Click "+ Add Guest" above to add your first record</p></div><div id="visitGuestList" class="visit-record-list"></div></div>
+          </div>
+          <div id="visitGuestEditor" hidden>
+          <div class="claim-form-card">
+            <h2 class="form-section-heading">Guest Details</h2>
+            <div class="claim-form-stack">
+              <div class="claim-field"><label class="claim-field-label" for="visitGuestCompany">Company<span class="claim-required" aria-hidden="true">*</span></label><input id="visitGuestCompany" class="claim-control" type="text" maxlength="200" aria-required="true" placeholder="Enter company"></div>
+              <div class="claim-field"><label class="claim-field-label" for="visitGuestRelation">Relation<span class="claim-required" aria-hidden="true">*</span></label><div class="visit-select"><select id="visitGuestRelation" class="claim-control" aria-required="true"><option value="">Select Relation</option><option value="customer">Customer</option><option value="supplier">Supplier</option><option value="partner">Partner</option><option value="other">Other</option></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div></div>
+              <div class="claim-field"><label class="claim-field-label" for="visitGuestName">Name<span class="claim-required" aria-hidden="true">*</span></label><input id="visitGuestName" class="claim-control" type="text" maxlength="200" aria-required="true" placeholder="Enter guest name"></div>
+              <div class="claim-field"><label class="claim-field-label" for="visitGuestPosition">Position<span class="claim-required" aria-hidden="true">*</span></label><input id="visitGuestPosition" class="claim-control" type="text" maxlength="200" aria-required="true" placeholder="Enter position"></div>
+            </div>
+          </div>
+          <div class="visit-entry-actions"><button id="visitGuestCancelEdit" type="button" class="form-cancel-btn"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button><button type="button" class="claim-button claim-button-secondary" data-visit-save-draft><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Draft</span></button><button id="visitGuestAdd" type="button" class="claim-button claim-button-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Item</span></button></div>
+          </div>
+        </section>
+        <section id="visitPanel-attendee" role="tabpanel" aria-labelledby="visitTab-attendee" tabindex="0" hidden>
+          <div id="visitAttendeeListView" class="claim-form-card visit-list-card">
+            <div class="visit-list-heading"><span class="visit-list-icon"><i class="fa-solid fa-user-tie" aria-hidden="true"></i></span><div class="visit-list-heading-copy"><h2 class="form-section-heading">Attendee</h2><span id="visitAttendeeListCount" class="visit-list-count">Total Records: 0</span></div><button id="visitOpenAttendee" type="button" class="claim-button claim-button-primary visit-add-record" aria-label="Add Attendee"><i class="fa-solid fa-plus" aria-hidden="true"></i></button></div>
+            <div class="visit-list-body"><div id="visitAttendeeEmpty" class="visit-empty-state"><span class="visit-empty-icon"><i class="fa-solid fa-user-tie" aria-hidden="true"></i></span><p class="visit-empty-title">No attendees added yet</p><p class="visit-empty-description">Click "+ Add Attendee" above to add your first record</p></div><div id="visitAttendeeList" class="visit-record-list"></div></div>
+          </div>
+          <div id="visitAttendeeEditor" hidden>
+          <div class="claim-form-card">
+            <h2 class="form-section-heading">Attendee Details</h2>
+            <div class="claim-form-stack">
+              <div class="claim-field"><label class="claim-field-label" for="visitStaff">Staff<span class="claim-required" aria-hidden="true">*</span></label><div class="visit-select"><select id="visitStaff" class="claim-control" aria-required="true"><option value="">Select Employee</option><option value="EBB01">Aina Rahman</option><option value="EBB02">Daniel Wong</option><option value="EBB03">Nur Izzati</option></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div><span id="visitSelectedStaffId" class="visit-employee-id" hidden></span></div>
+              <div class="claim-field"><label class="claim-field-label" for="visitStaffDepartment">Department</label><input id="visitStaffDepartment" class="claim-control" type="text" readonly placeholder="Selected employee department"></div>
+              <div class="claim-field"><label class="claim-field-label" for="visitStaffPosition">Position</label><input id="visitStaffPosition" class="claim-control" type="text" readonly placeholder="Selected employee position"></div>
+            </div>
+          </div>
+          <div class="visit-entry-actions"><button id="visitAttendeeCancelEdit" type="button" class="form-cancel-btn"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button><button type="button" class="claim-button claim-button-secondary" data-visit-save-draft><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Draft</span></button><button id="visitAttendeeAdd" type="button" class="claim-button claim-button-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Item</span></button></div>
+          </div>
+        </section>
+        <section id="visitCategories" aria-labelledby="visitCategoriesHeading" hidden>
+          <h2 id="visitCategoriesHeading" class="form-section-heading">Visit Categories (3)</h2>
+          <p class="visit-category-note">Select a category to view or add details.</p>
+          <button type="button" class="visit-category-card" data-visit-category="guest"><span class="visit-list-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span><span class="visit-category-copy"><strong>Guest</strong><span>Guest details</span></span><strong id="visitGuestCategoryCount">0</strong><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" class="visit-category-card" data-visit-category="attendee"><span class="visit-list-icon visit-attendee-icon"><i class="fa-solid fa-user-tie" aria-hidden="true"></i></span><span class="visit-category-copy"><strong>Attendee</strong><span>Staff attending the visit</span></span><strong id="visitAttendeeCategoryCount">0</strong><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" class="visit-category-card" data-visit-category="other"><span class="visit-list-icon visit-other-icon"><i class="fa-solid fa-list-check" aria-hidden="true"></i></span><span class="visit-category-copy"><strong>Other</strong><span>Other requests</span></span><strong id="visitOtherCategoryCount">0</strong><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <div class="visit-category-actions"><button id="visitCategoriesBack" type="button" class="claim-button claim-button-secondary"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Back to Application</span></button><button id="visitCategoriesNext" type="button" class="claim-button claim-button-primary"><span>Next</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></div>
+        </section>
+        <section id="visitPanel-other" role="tabpanel" aria-labelledby="visitTab-other" tabindex="0" hidden>
+          <div class="claim-form-card">
+            <h2 class="form-section-heading">Other Request</h2>
+            <div class="claim-form-stack">
+              <label class="visit-choice" for="visitRequestFloor"><span>Floor Visit</span><span class="visit-switch"><input id="visitRequestFloor" type="checkbox" role="switch" name="requests" value="floor-visit" data-other-request><span class="visit-switch-track" aria-hidden="true"></span></span></label>
+              <label class="visit-choice" for="visitRequestSitting"><span>Sitting Arrangement</span><span class="visit-switch"><input id="visitRequestSitting" type="checkbox" role="switch" name="requests" value="sitting-arrangement" data-other-request><span class="visit-switch-track" aria-hidden="true"></span></span></label>
+              <label class="visit-choice" for="visitRequestRooms"><span>Multiple Rooms</span><span class="visit-switch"><input id="visitRequestRooms" type="checkbox" role="switch" name="requests" value="multiple-rooms" data-other-request><span class="visit-switch-track" aria-hidden="true"></span></span></label>
+              <label class="visit-choice" for="visitRequestNone"><span>None</span><span class="visit-switch"><input id="visitRequestNone" type="checkbox" role="switch" name="noRequests" checked><span class="visit-switch-track" aria-hidden="true"></span></span></label>
+            </div>
+          </div>
+        </section>
+        <p id="visitFeedback" class="visit-feedback" role="status" aria-live="polite" hidden></p>
+        <div id="visitPageActions" class="visit-page-actions">
+          <a id="visitCancel" class="form-cancel-btn" data-admin-back href="../index.html"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></a>
+          <button id="visitPrevious" class="form-cancel-btn" type="button" hidden><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button>
+          <button id="visitSaveDraft" class="claim-button claim-button-secondary" type="button"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Draft</span></button>
+          <button id="visitNext" class="claim-button claim-button-primary" type="button"><span>Next</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+          <button id="visitSubmit" class="claim-button claim-button-primary" type="submit" hidden><span>Submit</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+        </div>
+      </form>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Project &amp; Task History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/project-task.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/project-task/project-task-app.js" defer></script>
+  <script src="../../../js/project-task/project-task-history.js" defer></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="project-task-page project-history-page">
+  <preview-top-bar active-page="project-task"></preview-top-bar>
+  <div class="phone-container">
+    <header class="project-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="project-header-row">
+        <a class="project-back" href="../index.html?scope=individual" aria-label="Back to Project and Task"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <div class="project-header-title"><h1>History</h1></div>
+        <span aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content project-task-content">
+      <div class="project-history-tabs" role="tablist" aria-label="Project and task history type">
+        <button type="button" class="project-history-tab" id="historyTab-workPlan" role="tab" aria-selected="true" aria-controls="workPlanHistoryPanel"><span>Work Plan</span></button>
+        <button type="button" class="project-history-tab" id="historyTab-timesheet" role="tab" aria-selected="false" aria-controls="timesheetHistoryPanel" tabindex="-1"><span>Timesheet</span></button>
+      </div>
+
+      <section class="project-history-panel" id="workPlanHistoryPanel" role="tabpanel" aria-labelledby="historyTab-workPlan">
+        <div class="project-history-filter-bar">
+          <div class="project-history-filter-copy">
+            <span class="project-history-filter-kicker">Current Filter</span>
+            <strong id="workPlanHistoryFilterSummary">All Work Plans</strong>
+          </div>
+          <button type="button" class="project-history-filter-trigger" id="openWorkPlanHistoryFilter" aria-label="Filter Work Plan History" title="Filter">
+            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="project-history-list-heading">
+          <h2>Work Plan History</h2>
+          <span id="workPlanHistoryCount">0 Records</span>
+        </div>
+        <div class="project-history-list" id="workPlanHistoryList" aria-live="polite"></div>
+      </section>
+
+      <section class="project-history-panel" id="timesheetHistoryPanel" role="tabpanel" aria-labelledby="historyTab-timesheet" hidden>
+        <div class="project-history-filter-bar">
+          <div class="project-history-filter-copy">
+            <span class="project-history-filter-kicker">Current Filter</span>
+            <strong id="timesheetHistoryFilterSummary">All Timesheets</strong>
+          </div>
+          <button type="button" class="project-history-filter-trigger" id="openTimesheetHistoryFilter" aria-label="Filter Timesheet History" title="Filter">
+            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="project-history-list-heading">
+          <h2>Timesheet History</h2>
+          <span id="timesheetHistoryCount">0 Records</span>
+        </div>
+        <div class="project-history-list" id="timesheetHistoryList" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <div class="project-history-filter-overlay" id="workPlanHistoryFilterOverlay" hidden>
+      <div class="project-history-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="workPlanHistoryFilterTitle">
+        <div class="project-history-sheet-handle" aria-hidden="true"></div>
+        <div class="project-history-filter-header">
+          <div>
+            <span>Work Plan</span>
+            <h2 id="workPlanHistoryFilterTitle">Filter</h2>
+          </div>
+          <div class="project-history-filter-header-actions">
+            <button type="button" class="project-history-filter-reset" id="resetWorkPlanHistoryFilter"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button>
+            <button type="button" class="project-history-filter-close" id="closeWorkPlanHistoryFilter" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <form id="workPlanHistoryFilterForm">
+          <div class="project-history-filter-field">
+            <label for="workPlanFilterTitle">Title</label>
+            <input type="text" id="workPlanFilterTitle" autocomplete="off">
+          </div>
+          <div class="project-history-filter-field">
+            <label for="workPlanFilterDescription">Description</label>
+            <input type="text" id="workPlanFilterDescription" autocomplete="off">
+          </div>
+          <div class="project-history-filter-field">
+            <span class="project-history-filter-label">Deadline</span>
+            <div class="project-history-filter-range">
+              <input type="date" id="workPlanFilterDeadlineFrom" aria-label="Deadline from date">
+              <input type="date" id="workPlanFilterDeadlineTo" aria-label="Deadline to date">
+            </div>
+          </div>
+          <div class="project-history-filter-field">
+            <span class="project-history-filter-label">Scheduled</span>
+            <div class="project-history-filter-range">
+              <input type="date" id="workPlanFilterScheduledFrom" aria-label="Scheduled from date">
+              <input type="date" id="workPlanFilterScheduledTo" aria-label="Scheduled to date">
+            </div>
+          </div>
+          <div class="project-history-filter-field">
+            <label for="workPlanFilterStatus">Status</label>
+            <div class="project-history-select-wrap">
+              <select id="workPlanFilterStatus">
+                <option value="all">All Status</option>
+                <option value="submitted">Submitted</option>
+                <option value="draft">Draft</option>
+              </select>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="project-history-filter-field project-history-filter-check-field">
+            <span class="project-history-filter-label">Is Overdue</span>
+            <label class="project-history-checkbox" for="workPlanFilterOverdue">
+              <input type="checkbox" id="workPlanFilterOverdue">
+              <span class="project-history-checkbox-control" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+              <span>Show overdue work plans only</span>
+            </label>
+          </div>
+          <button type="button" class="project-history-filter-apply" id="applyWorkPlanHistoryFilter"><span>Apply Filter</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <div class="project-history-filter-overlay" id="timesheetHistoryFilterOverlay" hidden>
+      <div class="project-history-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="timesheetHistoryFilterTitle">
+        <div class="project-history-sheet-handle" aria-hidden="true"></div>
+        <div class="project-history-filter-header">
+          <div>
+            <span>Timesheet</span>
+            <h2 id="timesheetHistoryFilterTitle">Filter</h2>
+          </div>
+          <div class="project-history-filter-header-actions">
+            <button type="button" class="project-history-filter-reset" id="resetTimesheetHistoryFilter"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button>
+            <button type="button" class="project-history-filter-close" id="closeTimesheetHistoryFilter" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <form id="timesheetHistoryFilterForm">
+          <div class="project-history-filter-field">
+            <label for="timesheetFilterYear">Year</label>
+            <div class="project-history-select-wrap">
+              <select id="timesheetFilterYear">
+                <option value="all">All Years</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+              </select>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="project-history-filter-field">
+            <label for="timesheetFilterMonth">Month</label>
+            <div class="project-history-select-wrap">
+              <select id="timesheetFilterMonth">
+                <option value="all">All Months</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </div>
+          </div>
+          <button type="button" class="project-history-filter-apply" id="applyTimesheetHistoryFilter"><span>Apply Filter</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <div class="project-history-detail-overlay" id="projectHistoryDetailOverlay" hidden>
+      <div class="project-history-detail-sheet" role="dialog" aria-modal="true" aria-labelledby="projectHistoryDetailTitle">
+        <div class="project-history-sheet-handle" aria-hidden="true"></div>
+        <div class="project-history-detail-header">
+          <div class="project-history-detail-heading">
+            <span class="project-history-detail-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+            <div>
+              <span>History Record</span>
+              <h2 id="projectHistoryDetailTitle">Details</h2>
+            </div>
+          </div>
+          <button type="button" class="project-history-filter-close" id="closeProjectHistoryDetails" aria-label="Close details"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
+        </div>
+        <div class="project-history-detail-content" id="projectHistoryDetailContent"></div>
+      </div>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <favourite-sheet></favourite-sheet>
+  </div>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

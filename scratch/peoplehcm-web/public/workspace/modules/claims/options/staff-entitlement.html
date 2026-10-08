@@ -1,0 +1,499 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Staff Benefit Entitlement</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/claims/claims-config.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      border-radius: 44px;
+      overflow: hidden;
+    }
+
+    .filter-bottom-sheet {
+      width: 100%;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 20px 20px 36px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.35);
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85%;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .entitlement-staff-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin: -16px -18px 0;
+      padding: 14px 18px;
+      border-radius: 19px 19px 0 0;
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 60%, #7c3aed 100%);
+      border-bottom: 1px solid rgba(216, 180, 254, 0.25);
+    }
+
+    .entitlement-staff-header > div:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .entitlement-summary > div {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .entitlement-benefit-type {
+      max-width: 58%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      text-align: right;
+    }
+
+    .entitlement-metric-label {
+      min-height: 2.4em;
+      line-height: 1.2;
+      color: var(--text-muted);
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+    }
+
+    .entitlement-benefit-value {
+      --benefit-tone: #ede9fe;
+      --benefit-tone-bg: rgba(46, 16, 101, 0.35);
+      --benefit-tone-border: rgba(216, 180, 254, 0.45);
+      max-width: 100%;
+      padding: 5px 10px;
+      border: 1px solid var(--benefit-tone-border);
+      border-radius: 999px;
+      background: var(--benefit-tone-bg);
+      color: var(--benefit-tone);
+      font-size: 9.5px;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: 0.25px;
+      text-align: center;
+      text-transform: uppercase;
+      text-wrap: balance;
+    }
+
+    .entitlement-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: stretch;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .entitlement-metric {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+      padding: 11px 7px;
+      text-align: center;
+    }
+
+    .entitlement-metric + .entitlement-metric {
+      border-left: 1px solid var(--border-subtle);
+    }
+
+    .entitlement-metric-value {
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      margin-top: 4px;
+      white-space: nowrap;
+    }
+
+    .entitlement-metric--usable .entitlement-metric-label,
+    .entitlement-metric--usable .entitlement-metric-value {
+      color: #10b981;
+    }
+
+    html[data-theme="light"] .entitlement-benefit-value {
+      --benefit-tone: #ede9fe;
+    }
+
+    html[data-theme="light"] .entitlement-metric--usable .entitlement-metric-label,
+    html[data-theme="light"] .entitlement-metric--usable .entitlement-metric-value {
+      color: #047857;
+    }
+  </style>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="../index.html" class="me-back-btn" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </a>
+          <h1 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Staff Benefit Entitlements</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      
+      <!-- 1. Current Filter Bar -->
+      <div class="filter-summary-bar" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">
+            CURRENT FILTER
+          </div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <i class="filter-summary-icon fa-solid fa-filter" aria-hidden="true" style="color: var(--purple-primary);"></i>
+            <span id="currentFilterTextDisplay">Year 2026</span>
+          </div>
+        </div>
+        <button type="button" onclick="openEntitlementFilterModal()" title="Open Filter Options"
+          style="width: 44px; height: 44px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+          <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
+        </button>
+      </div>
+
+      <!-- 2. KPI Summary Cards Grid (3 Cards) -->
+      <div class="entitlement-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+        <!-- Card 1: Total Records -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 10px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 9.5px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px;">TOTAL RECORDS</div>
+          <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 6px;">
+            <span id="staffEntitlementRecordCount" style="font-size: 14px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">5</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Total Used Amount -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 10px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 9.5px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px;">TOTAL CLAIMED AMOUNT</div>
+          <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 6px;">
+            <span id="staffEntitlementClaimedTotal" style="font-size: 14px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">RM 0.00</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Total Usable Balance -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 12px 10px; box-shadow: var(--shadow-sm);">
+          <div style="font-size: 9.5px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px;">TOTAL USABLE BALANCE</div>
+          <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 6px;">
+            <span id="staffEntitlementUsableTotal" style="font-size: 14px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;">RM 0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Cards List Container (Separated Individual Cards) -->
+      <div id="staffEntitlementRecordCardsContainer" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        
+        <!-- Card 1: Sarah Jenkins - Car Maintenance -->
+        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 18px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 12px; margin-bottom: 0;">
+          <div class="entitlement-staff-header">
+            <div>
+              <div style="font-weight: 800; font-size: 14.5px; color: #ffffff; line-height: 1.2;">Sarah Jenkins</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #ede9fe; opacity: 0.8; font-family: monospace, sans-serif; margin-top: 3px;">#EBB01</div>
+            </div>
+            <div class="entitlement-benefit-type">
+              <div class="entitlement-benefit-value">Car Maintenance</div>
+            </div>
+          </div>
+          <div class="entitlement-metrics">
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Claimed</div>
+              <div class="entitlement-metric-value">RM 197.00</div>
+            </div>
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Current Balance</div>
+              <div class="entitlement-metric-value">RM 1,000.00</div>
+            </div>
+            <div class="entitlement-metric entitlement-metric--usable">
+              <div class="entitlement-metric-label">Usable Balance</div>
+              <div class="entitlement-metric-value">RM 803.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Sarah Jenkins - Mobile Phone -->
+        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 18px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 12px; margin-bottom: 0;">
+          <div class="entitlement-staff-header">
+            <div>
+              <div style="font-weight: 800; font-size: 14.5px; color: #ffffff; line-height: 1.2;">Sarah Jenkins</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #ede9fe; opacity: 0.8; font-family: monospace, sans-serif; margin-top: 3px;">#EBB01</div>
+            </div>
+            <div class="entitlement-benefit-type">
+              <div class="entitlement-benefit-value">Mobile Phone</div>
+            </div>
+          </div>
+          <div class="entitlement-metrics">
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Claimed</div>
+              <div class="entitlement-metric-value">RM 120.00</div>
+            </div>
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Current Balance</div>
+              <div class="entitlement-metric-value">RM 900.00</div>
+            </div>
+            <div class="entitlement-metric entitlement-metric--usable">
+              <div class="entitlement-metric-label">Usable Balance</div>
+              <div class="entitlement-metric-value">RM 780.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Marcus Tan - Optical & Dental -->
+        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 18px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 12px; margin-bottom: 0;">
+          <div class="entitlement-staff-header">
+            <div>
+              <div style="font-weight: 800; font-size: 14.5px; color: #ffffff; line-height: 1.2;">Marcus Tan</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #ede9fe; opacity: 0.8; font-family: monospace, sans-serif; margin-top: 3px;">#004177</div>
+            </div>
+            <div class="entitlement-benefit-type">
+              <div class="entitlement-benefit-value">Optical &amp; Dental</div>
+            </div>
+          </div>
+          <div class="entitlement-metrics">
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Claimed</div>
+              <div class="entitlement-metric-value">RM 250.00</div>
+            </div>
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Current Balance</div>
+              <div class="entitlement-metric-value">RM 1,000.00</div>
+            </div>
+            <div class="entitlement-metric entitlement-metric--usable">
+              <div class="entitlement-metric-label">Usable Balance</div>
+              <div class="entitlement-metric-value">RM 750.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Aisha Omar - Outpatient GP Clinic -->
+        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 18px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 12px; margin-bottom: 0;">
+          <div class="entitlement-staff-header">
+            <div>
+              <div style="font-weight: 800; font-size: 14.5px; color: #ffffff; line-height: 1.2;">Aisha Omar</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #ede9fe; opacity: 0.8; font-family: monospace, sans-serif; margin-top: 3px;">#0000101</div>
+            </div>
+            <div class="entitlement-benefit-type">
+              <div class="entitlement-benefit-value">Outpatient GP Clinic</div>
+            </div>
+          </div>
+          <div class="entitlement-metrics">
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Claimed</div>
+              <div class="entitlement-metric-value">RM 300.00</div>
+            </div>
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Current Balance</div>
+              <div class="entitlement-metric-value">RM 800.00</div>
+            </div>
+            <div class="entitlement-metric entitlement-metric--usable">
+              <div class="entitlement-metric-label">Usable Balance</div>
+              <div class="entitlement-metric-value">RM 500.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Daniel Lee - Specialist Consultation -->
+        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 18px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 12px; margin-bottom: 0;">
+          <div class="entitlement-staff-header">
+            <div>
+              <div style="font-weight: 800; font-size: 14.5px; color: #ffffff; line-height: 1.2;">Daniel Lee</div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #ede9fe; opacity: 0.8; font-family: monospace, sans-serif; margin-top: 3px;">#000582</div>
+            </div>
+            <div class="entitlement-benefit-type">
+              <div class="entitlement-benefit-value">Specialist Consultation</div>
+            </div>
+          </div>
+          <div class="entitlement-metrics">
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Claimed</div>
+              <div class="entitlement-metric-value">RM 150.00</div>
+            </div>
+            <div class="entitlement-metric">
+              <div class="entitlement-metric-label">Current Balance</div>
+              <div class="entitlement-metric-value">RM 500.00</div>
+            </div>
+            <div class="entitlement-metric entitlement-metric--usable">
+              <div class="entitlement-metric-label">Usable Balance</div>
+              <div class="entitlement-metric-value">RM 350.00</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Filter Modal Overlay -->
+    <div id="entitlementFilterModal" class="modal-overlay" onclick="closeEntitlementFilterModal(event)">
+      <div class="filter-bottom-sheet">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Entitlement Filter</h3>
+            <p style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">Filter team entitlements by year and category</p>
+          </div>
+          <button type="button" onclick="closeEntitlementFilterModal()" style="width: 32px; height: 32px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- 1. Search Keyword -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">SEARCH KEYWORD</label>
+            <input type="text" id="filterKeywordInput" placeholder="Search Name or Employee ID..." style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+          </div>
+
+          <!-- 2. Entitlement Year -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">YEAR</label>
+            <select id="filterYearSelect" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+              <option value="2026" selected>Year 2026</option>
+              <option value="2025">Year 2025</option>
+              <option value="2024">Year 2024</option>
+            </select>
+          </div>
+
+          <!-- 3. Benefit Type -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">BENEFIT TYPE</label>
+            <select id="filterBenefitTypeSelect" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+              <option value="All Benefit Types">All Benefit Types</option>
+              <option value="Car Maintenance">Car Maintenance</option>
+              <option value="Mobile Phone">Mobile Phone</option>
+              <option value="Optical & Dental">Optical &amp; Dental</option>
+              <option value="Outpatient GP Clinic">Outpatient GP Clinic</option>
+              <option value="Personal Allowance">Personal Allowance</option>
+              <option value="Specialist Consultation">Specialist Consultation</option>
+            </select>
+          </div>
+
+          <!-- 4. Utilisation % Band -->
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">UTILISATION % BAND</label>
+            <select id="filterUtilisationBandSelect" style="width: 100%; padding: 11px 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none;">
+              <option value="All Utilisation Bands">All Utilisation Bands</option>
+              <option value="0% - 25%">0% - 25% (Low Utilisation)</option>
+              <option value="26% - 50%">26% - 50% (Moderate Utilisation)</option>
+              <option value="51% - 75%">51% - 75% (High Utilisation)</option>
+              <option value="76% - 100%">76% - 100% (Near Max / Exhausted)</option>
+            </select>
+          </div>
+
+          <!-- Buttons -->
+          <div style="margin-top: 10px;">
+            <button type="button" onclick="applyEntitlementFilter()" style="width: 100%; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: #ffffff; font-size: 13.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+              Apply Filter
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function openEntitlementFilterModal() {
+      const modal = document.getElementById('entitlementFilterModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(0)';
+      }, 10);
+    }
+
+    function closeEntitlementFilterModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      const modal = document.getElementById('entitlementFilterModal');
+      if (!modal) return;
+      modal.style.opacity = '0';
+      modal.querySelector('.filter-bottom-sheet').style.transform = 'translateY(100%)';
+      setTimeout(() => { modal.style.display = 'none'; }, 260);
+    }
+
+    function applyEntitlementFilter() {
+      const kw = document.getElementById('filterKeywordInput')?.value.trim() || '';
+      const yr = document.getElementById('filterYearSelect')?.value || '2026';
+      const bType = document.getElementById('filterBenefitTypeSelect')?.value || 'All Benefit Types';
+      const band = document.getElementById('filterUtilisationBandSelect')?.value || 'All Utilisation Bands';
+
+      let summaryParts = [`Year ${yr}`];
+      if (kw) summaryParts.push(`"${kw}"`);
+      if (bType && bType !== 'All Benefit Types') summaryParts.push(bType);
+      if (band && band !== 'All Utilisation Bands') summaryParts.push(`Util: ${band}`);
+
+      const txt = summaryParts.join(' • ');
+      const displayEl = document.getElementById('currentFilterTextDisplay');
+      if (displayEl) displayEl.textContent = txt;
+
+      closeEntitlementFilterModal();
+      if (typeof showToast === 'function') {
+        showToast(`Filter applied: ${txt}`);
+      }
+    }
+  </script>
+  <script src="../../../js/claims/staff-entitlement.js"></script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>
+
+

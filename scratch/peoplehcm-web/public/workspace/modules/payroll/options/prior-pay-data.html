@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Prior Pay Data</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/payroll/prior-pay-data.js?v=20261002-tax-year" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-summary-cards.css">
+  <link rel="stylesheet" href="../../../css/prior-pay-data.css?v=20261002-attachment-row">
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+  <preview-top-bar active-page="payroll"></preview-top-bar>
+  <div class="phone-container prior-phone">
+    <header class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div class="prior-title-row">
+        <button type="button" class="prior-header-button" id="priorBack" aria-label="Back to Payroll"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+        <h1 id="priorPageTitle">Prior Pay Data</h1>
+        <button type="button" class="prior-header-button" id="priorInfo" aria-label="About Prior Pay Data" hidden><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>
+      </div>
+    </header>
+
+    <main class="main-content" id="priorMain">
+    <div class="prior-detail-heading" id="priorDetailHeading" hidden>
+      <div class="prior-tabs claim-stepper-card" role="tablist" aria-label="Prior pay details">
+        <span class="stepper-line-bg" aria-hidden="true"></span>
+        <span class="stepper-line-fill" id="priorStepProgress" aria-hidden="true"></span>
+        <button type="button" class="stepper-item" id="tab-general" role="tab" aria-selected="true" aria-controls="panel-general" data-tab="general"><span class="stepper-circle" aria-hidden="true">1</span><span class="stepper-label">General</span></button>
+        <button type="button" class="stepper-item" id="tab-earnings" role="tab" aria-selected="false" aria-controls="panel-earnings" tabindex="-1" data-tab="earnings"><span class="stepper-circle" aria-hidden="true">2</span><span class="stepper-label">YTD Earning Detail</span></button>
+        <button type="button" class="stepper-item" id="tab-reliefs" role="tab" aria-selected="false" aria-controls="panel-reliefs" tabindex="-1" data-tab="reliefs"><span class="stepper-circle" aria-hidden="true">3</span><span class="stepper-label">Tax Reliefs</span></button>
+      </div>
+    </div>
+
+      <section id="priorListView" aria-label="Previous employers">
+        <div id="priorRecords" aria-live="polite"><p class="prior-empty">Loading prior pay records…</p></div>
+        <div class="prior-load-error" id="priorLoadError" hidden><p>Prior pay records could not be loaded. Please try again.</p><button type="button" id="priorRetry">Try again</button></div>
+      </section>
+      <section id="priorDetailView" hidden>
+        <form id="panel-general" class="prior-form" role="tabpanel" aria-labelledby="tab-general">
+          <div class="prior-form-title"><span class="section-title-accent" aria-hidden="true"></span><h3>Employment details</h3></div>
+          <div class="prior-fields">
+            <div class="prior-field prior-employee-field"><label for="prior-general-empNo">Employee ID</label><input id="prior-general-empNo" type="text" readonly></div>
+            <div class="prior-field"><label for="priorSerialNo">SN</label><input id="priorSerialNo" type="text" readonly></div>
+            <div class="prior-field"><label for="priorDateFrom">Start Date</label><input id="priorDateFrom" name="dateFrom" type="date"></div>
+            <div class="prior-field"><label for="priorDateTo">End Date</label><input id="priorDateTo" name="dateTo" type="date"></div>
+            <div class="prior-field"><label for="priorCompany">Company</label><input id="priorCompany" name="company" type="text" maxlength="160"></div>
+            <div class="prior-field"><label for="priorPosition">Position</label><input id="priorPosition" name="position" type="text" maxlength="160"></div>
+            <div class="prior-field"><label for="priorReason">Reason Leaving <span class="prior-required">*</span></label><input id="priorReason" name="reasonLeaving" type="text" required maxlength="250"></div>
+          </div>
+          <div class="prior-form-title prior-subsection"><span class="section-title-accent" aria-hidden="true"></span><h3>Pay &amp; experience</h3></div>
+          <div class="prior-fields">
+            <div class="prior-field"><label for="priorLastPay">Last Pay</label><input id="priorLastPay" name="lastPay" type="number" inputmode="decimal" min="0" step="0.01"></div>
+            <div class="prior-field"><label for="priorExperience">Year Experience</label><input id="priorExperience" name="yearExperience" type="number" inputmode="decimal" min="0" step="0.01"></div>
+            <div class="prior-field"><label for="priorIndustry">Industry <span class="prior-required">*</span></label><select id="priorIndustry" name="industry" required><option value="">Select industry</option><option>HOSPITALITY</option><option>OIL AND GAS</option><option>MANUFACTURING</option><option>RETAIL</option><option>TECHNOLOGY</option><option>HEALTHCARE</option><option>FINANCE</option><option>EDUCATION</option></select></div>
+            <div class="prior-field"><label for="priorPayRate">Pay Rate <span class="prior-required">*</span></label><select id="priorPayRate" name="payRate" required><option value="">Select pay rate</option><option>Monthly</option><option>Fortnightly</option><option>Weekly</option><option>Daily</option><option>Hourly</option><option>Annual</option></select></div>
+            <div class="prior-field"><label for="priorJob">Job Experience <span class="prior-required">*</span></label><select id="priorJob" name="jobExperience" required><option value="">Select job experience</option><option>MARKETING</option><option>HUMAN RESOURCES</option><option>OPERATIONS</option><option>FINANCE</option><option>INFORMATION TECHNOLOGY</option><option>SALES</option><option>ADMINISTRATION</option></select></div>
+          </div>
+          <div class="prior-form-title prior-subsection"><span class="section-title-accent" aria-hidden="true"></span><h3>Address &amp; notes</h3></div>
+          <div class="prior-fields">
+            <div class="prior-field"><label for="priorAddress1">Address</label><input id="priorAddress1" name="address1" aria-label="Address line 1" type="text" maxlength="200"><input name="address2" aria-label="Address line 2" type="text" maxlength="200"><input name="address3" aria-label="Address line 3" type="text" maxlength="200"></div>
+            <div class="prior-field"><label for="priorNotes">Notes</label><textarea id="priorNotes" name="notes" rows="3" maxlength="2000"></textarea></div>
+          </div>
+        </form>
+        <form id="panel-earnings" class="prior-form" role="tabpanel" aria-labelledby="tab-earnings" hidden>
+          <div class="prior-form-title"><span class="section-title-accent" aria-hidden="true"></span><h3>YTD Earning Detail</h3></div>
+          <div class="prior-fields" id="earningsFields"></div>
+          <div class="prior-attachment-row" role="group" aria-labelledby="earningsAttachmentTitle">
+            <h4 class="form-section-heading" id="earningsAttachmentTitle">Upload Attachment</h4>
+            <div class="prior-upload-actions">
+              <button type="button" class="prior-upload-button" data-upload="earnings"><span class="prior-upload-icon"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span><span>Select File(s)</span></button>
+              <button type="button" class="prior-upload-button is-camera" data-camera="earnings"><span class="prior-upload-icon"><i class="fa-solid fa-camera" aria-hidden="true"></i></span><span>Take a Picture</span></button>
+            </div>
+            <div id="earningsAttachments" class="prior-attachments" aria-live="polite"></div>
+            <input id="earningsFiles" type="file" multiple hidden>
+            <input id="earningsCamera" type="file" accept="image/*" capture="environment" hidden>
+          </div>
+        </form>
+        <form id="panel-reliefs" class="prior-form" role="tabpanel" aria-labelledby="tab-reliefs" hidden>
+          <div class="prior-form-title"><span class="section-title-accent" aria-hidden="true"></span><h3>Tax Reliefs</h3></div>
+          <div class="prior-fields" id="reliefsFields"></div>
+          <div class="prior-attachment-row" role="group" aria-labelledby="reliefsAttachmentTitle">
+            <h4 class="form-section-heading" id="reliefsAttachmentTitle">Upload Attachment</h4>
+            <div class="prior-upload-actions">
+              <button type="button" class="prior-upload-button" data-upload="reliefs"><span class="prior-upload-icon"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span><span>Select File(s)</span></button>
+              <button type="button" class="prior-upload-button is-camera" data-camera="reliefs"><span class="prior-upload-icon"><i class="fa-solid fa-camera" aria-hidden="true"></i></span><span>Take a Picture</span></button>
+            </div>
+            <div id="reliefsAttachments" class="prior-attachments" aria-live="polite"></div>
+            <input id="reliefsFiles" type="file" multiple hidden>
+            <input id="reliefsCamera" type="file" accept="image/*" capture="environment" hidden>
+          </div>
+        </form>
+        <div class="prior-save-bar" id="priorSaveBar" hidden>
+          <div class="prior-step-actions">
+            <button type="button" class="btn-step-back" id="priorPrevious" hidden><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Back</span></button>
+            <button type="button" class="form-cancel-btn" id="priorCancel" data-page-form-cancel><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button>
+            <button type="button" class="btn-draft-bright" id="priorDraft"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i><span>Save Draft</span></button>
+            <button type="button" class="btn-submit-primary" id="priorNext"><span>Next</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" class="btn-submit-primary" id="priorUpdate" hidden><i class="fa-solid fa-rotate" aria-hidden="true"></i><span>Update</span></button>
+          </div>
+          <p id="priorSaveStatus" role="status" aria-live="polite" hidden></p>
+        </div>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps" id="priorBottomNav"></phone-bottom-nav>
+    <div class="prior-overlay prior-record-overlay" id="priorRecordDetails" aria-hidden="true">
+      <section class="prior-record-modal" role="dialog" aria-modal="true" aria-labelledby="priorRecordDetailsTitle" tabindex="-1">
+        <div class="prior-record-modal-header">
+          <h2 id="priorRecordDetailsTitle">Prior Pay Data</h2>
+          <button type="button" id="priorRecordDetailsClose" aria-label="Close prior pay details"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
+        </div>
+        <div class="prior-record-modal-body"><dl class="prior-record-details" id="priorRecordDetailsFields"></dl></div>
+      </section>
+    </div>
+    <div class="prior-overlay" id="priorDialog" aria-hidden="true">
+      <section class="prior-sheet" role="dialog" aria-modal="true" aria-labelledby="priorDialogTitle" aria-describedby="priorDialogText">
+        <div class="prior-sheet-handle" aria-hidden="true"></div>
+        <div class="prior-sheet-header"><h2 id="priorDialogTitle">Prior Pay Data</h2><button type="button" id="priorDialogClose" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <p id="priorDialogText"></p>
+        <div class="prior-dialog-actions"><button type="button" id="priorDialogCancel">Keep editing</button><button type="button" id="priorDialogConfirm">Done</button></div>
+      </section>
+    </div>
+  </div>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

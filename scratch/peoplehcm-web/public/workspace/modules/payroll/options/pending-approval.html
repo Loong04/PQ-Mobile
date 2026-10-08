@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Payroll Pending Approval</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/payroll-pending-approval.css">
+  <link rel="stylesheet" href="../../../css/approval-actions.css">
+  <link rel="stylesheet" href="../../../css/pending-approval-filter.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/pending-approval-filter.js" defer></script>
+  <script src="../../../js/payroll/payroll-history-data.js" defer></script>
+  <script src="../../../js/payroll/payroll-pending-data.js" defer></script>
+  <script src="../../../js/payroll/payroll-pending-approval.js" defer></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="payroll-pending-page unified-approval-actions">
+  <preview-top-bar active-page="payroll"></preview-top-bar>
+  <div class="phone-container">
+    <header class="payroll-pending-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="payroll-pending-header-row">
+        <a class="payroll-pending-back" id="payrollPendingBack" href="../index.html?scope=team" aria-label="Back to Payroll Team"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <h1>Pending Approval</h1>
+      </div>
+    </header>
+    <main class="payroll-pending-content">
+      <div class="payroll-pending-tabs" role="tablist" aria-label="Payroll request type">
+        <button type="button" class="filter-pill active" id="payrollPendingTab-tax" data-payroll-tab="tax" role="tab" aria-selected="true" aria-controls="payrollPendingPanel">Tax Relief</button>
+        <button type="button" class="filter-pill" id="payrollPendingTab-deduction" data-payroll-tab="deduction" role="tab" aria-selected="false" aria-controls="payrollPendingPanel" tabindex="-1">Deduction Request</button>
+      </div>
+      <div class="approval-filter-summary">
+        <div class="payroll-pending-summary-copy"><small>Current Filter</small><div class="payroll-pending-summary-value"><span id="payrollPendingFilterSummary">All Requests &bull; All Dates</span></div></div>
+        <button type="button" id="payrollPendingFilterTrigger" aria-label="Open pending approval filter" aria-haspopup="dialog" aria-controls="payrollPendingFilter"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+      </div>
+      <section id="payrollPendingPanel" role="tabpanel" aria-labelledby="payrollPendingTab-tax">
+        <div class="payroll-pending-list-heading"><h2>Pending Approvals (<span id="payrollPendingCount">0</span>)</h2><label class="payroll-pending-select-all"><input type="checkbox" id="payrollPendingSelectAll">Select All</label></div>
+        <div id="payrollPendingQueue"></div>
+      </section>
+    </main>
+    <aside id="payrollPendingBulk" class="payroll-pending-bulk" aria-label="Selected requests" hidden>
+      <strong><span id="payrollPendingSelectedCount">0</span> selected</strong>
+      <div class="pending-action-grid">
+        <button type="button" class="action-btn-approve" data-payroll-action="approve"><i class="fa-solid fa-check" aria-hidden="true"></i>Approve</button>
+        <button type="button" class="action-btn-resubmit" data-payroll-action="resubmit"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Resubmit</button>
+        <button type="button" class="action-btn-reject" data-payroll-action="reject"><i class="fa-solid fa-xmark" aria-hidden="true"></i>Reject</button>
+      </div>
+    </aside>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <favourite-sheet></favourite-sheet>
+
+    <div id="payrollPendingMenu" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel payroll-approval-menu" role="dialog" aria-modal="true" aria-labelledby="payrollPendingMenuTitle">
+        <div class="payroll-approval-handle" aria-hidden="true"></div>
+        <div class="payroll-approval-menu-heading"><h2 id="payrollPendingMenuTitle">Request Options</h2><button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Close request options"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <div class="payroll-approval-menu-options">
+          <button type="button" class="payroll-approval-menu-option" id="payrollPendingViewDetails"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>View Details</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" class="payroll-approval-menu-option" id="payrollPendingViewWorkflow"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>View Workflow</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+      </section>
+    </div>
+    <div id="payrollPendingDetails" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel" role="dialog" aria-modal="true" aria-labelledby="payrollPendingDetailsTitle">
+        <header class="payroll-approval-details-header">
+          <h2 id="payrollPendingDetailsTitle">Tax Relief Detail</h2>
+          <button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Close approval details"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div class="payroll-approval-details-body"><table class="payroll-approval-table" id="payrollPendingDetailsTable"><tbody></tbody></table></div>
+        <footer class="payroll-approval-details-footer pending-action-grid"></footer>
+      </section>
+    </div>
+    <div id="payrollPendingWorkflow" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel payroll-approval-workflow" role="dialog" aria-modal="true" aria-labelledby="payrollPendingWorkflowTitle">
+        <header class="payroll-approval-workflow-header">
+          <div class="payroll-approval-handle" aria-hidden="true"></div>
+          <div class="payroll-approval-workflow-heading">
+            <i class="fa-solid fa-diagram-project payroll-approval-workflow-icon" aria-hidden="true"></i>
+            <div><h2 id="payrollPendingWorkflowTitle">Approval Workflow</h2><p>Approval status &amp; history</p></div>
+            <button type="button" class="payroll-approval-close" data-close-payroll-sheet aria-label="Close workflow"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+        </header>
+        <div class="payroll-approval-workflow-body">
+          <section id="payrollPendingWorkflowRequest" class="payroll-approval-workflow-request" aria-label="Workflow request"></section>
+          <section aria-labelledby="payrollPendingWorkflowStepsTitle">
+            <h3 id="payrollPendingWorkflowStepsTitle">Approval Steps</h3>
+            <ol id="payrollPendingWorkflowSteps" class="payroll-approval-workflow-steps"></ol>
+          </section>
+          <section class="payroll-approval-workflow-audit" aria-labelledby="payrollPendingWorkflowAuditTitle">
+            <h3 id="payrollPendingWorkflowAuditTitle">Audit History</h3>
+            <ul id="payrollPendingWorkflowAudit"></ul>
+          </section>
+        </div>
+        <footer class="payroll-approval-workflow-footer"><button type="button" class="action-btn-cancel" data-close-payroll-sheet><i class="fa-solid fa-xmark" aria-hidden="true"></i>Close Workflow</button></footer>
+      </section>
+    </div>
+  </div>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

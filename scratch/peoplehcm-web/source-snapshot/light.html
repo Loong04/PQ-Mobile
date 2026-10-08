@@ -1,0 +1,2950 @@
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Mobile Dashboard (Light Mode)</title>
+  <script src="js/icon-system.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #0f172a;
+      padding: 20px 0;
+    }
+
+    /* Top Theme Switcher Bar */
+    .theme-switch-bar {
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      background: #ffffff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .mode-btn {
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: #7c3aed;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+    }
+
+    .bar-divider {
+      width: 1px;
+      background: #e2e8f0;
+      margin: 2px 4px;
+    }
+
+    /* Mobile Frame */
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      min-height: 920px;
+      background: #f6f8fc;
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.2), 0 0 0 10px #ffffff, 0 0 0 12px #e2e8f0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Extended Deep Midnight Royal Purple Hero Background */
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 520px;
+      background: 
+        radial-gradient(circle at 85% 12%, rgba(168, 85, 247, 0.35) 0%, transparent 45%),
+        radial-gradient(circle at 15% 55%, rgba(99, 102, 241, 0.25) 0%, transparent 45%),
+        linear-gradient(178deg, #12032e 0%, #1c0645 35%, #2a0b63 70%, #350d7d 90%, rgba(246, 248, 252, 0) 100%);
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .hero-bg svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      position: relative;
+      z-index: 10;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #ffffff;
+    }
+
+    /* App Header (Clean Header: Logo on left, Sarah on right) */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px 12px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    .logo-text span {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+    }
+
+    /* Main Scrollable Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 18px 90px;
+      position: relative;
+      z-index: 5;
+      scrollbar-width: none;
+    }
+
+    .main-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Greeting Header */
+    .greeting-header-box {
+      margin-bottom: 18px;
+    }
+
+    .greeting-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+      margin-bottom: 2px;
+    }
+
+    .greeting-sub {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+    }
+
+    /* ========================================================
+       INSIGHTS CARD (DESIGNER'S VISION: NEO-LUXE SILK BENTO)
+       ======================================================== */
+    .insights-card {
+      background: #f3f5fa;
+      border: 1px solid #dbe3f0;
+      border-radius: 28px;
+      padding: 20px 18px 18px;
+      margin-bottom: 24px;
+      box-shadow: 
+        0 16px 36px -8px rgba(45, 14, 95, 0.16), 
+        0 0 0 1px rgba(219, 227, 240, 0.8), 
+        0 0 20px rgba(168, 85, 247, 0.12);
+      position: relative;
+    }
+
+    .insights-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .insights-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .insights-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .insights-pills {
+      display: flex;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .insight-pill {
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+
+    .insight-pill.active {
+      background: #ffffff;
+      color: #7c3aed;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+
+    .insight-tab-pane {
+      display: none;
+      animation: fadeInTab 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .insight-tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Side-by-side Bento Cards (Mint & Rose Silk) */
+    .indicator-status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .indicator-bento-card {
+      border-radius: 20px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+    }
+
+    .indicator-bento-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .indicator-bento-card.mint {
+      background: linear-gradient(145deg, #ecfdf5 0%, #f0fdf4 100%);
+      border: 1px solid #a7f3d0;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
+    }
+
+    .indicator-bento-card.rose {
+      background: linear-gradient(145deg, #fff1f2 0%, #fef2f2 100%);
+      border: 1px solid #fecdd3;
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.08);
+    }
+
+    .bento-icon-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .bento-icon-badge.mint {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .bento-icon-badge.rose {
+      background: #ffe4e6;
+      color: #e11d48;
+    }
+
+    .bento-content h4 {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .indicator-bento-card.mint h4 { color: #065f46; }
+    .indicator-bento-card.rose h4 { color: #9f1239; }
+
+    .bento-content p {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .indicator-bento-card.mint p { color: #047857; }
+    .indicator-bento-card.rose p { color: #be123c; }
+
+    /* Top 3 Attention Cards (Sleek 3-Col Mini Cards) */
+    .top-attention-sec {
+      margin-bottom: 16px;
+    }
+
+    .top-attention-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #64748b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mini-attention-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .mini-attention-card {
+      background: #f8faff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .mini-attention-card:hover {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+    }
+
+    .mini-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mini-icon {
+      font-size: 15px;
+    }
+
+    .mini-delta-pill {
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #e11d48;
+      background: #fee2e2;
+      padding: 1px 5px;
+      border-radius: 6px;
+    }
+
+    .mini-card-middle h5 {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+
+    .mini-card-middle .val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 2px;
+    }
+
+    .mini-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 4px;
+      border-top: 1px solid #edf2f7;
+    }
+
+    .mini-bar-dot {
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .mini-bar-dot.teal { background: #10b981; }
+    .mini-bar-dot.amber { background: #f59e0b; }
+    .mini-bar-dot.rose { background: #f43f5e; }
+
+    .mini-chevron {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Action Trigger Button */
+    .view-all-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #ffffff;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      border-radius: 16px;
+      padding: 12px 18px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .view-all-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45);
+    }
+
+    /* Section Header Common in Light Canvas */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      margin-top: 6px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.2px;
+    }
+
+    .section-action {
+      font-size: 12px;
+      font-weight: 700;
+      color: #7c3aed;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* ========================================================
+       QUICK ACTIONS (4 PRISTINE WHITE CARDS)
+       ======================================================== */
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .quick-action-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 14px 6px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+      transition: all 0.15s ease;
+    }
+
+    .quick-action-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.08);
+    }
+
+    .qa-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .qa-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e293b;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* ========================================================
+       FOR YOU SECTION (PRISTINE WHITE CARDS)
+       ======================================================== */
+    .for-you-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .for-you-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.03);
+      transition: all 0.15s ease;
+    }
+
+    .for-you-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+
+    .fy-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .fy-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .fy-text h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .fy-text p {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .fy-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ========================================================
+       COMPANY UPDATES SECTION (PRISTINE WHITE CARDS)
+       ======================================================== */
+    .updates-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .update-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.03);
+      transition: all 0.15s ease;
+    }
+
+    .update-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+
+    .update-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    .update-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .update-tag {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .update-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.25;
+      margin-bottom: 3px;
+    }
+
+    .update-desc {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .update-meta {
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .unread-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      position: absolute;
+      top: 14px;
+      right: 14px;
+    }
+
+    /* ========================================================
+       BOTTOM NAVIGATION BAR (LIGHT MODE WITH APPS 4-DOTS)
+       ======================================================== */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 78px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px 14px;
+      z-index: 20;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: #64748b;
+      font-size: 10.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      width: 54px;
+      transition: color 0.15s ease;
+    }
+
+    .nav-item.active {
+      color: #7c3aed;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+      position: relative;
+    }
+
+    .nav-badge-red {
+      position: absolute;
+      top: -2px;
+      right: -6px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: 800;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #ffffff;
+    }
+
+    /* Elevate 4-Dots Apps / Menu FAB */
+    .fab-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
+      border: none;
+      cursor: pointer;
+      margin-top: -16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fab-btn:active {
+      transform: scale(0.92);
+    }
+
+    .home-bar {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 4px;
+      background: #94a3b8;
+      border-radius: 10px;
+      opacity: 0.6;
+    }
+
+    /* ========================================================
+       INTERACTIVE BOTTOM SHEET DRAWERS (LIGHT THEME)
+       ======================================================== */
+    .indicators-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .indicators-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .indicators-sheet {
+      width: 100%;
+      max-height: 82%;
+      background: #f6f8fc;
+      border-top: 1.5px solid rgba(192, 132, 252, 0.4);
+      border-radius: 28px 28px 0 0;
+      padding: 14px 18px 30px;
+      box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.15), 0 0 20px rgba(124, 58, 237, 0.15);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .indicators-overlay.active .indicators-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 44px;
+      height: 4px;
+      background: #cbd5e1;
+      border-radius: 10px;
+      align-self: center;
+      margin-bottom: 12px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .sheet-title h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.2px;
+    }
+
+    .sheet-title p {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .sheet-close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      transition: all 0.15s ease;
+    }
+
+    .sheet-close-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    /* ========================================================
+       PREMIUM SEGMENTED FILTER CONTROL (APPLE / LINEAR STYLE)
+       ======================================================== */
+    .sheet-filter-bar {
+      display: flex;
+      background: #e9eef5;
+      border: 1px solid rgba(203, 213, 225, 0.6);
+      border-radius: 14px;
+      padding: 3px;
+      gap: 3px;
+      margin-bottom: 14px;
+    }
+
+    .sheet-filter-pill {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 11px;
+      background: transparent;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+
+    .sheet-filter-pill:hover {
+      color: #0f172a;
+    }
+
+    .sheet-filter-pill.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 3px 12px rgba(124, 58, 237, 0.35);
+    }
+
+    .filter-count-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(148, 163, 184, 0.18);
+      color: #475569;
+      transition: all 0.18s ease;
+    }
+
+    .filter-count-badge.green {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .filter-count-badge.red {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .filter-count-badge.blue {
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+
+    .sheet-filter-pill.active .filter-count-badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-weight: 900;
+    }
+
+    .sheet-tag-badge {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 7px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+      color: #475569;
+      transition: all 0.15s ease;
+    }
+
+    .sheet-tag-badge.green { background: #dcfce7; color: #15803d; }
+    .sheet-tag-badge.red { background: #fee2e2; color: #b91c1c; }
+    .sheet-tag-badge.blue { background: #e0e7ff; color: #4338ca; }
+
+    /* Scrollable Indicators List */
+    .sheet-list-scroll {
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 2px;
+      scrollbar-width: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sheet-list-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .sheet-item-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.03);
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .sheet-item-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    .sheet-item-card.attention {
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .sheet-item-card.positive {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .item-left-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .item-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .item-info h5 {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .item-info span {
+      font-size: 10.5px;
+      color: #64748b;
+    }
+
+    .item-right-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: right;
+    }
+
+    .item-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .item-status-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .item-status-pill.attention {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+    }
+
+    .item-status-pill.positive {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+
+    .item-status-pill.normal {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    /* Accordion in Indicator Drawer */
+    .sheet-accordion-item {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1.5px solid rgba(221, 214, 254, 0.7);
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.04);
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .sheet-accordion-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .sheet-accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+
+    .sheet-accordion-header:hover {
+      background: linear-gradient(135deg, #ede9fe 0%, #e9d5ff 100%);
+    }
+
+    .sheet-accordion-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .sheet-accordion-hand {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .sheet-accordion-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #3b0764;
+      letter-spacing: -0.2px;
+    }
+
+    .sheet-accordion-count {
+      background: #ffffff;
+      color: #6b21a8;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(107, 33, 168, 0.12);
+    }
+
+    .sheet-accordion-chevron {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6d28d9;
+      font-size: 11px;
+      font-weight: 800;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .sheet-accordion-item.collapsed .sheet-accordion-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .sheet-accordion-item.collapsed .sheet-accordion-body {
+      display: none;
+    }
+
+    .sheet-accordion-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sheet-metric-row {
+      display: grid;
+      grid-template-columns: 1fr 65px 78px;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid #f8fafc;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s ease;
+    }
+
+    .sheet-metric-row:nth-child(even) {
+      background: #faf8ff;
+    }
+
+    .sheet-metric-row:hover {
+      background: #f3e8ff;
+    }
+
+    .metric-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      line-height: 1.25;
+    }
+
+    .metric-val {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+      text-align: right;
+      padding-right: 4px;
+    }
+
+    .metric-delta {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .metric-delta.positive {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+
+    .metric-delta.alert {
+      background: #fff1f2;
+      color: #e11d48;
+      border: 1px solid #fecdd3;
+    }
+
+    .metric-delta.neutral {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* View Switcher: Non-Grid Cards vs Compact Table */
+    .sheet-view-toggle {
+      display: flex;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 3px;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .view-toggle-btn {
+      flex: 1;
+      padding: 7px 12px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #64748b;
+      border: none;
+      background: transparent;
+      border-radius: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .view-toggle-btn.active {
+      background: #ffffff;
+      color: #7c3aed;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+    }
+
+    /* ========================================================
+       NON-GRID MODERN METRIC CARDS (FLUID FEED DESIGN)
+       ======================================================== */
+    .feed-section-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 6px 4px 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feed-section-label.positive { color: #059669; }
+    .feed-section-label.negative { color: #e11d48; margin-top: 10px; }
+
+    .metric-feed-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 13px 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      transition: all 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-feed-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.08);
+      border-color: #cbd5e1;
+    }
+
+    .metric-feed-card.highlight-positive {
+      border-left: 4.5px solid #10b981;
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    }
+
+    .metric-feed-card.highlight-alert {
+      border-left: 4.5px solid #ef4444;
+      background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
+    }
+
+    .feed-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .feed-card-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feed-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .feed-card-title-group h5 {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.2px;
+      margin: 0;
+    }
+
+    .feed-card-title-group span {
+      font-size: 10.5px;
+      color: #64748b;
+      margin-top: 1px;
+      display: block;
+    }
+
+    .feed-card-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(226, 232, 240, 0.8);
+    }
+
+    .feed-val-block {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+
+    .feed-val-big {
+      font-size: 21px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    .feed-val-unit {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .feed-badge-pill {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .feed-badge-pill.positive {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+
+    .feed-badge-pill.alert {
+      background: #fff1f2;
+      color: #e11d48;
+      border: 1px solid #fecdd3;
+    }
+
+    .feed-badge-pill.neutral {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+    .quick-actions-grid .qa-icon-box {
+      background: rgba(124, 58, 237, 0.14) !important;
+      border-color: rgba(124, 58, 237, 0.28) !important;
+      color: #7c3aed !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Theme Switcher Bar -->
+  <div class="theme-switch-bar">
+    <a class="mode-btn" href="index.html">🌙 Dark Mode V1</a>
+    <a class="mode-btn" href="homedark-v2.html">✨ Dark Shortcuts V2</a>
+    <a class="mode-btn active" href="light.html">☀️ Light Mode</a>
+    <div class="bar-divider"></div>
+    <a class="mode-btn" href="team.html">👥 My Team</a>
+    <a class="mode-btn" href="leave.html">🌴 Leave</a>
+  </div>
+
+  <div class="phone-container">
+    <!-- Extended Deep Royal Purple Hero Background with Constellation Lines -->
+    <div class="hero-bg">
+      <svg viewBox="0 0 420 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lightHeroGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#c084fc" stop-opacity="0.35" />
+            <stop offset="50%" stop-color="#a855f7" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.3" />
+          </linearGradient>
+          <filter id="lightGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <path d="M-30 110 Q 90 60 210 120 T 440 90" stroke="url(#lightHeroGrad)" stroke-width="1.8" />
+        <path d="M-10 160 Q 140 100 270 150 T 450 130" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1.4" />
+        <path d="M120 -10 Q 250 50 350 140 T 450 190" stroke="rgba(168, 85, 247, 0.25)" stroke-width="1.2" stroke-dasharray="3 3" />
+        
+        <line x1="250" y1="75" x2="330" y2="100" stroke="rgba(192, 132, 252, 0.45)" stroke-width="1.2" />
+        <line x1="330" y1="100" x2="390" y2="140" stroke="rgba(192, 132, 252, 0.45)" stroke-width="1.2" />
+        <line x1="250" y1="75" x2="280" y2="140" stroke="rgba(192, 132, 252, 0.35)" stroke-width="1" />
+        <line x1="280" y1="140" x2="350" y2="160" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1.2" />
+
+        <circle cx="250" cy="75" r="7" fill="rgba(192, 132, 252, 0.3)" filter="url(#lightGlow)" />
+        <circle cx="250" cy="75" r="3.5" fill="#e9d5ff" />
+        <circle cx="330" cy="100" r="9" fill="rgba(192, 132, 252, 0.35)" filter="url(#lightGlow)" />
+        <circle cx="330" cy="100" r="4.5" fill="#f5f3ff" />
+        <circle cx="280" cy="140" r="6" fill="rgba(192, 132, 252, 0.25)" filter="url(#lightGlow)" />
+        <circle cx="280" cy="140" r="3" fill="#c084fc" />
+        <circle cx="350" cy="160" r="8" fill="rgba(56, 189, 248, 0.3)" filter="url(#lightGlow)" />
+        <circle cx="350" cy="160" r="4" fill="#bae6fd" />
+      </svg>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <i class="fa-solid fa-signal"></i>
+        <i class="fa-solid fa-wifi"></i>
+        <i class="fa-solid fa-battery-full"></i>
+      </div>
+    </div>
+
+    <!-- App Header -->
+    <div class="app-header">
+      <div class="logo-container">
+        <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="10" cy="12" r="4.5" stroke="#ffffff" stroke-width="2.5" />
+          <circle cx="22" cy="12" r="4.5" stroke="#ffffff" stroke-width="2.5" />
+          <circle cx="10" cy="22" r="4.5" stroke="#c084fc" stroke-width="2.5" />
+          <path d="M10 16.5V17.5M14.5 12H17.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        <div class="logo-text">
+          <h1>PeopleHCM</h1>
+          <span>by PeopleQuest</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <img class="profile-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Sarah">
+      </div>
+    </div>
+
+    <!-- Scrollable Main Content -->
+    <div class="main-content">
+      <!-- Greeting & Subtitle -->
+      <div class="greeting-header-box">
+        <h2 class="greeting-title">Good morning, Sarah</h2>
+        <p class="greeting-sub">Here's what matters today.</p>
+      </div>
+
+      <!-- ========================================================
+           INSIGHTS CARD (DYNAMIC MY INSIGHTS & TEAM INSIGHTS)
+           ======================================================== -->
+      <div class="insights-card">
+        <div class="insights-header">
+          <div class="insights-title-group">
+            <span class="insights-title" id="insightCardTitle">My Insights</span>
+          </div>
+          <div class="insights-pills">
+            <button class="insight-pill active" id="pillMy" onclick="switchInsightTab('my')">My</button>
+            <button class="insight-pill" id="pillTeam" onclick="switchInsightTab('team')">Team</button>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 1: MY INSIGHTS ==================== -->
+        <div class="insight-tab-pane active" id="paneMy">
+          <!-- Positive & Negative Bento Cards (Mint & Rose Silk) -->
+          <div class="indicator-status-grid">
+            <!-- Mint Card: Positive -->
+            <div class="indicator-bento-card mint">
+              <div class="bento-icon-badge mint">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="bento-content">
+                <h4>Positive</h4>
+                <p>1 of 4 verified</p>
+              </div>
+            </div>
+
+            <!-- Rose Card: Negative -->
+            <div class="indicator-bento-card rose">
+              <div class="bento-icon-badge rose">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="bento-content">
+                <h4>Negative</h4>
+                <p>2 of 10 attention</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top 3 Attention Cards (Sleek 3-Col Mini Grid) -->
+          <div class="top-attention-sec">
+            <div class="top-attention-label">Top Attention Focus</div>
+            <div class="mini-attention-grid">
+              <!-- 1. Attendance -->
+              <div class="mini-attention-card">
+                <div class="mini-card-top">
+                  <span class="mini-icon"><i class="fa-solid fa-calendar-days"></i></span>
+                  <span class="mini-delta-pill">▼ 5.5%</span>
+                </div>
+                <div class="mini-card-middle">
+                  <h5>Attendance</h5>
+                  <div class="val">90%</div>
+                </div>
+                <div class="mini-card-bottom">
+                  <div class="mini-bar-dot teal"></div>
+                  <span class="mini-chevron">›</span>
+                </div>
+              </div>
+
+              <!-- 2. Absent -->
+              <div class="mini-attention-card">
+                <div class="mini-card-top">
+                  <span class="mini-icon"><i class="fa-solid fa-user-xmark"></i></span>
+                  <span class="mini-delta-pill">▲ 1</span>
+                </div>
+                <div class="mini-card-middle">
+                  <h5>Absent</h5>
+                  <div class="val">1 Day</div>
+                </div>
+                <div class="mini-card-bottom">
+                  <div class="mini-bar-dot amber"></div>
+                  <span class="mini-chevron">›</span>
+                </div>
+              </div>
+
+              <!-- 3. Letters -->
+              <div class="mini-attention-card">
+                <div class="mini-card-top">
+                  <span class="mini-icon"><i class="fa-solid fa-envelope"></i></span>
+                  <span class="mini-delta-pill">▲ 1</span>
+                </div>
+                <div class="mini-card-middle">
+                  <h5>Letters</h5>
+                  <div class="val">1 Sign</div>
+                </div>
+                <div class="mini-card-bottom">
+                  <div class="mini-bar-dot rose"></div>
+                  <span class="mini-chevron">›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <a class="view-all-link" onclick="openIndicatorsModal()">
+            <span>View all 14 indicators & trends</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+
+        <!-- ==================== TAB 2: TEAM INSIGHTS ==================== -->
+        <div class="insight-tab-pane" id="paneTeam">
+          <!-- Team Bento Cards (Present vs Action) -->
+          <div class="indicator-status-grid">
+            <!-- Mint Card: Team Present -->
+            <div class="indicator-bento-card mint">
+              <div class="bento-icon-badge mint">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div class="bento-content">
+                <h4>10 / 12 Present</h4>
+                <p>83.3% team on-duty</p>
+              </div>
+            </div>
+
+            <!-- Rose Card: Team Actions Pending -->
+            <div class="indicator-bento-card rose">
+              <div class="bento-icon-badge rose">
+                <i class="fa-solid fa-circle-exclamation"></i>
+              </div>
+              <div class="bento-content">
+                <h4>2 Approvals</h4>
+                <p>Urgent manager action</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top 3 Team Focus Items (3-Col Mini Grid) -->
+          <div class="top-attention-sec">
+            <div class="top-attention-label">Team Real-Time Monitor</div>
+            <div class="mini-attention-grid">
+              <!-- 1. Pending Approvals -->
+              <div class="mini-attention-card" onclick="openForYouModal()">
+                <div class="mini-card-top">
+                  <span class="mini-icon"><i class="fa-solid fa-plane-departure"></i></span>
+                  <span class="mini-delta-pill">2 Req</span>
+                </div>
+                <div class="mini-card-middle">
+                  <h5>Leave Review</h5>
+                  <div class="val">Alex & Emily</div>
+                </div>
+                <div class="mini-card-bottom">
+                  <div class="mini-bar-dot rose"></div>
+                  <span class="mini-chevron">›</span>
+                </div>
+              </div>
+
+              <!-- 2. On Leave Today -->
+              <div class="mini-attention-card" onclick="window.location.href='team.html'">
+                <div class="mini-card-top">
+                  <span class="mini-icon"><i class="fa-solid fa-umbrella-beach"></i></span>
+                  <span class="mini-delta-pill" style="background:#e0f2fe; color:#0284c7;">2 Away</span>
+                </div>
+                <div class="mini-card-middle">
+                  <h5>On Leave</h5>
+                  <div class="val">Chloe, Kevin</div>
+                </div>
+                <div class="mini-card-bottom">
+                  <div class="mini-bar-dot amber"></div>
+                  <span class="mini-chevron">›</span>
+                </div>
+              </div>
+
+              <!-- 3. Late In -->
+              <div class="mini-attention-card" onclick="window.location.href='team.html'">
+                <div class="mini-card-top">
+                  <span class="mini-icon"><i class="fa-solid fa-clock"></i></span>
+                  <span class="mini-delta-pill">1 Late</span>
+                </div>
+                <div class="mini-card-middle">
+                  <h5>Punctuality</h5>
+                  <div class="val">David K.</div>
+                </div>
+                <div class="mini-card-bottom">
+                  <div class="mini-bar-dot teal"></div>
+                  <span class="mini-chevron">›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="view-all-link" onclick="openTeamDrawer()" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); width: 100%; border: none; cursor: pointer;">
+            <span>View full team dashboard (12 members)</span>
+            <span>&rarr;</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           QUICK ACTIONS (4 PRISTINE WHITE CARDS)
+           ======================================================== -->
+      <div class="section-header">
+        <span class="section-title">Quick Actions</span>
+        <a class="section-action">Edit</a>
+      </div>
+
+      <div class="quick-actions-grid">
+        <!-- 1. Apply Leave -->
+        <a class="quick-action-card" href="leave.html">
+          <div class="qa-icon-box" style="background: #dcfce7; color: #15803d;">
+            <i class="fa-solid fa-calendar-minus"></i>
+          </div>
+          <span class="qa-label">Apply Leave</span>
+        </a>
+
+        <!-- 2. Payslip -->
+        <a class="quick-action-card" href="#">
+          <div class="qa-icon-box" style="background: #f3e8ff; color: #7c3aed;">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <span class="qa-label">Payslip</span>
+        </a>
+
+        <!-- 3. Claim -->
+        <a class="quick-action-card" href="#">
+          <div class="qa-icon-box" style="background: #fef3c7; color: #b45309;">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <span class="qa-label">Claim</span>
+        </a>
+
+        <!-- 4. More -->
+        <a class="quick-action-card" href="#">
+          <div class="qa-icon-box" style="background: #e0e7ff; color: #4338ca;">
+            <i class="fa-solid fa-table-cells-large"></i>
+          </div>
+          <span class="qa-label">More</span>
+        </a>
+      </div>
+
+      <!-- ========================================================
+           FOR YOU SECTION (PRISTINE WHITE CARDS)
+           ======================================================== -->
+      <div class="section-header">
+        <span class="section-title">For You</span>
+        <a class="section-action" onclick="openForYouModal()">View all</a>
+      </div>
+
+      <div class="for-you-list">
+        <!-- 1. Approval needed -->
+        <div class="for-you-card" onclick="window.location.href='team.html'">
+          <div class="fy-left">
+            <div class="fy-avatar" style="background: #fef3c7; color: #b45309;">
+              <i class="fa-solid fa-user-clock"></i>
+            </div>
+            <div class="fy-text">
+              <h4>Approval needed</h4>
+              <p>2 leave requests are waiting for your approval</p>
+            </div>
+          </div>
+          <div class="fy-right" style="color: #d97706;">
+            <span>Today</span>
+            <span style="font-size: 14px;">›</span>
+          </div>
+        </div>
+
+        <!-- 2. Payslip ready -->
+        <div class="for-you-card">
+          <div class="fy-left">
+            <div class="fy-avatar" style="background: #f3e8ff; color: #7c3aed;">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div class="fy-text">
+              <h4>Payslip ready</h4>
+              <p>Your July 2026 payslip is available</p>
+            </div>
+          </div>
+          <div class="fy-right" style="color: #7c3aed;">
+            <span>Today</span>
+            <span style="font-size: 14px;">›</span>
+          </div>
+        </div>
+
+        <!-- 3. Team update -->
+        <div class="for-you-card" onclick="window.location.href='team.html'">
+          <div class="fy-left">
+            <div class="fy-avatar" style="background: #ccfbf1; color: #0f766e;">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="fy-text">
+              <h4>Team update</h4>
+              <p>3 colleagues are away tomorrow</p>
+            </div>
+          </div>
+          <div class="fy-right" style="color: #0f766e;">
+            <span>Yesterday</span>
+            <span style="font-size: 14px;">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================
+           COMPANY UPDATES (PRISTINE WHITE CARDS)
+           ======================================================== -->
+      <div class="section-header">
+        <span class="section-title">Company Updates</span>
+        <a class="section-action" onclick="openUpdatesModal()">See all</a>
+      </div>
+
+      <div class="updates-list">
+        <!-- 1. Town Hall this Friday (Unread -> Red) -->
+        <div class="update-card" onclick="openUpdatesModal()">
+          <div class="unread-indicator" style="background: #ef4444; box-shadow: 0 0 8px #ef4444;"></div>
+          <div class="update-thumb" style="background: radial-gradient(circle, #fee2e2, #fecaca);">
+            <span style="transform: rotate(-10deg); display: inline-block;">📢</span>
+          </div>
+          <div class="update-content">
+            <span class="update-tag" style="color: #ef4444; font-weight: 700;">UNREAD</span>
+            <h4 class="update-title">Town Hall this Friday</h4>
+            <p class="update-desc">Join the quarterly company update at 3:00 PM</p>
+            <span class="update-meta">Today • 3 min read</span>
+          </div>
+        </div>
+
+        <!-- 2. Hybrid & Remote Work Policy -->
+        <div class="update-card" onclick="openUpdatesModal()">
+          <div class="unread-indicator" style="background: #0ea5e9; box-shadow: 0 0 8px #0ea5e9;"></div>
+          <div class="update-thumb" style="background: radial-gradient(circle, #e0f2fe, #bae6fd);">
+            <span>📋</span>
+          </div>
+          <div class="update-content">
+            <span class="update-tag" style="color: #0284c7; font-weight: 700;">POLICY & SOP</span>
+            <h4 class="update-title">Hybrid & Remote Work Policy 2026</h4>
+            <p class="update-desc">Updated guidelines on flexible hours</p>
+          </div>
+          <span style="align-self: center; color: #94a3b8; font-size: 16px;">›</span>
+        </div>
+
+        <!-- 3. PeopleQuest wins industry award (Read -> Green) -->
+        <div class="update-card" onclick="openUpdatesModal()">
+          <div class="unread-indicator" style="background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+          <div class="update-thumb" style="background: radial-gradient(circle, #d1fae5, #a7f3d0);">
+            <span>🏆</span>
+          </div>
+          <div class="update-content">
+            <span class="update-tag" style="color: #059669; font-weight: 700;">NEWS</span>
+            <h4 class="update-title">PeopleQuest wins industry award</h4>
+            <p class="update-desc">Celebrating the team behind the achievement</p>
+          </div>
+          <span style="align-self: center; color: #94a3b8; font-size: 16px;">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         BOTTOM NAVIGATION BAR (NOTIFICATION + CALENDAR)
+         ======================================================== -->
+    <div class="bottom-nav">
+      <a class="nav-item active" href="light.html">
+        <div class="nav-icon">
+          <i class="fa-solid fa-house"></i>
+        </div>
+        <span>Home</span>
+      </a>
+
+      <!-- 2. Notification -->
+      <a class="nav-item" href="javascript:void(0)" onclick="openForYouModal()">
+        <div class="nav-icon">
+          <i class="fa-solid fa-bell"></i>
+          <div class="nav-badge-red">2</div>
+        </div>
+        <span>Notification</span>
+      </a>
+
+      <!-- 3. Center Apps 4-Dots FAB -->
+      <button class="fab-btn" aria-label="Apps Menu">
+        <i class="fa-solid fa-table-cells-large"></i>
+      </button>
+
+      <!-- 4. Calendar -->
+      <a class="nav-item" href="javascript:void(0)">
+        <div class="nav-icon">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <span>Calendar</span>
+      </a>
+
+      <!-- 5. Me -->
+      <a class="nav-item" href="#">
+        <div class="nav-icon">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <span>Me</span>
+      </a>
+
+      <!-- Home Indicator Bar -->
+      <div class="home-bar"></div>
+    </div>
+
+    <!-- ========================================================
+         ALL 14 INDICATORS BOTTOM SHEET DRAWER
+         ======================================================== -->
+    <div class="indicators-overlay" id="indicatorsOverlay" onclick="closeIndicatorsModal(event)">
+      <div class="indicators-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        
+        <div class="sheet-header">
+          <div class="sheet-title">
+            <h3>Individual Indicators (14)</h3>
+            <p>Work & HR Metrics • Non-Grid Fluid Breakdown</p>
+          </div>
+          <button class="sheet-close-btn" onclick="closeIndicatorsDirect()" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Premium Segmented Filter Control -->
+        <div class="sheet-filter-bar">
+          <button class="sheet-filter-pill active" onclick="filterDrawerIndicators('all', this)">
+            <span>All</span>
+            <span class="filter-count-badge">14</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterDrawerIndicators('positive', this)">
+            <span>Positive</span>
+            <span class="filter-count-badge green">4</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterDrawerIndicators('negative', this)">
+            <span>Negative</span>
+            <span class="filter-count-badge red">10</span>
+          </button>
+        </div>
+
+        <!-- Scrollable Indicators List (Non-Grid Fluid Cards) -->
+        <div class="sheet-list-scroll" id="indicatorsListContainer">
+          <div id="feedCardsContainer">
+            <!-- Positive Section -->
+            <div class="feed-section-label positive" data-group="positive">
+              <span>👍 Positive Indicators (4)</span>
+            </div>
+
+            <!-- 1. Competency Match -->
+            <div class="metric-feed-card" data-group="positive">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #f3e8ff; color: #7c3aed;">🎯</div>
+                  <div class="feed-card-title-group">
+                    <h5>Competency Match%</h5>
+                    <span>Job Role Skill Benchmark</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">67</span>
+                  <span class="feed-val-unit">%</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #7c3aed;">Target: 70%</span>
+              </div>
+            </div>
+
+            <!-- 2. Goal Achievement -->
+            <div class="metric-feed-card" data-group="positive">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #fef3c7; color: #b45309;">🏆</div>
+                  <div class="feed-card-title-group">
+                    <h5>Goal Achievement%</h5>
+                    <span>Quarterly OKRs & Milestone Progress</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0.00</span>
+                  <span class="feed-val-unit">%</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 600; color: #64748b;">Review cycle active</span>
+              </div>
+            </div>
+
+            <!-- 3. Attendance Rate (Positive Highlight) -->
+            <div class="metric-feed-card highlight-positive" data-group="positive">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #ecfdf5; color: #059669;">📅</div>
+                  <div class="feed-card-title-group">
+                    <h5>Attendance%</h5>
+                    <span>Verified Monthly Punctual Punch</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill positive">▲ +4.21%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">95.00</span>
+                  <span class="feed-val-unit">%</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #059669;">Excellent compliance</span>
+              </div>
+            </div>
+
+            <!-- 4. Work Incident Points -->
+            <div class="metric-feed-card" data-group="positive">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #f0fdfa; color: #0d9488;">🛡️</div>
+                  <div class="feed-card-title-group">
+                    <h5>Work Incident Points</h5>
+                    <span>Safety & Disciplinary Compliance</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0.00</span>
+                  <span class="feed-val-unit">pts</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #0d9488;">Clean record</span>
+              </div>
+            </div>
+
+            <!-- Negative Section -->
+            <div class="feed-section-label negative" data-group="negative">
+              <span>👎 Negative Indicators (10)</span>
+            </div>
+
+            <!-- 5. Odd Clocking Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #f1f5f9; color: #475569;">⏱️</div>
+                  <div class="feed-card-title-group">
+                    <h5>Odd Clocking Count</h5>
+                    <span>Irregular Time Punch Log</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">times</span>
+                </div>
+                <span style="font-size: 11px; color: #64748b;">No abnormal punches</span>
+              </div>
+            </div>
+
+            <!-- 6. Late In Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #fef3c7; color: #d97706;">⏰</div>
+                  <div class="feed-card-title-group">
+                    <h5>Late In Count</h5>
+                    <span>Morning Arrival Performance</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill positive">▼ 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">late</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #059669;">100% on time</span>
+              </div>
+            </div>
+
+            <!-- 7. Absent Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #fee2e2; color: #dc2626;">👤</div>
+                  <div class="feed-card-title-group">
+                    <h5>Absent Count</h5>
+                    <span>Unexcused Non-attendance Record</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill positive">▼ 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">days</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #059669;">Zero absenteeism</span>
+              </div>
+            </div>
+
+            <!-- 8. Emergency Leave Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #ffedd5; color: #ea580c;">🚨</div>
+                  <div class="feed-card-title-group">
+                    <h5>Emergency Leave Count</h5>
+                    <span>Ad-hoc Unplanned Leaves</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">req</span>
+                </div>
+                <span style="font-size: 11px; color: #64748b;">All leaves planned</span>
+              </div>
+            </div>
+
+            <!-- 9. Medical Leave Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #fce7f3; color: #db2777;">🏥</div>
+                  <div class="feed-card-title-group">
+                    <h5>Medical Leave Count</h5>
+                    <span>Approved Doctor Clinic MC</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">1</span>
+                  <span class="feed-val-unit">day</span>
+                </div>
+                <span style="font-size: 11px; color: #64748b;">MC verified by clinic</span>
+              </div>
+            </div>
+
+            <!-- 10. OT Absent Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #e0e7ff; color: #4f46e5;">🌙</div>
+                  <div class="feed-card-title-group">
+                    <h5>OT Absent Count</h5>
+                    <span>Overtime Schedule Compliance</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">shifts</span>
+                </div>
+                <span style="font-size: 11px; color: #64748b;">Full OT fulfilled</span>
+              </div>
+            </div>
+
+            <!-- 11. Unauthorised OT Count (Alert Highlight) -->
+            <div class="metric-feed-card highlight-alert" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #fee2e2; color: #dc2626;">⚡</div>
+                  <div class="feed-card-title-group">
+                    <h5>Unauthorised OT Count</h5>
+                    <span>Worked Without Supervisor Sign-off</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill alert">▲ +11.76%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big" style="color: #e11d48;">17</span>
+                  <span class="feed-val-unit" style="color: #e11d48; font-weight: 800;">hrs</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #dc2626;">Requires manager sign</span>
+              </div>
+            </div>
+
+            <!-- 12. Training Absent Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #e0f2fe; color: #0284c7;">🎓</div>
+                  <div class="feed-card-title-group">
+                    <h5>Training Absent Count</h5>
+                    <span>Mandatory Course Compliance</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">missed</span>
+                </div>
+                <span style="font-size: 11px; color: #64748b;">Courses completed</span>
+              </div>
+            </div>
+
+            <!-- 13. Warning Letter Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #fef3c7; color: #b45309;">⚠️</div>
+                  <div class="feed-card-title-group">
+                    <h5>Warning Letter Count</h5>
+                    <span>Formal HR Advisory Notices</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill neutral">— 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">letters</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #059669;">Exemplary conduct</span>
+              </div>
+            </div>
+
+            <!-- 14. Unacknowledged Letter Count -->
+            <div class="metric-feed-card" data-group="negative">
+              <div class="feed-card-header">
+                <div class="feed-card-left">
+                  <div class="feed-icon-box" style="background: #f3e8ff; color: #9333ea;">✉️</div>
+                  <div class="feed-card-title-group">
+                    <h5>Unacknowledged Letter Count</h5>
+                    <span>HR Circulars Pending Signature</span>
+                  </div>
+                </div>
+                <span class="feed-badge-pill positive">▼ 0.00%</span>
+              </div>
+              <div class="feed-card-body">
+                <div class="feed-val-block">
+                  <span class="feed-val-big">0</span>
+                  <span class="feed-val-unit">pending</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #059669;">All docs signed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         FOR YOU BOTTOM SHEET DRAWER
+         ======================================================== -->
+    <div class="indicators-overlay" id="forYouOverlay" onclick="closeForYouModal(event)">
+      <div class="indicators-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        
+        <div class="sheet-header">
+          <div class="sheet-title">
+            <h3>For You (7)</h3>
+            <p>Action Items & Reminders</p>
+          </div>
+          <button class="sheet-close-btn" onclick="closeForYouDirect()" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Filter Pill Tabs -->
+        <div class="sheet-filter-bar">
+          <button class="sheet-filter-pill active" onclick="filterForYou('all', this)">
+            <span>All (7)</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterForYou('approvals', this)">
+            <span>Approvals</span>
+            <span class="sheet-tag-badge red">2</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterForYou('payroll', this)">
+            <span>Payroll & Tax</span>
+            <span class="sheet-tag-badge green">2</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterForYou('team', this)">
+            <span>Team (3)</span>
+          </button>
+        </div>
+
+        <!-- List -->
+        <div class="sheet-list-scroll">
+          <div class="sheet-item-card attention" data-fy="approvals" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fef3c7; color: #b45309;">👤</div>
+              <div class="item-info">
+                <h5>Approval needed: Alex Tan</h5>
+                <span>Annual Leave 2 Days (Oct 12-13)</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill attention">Action</span>
+            </div>
+          </div>
+
+          <div class="sheet-item-card attention" data-fy="approvals" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fef3c7; color: #b45309;">🧾</div>
+              <div class="item-info">
+                <h5>Approval needed: Emily Wong</h5>
+                <span>Medical Claim $85.50</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill attention">Action</span>
+            </div>
+          </div>
+
+          <div class="sheet-item-card positive" data-fy="payroll">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #f3e8ff; color: #7c3aed;">📄</div>
+              <div class="item-info">
+                <h5>Payslip ready</h5>
+                <span>Your July 2026 payslip is available</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Ready</span>
+            </div>
+          </div>
+
+          <div class="sheet-item-card" data-fy="payroll">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0f2fe; color: #0284c7;">📑</div>
+              <div class="item-info">
+                <h5>Tax EA Form 2025</h5>
+                <span>Official income tax return statement</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill normal">Download</span>
+            </div>
+          </div>
+
+          <div class="sheet-item-card" data-fy="team" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #ccfbf1; color: #0f766e;">👥</div>
+              <div class="item-info">
+                <h5>Team update</h5>
+                <span>3 colleagues away tomorrow (Alex, David, Chloe)</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill normal">Team</span>
+            </div>
+          </div>
+
+          <div class="sheet-item-card" data-fy="team">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fce7f3; color: #be185d;">🎂</div>
+              <div class="item-info">
+                <h5>Birthday Celebration</h5>
+                <span>Jessica Chen's birthday this Friday!</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill normal">Wishes</span>
+            </div>
+          </div>
+
+          <div class="sheet-item-card" data-fy="team">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fef3c7; color: #b45309;">⏱️</div>
+              <div class="item-info">
+                <h5>Timesheet Reminder</h5>
+                <span>Weekly timesheet due tomorrow at 5:00 PM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill normal">Reminder</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         COMPANY UPDATES BOTTOM SHEET DRAWER
+         ======================================================== -->
+    <div class="indicators-overlay" id="updatesOverlay" onclick="closeUpdatesModal(event)">
+      <div class="indicators-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        
+        <div class="sheet-header">
+          <div class="sheet-title">
+            <h3>Company Updates (6)</h3>
+            <p>News • Policy & SOP • Announcements</p>
+          </div>
+          <button class="sheet-close-btn" onclick="closeUpdatesDirect()" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Filter Pill Tabs -->
+        <div class="sheet-filter-bar">
+          <button class="sheet-filter-pill active" onclick="filterUpdates('all', this)">
+            <span>All (6)</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterUpdates('news', this)">
+            <span>News (3)</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterUpdates('policy', this)">
+            <span>Policy & SOP (3)</span>
+          </button>
+        </div>
+
+        <!-- List -->
+        <div class="sheet-list-scroll">
+          <!-- 1. NEWS (Red = Unread) -->
+          <div class="sheet-item-card" data-update="news" onclick="openNewsDetail(this, 'Town Hall')">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #f3e8ff; color: #7c3aed;" title="Company Uploaded Cover">
+                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=100&auto=format&fit=crop&q=80" alt="Town Hall" class="item-thumb-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span style="display:none;">📢</span>
+              </div>
+              <div class="item-info">
+                <h5>Town Hall this Friday: Q3 Strategy</h5>
+                <span>Leadership update at 3:00 PM • Today</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="sheet-tag-badge red">Unread</span>
+            </div>
+          </div>
+
+          <!-- 2. NEWS (Green = Read / News) -->
+          <div class="sheet-item-card" data-update="news" onclick="openNewsDetail(this, 'Industry Award')">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #ffffff;" title="Company/Dept Monogram">
+                <span class="dept-badge" style="font-weight: 800; font-size: 13px;">PQ</span>
+              </div>
+              <div class="item-info">
+                <h5>PeopleQuest wins industry award</h5>
+                <span>Best Enterprise HCM Solution 2026 • Yesterday</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="sheet-tag-badge green">News</span>
+            </div>
+          </div>
+
+          <!-- 3. NEWS (Green = Read / News, changed from grey) -->
+          <div class="sheet-item-card" data-update="news" onclick="openNewsDetail(this, 'PeopleHCM 3.0')">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0f2fe; color: #0284c7;" title="Smart Category Icon">
+                <i class="fa-solid fa-bullhorn"></i>
+              </div>
+              <div class="item-info">
+                <h5>PeopleHCM 3.0 Mobile Launch</h5>
+                <span>Instant leave approvals & AI insights • 3d ago</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="sheet-tag-badge green">News</span>
+            </div>
+          </div>
+
+          <!-- 4. POLICY & SOP (DE001: PeopleTime User Guide v2) -->
+          <div class="sheet-item-card" data-update="policy" onclick="openPolicyDetail('DE001')">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #ccfbf1; color: #0f766e;" title="Document Policy">
+                <i class="fa-solid fa-book-open"></i>
+              </div>
+              <div class="item-info">
+                <h5>PeopleTime User Guide v2</h5>
+                <span>Attention to: ADMINISTRATION</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="sheet-tag-badge blue">DE001</span>
+            </div>
+          </div>
+
+          <!-- 5. POLICY & SOP (HR004: Hybrid & Remote Work Policy) -->
+          <div class="sheet-item-card" data-update="policy" onclick="openPolicyDetail('HR004')">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0f2fe; color: #0284c7;" title="Company Policy">
+                <i class="fa-solid fa-laptop-house"></i>
+              </div>
+              <div class="item-info">
+                <h5>Hybrid & Remote Work Policy 2026</h5>
+                <span>Attention to: ALL DEPARTMENTS</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="sheet-tag-badge green">HR004</span>
+            </div>
+          </div>
+
+          <!-- 6. POLICY & SOP (FN012: Medical & Travel Claims SOP) -->
+          <div class="sheet-item-card" data-update="policy" onclick="openPolicyDetail('FN012')">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fef3c7; color: #b45309;" title="SOP Guide">
+                <i class="fa-solid fa-file-shield"></i>
+              </div>
+              <div class="item-info">
+                <h5>Medical & Travel Claims SOP</h5>
+                <span>Attention to: FINANCE & ACCOUNTING</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="sheet-tag-badge amber" style="background: #fef3c7; color: #b45309;">FN012</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TEAM ROSTER & DASHBOARD BOTTOM SHEET DRAWER
+         ======================================================== -->
+    <div class="indicators-overlay" id="teamDrawerOverlay" onclick="closeTeamDrawer(event)">
+      <div class="indicators-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        
+        <div class="sheet-header">
+          <div class="sheet-title">
+            <h3>Team Roster (12)</h3>
+            <p>Engineering & Product Squad</p>
+          </div>
+          <button class="sheet-close-btn" onclick="closeTeamDrawerDirect()" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Filter Pill Tabs -->
+        <div class="sheet-filter-bar">
+          <button class="sheet-filter-pill active" onclick="filterTeam('all', this)">
+            <span>All (12)</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterTeam('present', this)">
+            <span>Present</span>
+            <span class="sheet-tag-badge green">9</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterTeam('leave', this)">
+            <span>On Leave</span>
+            <span class="sheet-tag-badge red">2</span>
+          </button>
+          <button class="sheet-filter-pill" onclick="filterTeam('remote', this)">
+            <span>Remote</span>
+            <span class="sheet-tag-badge blue">1</span>
+          </button>
+        </div>
+
+        <!-- Scrollable Team Members List -->
+        <div class="sheet-list-scroll" id="teamListContainer">
+          <!-- 1. Alex Tan -->
+          <div class="sheet-item-card attention" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0e7ff; color: #4338ca; font-size: 13px; font-weight: 800;">AT</div>
+              <div class="item-info">
+                <h5>Alex Tan</h5>
+                <span>Senior Frontend Lead • Clocked in 08:52 AM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Present</span>
+            </div>
+          </div>
+
+          <!-- 2. Emily Wong -->
+          <div class="sheet-item-card attention" data-team="present" onclick="openForYouModal()">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fce7f3; color: #be185d; font-size: 13px; font-weight: 800;">EW</div>
+              <div class="item-info">
+                <h5>Emily Wong</h5>
+                <span>UI/UX Designer • 🔴 Pending Leave Approval</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill attention">Pending</span>
+            </div>
+          </div>
+
+          <!-- 3. Chloe Lim -->
+          <div class="sheet-item-card" data-team="leave" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0f2fe; color: #0369a1; font-size: 13px; font-weight: 800;">CL</div>
+              <div class="item-info">
+                <h5>Chloe Lim</h5>
+                <span>Product Manager • Annual Leave (Day 2 of 3)</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill normal">On Leave</span>
+            </div>
+          </div>
+
+          <!-- 4. David Kumar -->
+          <div class="sheet-item-card attention" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fef3c7; color: #b45309; font-size: 13px; font-weight: 800;">DK</div>
+              <div class="item-info">
+                <h5>David Kumar</h5>
+                <span>Backend Engineer • ⏰ Late In (09:35 AM)</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill attention">Late</span>
+            </div>
+          </div>
+
+          <!-- 5. Kevin Zhang -->
+          <div class="sheet-item-card" data-team="leave" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #ede9fe; color: #6d28d9; font-size: 13px; font-weight: 800;">KZ</div>
+              <div class="item-info">
+                <h5>Kevin Zhang</h5>
+                <span>QA Specialist • Medical Leave (MC verified)</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill normal">MC</span>
+            </div>
+          </div>
+
+          <!-- 6. Siti Nurhaliza -->
+          <div class="sheet-item-card" data-team="remote" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #dcfce7; color: #15803d; font-size: 13px; font-weight: 800;">SN</div>
+              <div class="item-info">
+                <h5>Siti Nurhaliza</h5>
+                <span>Scrum Master • 🏠 WFH Subang Jaya</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Remote</span>
+            </div>
+          </div>
+
+          <!-- 7. Ryan Lim -->
+          <div class="sheet-item-card" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0e7ff; color: #4338ca; font-size: 13px; font-weight: 800;">RL</div>
+              <div class="item-info">
+                <h5>Ryan Lim</h5>
+                <span>Fullstack Developer • Clocked in 08:45 AM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Present</span>
+            </div>
+          </div>
+
+          <!-- 8. Marcus Wong -->
+          <div class="sheet-item-card" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0e7ff; color: #4338ca; font-size: 13px; font-weight: 800;">MW</div>
+              <div class="item-info">
+                <h5>Marcus Wong</h5>
+                <span>DevOps Engineer • Clocked in 08:30 AM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Present</span>
+            </div>
+          </div>
+
+          <!-- 9. Priya Sharma -->
+          <div class="sheet-item-card" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #fce7f3; color: #be185d; font-size: 13px; font-weight: 800;">PS</div>
+              <div class="item-info">
+                <h5>Priya Sharma</h5>
+                <span>Mobile Engineer (iOS) • Clocked in 09:00 AM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Present</span>
+            </div>
+          </div>
+
+          <!-- 10. Daniel Tan -->
+          <div class="sheet-item-card" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0e7ff; color: #4338ca; font-size: 13px; font-weight: 800;">DT</div>
+              <div class="item-info">
+                <h5>Daniel Tan</h5>
+                <span>Data Analyst • Clocked in 08:50 AM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Present</span>
+            </div>
+          </div>
+
+          <!-- 11. Lucas Ng -->
+          <div class="sheet-item-card" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #e0e7ff; color: #4338ca; font-size: 13px; font-weight: 800;">LN</div>
+              <div class="item-info">
+                <h5>Lucas Ng</h5>
+                <span>Security Analyst • Clocked in 08:40 AM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Present</span>
+            </div>
+          </div>
+
+          <!-- 12. Jason Teo -->
+          <div class="sheet-item-card" data-team="present" onclick="window.location.href='team.html'">
+            <div class="item-left-box">
+              <div class="item-icon-box" style="background: #f3f4f6; color: #374151; font-size: 13px; font-weight: 800;">JT</div>
+              <div class="item-info">
+                <h5>Jason Teo</h5>
+                <span>Software Intern • Clocked in 08:58 AM</span>
+              </div>
+            </div>
+            <div class="item-right-box">
+              <span class="item-status-pill positive">Present</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Full Page Link -->
+        <div style="padding: 14px 18px; border-top: 1px solid rgba(226, 232, 240, 0.8);">
+          <a href="team.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; font-weight: 800; font-size: 13.5px; border-radius: 16px; text-decoration: none; box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);">
+            <span>Open Full Organization Matrix & Tree</span>
+            <span>&nearr;</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Team Roster Modal */
+    function openTeamDrawer() {
+      const overlay = document.getElementById('teamDrawerOverlay');
+      if (overlay) overlay.classList.add('active');
+    }
+
+    function closeTeamDrawerDirect() {
+      const overlay = document.getElementById('teamDrawerOverlay');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    function closeTeamDrawer(e) {
+      if (e.target.id === 'teamDrawerOverlay') closeTeamDrawerDirect();
+    }
+
+    function filterTeam(category, btnElement) {
+      const tabs = btnElement.parentElement.querySelectorAll('.sheet-filter-pill');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const cards = document.querySelectorAll('#teamListContainer .sheet-item-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-team') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    /* In-place Switcher for My Insights vs Team Insights */
+    function switchInsightTab(tab) {
+      const pillMy = document.getElementById('pillMy');
+      const pillTeam = document.getElementById('pillTeam');
+      const paneMy = document.getElementById('paneMy');
+      const paneTeam = document.getElementById('paneTeam');
+      const title = document.getElementById('insightCardTitle');
+
+      if (tab === 'my') {
+        if (pillMy) pillMy.classList.add('active');
+        if (pillTeam) pillTeam.classList.remove('active');
+        if (paneMy) paneMy.classList.add('active');
+        if (paneTeam) paneTeam.classList.remove('active');
+        if (title) title.textContent = 'My Insights';
+      } else {
+        if (pillTeam) pillTeam.classList.add('active');
+        if (pillMy) pillMy.classList.remove('active');
+        if (paneTeam) paneTeam.classList.add('active');
+        if (paneMy) paneMy.classList.remove('active');
+        if (title) title.textContent = 'Team Insights';
+      }
+    }
+
+    /* Indicators Modal */
+    function openIndicatorsModal() {
+      const overlay = document.getElementById('indicatorsOverlay');
+      if (overlay) overlay.classList.add('active');
+    }
+
+    function closeIndicatorsDirect() {
+      const overlay = document.getElementById('indicatorsOverlay');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    function closeIndicatorsModal(e) {
+      if (e.target.id === 'indicatorsOverlay') closeIndicatorsDirect();
+    }
+
+    /* View Layout Switcher: Cards vs Table */
+    function switchDrawerLayout(layout) {
+      const btnCards = document.getElementById('btnViewCards');
+      const btnTable = document.getElementById('btnViewTable');
+      const cardsCont = document.getElementById('feedCardsContainer');
+      const tableCont = document.getElementById('tableAccordionContainer');
+
+      if (layout === 'cards') {
+        if (btnCards) btnCards.classList.add('active');
+        if (btnTable) btnTable.classList.remove('active');
+        if (cardsCont) cardsCont.style.display = 'block';
+        if (tableCont) tableCont.style.display = 'none';
+      } else {
+        if (btnTable) btnTable.classList.add('active');
+        if (btnCards) btnCards.classList.remove('active');
+        if (cardsCont) cardsCont.style.display = 'none';
+        if (tableCont) tableCont.style.display = 'block';
+      }
+    }
+
+    /* Drawer Accordion Toggle (Positive / Negative) */
+    function toggleDrawerAccordion(id) {
+      const item = document.getElementById(id);
+      if (item) item.classList.toggle('collapsed');
+    }
+
+    function filterDrawerIndicators(group, btnElement) {
+      const tabs = btnElement.parentElement.querySelectorAll('.sheet-filter-pill');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      // Filter Cards View
+      const cards = document.querySelectorAll('#feedCardsContainer .metric-feed-card');
+      cards.forEach(card => {
+        if (group === 'all' || card.getAttribute('data-group') === group) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const sectionLabels = document.querySelectorAll('#feedCardsContainer .feed-section-label');
+      sectionLabels.forEach(lbl => {
+        if (group === 'all' || lbl.getAttribute('data-group') === group) {
+          lbl.style.display = 'flex';
+        } else {
+          lbl.style.display = 'none';
+        }
+      });
+
+      // Filter Table Accordions View
+      const items = document.querySelectorAll('#tableAccordionContainer .sheet-accordion-item');
+      items.forEach(item => {
+        if (group === 'all' || item.getAttribute('data-group') === group) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    function filterIndicators(category, btnElement) {
+      const tabs = btnElement.parentElement.querySelectorAll('.sheet-filter-pill');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const cards = document.querySelectorAll('#indicatorsListContainer .sheet-item-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    /* For You Modal */
+    function openForYouModal() {
+      const overlay = document.getElementById('forYouOverlay');
+      if (overlay) overlay.classList.add('active');
+    }
+
+    function closeForYouDirect() {
+      const overlay = document.getElementById('forYouOverlay');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    function closeForYouModal(e) {
+      if (e.target.id === 'forYouOverlay') closeForYouDirect();
+    }
+
+    function filterForYou(category, btnElement) {
+      const tabs = btnElement.parentElement.querySelectorAll('.sheet-filter-pill');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const cards = document.querySelectorAll('#forYouOverlay .sheet-item-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-fy') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    /* Company Updates Modal */
+    function openUpdatesModal() {
+      const overlay = document.getElementById('updatesOverlay');
+      if (overlay) overlay.classList.add('active');
+    }
+
+    function closeUpdatesDirect() {
+      const overlay = document.getElementById('updatesOverlay');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    function closeUpdatesModal(e) {
+      if (e.target.id === 'updatesOverlay') closeUpdatesDirect();
+    }
+
+    function filterUpdates(category, btnElement) {
+      const tabs = btnElement.parentElement.querySelectorAll('.sheet-filter-pill');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const cards = document.querySelectorAll('#updatesOverlay .sheet-item-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-update') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function openNewsDetail(cardEl, title) {
+      if (!cardEl) return;
+      const badge = cardEl.querySelector('.sheet-tag-badge');
+      if (badge && badge.classList.contains('red')) {
+        badge.classList.remove('red');
+        badge.classList.add('green');
+        badge.textContent = 'News';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('updates') === 'open' || urlParams.get('openUpdates') === 'true') {
+        setTimeout(openUpdatesModal, 100);
+      }
+    });
+  </script>
+
+</body>
+</html>

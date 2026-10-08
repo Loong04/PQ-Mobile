@@ -1,0 +1,208 @@
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - My Favourites</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
+</head>
+
+<body>
+
+  <!-- Desktop Switcher Bar -->
+  <preview-top-bar active-page="favourite"></preview-top-bar>
+
+  <div class="phone-container">
+    <!-- Executive Purple Header Bar -->
+    <div class="cal-top-header" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%); padding: 12px 16px 18px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="me-back-btn" onclick="navTo('home', event)" aria-label="Back" title="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <div>
+            <h1 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">⭐ My Favourites</h1>
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: #ffffff;">
+          <span id="starredCountText">3 Items Starred</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" style="padding: 16px 16px 100px;">
+
+      <!-- Section 1: My Starred Favourites List -->
+      <div style="margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h3 style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0;">⭐ Starred Favourites (Quick Access)</h3>
+          <span style="font-size: 11px; color: var(--text-muted);">Tap to launch</span>
+        </div>
+
+        <div id="starredListContainer" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
+      <!-- Section 2: System Modules Catalog (Tap Star to Add/Remove) -->
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h3 style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0;">🌐 System Modules Catalog</h3>
+          <span style="font-size: 11px; color: var(--text-muted);">Tap ⭐ to add/remove</span>
+        </div>
+
+        <div id="systemCatalogContainer" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <phone-bottom-nav active="favourite"></phone-bottom-nav>
+
+    <!-- Slide-in Left Profile Drawer -->
+    <left-profile-drawer></left-profile-drawer>
+
+    <!-- Notification Sheet -->
+    <notification-sheet></notification-sheet>
+
+  </div>
+
+  <script>
+    // Complete System Modules Catalog
+    const ALL_SYSTEM_MODULES = [
+      // 📝 Apply Module
+      { id: 'leave', category: '📝 Apply Module', name: 'Leave Application', desc: 'Apply annual leave, medical leave & check balance', icon: '🌴', bgColor: 'rgba(249, 115, 22, 0.16)', color: '#f97316', target: 'leave.html' },
+      { id: 'overtime', category: '📝 Apply Module', name: 'Overtime Request', desc: 'Submit pre-overtime & OT claim requests', icon: '⏰', bgColor: 'rgba(244, 63, 94, 0.16)', color: '#f43f5e', target: 'work-behaviour.html' },
+      { id: 'shift_swap', category: '📝 Apply Module', name: 'Shift Exchange Request', desc: 'Request duty shift swap with colleagues', icon: '🔄', bgColor: 'rgba(139, 92, 246, 0.16)', color: '#8b5cf6', target: 'work-behaviour.html' },
+
+      // 🧾 Claim & Expense Module
+      { id: 'claims', category: '🧾 Claim & Expense Module', name: 'Medical & Outpatient Claim', desc: 'Clinic receipts, optical & dental claims', icon: '🧾', bgColor: 'rgba(14, 165, 233, 0.16)', color: '#0ea5e9', target: 'modules/claims/index.html' },
+      { id: 'travel_claim', category: '🧾 Claim & Expense Module', name: 'Travel & Allowance Expense', desc: 'Mileage, hotel & meal allowance claims', icon: '✈️', bgColor: 'rgba(2, 132, 199, 0.16)', color: '#0284c7', target: 'modules/claims/index.html' },
+
+      // 💰 Payroll & Personal Module
+      { id: 'payroll', category: '💰 Payroll & Personal Module', name: 'Payroll & Compensation', desc: 'Monthly payslip, EA Form & tax relief', icon: '💰', bgColor: 'rgba(16, 185, 129, 0.16)', color: '#10b981', target: 'modules/payroll/index.html' },
+      { id: 'payslip', category: '💰 Payroll & Personal Module', name: 'Payslip', desc: 'Monthly salary breakdown statements', icon: '🧾', bgColor: 'rgba(124, 58, 237, 0.16)', color: '#7c3aed', target: 'modules/payroll/index.html' },
+      { id: 'bonus', category: '💰 Payroll & Personal Module', name: 'Bonus & Dividend History', desc: 'Quarterly bonus & profit share records', icon: '🎁', bgColor: 'rgba(236, 72, 153, 0.16)', color: '#ec4899', target: 'bonus-history.html' },
+      { id: 'calendar', category: '💰 Payroll & Personal Module', name: 'My Work Calendar', desc: 'Personal schedule, public holidays & shifts', icon: '📅', bgColor: 'rgba(168, 85, 247, 0.16)', color: '#a855f7', target: 'calendar.html' },
+
+      // 👥 Team & Manager Module
+      { id: 'team', category: '👥 Team & Manager Module', name: 'Team Directory & Contact', desc: 'Department org chart & colleague info', icon: '👥', bgColor: 'rgba(99, 102, 241, 0.16)', color: '#6366f1', target: 'team.html' },
+      { id: 'subordinates', category: '👥 Team & Manager Module', name: 'Subordinates Roster & Approval', desc: 'Team shift schedule & pending approvals', icon: '👔', bgColor: 'rgba(79, 70, 229, 0.16)', color: '#4f46e5', target: 'subordinates.html' },
+
+      // 🎯 Performance & Growth Module
+      { id: 'performance', category: '🎯 Performance & Growth Module', name: 'KPI Review & Goals', desc: 'Goal tracking, review cycles & ratings', icon: '🎯', bgColor: 'rgba(234, 179, 8, 0.16)', color: '#eab308', target: 'melight.html' },
+      { id: 'training', category: '🎯 Performance & Growth Module', name: 'Learning & Certification', desc: 'Corporate training courses & webinars', icon: '🎓', bgColor: 'rgba(59, 130, 246, 0.16)', color: '#3b82f6', target: 'homedark-v2.html' }
+    ];
+
+    // Saved Starred list state in localStorage
+    let starredIds = JSON.parse(localStorage.getItem('peoplehcm_starred_list') || '["leave", "payslip", "team"]');
+
+    function toggleStar(modId, event) {
+      if (event) event.stopPropagation();
+      const index = starredIds.indexOf(modId);
+      const mod = ALL_SYSTEM_MODULES.find(m => m.id === modId);
+
+      if (index > -1) {
+        starredIds.splice(index, 1);
+        if (typeof showToast === 'function') showToast(`Removed [${mod ? mod.name : modId}] from Favourites`);
+      } else {
+        starredIds.push(modId);
+        if (typeof showToast === 'function') showToast(`⭐ Added [${mod ? mod.name : modId}] to Favourites!`);
+      }
+
+      localStorage.setItem('peoplehcm_starred_list', JSON.stringify(starredIds));
+      renderUI();
+    }
+
+    function renderUI() {
+      const starredContainer = document.getElementById('starredListContainer');
+      const catalogContainer = document.getElementById('systemCatalogContainer');
+      const countText = document.getElementById('starredCountText');
+
+      countText.innerText = `${starredIds.length} Items Starred`;
+
+      // 1. Render Starred Favourites List
+      const starredModules = ALL_SYSTEM_MODULES.filter(m => starredIds.includes(m.id));
+
+      if (starredModules.length === 0) {
+        starredContainer.innerHTML = `
+          <div style="background: var(--bg-card); border: 1.5px dashed var(--border-subtle); border-radius: 14px; padding: 20px; text-align: center;">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">No favourites starred yet. Tap ⭐ on any module below to add it!</p>
+          </div>
+        `;
+      } else {
+        starredContainer.innerHTML = starredModules.map(mod => `
+          <div class="fav-item-row" onclick="window.location.href='${mod.target}'" style="background: var(--bg-card); border: 1.5px solid rgba(168, 85, 247, 0.35); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: ${mod.bgColor}; color: ${mod.color}; display: flex; align-items: center; justify-content: center; font-size: 20px;">${mod.icon}</div>
+              <div>
+                <h4 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">${mod.name}</h4>
+                <p style="font-size: 11px; color: var(--text-muted); margin: 0;">${mod.desc}</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button onclick="toggleStar('${mod.id}', event)" title="Remove from Favourites" style="background: rgba(234, 179, 8, 0.2); border: 1px solid rgba(234, 179, 8, 0.4); color: #eab308; width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer;">★</button>
+              <span style="color: var(--text-muted); font-size: 14px;">›</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 2. Render Full System Catalog List Grouped by Module
+      const grouped = {};
+      ALL_SYSTEM_MODULES.forEach(mod => {
+        if (!grouped[mod.category]) grouped[mod.category] = [];
+        grouped[mod.category].push(mod);
+      });
+
+      catalogContainer.innerHTML = Object.keys(grouped).map(catName => `
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px;">
+            <span>${catName}</span>
+            <span style="font-size: 10px; font-weight: 600; opacity: 0.7;">${grouped[catName].length} Modules</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${grouped[catName].map(mod => {
+              const isStarred = starredIds.includes(mod.id);
+              return `
+                <div class="fav-catalog-row" onclick="window.location.href='${mod.target}'" style="background: var(--bg-card); border: 1px solid ${isStarred ? 'rgba(234, 179, 8, 0.3)' : 'var(--border-subtle)'}; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 38px; height: 38px; border-radius: 12px; background: ${mod.bgColor}; color: ${mod.color}; display: flex; align-items: center; justify-content: center; font-size: 19px;">${mod.icon}</div>
+                    <div>
+                      <h4 style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">${mod.name}</h4>
+                      <p style="font-size: 10.5px; color: var(--text-muted); margin: 0;">${mod.desc}</p>
+                    </div>
+                  </div>
+                  <button onclick="toggleStar('${mod.id}', event)" title="${isStarred ? 'Remove Star' : 'Add Star'}" style="background: ${isStarred ? 'rgba(234, 179, 8, 0.2)' : 'var(--bg-card-hover)'}; border: 1px solid ${isStarred ? 'rgba(234, 179, 8, 0.4)' : 'var(--border-subtle)'}; color: ${isStarred ? '#eab308' : 'var(--text-muted)'}; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer;">
+                    ${isStarred ? '★' : '☆'}
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderUI();
+    });
+  </script>
+
+</body>
+
+</html>

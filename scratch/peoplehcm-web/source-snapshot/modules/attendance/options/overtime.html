@@ -1,0 +1,491 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Overtime</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Plus Jakarta Sans", sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 0 16px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      box-shadow: 0 12px 32px rgba(76, 29, 149, 0.4);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* Tabs (Segmented Control Container) */
+    .pill-tabs-container {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 6px;
+      gap: 6px;
+      margin-top: 10px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      box-shadow: var(--shadow-sm);
+    }
+    .pill-tabs-container::-webkit-scrollbar { display: none; }
+    
+    .pill-tab {
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pill-tab:hover {
+      color: var(--text-primary);
+      background: rgba(124, 58, 237, 0.08);
+    }
+    .pill-tab:active {
+      transform: scale(0.96);
+    }
+    .pill-tab.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      border-color: transparent;
+    }
+
+    /* Modern Top Info Banner */
+    .hero-info-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .hero-stat .label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .hero-stat .value { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 4px; }
+    .hero-stat .accent { color: #a78bfa; font-size: 26px; font-weight: 900; line-height: 1; margin-top: 2px; }
+
+    /* Pop Out Modal Styling */
+    .modal-header-purple {
+      background: linear-gradient(135deg, #3b0764 0%, #4c1d95 50%, #6d28d9 100%);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+    .modal-close-round {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-close-round:hover {
+      background: rgba(0, 0, 0, 0.5);
+      transform: scale(1.05);
+    }
+
+    /* Custom Switch for Leave Credit */
+    .modern-switch {
+      width: 52px; height: 32px; background: rgba(150, 150, 150, 0.25); border-radius: 32px;
+      position: relative; cursor: pointer; transition: 0.3s;
+      border: 1px solid var(--border-card);
+    }
+    .modern-switch.on { background: #7c3aed; border-color: #7c3aed; }
+    .modern-switch-thumb {
+      width: 24px; height: 24px; background: #ffffff; border-radius: 50%;
+      position: absolute; top: 3px; left: 4px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .modern-switch.on .modern-switch-thumb { transform: translateX(20px); }
+  </style>
+  <link rel="stylesheet" href="../../../css/attendance-overtime.css">
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+</head>
+<body class="overtime-page">
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+  <div class="phone-container">
+    
+    <!-- Top App Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <button class="header-btn" onclick="goBack()" aria-label="Back" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; backdrop-filter: blur(8px);">
+            <i class="fa-solid fa-chevron-left" style="font-size: 18px;"></i>
+          </button>
+          <h1 id="headerTitle" style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: 0.2px;">Overtime</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content" style="padding-top: 20px;">
+      
+      <!-- ================= DASHBOARD VIEW ================= -->
+      <div id="view-dashboard" style="display: block;">
+        
+        <div class="hero-info-banner">
+          <div class="ot-meta-stack" id="overtimeMeta">
+            <div class="hero-stat">
+              <div class="label">Shift Group</div>
+              <div class="value">GROUP A</div>
+            </div>
+            <div class="hero-stat">
+              <div class="label">Supervisor</div>
+              <div class="value">EBB04</div>
+            </div>
+          </div>
+          <button type="button" class="ot-add-button" id="overtimeAddRequest" onclick="switchView('request')" aria-label="Request overtime">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="pill-tabs-container">
+          <button class="pill-tab active" onclick="activateFilter(this)">This Week</button>
+          <button class="pill-tab" onclick="activateFilter(this)">Last Week</button>
+          <button class="pill-tab" onclick="activateFilter(this)">This Month</button>
+          <button class="pill-tab" onclick="activateFilter(this)">Last Month</button>
+        </div>
+
+        <div style="margin-bottom: 20px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between;">
+           <span style="font-size: 13.5px; font-weight: 700; color: var(--text-muted);">Total Hours</span>
+           <span style="font-size: 16px; font-weight: 900; color: #a78bfa;">2.00 <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">HRS</span></span>
+        </div>
+
+        <article class="history-card-item history-item-card ot-record-card" data-status="unapproved-ot" role="button" tabindex="0" aria-label="View overtime details for Mon, 14 Sep 2026" onclick="openDetails()" onkeydown="if(event.key === 'Enter' || event.key === ' '){event.preventDefault(); openDetails();}">
+          <div class="ot-record-top">
+            <div class="ot-record-heading"><h2 class="history-time-row">08:09 &rarr; 19:40</h2><div class="ot-record-date">Date: Mon, 14 Sep 2026</div></div>
+            <div class="ot-record-controls"><span class="card-status-badge ot-record-status"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Unapproved OT</span></div>
+          </div>
+          <div class="card-details-box ot-record-details">
+            <div class="ot-record-detail"><span>Shift</span><strong>8.30&ndash;17.30 (W01)</strong></div>
+            <div class="ot-record-detail"><span>OT Code</span><strong>1.5 OT</strong></div>
+            <div class="ot-record-detail"><span>Plan Hours</span><strong>2.00</strong></div>
+            <div class="ot-record-detail"><span>Actual Hours</span><strong>2.00</strong></div>
+            <div class="ot-record-detail"><span>Approved Hours</span><strong>0.00</strong></div>
+          </div>
+        </article>
+
+        <article class="history-card-item history-item-card ot-record-card" data-status="approved" role="button" tabindex="0" aria-label="View overtime details for Fri, 11 Sep 2026" onclick="openDetails()" onkeydown="if(event.key === 'Enter' || event.key === ' '){event.preventDefault(); openDetails();}">
+          <div class="ot-record-top">
+            <div class="ot-record-heading"><h2 class="history-time-row">08:15 &rarr; 19:30</h2><div class="ot-record-date">Date: Fri, 11 Sep 2026</div></div>
+            <div class="ot-record-controls"><span class="card-status-badge ot-record-status"><i class="fa-solid fa-check" aria-hidden="true"></i>Approved</span></div>
+          </div>
+          <div class="card-details-box ot-record-details">
+            <div class="ot-record-detail"><span>Shift</span><strong>8.30&ndash;17.30 (W01)</strong></div>
+            <div class="ot-record-detail"><span>OT Code</span><strong>1.5 OT</strong></div>
+            <div class="ot-record-detail"><span>Plan Hours</span><strong>2.00</strong></div>
+            <div class="ot-record-detail"><span>Actual Hours</span><strong>2.00</strong></div>
+            <div class="ot-record-detail"><span>Approved Hours</span><strong>2.00</strong></div>
+          </div>
+        </article>
+
+        <!-- End of Cards -->
+
+      </div>
+
+
+      <!-- ================= REQUEST VIEW ================= -->
+      <div id="view-request" style="display: none; padding-bottom: 20px;">
+        <form id="otRequestForm" novalidate onsubmit="event.preventDefault(); submitOtRequest();">
+          <section class="ot-form-card" aria-labelledby="otRequestDetailsTitle">
+            <div class="ot-form-heading"><span aria-hidden="true"></span><h2 id="otRequestDetailsTitle">Overtime Request Details</h2></div>
+            <div class="ot-form-meta">
+              <div><span>Shift</span><strong>8.30AM - 5.30PM (W01)</strong></div>
+              <div><span>Supervisor</span><strong>EBB04</strong></div>
+            </div>
+            <div class="modern-form-group">
+              <label class="modern-label" for="otRequestDate">Date <span class="required">*</span></label>
+              <input id="otRequestDate" type="date" class="modern-input" value="2026-09-15">
+            </div>
+            <div class="time-picker-grid">
+              <div class="modern-form-group"><label class="modern-label" for="otStartTime">Start Time <span class="required">*</span></label><input id="otStartTime" type="time" class="modern-input" value="00:00"></div>
+              <div class="modern-form-group"><label class="modern-label" for="otEndTime">End Time <span class="required">*</span></label><input id="otEndTime" type="time" class="modern-input" value="00:00"></div>
+            </div>
+            <div class="time-picker-grid">
+              <div class="modern-form-group"><label class="modern-label" for="otBreakHours">Break Hours</label><input id="otBreakHours" type="number" class="modern-input" placeholder="0.0" step="0.5"></div>
+              <div class="modern-form-group"><label class="modern-label" for="otTotalHours">Hours <span class="required">*</span></label><input id="otTotalHours" type="text" class="modern-input ot-total-hours" value="0" readonly></div>
+            </div>
+            <div class="modern-form-group">
+              <label class="modern-label" for="otType">OT Type <span class="required">*</span></label>
+              <div class="ot-select-wrapper"><select id="otType" class="modern-input"><option>- SELECT TYPE -</option><option>1.5 OT</option><option>2.0 OT</option><option>Public Holiday OT</option></select></div>
+            </div>
+            <div class="modern-form-group">
+              <label class="modern-label" for="otReason">Reason <span class="required">*</span></label>
+              <div class="ot-select-wrapper"><select id="otReason" class="modern-input"><option>- SELECT REASON -</option><option>System OT Reason</option><option>Project Deadline</option><option>Cover Colleague</option></select></div>
+            </div>
+            <div class="modern-form-group ot-credit-row">
+              <div><strong id="otCreditLabel">Convert to Leave Credit</strong></div>
+              <button type="button" class="modern-switch" role="switch" aria-checked="false" aria-labelledby="otCreditLabel" onclick="this.classList.toggle('on'); this.setAttribute('aria-checked', String(this.classList.contains('on')))"><span class="modern-switch-thumb"></span></button>
+            </div>
+            <div class="modern-form-group"><label class="modern-label" for="otRemarks">Remarks</label><textarea id="otRemarks" class="modern-input" rows="3" placeholder="Add additional notes here..."></textarea></div>
+            <div class="modern-form-group">
+              <span class="modern-label form-section-heading" id="otAttachmentLabel">Upload Attachments</span>
+              <div class="ot-upload-actions" role="group" aria-labelledby="otAttachmentLabel">
+                <button type="button" class="ot-upload-button" onclick="triggerOtFileUpload('file')"><span class="ot-upload-icon"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span><span>Select File(s)</span></button>
+                <button type="button" class="ot-upload-button" onclick="triggerOtFileUpload('camera')"><span class="ot-upload-icon"><i class="fa-solid fa-camera" aria-hidden="true"></i></span><span>Take a Picture</span></button>
+              </div>
+              <div id="uploadedOtFilesChipsList" class="form-attachment-list" aria-live="polite"></div>
+              <input type="file" id="hiddenOtFileInput" multiple hidden onchange="handleOtFileSelected(this)">
+              <input type="file" id="hiddenOtCameraInput" accept="image/*" capture="environment" hidden onchange="handleOtFileSelected(this)">
+            </div>
+          </section>
+          <div id="request-actions" class="ot-form-actions" style="display: none;">
+            <button type="button" class="form-cancel-btn" onclick="switchView('dashboard')"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button>
+            <button type="submit" class="ot-form-action primary"><span>Submit</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Overtime Details Pop Out Modal -->
+    <div id="modal-ot-details" onclick="closeDetails(event)"
+      style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;">
+
+      <div class="popup-modal-content" onclick="event.stopPropagation()"
+        style="width: 90%; max-width: 390px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); transform: scale(0.95); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85%; overflow: hidden; display: flex; flex-direction: column;">
+        
+        <!-- Purple Gradient Modal Header -->
+        <div class="modal-header-purple">
+          <div>
+            <h3 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0;">Final OT Approval</h3>
+            <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8); margin-top: 2px;">Ref: AXTGEN000109598</div>
+          </div>
+          <button class="modal-close-round" onclick="closeDetails(true)" aria-label="Close">
+            <i class="fa-solid fa-xmark" style="font-size: 16px;"></i>
+          </button>
+        </div>
+        
+        <!-- Non-transparent Solid Scrollable Content -->
+        <div class="sheet-content" style="padding: 16px 20px 24px; overflow-y: auto; background: var(--bg-card); flex: 1;">
+           <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Reference #</span>
+                 <span style="font-size: 13.5px; font-weight: 800; color: var(--purple-primary); font-family: monospace;">AXTGEN000109598</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Plan Status</span>
+                 <span style="font-size: 11px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 3px 8px; border-radius: 6px;">Approved</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Final Status</span>
+                 <span style="font-size: 11px; font-weight: 800; color: #f59e0b; background: rgba(245, 158, 11, 0.15); padding: 3px 8px; border-radius: 6px;">Draft</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Shift</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">8.30AM-5.30PM (W01)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Supervisor</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">EBB04</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Date</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">14 Sep 2026</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Submitted On</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">14 Sep 2026</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Start Time</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">00:00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">End Time</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">00:00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Plan Hours</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">2.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Actual Hours</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">2.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Approved Hrs</span>
+                 <span style="font-size: 13.5px; font-weight: 800; color: #ef4444;">0.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Override Method</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Type</span>
+                 <span style="font-size: 13.5px; font-weight: 800; color: var(--purple-primary);">1.5 OT</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Reason</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">System OT Reason</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Task</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Allow Credit</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">No</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Need Transport</span>
+                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">No</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Remarks</span>
+                 <span style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 6px;">UNAUTHORISED OT</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                 <span class="form-section-heading" style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Attachments</span>
+                 <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">No Data</span>
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentView = "dashboard";
+    
+    function switchView(view) {
+      currentView = view;
+      document.getElementById("view-dashboard").style.display = view === "dashboard" ? "block" : "none";
+      document.getElementById("view-request").style.display = view === "request" ? "block" : "none";
+      document.getElementById("headerTitle").innerText = view === "dashboard" ? "Overtime" : "Request OT";
+      
+      const reqActions = document.getElementById("request-actions");
+      if (reqActions) {
+        reqActions.style.display = view === "request" ? "flex" : "none";
+      }
+
+      const bottomNav = document.querySelector("phone-bottom-nav");
+      if (bottomNav) {
+        bottomNav.style.display = "contents";
+      }
+
+      const mainContent = document.querySelector(".main-content");
+      if (mainContent) {
+        mainContent.style.paddingBottom = "90px";
+        mainContent.scrollTop = 0;
+      }
+    }
+
+    function goBack() {
+      if (currentView === "request") {
+        switchView("dashboard");
+      } else {
+        window.location.href = "../index.html?scope=individual&theme=" + (document.documentElement.dataset.theme === "light" ? "light" : "dark");
+      }
+    }
+
+    function activateFilter(btn) {
+      document.querySelectorAll(".pill-tab").forEach(el => el.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function openDetails() {
+      const overlay = document.getElementById("modal-ot-details");
+      const popup = overlay.querySelector(".popup-modal-content");
+      overlay.style.display = "flex";
+      setTimeout(() => {
+        overlay.style.opacity = "1";
+        if (popup) {
+          popup.style.transform = "scale(1)";
+          popup.style.opacity = "1";
+        }
+      }, 10);
+    }
+
+    function closeDetails(e) {
+      if (e === true || (e && (e.target.id === "modal-ot-details" || e.target.classList.contains("modal-close-round")))) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        const overlay = document.getElementById("modal-ot-details");
+        const popup = overlay.querySelector(".popup-modal-content");
+        overlay.style.opacity = "0";
+        if (popup) {
+          popup.style.transform = "scale(0.95)";
+          popup.style.opacity = "0";
+        }
+        setTimeout(() => { overlay.style.display = "none"; }, 300);
+      }
+    }
+
+    function triggerOtFileUpload(type) {
+      const fileInput = document.getElementById(type === 'camera' ? 'hiddenOtCameraInput' : 'hiddenOtFileInput');
+      if (fileInput) fileInput.click();
+    }
+
+    function handleOtFileSelected(input) {
+      const container = document.getElementById('uploadedOtFilesChipsList');
+      if (!container) return;
+      Array.from(input.files || []).forEach(file => {
+        const row = document.createElement('div');
+        row.className = 'form-attachment-item';
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-paperclip form-attachment-file-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        const name = document.createElement('span');
+        name.className = 'form-attachment-file-name';
+        name.textContent = file.name;
+        name.title = file.name;
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'form-attachment-remove';
+        remove.setAttribute('aria-label', `Remove ${file.name}`);
+        remove.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+        remove.addEventListener('click', () => row.remove());
+        row.append(icon, name, remove);
+        container.appendChild(row);
+      });
+      input.value = '';
+    }
+
+    function submitOtRequest() {
+      if (typeof showToast === 'function') {
+        showToast('<i class="fa-solid fa-paper-plane" style="color:#10b981; margin-right:6px;"></i>Overtime request submitted successfully!');
+      } else {
+        alert('Overtime request submitted successfully!');
+      }
+      setTimeout(() => { switchView('dashboard'); }, 800);
+    }
+  </script>
+</body>
+</html>

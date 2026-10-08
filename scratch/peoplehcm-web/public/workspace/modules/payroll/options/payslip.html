@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Payslip</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/payroll/payroll-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/payroll-documents.css">
+  <link rel="stylesheet" href="../../../css/payslip.css">
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+  <preview-top-bar></preview-top-bar>
+
+  <div class="phone-container payroll-document-phone">
+    <header class="payroll-document-header">
+      <div class="status-bar"><span>9:41</span><span><i class="fa-solid fa-signal"></i>&nbsp; <i class="fa-solid fa-wifi"></i>&nbsp; <i class="fa-solid fa-battery-three-quarters"></i></span></div>
+      <div class="payroll-header-row payslip-header-row">
+        <button class="payroll-header-button" type="button" onclick="history.back()" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="payroll-header-copy">
+          <h1>Payslip</h1>
+        </div>
+        <span class="payslip-header-spacer" aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <main class="payroll-document-content">
+      <button id="payrollFilterTrigger" class="payroll-filter-trigger" type="button" onclick="openPayslipFilter()">
+        <span><small>PAYROLL PERIOD</small><strong id="payrollFilterSummary">December 2025</strong></span>
+        <i class="fa-solid fa-sliders"></i>
+      </button>
+
+      <section class="payslip-overview-card" aria-label="Payslip overview">
+        <div class="payslip-overview-top">
+          <div class="payslip-company-mark">
+            <span aria-hidden="true"><i class="fa-solid fa-building"></i></span>
+            <div>
+              <small>Payslip issued by</small>
+              <strong id="payslipCompany">PEOPLE QUEST SDN BHD</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="payslip-net-pay">
+          <span>Net Pay</span>
+          <strong id="netPayMainDisplay">RM 8,895.15</strong>
+        </div>
+
+        <div class="payslip-calculation" aria-label="Net pay calculation">
+          <div>
+            <span>Total Earnings</span>
+            <strong id="payslipEarningsTotal">RM 10,618.00</strong>
+          </div>
+          <div>
+            <span>Total Deductions</span>
+            <strong id="payslipDeductionsTotal">RM 1,722.85</strong>
+          </div>
+        </div>
+
+        <div class="payslip-contribution-row">
+          <span><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Employer Contributions</span>
+          <strong id="payslipContributionsTotal">RM 1,358.65</strong>
+        </div>
+
+        <button id="payslipPdfTrigger" class="payslip-pdf-trigger" type="button" onclick="openPayslipPdfPreview()">
+          <span class="payslip-pdf-trigger-icon" aria-hidden="true"><i class="fa-solid fa-file-pdf"></i></span>
+          <span>View Payslip PDF</span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </section>
+
+      <div class="payslip-section-label">
+        <span>Pay Breakdown</span>
+        <small>Tap a section to expand</small>
+      </div>
+
+      <section class="payslip-section is-expanded" data-payroll-section="Earnings">
+        <button class="payslip-section-toggle" type="button" aria-expanded="true" aria-controls="earningsSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-wallet"></i></span><span><strong>Earnings</strong><small id="earningsItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><strong id="earningsHeadingTotal"></strong><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="earningsSectionBody" class="payslip-section-body" aria-hidden="false"><div id="earningsRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Deductions">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="deductionsSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-receipt"></i></span><span><strong>Deductions</strong><small id="deductionsItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><strong id="deductionsHeadingTotal"></strong><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="deductionsSectionBody" class="payslip-section-body" aria-hidden="true"><div id="deductionsRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Employer Contributions">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="contributionsSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-landmark"></i></span><span><strong>Employer Contributions</strong><small id="contributionsItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><strong id="contributionsHeadingTotal"></strong><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="contributionsSectionBody" class="payslip-section-body" aria-hidden="true"><div id="contributionsRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Statutory Base Details">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="statutorySectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-scale-balanced"></i></span><span><strong>Statutory Base Details</strong><small id="statutoryItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="statutorySectionBody" class="payslip-section-body" aria-hidden="true"><div id="statutoryRows" class="payroll-data-rows"></div></div>
+      </section>
+
+      <section class="payslip-section" data-payroll-section="Other Information">
+        <button class="payslip-section-toggle" type="button" aria-expanded="false" aria-controls="otherSectionBody" onclick="togglePayslipSection(this)">
+          <span class="payslip-section-title"><span class="payslip-section-icon"><i class="fa-solid fa-circle-info"></i></span><span><strong>Other Information</strong><small id="otherItemCount">0 items</small></span></span>
+          <span class="payslip-section-end"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+        </button>
+        <div id="otherSectionBody" class="payslip-section-body" aria-hidden="true"><div id="otherRows" class="payroll-data-rows"></div></div>
+      </section>
+
+    </main>
+
+    <div id="payslipFilterModal" class="modal-overlay standard-filter-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="payslipFilterTitle" onclick="if(event.target===this) closePayslipFilter()">
+      <div class="standard-filter-panel">
+        <div class="standard-filter-handle"></div>
+        <div class="standard-filter-header">
+          <h2 id="payslipFilterTitle">Filter</h2>
+          <div class="standard-filter-header-actions">
+            <button class="standard-filter-reset" type="button" data-filter-reset onclick="resetPayslipFilter(event)"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            <button class="standard-filter-close" type="button" data-filter-close onclick="closePayslipFilter()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="payroll-filter-body">
+          <label for="payslipCompanySelect">Company</label>
+          <select id="payslipCompanySelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <label for="payslipPeriodSelect">Payroll Period</label>
+          <select id="payslipPeriodSelect"></select>
+          <label for="payslipCycleSelect">Payroll Cycle</label>
+          <select id="payslipCycleSelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <label for="payslipBankSelect">Bank Branch</label>
+          <select id="payslipBankSelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <label for="payslipAccountSelect">Account #</label>
+          <select id="payslipAccountSelect" onchange="refreshPayslipFilterPeriods()"></select>
+          <p id="payslipFilterEmpty" class="payslip-filter-empty" role="status" hidden>No payslips match these filters.</p>
+        </div>
+        <div class="payroll-filter-footer"><button class="standard-filter-apply" type="button" onclick="applyPayslipFilter()">Apply Filter</button></div>
+      </div>
+    </div>
+
+    <div id="payslipPdfModal" class="payslip-pdf-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="payslipPdfTitle" onclick="if(event.target===this) closePayslipPdfPreview()">
+      <section class="payslip-pdf-dialog">
+        <header class="payslip-pdf-header">
+          <div>
+            <small>DOCUMENT PREVIEW</small>
+            <h2 id="payslipPdfTitle">Payslip PDF</h2>
+          </div>
+          <button id="payslipPdfClose" type="button" onclick="closePayslipPdfPreview()" aria-label="Close payslip PDF preview"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+
+        <div class="payslip-pdf-filebar">
+          <span class="payslip-pdf-file-icon" aria-hidden="true"><i class="fa-solid fa-file-pdf"></i></span>
+          <span class="payslip-pdf-file-copy">
+            <strong id="payslipPdfFileName">Payslip.pdf</strong>
+            <small id="payslipPdfFilePeriod">Payroll document</small>
+          </span>
+          <span class="payslip-pdf-badge">PDF</span>
+        </div>
+
+        <div class="payslip-pdf-viewport">
+          <article class="payslip-pdf-page" aria-label="Rendered payslip document">
+            <div class="payslip-pdf-document-head">
+              <div>
+                <span>PAYROLL DOCUMENT</span>
+                <strong id="payslipPdfCompany">PEOPLE QUEST SDN BHD</strong>
+              </div>
+              <span class="payslip-pdf-document-type">PAYSLIP</span>
+            </div>
+
+            <div class="payslip-pdf-employee-row">
+              <div class="payslip-pdf-employee">
+                <small>Employee</small>
+                <strong id="payslipPdfEmployeeName">Sarah Jenkins</strong>
+                <span id="payslipPdfEmployeeId">#EBB01</span>
+              </div>
+              <div class="payslip-pdf-period-block">
+                <small>Payroll Period</small>
+                <strong id="payslipPdfPeriod">December 2025</strong>
+              </div>
+            </div>
+
+            <div class="payslip-pdf-summary">
+              <div><small>Total Earnings</small><strong id="payslipPdfEarnings">RM 10,618.00</strong></div>
+              <div><small>Total Deductions</small><strong id="payslipPdfDeductions">RM 1,722.85</strong></div>
+              <div class="payslip-pdf-net"><small>Net Pay</small><strong id="payslipPdfNetPay">RM 8,895.15</strong></div>
+            </div>
+
+            <div class="payslip-pdf-breakdown">
+              <section>
+                <h3>Earnings</h3>
+                <div id="payslipPdfEarningRows"></div>
+              </section>
+              <section>
+                <h3>Deductions</h3>
+                <div id="payslipPdfDeductionRows"></div>
+              </section>
+            </div>
+
+            <footer class="payslip-pdf-document-footer">
+              <span>Computer-generated payslip</span>
+              <span id="payslipPdfCycle">MONTH END</span>
+            </footer>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <app-bottom-nav active="hub"></app-bottom-nav>
+  </div>
+
+  <script>
+    const PAYSLIP_DEFAULT_PERIOD = '2025-12';
+    const payslipCollection = window.PAYROLL_DATA?.payslips || {};
+    const requestedPayslipPeriod = new URLSearchParams(window.location.search).get('month');
+    let selectedPayslipPeriod = requestedPayslipPeriod && payslipCollection[requestedPayslipPeriod]
+      ? requestedPayslipPeriod
+      : (payslipCollection[PAYSLIP_DEFAULT_PERIOD] ? PAYSLIP_DEFAULT_PERIOD : Object.keys(payslipCollection)[0]);
+    let payslipFilterOpener = null;
+    let payslipPdfOpener = null;
+
+    const payslipMoney = value => `RM ${Number(value || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const payslipData = () => payslipCollection[selectedPayslipPeriod] || {};
+    const payslipDefaults = () => payslipCollection[PAYSLIP_DEFAULT_PERIOD] || Object.values(payslipCollection)[0] || {};
+    const sumValues = rows => (rows || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
+
+    function renderMoneyRows(targetId, rows) {
+      if (!rows?.length) {
+        document.getElementById(targetId).innerHTML = '<div class="payslip-empty-row">No information recorded for this period</div>';
+        return;
+      }
+      document.getElementById(targetId).innerHTML = (rows || []).map(row => `<div class="payroll-data-row"><span>${row.description}</span> <strong data-sensitive="true">${payslipMoney(row.amount)}</strong></div>`).join('');
+    }
+
+    function renderValueRows(targetId, rows) {
+      document.getElementById(targetId).innerHTML = (rows || []).map(row => `<div class="payroll-data-row"><span>${row.description}</span> <strong>${row.value ?? row.amount ?? '—'}</strong></div>`).join('');
+    }
+
+    function renderItemCount(targetId, rows) {
+      const count = rows?.length || 0;
+      document.getElementById(targetId).textContent = count + (count === 1 ? ' item' : ' items');
+    }
+
+    function renderPayslipPdfRows(targetId, rows) {
+      document.getElementById(targetId).innerHTML = (rows || [])
+        .map(row => `<div><span>${row.description}</span><strong>${payslipMoney(row.amount)}</strong></div>`)
+        .join('');
+    }
+
+    function renderPayslipPdf() {
+      const data = payslipData();
+      const defaults = payslipDefaults();
+      const employee = window.PAYROLL_DATA?.employee || {};
+      const periodLabel = data.periodLabel || data.monthLabel || selectedPayslipPeriod;
+      const fileName = data.pdfFile || `Payslip_${selectedPayslipPeriod}.pdf`;
+      document.getElementById('payslipPdfFileName').textContent = fileName;
+      document.getElementById('payslipPdfFilePeriod').textContent = periodLabel;
+      document.getElementById('payslipPdfCompany').textContent = data.company || defaults.company || '—';
+      document.getElementById('payslipPdfEmployeeName').textContent = employee.name || 'Employee';
+      document.getElementById('payslipPdfEmployeeId').textContent = `#${String(employee.empNo || '—').replace(/^#/, '')}`;
+      document.getElementById('payslipPdfPeriod').textContent = periodLabel;
+      document.getElementById('payslipPdfEarnings').textContent = payslipMoney(data.totalEarnings);
+      document.getElementById('payslipPdfDeductions').textContent = payslipMoney(data.totalDeductions);
+      document.getElementById('payslipPdfNetPay').textContent = payslipMoney(data.netPay);
+      document.getElementById('payslipPdfCycle').textContent = data.payrollCycle || defaults.payrollCycle || '—';
+      renderPayslipPdfRows('payslipPdfEarningRows', data.earnings);
+      renderPayslipPdfRows('payslipPdfDeductionRows', data.deductions);
+    }
+
+    function renderPayslip() {
+      const data = payslipData();
+      const defaults = payslipDefaults();
+      const periodLabel = data.periodLabel || data.monthLabel || selectedPayslipPeriod;
+      const contributions = data.employerContributions || [];
+      const contributionsTotal = data.totalContributions ?? sumValues(contributions);
+      document.getElementById('payrollFilterSummary').textContent = periodLabel;
+      document.getElementById('payslipCompany').textContent = data.company || defaults.company || '—';
+      document.getElementById('netPayMainDisplay').textContent = payslipMoney(data.netPay);
+      document.getElementById('payslipEarningsTotal').textContent = payslipMoney(data.totalEarnings);
+      document.getElementById('payslipDeductionsTotal').textContent = payslipMoney(data.totalDeductions);
+      document.getElementById('payslipContributionsTotal').textContent = payslipMoney(contributionsTotal);
+      document.getElementById('earningsHeadingTotal').textContent = payslipMoney(data.totalEarnings);
+      document.getElementById('deductionsHeadingTotal').textContent = payslipMoney(data.totalDeductions);
+      document.getElementById('contributionsHeadingTotal').textContent = payslipMoney(contributionsTotal);
+      renderMoneyRows('earningsRows', data.earnings);
+      renderMoneyRows('deductionsRows', data.deductions);
+      renderMoneyRows('contributionsRows', contributions);
+      renderMoneyRows('statutoryRows', data.statutoryBase);
+      renderValueRows('otherRows', data.otherInfo);
+      renderItemCount('earningsItemCount', data.earnings);
+      renderItemCount('deductionsItemCount', data.deductions);
+      renderItemCount('contributionsItemCount', contributions);
+      renderItemCount('statutoryItemCount', data.statutoryBase);
+      renderItemCount('otherItemCount', data.otherInfo);
+      renderPayslipPdf();
+    }
+
+    function togglePayslipSection(button) {
+      const section = button.closest('[data-payroll-section]');
+      const body = document.getElementById(button.getAttribute('aria-controls'));
+      const expanded = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(expanded));
+      body?.setAttribute('aria-hidden', String(!expanded));
+      section?.classList.toggle('is-expanded', expanded);
+    }
+
+    function setPayslipPageInert(inert, activeModalId) {
+      document.querySelectorAll('.phone-container > *').forEach(node => {
+        node.inert = inert && node.id !== activeModalId;
+      });
+    }
+
+    function payslipFilterFocusable() {
+      return [...document.querySelectorAll('#payslipFilterModal button:not([disabled]), #payslipFilterModal select:not([disabled])')]
+        .filter(node => node.getClientRects().length);
+    }
+
+    function openPayslipFilter() {
+      const modal = document.getElementById('payslipFilterModal');
+      payslipFilterOpener = document.activeElement;
+      populatePayslipFilter(selectedPayslipPeriod);
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      setPayslipPageInert(true, 'payslipFilterModal');
+      requestAnimationFrame(() => modal.querySelector('[data-filter-close]')?.focus());
+    }
+
+    function closePayslipFilter() {
+      const modal = document.getElementById('payslipFilterModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      setPayslipPageInert(false);
+      payslipFilterOpener?.focus?.();
+    }
+
+    function openPayslipPdfPreview() {
+      const modal = document.getElementById('payslipPdfModal');
+      payslipPdfOpener = document.activeElement;
+      renderPayslipPdf();
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      setPayslipPageInert(true, 'payslipPdfModal');
+      document.getElementById('payslipPdfClose')?.focus();
+    }
+
+    function closePayslipPdfPreview() {
+      const modal = document.getElementById('payslipPdfModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      setPayslipPageInert(false);
+      payslipPdfOpener?.focus?.();
+    }
+
+    function resetPayslipFilter(event) {
+      event?.stopImmediatePropagation();
+      populatePayslipFilter(payslipCollection[PAYSLIP_DEFAULT_PERIOD] ? PAYSLIP_DEFAULT_PERIOD : Object.keys(payslipCollection)[0]);
+    }
+
+    function applyPayslipFilter() {
+      const period = document.getElementById('payslipPeriodSelect').value;
+      if (!period || !payslipCollection[period]) return;
+      selectedPayslipPeriod = period;
+      const url = new URL(window.location.href);
+      url.searchParams.set('month', selectedPayslipPeriod);
+      history.replaceState(null, '', url.href);
+      renderPayslip();
+      closePayslipFilter();
+    }
+
+    const payslipFilterMetadata = [
+      ['payslipCompanySelect', 'company'], ['payslipCycleSelect', 'payrollCycle'],
+      ['payslipBankSelect', 'bankBranch'], ['payslipAccountSelect', 'accountNumber']
+    ];
+    const payslipMetadataValue = (data, property) => String(data[property] || payslipDefaults()[property] || '—');
+
+    function populatePayslipFilter(period) {
+      const data = payslipCollection[period] || {};
+      payslipFilterMetadata.forEach(([id, property]) => {
+        const select = document.getElementById(id);
+        const options = [...new Set(Object.values(payslipCollection).map(item => payslipMetadataValue(item, property)))];
+        select.replaceChildren(...options.map(value => new Option(value, value)));
+        select.value = payslipMetadataValue(data, property);
+      });
+      refreshPayslipFilterPeriods(period);
+    }
+
+    function refreshPayslipFilterPeriods(preferredPeriod) {
+      const select = document.getElementById('payslipPeriodSelect');
+      const previous = preferredPeriod || select.value;
+      const matching = Object.entries(payslipCollection)
+        .filter(([, data]) => payslipFilterMetadata.every(([id, property]) => document.getElementById(id).value === payslipMetadataValue(data, property)))
+        .sort(([a], [b]) => b.localeCompare(a));
+      select.replaceChildren(...matching.map(([key, data]) => new Option(data.periodLabel || data.monthLabel || key, key)));
+      if (matching.some(([key]) => key === previous)) select.value = previous;
+      const empty = !matching.length;
+      document.getElementById('payslipFilterEmpty').hidden = !empty;
+      select.disabled = empty;
+      document.querySelector('#payslipFilterModal .standard-filter-apply').disabled = empty;
+    }
+
+    document.addEventListener('keydown', event => {
+      const pdfModal = document.getElementById('payslipPdfModal');
+      const filterModal = document.getElementById('payslipFilterModal');
+      const modal = pdfModal.classList.contains('is-open') ? pdfModal : filterModal;
+      if (!modal.classList.contains('is-open')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (modal === pdfModal) closePayslipPdfPreview();
+        else closePayslipFilter();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = modal === pdfModal
+        ? [...modal.querySelectorAll('button:not([disabled])')].filter(node => node.getClientRects().length)
+        : payslipFilterFocusable();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populatePayslipFilter(selectedPayslipPeriod);
+      renderPayslip();
+    });
+  </script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

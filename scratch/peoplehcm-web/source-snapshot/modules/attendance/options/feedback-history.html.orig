@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Pending Attendance Feedback</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/history-cards.css">
+  <link rel="stylesheet" href="../../../css/attendance-history.css">
+  <link rel="stylesheet" href="../../../css/attendance-pending-feedback.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { min-height: 100vh; padding: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-page); color: var(--text-primary); }
+    .phone-container { position: relative; width: 100%; max-width: 420px; height: 900px; display: flex; flex-direction: column; overflow: hidden; border-radius: 44px; background: var(--bg-phone); box-shadow: var(--shadow-phone); }
+    .main-content { position: relative; z-index: 10; flex: 1; min-height: 0; padding: 18px 16px 92px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    .cal-top-header { position: relative; z-index: 20; padding: 12px 16px 14px; border-radius: 0 0 22px 22px; background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 52%, #7c3aed 100%); box-shadow: 0 8px 24px rgba(76,29,149,.28); }
+  </style>
+</head>
+<body class="attendance-history-page pending-feedback-page">
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    <header class="cal-top-header">
+      <phone-status-bar time="9:41" style="color:#fff"></phone-status-bar>
+      <div class="pending-feedback-header-row">
+        <button class="pending-feedback-back" type="button" onclick="history.back()" aria-label="Back">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <h1>Pending Attendance Feedback</h1>
+        <span aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="pending-feedback-context" aria-label="Attendance group">
+        <div><span>Shift Group</span><strong>GROUP A</strong></div>
+        <div><span>Supervisor</span><strong>EBB04</strong></div>
+      </section>
+
+      <section class="pending-feedback-summary" aria-label="Pending feedback summary">
+        <div>
+          <span class="pending-feedback-summary-label">Pending Feedback</span>
+          <strong id="pendingFeedbackTotal">Total 2 Records</strong>
+        </div>
+      </section>
+
+      <article class="history-card-item pending-feedback-record"
+        data-status="unapproved-ot" data-date="14 Sep 2026" data-shift="8.30AM&ndash;5.30PM (W01)"
+        data-times="08:09 &middot; 19:40" data-normal-hours="8.00" data-ot-hours="2.00" data-exception="Unapproved OT"
+        onclick="openAttendanceDetails(this, this.querySelector('.pending-feedback-details-trigger'))">
+        <div class="history-card-header">
+          <button type="button" class="history-card-heading pending-feedback-details-trigger" aria-label="View attendance details for 14 Sep 2026" onclick="event.stopPropagation(); openAttendanceDetails(this.closest('.pending-feedback-record'), this)">
+            <h3 class="history-card-title">8.30AM&ndash;5.30PM (W01)</h3>
+            <div class="history-card-ref">Mon 14 SEP</div>
+          </button>
+          <div class="attendance-history-card-end">
+            <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Unapproved OT</span>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="history-card-details">
+          <div class="attendance-history-detail"><span>Times</span><strong>08:09 &middot; 19:40</strong></div>
+          <div class="attendance-history-detail"><span>Normal Hours</span><strong>8.00</strong></div>
+          <div class="attendance-history-detail"><span>OT Hours</span><strong>2.00</strong></div>
+          <div class="attendance-history-detail"><span>Exception</span><strong>Unapproved OT</strong></div>
+        </div>
+        <div class="history-card-actions">
+          <button type="button" class="card-action-btn btn-shift-change" onclick="event.stopPropagation(); openShiftChange(this.closest('.pending-feedback-record'), this)"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>Change Shift</span></button>
+          <button type="button" class="card-action-btn btn-feedback" onclick="event.stopPropagation(); openFeedbackModal(this.closest('.pending-feedback-record'), this)"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i><span>Feedback</span></button>
+        </div>
+      </article>
+
+      <article class="history-card-item pending-feedback-record"
+        data-status="missing-clock-out" data-date="15 Sep 2026" data-shift="8.30AM&ndash;5.30PM (W01)"
+        data-times="07:38" data-normal-hours="0.00" data-ot-hours="0.00" data-exception="Missing Clock Out"
+        onclick="openAttendanceDetails(this, this.querySelector('.pending-feedback-details-trigger'))">
+        <div class="history-card-header">
+          <button type="button" class="history-card-heading pending-feedback-details-trigger" aria-label="View attendance details for 15 Sep 2026" onclick="event.stopPropagation(); openAttendanceDetails(this.closest('.pending-feedback-record'), this)">
+            <h3 class="history-card-title">8.30AM&ndash;5.30PM (W01)</h3>
+            <div class="history-card-ref">Tue 15 SEP</div>
+          </button>
+          <div class="attendance-history-card-end">
+            <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Missing Clock Out</span>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="history-card-details">
+          <div class="attendance-history-detail"><span>Times</span><strong>07:38</strong></div>
+          <div class="attendance-history-detail"><span>Normal Hours</span><strong>0.00</strong></div>
+          <div class="attendance-history-detail"><span>OT Hours</span><strong>0.00</strong></div>
+          <div class="attendance-history-detail"><span>Exception</span><strong>Missing Clock Out</strong></div>
+        </div>
+        <div class="history-card-actions">
+          <button type="button" class="card-action-btn btn-shift-change" onclick="event.stopPropagation(); openShiftChange(this.closest('.pending-feedback-record'), this)"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>Change Shift</span></button>
+          <button type="button" class="card-action-btn btn-feedback" onclick="event.stopPropagation(); openFeedbackModal(this.closest('.pending-feedback-record'), this)"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i><span>Feedback</span></button>
+        </div>
+      </article>
+    </main>
+
+    <div id="attendanceDetailsModalOverlay" class="pending-feedback-modal detail-popout-overlay" hidden onclick="closeOverlayFromBackdrop(event, 'attendanceDetailsModalOverlay')">
+      <section class="detail-popout-panel" role="dialog" aria-modal="true" aria-labelledby="attendanceDetailsTitle" onclick="event.stopPropagation()">
+        <header class="detail-popout-header">
+          <h3 id="attendanceDetailsTitle" class="detail-popout-title">Attendance Advice Approval</h3>
+          <button type="button" class="detail-popout-close" onclick="closeOverlay('attendanceDetailsModalOverlay')" aria-label="Close details"></button>
+        </header>
+        <div class="detail-popout-body">
+          <table class="detail-popout-table"><tbody>
+            <tr><td class="detail-popout-label">Employee</td><td class="detail-popout-value"><span class="pending-feedback-employee"><span>Farhan binti rahmat</span><span>#EBB12</span></span></td></tr>
+            <tr><td class="detail-popout-label">Date</td><td class="detail-popout-value" id="detailDate">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">Original Shift</td><td class="detail-popout-value" id="detailShift">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">Times</td><td class="detail-popout-value" id="detailTimes">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">Normal Hours</td><td class="detail-popout-value" id="detailNormalHours">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">OT Hours</td><td class="detail-popout-value" id="detailOtHours">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">Exception</td><td class="detail-popout-value" id="detailException">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">Status</td><td class="detail-popout-value pending-feedback-status">Pending Feedback Review</td></tr>
+          </tbody></table>
+        </div>
+      </section>
+    </div>
+
+    <div id="feedbackModalOverlay" class="pending-feedback-modal detail-popout-overlay" hidden onclick="closeOverlayFromBackdrop(event, 'feedbackModalOverlay')">
+      <section class="detail-popout-panel pending-feedback-form-panel" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle" onclick="event.stopPropagation()">
+        <header class="detail-popout-header">
+          <h3 id="feedbackTitle" class="detail-popout-title">Attendance Feedback</h3>
+          <button type="button" class="detail-popout-close" onclick="closeOverlay('feedbackModalOverlay')" aria-label="Close feedback"></button>
+        </header>
+        <form id="feedbackForm" class="detail-popout-body" onsubmit="submitFeedbackForm(event)">
+          <table class="detail-popout-table pending-feedback-meta-table"><tbody>
+            <tr><td class="detail-popout-label">Date</td><td class="detail-popout-value" id="fbMetaDate">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">Original Shift</td><td class="detail-popout-value" id="fbMetaShift">&ndash;</td></tr>
+          </tbody></table>
+
+          <section class="pending-feedback-form-section pending-feedback-clock-section">
+            <div class="pending-feedback-section-heading">
+              <h4><i class="fa-solid fa-clock" aria-hidden="true"></i>Clock In/Out Data</h4>
+              <button type="button" class="pending-feedback-delete-clock" onclick="deleteSelectedClockCard()" aria-label="Delete selected clock entry"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+            </div>
+            <div class="pending-feedback-day-actions" aria-label="Add clock entry">
+              <button type="button" id="fbAddPreviousDay" onclick="addClockCard('13 Sep', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>13 Sep</button>
+              <button type="button" onclick="addClockCard('14 Sep', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>14 Sep</button>
+              <button type="button" onclick="addClockCard('15 Sep', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>15 Sep</button>
+            </div>
+            <div id="fbClockCardsTrack" class="pending-feedback-clock-track" aria-live="polite"></div>
+          </section>
+
+          <section class="pending-feedback-form-section">
+            <h4>Feedback Details</h4>
+            <div class="pending-feedback-form-field">
+              <label for="fbAmendedShiftSelect">Amended Shift</label>
+              <select id="fbAmendedShiftSelect" name="amendedShift">
+                <option value="">&ndash; Select Amended Shift &ndash;</option><option value="W01">8.30AM&ndash;5.30PM (W01)</option><option value="W02">9.00AM&ndash;6.00PM (W02)</option><option value="W03">10.00AM&ndash;7.00PM (W03)</option><option value="REST">Rest Day</option>
+              </select>
+            </div>
+            <div class="pending-feedback-form-field">
+              <label for="fbAmendReasonSelect">Time Amend Reason</label>
+              <select id="fbAmendReasonSelect" name="amendReason">
+                <option value="">&ndash; Select Reason &ndash;</option><option value="forgot">Forgot to Clock</option><option value="device">Clocking Device Issue</option><option value="business">Official Business</option><option value="other">Other Official Reason</option>
+              </select>
+            </div>
+            <div class="pending-feedback-form-field">
+              <label for="fbRemarksInput">Remarks</label>
+              <textarea id="fbRemarksInput" name="remarks" rows="3" placeholder="Add remarks for your supervisor..."></textarea>
+            </div>
+          </section>
+
+          <section class="pending-feedback-form-section pending-feedback-upload-section">
+            <h4>Upload Attachments</h4>
+            <div class="pending-feedback-upload-actions">
+              <button type="button" onclick="document.getElementById('fbFileInput').click()"><span><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span>Select Files</button>
+              <button type="button" onclick="document.getElementById('fbCameraInput').click()"><span><i class="fa-solid fa-camera" aria-hidden="true"></i></span>Take a Picture</button>
+            </div>
+            <input id="fbFileInput" type="file" multiple hidden onchange="showSelectedFiles(this)">
+            <input id="fbCameraInput" type="file" accept="image/*" capture="environment" hidden onchange="showSelectedFiles(this)">
+            <div id="fbSelectedFiles" class="pending-feedback-selected-files" aria-live="polite">No files selected</div>
+          </section>
+        </form>
+        <footer class="detail-popout-footer detail-popout-actions" style="--detail-action-count:3">
+          <button type="button" onclick="closeOverlay('feedbackModalOverlay')"><i class="fa-solid fa-xmark" aria-hidden="true"></i>Cancel</button>
+          <button type="button" onclick="saveFeedbackDraft()"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Save Draft</button>
+          <button type="submit" form="feedbackForm"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i>Submit</button>
+        </footer>
+      </section>
+    </div>
+
+    <div id="shiftChangeModalOverlay" class="pending-feedback-modal detail-popout-overlay" hidden onclick="closeOverlayFromBackdrop(event, 'shiftChangeModalOverlay')">
+      <section class="detail-popout-panel pending-feedback-form-panel pending-feedback-shift-panel" role="dialog" aria-modal="true" aria-labelledby="shiftChangeTitle" onclick="event.stopPropagation()">
+        <header class="detail-popout-header">
+          <h3 id="shiftChangeTitle" class="detail-popout-title">Shift Change Request</h3>
+          <button type="button" class="detail-popout-close" onclick="closeOverlay('shiftChangeModalOverlay')" aria-label="Close shift request"></button>
+        </header>
+        <form id="shiftChangeForm" class="detail-popout-body" onsubmit="submitShiftChange(event)">
+          <table class="detail-popout-table pending-feedback-meta-table"><tbody>
+            <tr><td class="detail-popout-label">Date</td><td class="detail-popout-value" id="shiftMetaDate">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">Original Shift</td><td class="detail-popout-value" id="shiftMetaOriginal">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">New Shift Start</td><td class="detail-popout-value" id="shiftChangeStart">&ndash;</td></tr>
+            <tr><td class="detail-popout-label">New Shift End</td><td class="detail-popout-value" id="shiftChangeEnd">&ndash;</td></tr>
+          </tbody></table>
+          <section class="pending-feedback-form-section">
+            <div class="pending-feedback-form-field">
+              <label for="shiftChangeNewShift">New Shift</label>
+              <select id="shiftChangeNewShift" name="newShift" onchange="updateShiftChangeSummary(this.value)">
+                <option value="">&ndash; Select Shift &ndash;</option><option value="W02">9.00AM&ndash;6.00PM (W02)</option><option value="W03">10.00AM&ndash;7.00PM (W03)</option><option value="N01">8.00PM&ndash;5.00AM (N01)</option>
+              </select>
+            </div>
+            <div class="pending-feedback-form-field">
+              <label for="shiftChangeReason">Reason</label>
+              <select id="shiftChangeReason" name="reason">
+                <option value="">&ndash; Select Reason &ndash;</option><option value="personal">Personal Matter</option><option value="coverage">Covering a Colleague</option><option value="operation">Operational Requirement</option>
+              </select>
+            </div>
+            <div class="pending-feedback-form-field">
+              <label for="shiftChangeRemarks">Remarks</label>
+              <textarea id="shiftChangeRemarks" name="remarks" rows="4" placeholder="Add supporting details..."></textarea>
+            </div>
+          </section>
+        </form>
+        <footer class="detail-popout-footer detail-popout-actions" style="--detail-action-count:2">
+          <button type="button" onclick="closeOverlay('shiftChangeModalOverlay')"><i class="fa-solid fa-xmark" aria-hidden="true"></i>Cancel</button>
+          <button type="submit" form="shiftChangeForm"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i>Submit</button>
+        </footer>
+      </section>
+    </div>
+
+    <div id="toastMsg" class="toast-msg" role="status" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span id="toastMsgText">Updated</span></div>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+
+  <script>
+    let selectedClockCard = null;
+    let pendingFeedbackToastTimer = null;
+
+    let activeModalTrigger = null;
+    const modalFocusableSelector = 'button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+
+    function setModalBackgroundInert(inert) {
+      const phone = document.querySelector('.phone-container');
+      if (!phone) return;
+      Array.from(phone.children).forEach(function (child) {
+        if (!child.classList.contains('pending-feedback-modal')) child.inert = inert;
+      });
+    }
+    function modalFocusables(overlay) {
+      return Array.from(overlay.querySelectorAll(modalFocusableSelector)).filter(function (node) {
+        return !node.hidden && node.getClientRects().length > 0;
+      });
+    }
+    function openOverlay(id, trigger) {
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      activeModalTrigger = trigger instanceof HTMLElement ? trigger : document.activeElement;
+      overlay.hidden = false;
+      setModalBackgroundInert(true);
+      document.body.classList.add('pending-feedback-modal-open');
+      const close = overlay.querySelector('.detail-popout-close');
+      if (close) requestAnimationFrame(function () { close.focus(); });
+    }
+    function closeOverlay(id) {
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      const trigger = activeModalTrigger;
+      activeModalTrigger = null;
+      overlay.hidden = true;
+      setModalBackgroundInert(false);
+      document.body.classList.remove('pending-feedback-modal-open');
+      if (trigger && trigger.isConnected) requestAnimationFrame(function () { trigger.focus(); });
+    }
+    function closeOverlayFromBackdrop(event, id) { if (event.target === event.currentTarget) closeOverlay(id); }
+    function cardData(card) {
+      return { date: card.dataset.date, shift: card.dataset.shift, times: card.dataset.times, normalHours: card.dataset.normalHours, otHours: card.dataset.otHours, exception: card.dataset.exception };
+    }
+    function openAttendanceDetails(card, trigger) {
+      const data = cardData(card);
+      document.getElementById('detailDate').textContent = data.date;
+      document.getElementById('detailShift').textContent = data.shift;
+      document.getElementById('detailTimes').textContent = data.times;
+      document.getElementById('detailNormalHours').textContent = data.normalHours;
+      document.getElementById('detailOtHours').textContent = data.otHours;
+      document.getElementById('detailException').textContent = data.exception;
+      openOverlay('attendanceDetailsModalOverlay', trigger);
+    }
+    function toggleSingleVerify(button) {
+      const box = button.querySelector('.verify-checkbox-box');
+      const checked = !box.classList.contains('checked');
+      box.classList.toggle('checked', checked);
+      button.setAttribute('aria-pressed', String(checked));
+      syncVerifyAll();
+      showToast(checked ? 'Attendance record verified' : 'Attendance record unverified');
+    }
+    function toggleVerifyAll() {
+      const records = Array.from(document.querySelectorAll('[data-verify-record]'));
+      const checked = !records.every(function (button) { return button.getAttribute('aria-pressed') === 'true'; });
+      records.forEach(function (button) {
+        button.setAttribute('aria-pressed', String(checked));
+        button.querySelector('.verify-checkbox-box').classList.toggle('checked', checked);
+      });
+      syncVerifyAll();
+      showToast(checked ? 'All attendance records verified' : 'All records unverified');
+    }
+    function syncVerifyAll() {
+      const records = Array.from(document.querySelectorAll('[data-verify-record]'));
+      const checked = records.length > 0 && records.every(function (button) { return button.getAttribute('aria-pressed') === 'true'; });
+      document.getElementById('verifyAllIcon').classList.toggle('checked', checked);
+      document.getElementById('verifyAllBtn').setAttribute('aria-pressed', String(checked));
+      document.getElementById('verifyAllText').textContent = checked ? 'Verified' : 'Verify All';
+    }
+    function createClockCard(date, original, amended) {
+      const card = document.createElement('div');
+      card.className = 'pending-feedback-clock-card';
+      card.innerHTML = '<span class="pending-feedback-clock-date"><span>' + date + '</span>' +
+        '<button type="button" class="pending-feedback-clock-select" aria-label="Select clock amendment for ' + date + '" aria-pressed="false"><i class="fa-solid fa-check" aria-hidden="true"></i></button></span>' +
+        '<span class="pending-feedback-clock-pair"><small>Original</small><strong>' + (original || '\u2013') + '</strong></span>' +
+        '<span class="pending-feedback-clock-pair amended"><small>Amended</small><input type="time" value="' + amended + '" aria-label="Amended time for ' + date + '"></span>';
+      card.addEventListener('click', function (event) {
+        if (event.target.closest('.pending-feedback-clock-select')) return;
+        if (event.target.tagName === 'INPUT') event.stopPropagation();
+        selectClockCard(card);
+      });
+      card.querySelector('.pending-feedback-clock-select').addEventListener('click', function (event) {
+        event.stopPropagation();
+        selectClockCard(card);
+      });
+      return card;
+    }
+    function selectClockCard(card) {
+      document.querySelectorAll('.pending-feedback-clock-card').forEach(function (node) {
+        node.classList.toggle('selected', node === card);
+        node.querySelector('.pending-feedback-clock-select').setAttribute('aria-pressed', String(node === card));
+      });
+      selectedClockCard = card;
+    }
+    function resetClockCards(data) {
+      const track = document.getElementById('fbClockCardsTrack');
+      track.innerHTML = '';
+      const parts = data.times.split('\u00b7').map(function (part) { return part.trim(); }).filter(Boolean);
+      const date = data.date.replace('2026', '').trim();
+      track.appendChild(createClockCard(date, parts[0] || '', parts[0] || ''));
+      track.appendChild(createClockCard(date, parts[1] || '', parts[1] || ''));
+      selectClockCard(track.firstElementChild);
+    }
+    function addClockCard(date, original, amended) {
+      const card = createClockCard(date, original, amended);
+      document.getElementById('fbClockCardsTrack').appendChild(card);
+      selectClockCard(card);
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+    }
+    function deleteSelectedClockCard() {
+      if (!selectedClockCard) return;
+      const next = selectedClockCard.nextElementSibling || selectedClockCard.previousElementSibling;
+      selectedClockCard.remove();
+      selectedClockCard = null;
+      if (next) selectClockCard(next);
+    }
+    function openFeedbackModal(card, trigger) {
+      const data = cardData(card);
+      document.getElementById('fbMetaDate').textContent = data.date;
+      document.getElementById('fbMetaShift').textContent = data.shift;
+      document.getElementById('feedbackForm').reset();
+      document.getElementById('fbSelectedFiles').textContent = 'No files selected';
+      resetClockCards(data);
+      openOverlay('feedbackModalOverlay', trigger);
+    }
+    function showSelectedFiles(input) {
+      const names = Array.from(input.files || []).map(function (file) { return file.name; });
+      document.getElementById('fbSelectedFiles').textContent = names.length ? names.join(', ') : 'No files selected';
+    }
+    function saveFeedbackDraft() { closeOverlay('feedbackModalOverlay'); showToast('Attendance feedback saved as draft'); }
+    function submitFeedbackForm(event) { event.preventDefault(); closeOverlay('feedbackModalOverlay'); showToast('Attendance feedback submitted'); }
+    function openShiftChange(card, trigger) {
+      const data = cardData(card);
+      document.getElementById('shiftChangeForm').reset();
+      document.getElementById('shiftMetaDate').textContent = data.date;
+      document.getElementById('shiftMetaOriginal').textContent = data.shift;
+      updateShiftChangeSummary('');
+      openOverlay('shiftChangeModalOverlay', trigger);
+    }
+    function updateShiftChangeSummary(value) {
+      const times = { W02: ['9.00AM', '6.00PM'], W03: ['10.00AM', '7.00PM'], N01: ['8.00PM', '5.00AM'] };
+      const selected = times[value] || ['\u2013', '\u2013'];
+      document.getElementById('shiftChangeStart').textContent = selected[0];
+      document.getElementById('shiftChangeEnd').textContent = selected[1];
+    }
+    function submitShiftChange(event) { event.preventDefault(); closeOverlay('shiftChangeModalOverlay'); showToast('Shift change request submitted'); }
+    function showToast(message) {
+      const toast = document.getElementById('toastMsg');
+      document.getElementById('toastMsgText').textContent = message;
+      toast.classList.add('show');
+      clearTimeout(pendingFeedbackToastTimer);
+      pendingFeedbackToastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
+    }
+    document.addEventListener('keydown', function (event) {
+      const open = document.querySelector('.pending-feedback-modal:not([hidden])');
+      if (!open) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeOverlay(open.id);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = modalFocusables(open);
+      if (!focusable.length) {
+        event.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!open.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,511 @@
+
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css"><!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Organization Chart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="js/components.js"></script>
+  <script src="js/app.js" defer></script>
+  <script>
+    const savedTheme = localStorage.getItem('peoplehcm_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+  <style>
+    /* Vertical Org Chart Tree Connector Styles */
+    .v-org-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+      position: relative;
+    }
+
+    /* Edge-to-Corner Circular Photo Node Card Base */
+    .v-node-card {
+      border-radius: 24px;
+      padding: 8px 14px 8px 8px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      min-height: 88px;
+    }
+    .v-node-card:active {
+      transform: scale(0.985);
+    }
+
+    /* Huge Circular Avatar Wrappers Flush to Card Edges */
+    .circular-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    
+    .circle-img-root {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+      border: 3.5px solid #ffffff;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.5);
+    }
+    
+    .circle-img-l1 {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    .circle-img-l2 {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+      color: #ffffff;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Right Content Details Block */
+    .card-content-block {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       Card color recipe: EXACT TWIN of `.bonus-top-header`
+       Header purple:  linear-gradient(135deg, #4c1d95  0%, #6d28d9  50%, #7c3aed 100%)
+       Active  teal:   linear-gradient(135deg, #134e4a  0%, #0f766e  50%, #14b8a6 100%)
+       Resigned rose:  linear-gradient(135deg, #881337  0%, #be123c  50%, #fb7185 100%)
+       ══════════════════════════════════════════════════════════ */
+
+    /* 🟢 Active Employee Card (Emerald Green matching 'AR') */
+    .v-node-card.staff-active {
+      background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #10b981 100%);
+      border: 1.5px solid rgba(16, 185, 129, 0.55);
+      box-shadow: 0 8px 28px rgba(6, 78, 59, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .v-node-card.staff-active::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 130px;
+      height: 130px;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.35) 0%, rgba(16, 185, 129, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .v-node-card.staff-active:hover {
+      border-color: #34d399;
+      box-shadow: 0 10px 34px rgba(5, 150, 105, 0.65);
+    }
+    .v-node-card.staff-active .card-content-block > div:first-child {
+      color: #ffffff !important;
+    }
+    .v-node-card.staff-active .card-content-block > div:nth-child(2) {
+      color: #a7f3d0 !important;
+    }
+    [data-theme="light"] .v-node-card.staff-active {
+      background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 6px 22px rgba(5, 150, 105, 0.2);
+    }
+
+    /* 🔴 Resigned Employee Card */
+    .v-node-card.staff-resigned {
+      background: linear-gradient(135deg, #881337 0%, #be123c 50%, #fb7185 100%);
+      border: 1.5px dashed rgba(253, 164, 175, 0.55);
+      box-shadow: 0 8px 28px rgba(136, 19, 55, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .v-node-card.staff-resigned::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 130px;
+      height: 130px;
+      background: radial-gradient(circle, rgba(253, 164, 175, 0.35) 0%, rgba(244, 63, 94, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .v-node-card.staff-resigned:hover {
+      border-color: #fda4af;
+      box-shadow: 0 10px 34px rgba(190, 18, 60, 0.65);
+    }
+    .v-node-card.staff-resigned .card-content-block > div:first-child {
+      color: #ffffff !important;
+    }
+    .v-node-card.staff-resigned .card-content-block > div:nth-child(2) {
+      color: #fecdd3 !important;
+    }
+    [data-theme="light"] .v-node-card.staff-resigned {
+      background: linear-gradient(135deg, #be123c 0%, #f43f5e 50%, #fb7185 100%);
+      border-color: rgba(225, 29, 72, 0.5);
+      box-shadow: 0 6px 22px rgba(225, 29, 72, 0.2);
+    }
+
+    .staff-resigned .circle-img-l1,
+    .staff-resigned .circle-img-l2 {
+      filter: grayscale(0.4);
+      opacity: 0.85;
+    }
+
+    /* Metric Chips inside full-color cards */
+    .v-node-card.staff-active .metric-chip,
+    .v-node-card.staff-resigned .metric-chip {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+    .v-node-card.staff-active .metric-chip strong,
+    .v-node-card.staff-resigned .metric-chip strong {
+      color: #ffffff !important;
+    }
+
+    /* Data Badge Pill Line (Years Old & Year of Services) */
+    .v-metrics-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 3px;
+    }
+
+    .metric-chip {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 2px 7px;
+      border-radius: 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    [data-theme="light"] .metric-chip {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    /* Vertical Stem Line */
+    .v-stem-line {
+      width: 2.5px;
+      height: 24px;
+      background: #7c3aed;
+      z-index: 1;
+    }
+
+    /* Tree Branch Group Structure */
+    .v-branch-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+      padding-left: 26px;
+    }
+
+    .v-branch-wrapper::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: -24px;
+      bottom: 24px;
+      width: 2.5px;
+      background: linear-gradient(to bottom, #7c3aed 0%, rgba(124, 58, 237, 0.4) 100%);
+      border-radius: 2px;
+    }
+
+    .v-branch-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .v-branch-item::before {
+      content: '';
+      position: absolute;
+      left: -14px;
+      top: 48px;
+      width: 14px;
+      height: 2.5px;
+      background: #7c3aed;
+    }
+  </style>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+
+<body>
+
+  <!-- Desktop Switcher Bar -->
+  <preview-top-bar active-page="me"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Executive Header Block (Purple Gradient) -->
+    <div class="bonus-top-header">
+      <!-- Status Bar -->
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <!-- Navigation Header -->
+      <div class="bonus-nav-bar">
+        <button class="bonus-back-btn" onclick="window.location.href='me.html'" aria-label="Back to Profile" title="Back">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        <div class="bonus-title-wrap">
+          <h2 class="bonus-title-main" style="font-size: 16px; font-weight: 900; margin: 0; color: #ffffff;">Organization Chart</h2>
+        </div>
+        <div style="width: 36px;"></div>
+      </div>
+    </div>
+
+    <!-- Scrollable Main Body Content (No Bottom Navbar, Full Cover) -->
+    <div class="main-content" style="padding: 16px 14px 40px; overflow-y: auto; flex: 1;">
+
+      <!-- Status Legend Indicator Row (Clean Single Circle Dot Per Item) -->
+      <div style="display: flex; align-items: center; justify-content: center; gap: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 8px 12px; border-radius: 14px; margin-bottom: 16px; box-shadow: var(--shadow-card);">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 800; color: var(--text-primary);">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #2dd4bf; box-shadow: 0 0 8px rgba(45, 212, 191, 0.6); display: inline-block;"></span>
+          <span>Active Staff (7)</span>
+        </div>
+        <div style="width: 1px; height: 14px; background: var(--border-subtle);"></div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 800; color: var(--text-primary);">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #f43f5e; box-shadow: 0 0 8px rgba(244, 63, 94, 0.6); display: inline-block;"></span>
+          <span>Resigned Staff (2)</span>
+        </div>
+      </div>
+
+      <!-- Vertical Org Chart Tree Container -->
+      <div class="v-org-container">
+
+        <!-- ROOT NODE: Alex Wong (Top Level 0 - Active Staff) -->
+        <div class="v-node-card staff-active">
+          <!-- Left: Huge Circular Photo Avatar -->
+          <div class="circular-avatar-wrap">
+            <div class="circle-img-root">👨‍💼</div>
+          </div>
+
+          <!-- Right Content Details Block -->
+          <div class="card-content-block">
+            <div style="font-size: 15px; font-weight: 900; color: var(--text-primary);">Alex Wong</div>
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Group HR Manager</div>
+
+            <div class="v-metrics-row">
+              <div class="metric-chip">🎂 <strong>38</strong> yrs old</div>
+              <div class="metric-chip">💼 <strong>6.5</strong> yrs service</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vertical Stem Line Connecting Level 0 to Level 1 -->
+        <div class="v-stem-line"></div>
+
+        <!-- LEVEL 1 BRANCHES (Direct Reports) -->
+        <div class="v-branch-wrapper">
+
+          <!-- ITEM 1: Siti Nurhaliza (Active) -->
+          <div class="v-branch-item">
+            <div class="v-node-card staff-active">
+              <!-- Left: Huge Circular Photo Avatar -->
+              <div class="circular-avatar-wrap">
+                <div class="circle-img-l1" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">SN</div>
+              </div>
+
+              <!-- Right Content Block -->
+              <div class="card-content-block">
+                <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Siti Nurhaliza</div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Senior HR Executive</div>
+
+                <div class="v-metrics-row">
+                  <div class="metric-chip">🎂 <strong>32</strong> yrs old</div>
+                  <div class="metric-chip">💼 <strong>4.2</strong> yrs service</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEVEL 2 SUB-BRANCH (Reports under Siti) -->
+            <div class="v-branch-wrapper" style="margin-top: 14px; padding-left: 26px;">
+              
+              <!-- Kavitha (Active) -->
+              <div class="v-branch-item">
+                <div class="v-node-card staff-active">
+                  <div class="circular-avatar-wrap">
+                    <div class="circle-img-l2" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">KG</div>
+                  </div>
+
+                  <div class="card-content-block">
+                    <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Kavitha A/P Gopal</div>
+                    <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">HR Administrator</div>
+
+                    <div class="v-metrics-row">
+                      <div class="metric-chip">🎂 <strong>27</strong> yrs old</div>
+                      <div class="metric-chip">💼 <strong>2.0</strong> yrs service</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Danial Ariff (🔴 Resigned) -->
+              <div class="v-branch-item">
+                <div class="v-node-card staff-resigned">
+                  <div class="circular-avatar-wrap">
+                    <div class="circle-img-l2" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%);">DA</div>
+                  </div>
+
+                  <div class="card-content-block">
+                    <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Danial Ariff</div>
+                    <div style="font-size: 10.5px; color: #ef4444; font-weight: 700;">Training Coordinator</div>
+
+                    <div class="v-metrics-row">
+                      <div class="metric-chip">🎂 <strong>29</strong> yrs old</div>
+                      <div class="metric-chip">💼 <strong>1.5</strong> yrs service</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ITEM 2: Ahmad Razak (Active) -->
+          <div class="v-branch-item">
+            <div class="v-node-card staff-active">
+              <div class="circular-avatar-wrap">
+                <div class="circle-img-l1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">AR</div>
+              </div>
+
+              <div class="card-content-block">
+                <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Ahmad Razak</div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Payroll Officer</div>
+
+                <div class="v-metrics-row">
+                  <div class="metric-chip">🎂 <strong>35</strong> yrs old</div>
+                  <div class="metric-chip">💼 <strong>5.0</strong> yrs service</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEVEL 2 SUB-BRANCH (Reports under Ahmad) -->
+            <div class="v-branch-wrapper" style="margin-top: 14px; padding-left: 26px;">
+              <div class="v-branch-item">
+                <div class="v-node-card staff-active">
+                  <div class="circular-avatar-wrap">
+                    <div class="circle-img-l2" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">LJ</div>
+                  </div>
+
+                  <div class="card-content-block">
+                    <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Lee Jia Ling</div>
+                    <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">Junior Payroll Asst</div>
+
+                    <div class="v-metrics-row">
+                      <div class="metric-chip">🎂 <strong>24</strong> yrs old</div>
+                      <div class="metric-chip">💼 <strong>0.8</strong> yrs service</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 3: Tan Wei Lun (Active) -->
+          <div class="v-branch-item">
+            <div class="v-node-card staff-active">
+              <div class="circular-avatar-wrap">
+                <div class="circle-img-l1" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">TW</div>
+              </div>
+
+              <div class="card-content-block">
+                <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Tan Wei Lun</div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Talent Acquisition Spec</div>
+
+                <div class="v-metrics-row">
+                  <div class="metric-chip">🎂 <strong>30</strong> yrs old</div>
+                  <div class="metric-chip">💼 <strong>3.5</strong> yrs service</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 4: Nurul Aishah (🔴 Resigned) -->
+          <div class="v-branch-item">
+            <div class="v-node-card staff-resigned">
+              <div class="circular-avatar-wrap">
+                <div class="circle-img-l1" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%);">NA</div>
+              </div>
+
+              <div class="card-content-block">
+                <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Nurul Aishah</div>
+                <div style="font-size: 11px; color: #ef4444; font-weight: 700;">Comp &amp; Benefits Exec</div>
+
+                <div class="v-metrics-row">
+                  <div class="metric-chip">🎂 <strong>33</strong> yrs old</div>
+                  <div class="metric-chip">💼 <strong>4.0</strong> yrs service</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 5: Marcus Chen (Active) -->
+          <div class="v-branch-item">
+            <div class="v-node-card staff-active">
+              <div class="circular-avatar-wrap">
+                <div class="circle-img-l1" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">MC</div>
+              </div>
+
+              <div class="card-content-block">
+                <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary);">Marcus Chen</div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">HRIS Analyst</div>
+
+                <div class="v-metrics-row">
+                  <div class="metric-chip">🎂 <strong>28</strong> yrs old</div>
+                  <div class="metric-chip">💼 <strong>2.1</strong> yrs service</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

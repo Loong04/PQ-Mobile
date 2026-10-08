@@ -1,0 +1,1906 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claims - Entertainment Claim</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 100px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .view-container {
+      display: none;
+      width: 100%;
+    }
+    .view-container.active {
+      display: block;
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .category-card:hover {
+      border-color: var(--purple-primary);
+      transform: translateY(-1px);
+    }
+
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .section-title-accent {
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .section-title-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field-label .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .form-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
+    }
+    .form-ctrl:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 1;
+      background: var(--bg-input);
+    }
+
+    .entertainment-summary {
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--bg-input);
+    }
+    .entertainment-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 25px;
+    }
+    .entertainment-summary-label {
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+    .entertainment-summary-value {
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .stat-summary-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 8px;
+      text-align: center;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+
+    .btn-step-back {
+      padding: 11px 22px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-step-back:active {
+      transform: scale(0.96);
+    }
+
+    .btn-submit-primary {
+      padding: 11px 26px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-submit-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-draft-bright {
+      padding: 11px 24px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-draft-bright:active {
+      transform: scale(0.96);
+    }
+
+    .btn-add-purple {
+      padding: 9px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
+    .claim-data-list {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+    }
+    .claim-data-row {
+      display: grid;
+      grid-template-columns: minmax(112px, 42%) minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+    .claim-data-row:last-child { border-bottom: none; }
+    .claim-data-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .claim-data-value {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .claim-data-value.amount { color: var(--text-primary); }
+
+    .custom-toggle {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .custom-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .custom-toggle .slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 24px;
+      transition: background 0.2s ease;
+    }
+    .custom-toggle .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .custom-toggle input:checked + .slider { background: #22c55e; }
+    .custom-toggle input:checked + .slider::before { transform: translateX(20px); }
+    .toggle-option-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 46px;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .toggle-option-label {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    /* Top Claim Stepper Progress Indicator Standard */
+    .claim-stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+    .stepper-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stepper-line-bg {
+      position: absolute;
+      top: 15px;
+      left: 12.5%;
+      right: 12.5%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      z-index: 1;
+    }
+    .stepper-line-fill {
+      position: absolute;
+      top: 15px;
+      left: 12.5%;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
+    }
+    .stepper-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      z-index: 3;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+    }
+    .stepper-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #171529;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .stepper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    /* Completed State: Green Outline & Text */
+    .stepper-item.completed .stepper-circle {
+      border-color: #10b981;
+      background: #171529;
+      color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+    .stepper-item.completed .stepper-label {
+      color: #34d399;
+    }
+    /* Active State: Vibrant Purple Filled Circle */
+    .stepper-item.active .stepper-circle {
+      border-color: #a855f7;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
+    }
+    .stepper-item.active .stepper-label {
+      color: #ffffff;
+      font-weight: 900;
+    }
+    html[data-theme="light"] .claim-stepper-card .stepper-line-bg { background: rgba(100, 116, 139, 0.24); }
+    html[data-theme="light"] .claim-stepper-card .stepper-circle { background: #f1f5f9; border-color: #cbd5e1; color: #64748b; }
+    html[data-theme="light"] .claim-stepper-card .stepper-label { color: #64748b; }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.completed .stepper-circle { background: #ecfdf5; border-color: #10b981; color: #059669; box-shadow: 0 0 10px rgba(16, 185, 129, 0.16); }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.completed .stepper-label { color: #059669; }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.active .stepper-circle { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border-color: #a855f7; color: #ffffff; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.34); }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.active .stepper-label { color: #6d28d9; font-weight: 900; }
+  </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Navigation Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" onclick="handleHeaderBack()" class="me-back-btn" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; text-decoration: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Entertainment Claim</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container (4-Level Drill-down Views) -->
+    <div class="main-content">
+
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Detail, 3: Employees, 4: Guests) -->
+      <div class="claim-stepper-card">
+        <div class="stepper-track-container">
+          <div class="stepper-line-bg"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%;"></div>
+          
+          <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
+            <div class="stepper-circle">1</div>
+            <span class="stepper-label">General</span>
+          </div>
+          <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
+            <div class="stepper-circle">2</div>
+            <span class="stepper-label">Detail</span>
+          </div>
+          <div class="stepper-item" id="stepNode-3" onclick="navigateToStep(3)">
+            <div class="stepper-circle">3</div>
+            <span class="stepper-label">Employees</span>
+          </div>
+          <div class="stepper-item" id="stepNode-4" onclick="navigateToStep(4)">
+            <div class="stepper-circle">4</div>
+            <span class="stepper-label">Guests</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 1: MAIN FORM VIEW (主申请表单) -->
+      <!-- ========================================================= -->
+      <div class="view-container active" id="view-1-main">
+        
+        <!-- MAIN APPLICATION INFO CARD -->
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">GENERAL DETAILS</span>
+          </div>
+
+                    <!-- Claim Period : -->
+          <div class="field-group">
+            <label class="field-label">Claim Period</label>
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+              <div class="select-wrapper">
+                <select id="v1ClaimPeriodYear" class="form-ctrl">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <select id="v1ClaimPeriodMonth" class="form-ctrl">
+                  <option value="September" selected>September</option>
+                  <option value="August">August</option>
+                  <option value="July">July</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Travelling & Mileage Claim # : -->
+          <div class="field-group">
+            <label class="field-label">Travelling &amp; Mileage Claim #</label>
+            <div class="select-wrapper">
+              <select id="travelClaimNoSelect" class="form-ctrl">
+                <option value="" selected>- Select -</option>
+                <option value="TRV-2026-001">TRV-2026-001 (Penang Client Visit)</option>
+                <option value="TRV-2026-002">TRV-2026-002 (JB Business Trip)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Benefit Type : -->
+          <div class="field-group">
+            <label class="field-label">Benefit Type</label>
+            <div class="select-wrapper">
+              <select id="benefitTypeSelect" class="form-ctrl">
+                <option value="" selected>Select Benefit</option>
+                <option value="CLIENT ENTERTAINMENT">CLIENT ENTERTAINMENT</option>
+                <option value="BUSINESS DINING & MEAL">BUSINESS DINING &amp; MEAL</option>
+                <option value="CORPORATE GIFT">CORPORATE GIFT</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Claim Date -->
+          <div class="field-group">
+            <label class="field-label">Claim Date</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-24" aria-label="Claim date from" />
+              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-24" aria-label="Claim date to" />
+            </div>
+          </div>
+
+          <!-- Cost Centre : -->
+          <div class="field-group">
+            <label class="field-label">Cost Centre</label>
+            <div class="select-wrapper">
+              <select id="costCentreInput" class="form-ctrl">
+                <option value="MANAGEMENT" selected>MANAGEMENT</option>
+                <option value="ADMINISTRATION">ADMINISTRATION</option>
+                <option value="OPERATIONS">OPERATIONS</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Project : -->
+          <div class="field-group">
+            <label class="field-label">Project</label>
+            <div class="select-wrapper">
+              <select id="projectSelect" class="form-ctrl">
+                <option value="" selected>- Select Project -</option>
+                <option value="PROJ-01">Project Alpha</option>
+                <option value="PROJ-02">Enterprise Migration</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Entertained Person/Org : -->
+          <div class="field-group">
+            <label class="field-label">Entertained Person/Org</label>
+            <input type="text" id="entertainedPersonInput" class="form-ctrl" placeholder="" />
+          </div>
+
+          <!-- Place Entertained : -->
+          <div class="field-group">
+            <label class="field-label">Place Entertained</label>
+            <input type="text" id="placeEntertainedInput" class="form-ctrl" placeholder="" />
+          </div>
+
+          <!-- Purpose : -->
+          <div class="field-group">
+            <label class="field-label">Purpose</label>
+            <input type="text" id="purposeInput" class="form-ctrl" placeholder="" />
+          </div>
+
+          <!-- Currency : -->
+          <div class="field-group">
+            <label class="field-label">Currency</label>
+            <div class="select-wrapper">
+              <select id="currencyInput" class="form-ctrl">
+                <option value="RINGGIT MALAYSIA" selected>RINGGIT MALAYSIA</option>
+                <option value="US DOLLAR">US DOLLAR</option>
+                <option value="SINGAPORE DOLLAR">SINGAPORE DOLLAR</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Summary Stat Rows -->
+          <div class="entertainment-summary">
+            <div class="entertainment-summary-row">
+              <span class="entertainment-summary-label">Total Amount</span>
+              <span id="summaryTotalAmount" class="entertainment-summary-value">0.00</span>
+            </div>
+            <div class="entertainment-summary-row">
+              <span class="entertainment-summary-label">No of Internal Attendees</span>
+              <span id="summaryInternalPax" class="entertainment-summary-value">0</span>
+            </div>
+            <div class="entertainment-summary-row">
+              <span class="entertainment-summary-label">No of External Attendees</span>
+              <span id="summaryExternalPax" class="entertainment-summary-value">0</span>
+            </div>
+            <div class="entertainment-summary-row">
+              <span class="entertainment-summary-label">Avg Per Pax</span>
+              <span id="summaryAvgPax" class="entertainment-summary-value">0.00</span>
+            </div>
+          </div>
+
+          <!-- Board Approve : -->
+          <div class="field-group toggle-option-card">
+            <label class="toggle-option-label">Board Approve</label>
+            <label class="custom-toggle"><input type="checkbox" id="boardApproveCheck" /><span class="slider"></span></label>
+          </div>
+
+          <!-- Declaration For: -->
+          <div style="margin-top: 10px; margin-bottom: 12px;">
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Declaration For</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="toggle-option-card">
+                <label class="toggle-option-label">Gift/Ent</label>
+                <label class="custom-toggle"><input type="checkbox" id="giftEntCheck" /><span class="slider"></span></label>
+              </div>
+              <div class="toggle-option-card">
+                <label class="toggle-option-label">Trv/Hosp</label>
+                <label class="custom-toggle"><input type="checkbox" id="trvHospCheck" /><span class="slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remarks : -->
+          <div class="field-group" style="margin-bottom: 0;">
+            <label class="field-label">Remarks</label>
+            <input type="text" id="v1Remarks" class="form-ctrl" placeholder="" />
+          </div>
+
+          <div style="margin-top: 18px;">
+            <label class="field-label form-section-heading" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">Upload Attachment</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+              </div>
+            </div>
+            <div id="mainChipsList" class="attachment-upload-list"></div>
+          </div>
+        </div>
+
+        <!-- AGGREGATED SUMMARY ROW (Level 1 Total Claim & Drill-down Entry) -->
+        <div class="category-summary-row" onclick="switchView('view-2-categories', 'Claim Categories')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
+              <i class="fa-solid fa-utensils"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL CLAIM AMOUNT</div>
+              <div id="v1TotalClaimDisplay" style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">RM 0.00</div>
+              <div id="v1ItemsCountSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">0 claim items added</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
+            <span>Details</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </div>
+        </div>
+
+
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+          <button type="button" class="form-cancel-btn" data-page-form-cancel onclick="handleHeaderBack()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-draft-bright" onclick="saveEntertainmentDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('details')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 2: CATEGORY SUMMARY VIEW (分类聚合导航页) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-2-categories">
+        
+        <div style="margin-bottom: 14px;">
+          <h2 class="form-section-heading" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Entertainment Categories (3)</h2>
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Manage line items, internal attendees, and external guests</span>
+        </div>
+
+        <!-- CATEGORY 1: EXPENSE LINE ITEMS -->
+        <div class="category-card" onclick="openCategoryItems('details')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Detail</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catDetailsAmount" style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">RM 0.00</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- CATEGORY 2: INTERNAL ATTENDEES -->
+        <div class="category-card" onclick="openCategoryItems('employees')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Employees</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catEmployeesCount" style="font-size: 14px; font-weight: 800; color: #3b82f6;">0 Pax</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- CATEGORY 3: EXTERNAL ATTENDEES -->
+        <div class="category-card" onclick="openCategoryItems('guests')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Guests</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catGuestsCount" style="font-size: 14px; font-weight: 800; color: #10b981;">0 Pax</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'Entertainment Claim')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Application</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('details')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 3: ITEM LIST VIEW (明细项列表页) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-3-list">
+        
+        <!-- Unified Card for Header and Items -->
+        <div class="form-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 16px;">
+          
+          <!-- Category Summary Title Header (Now integrated) -->
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <h2 class="form-section-heading" id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Detail</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Amount: RM 0.00</span>
+              </div>
+            </div>
+            <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+          <div id="v3ItemsContainer" style="padding: 16px;">
+            <!-- Populated by JS -->
+          </div>
+          
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-2-categories', 'Entertainment Categories')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Categories</span>
+          </button>
+          <button type="button" id="entertainmentListNextButton" class="btn-submit-primary" onclick="goToNextEntertainmentStep()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW (子表单录入页) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-4-entry">
+        
+        <!-- SUB-FORM FORM CARDS CONTAINER -->
+        <div id="v4SubFormContainer">
+          <!-- Populated by JS according to active category -->
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-3-list')">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="hiddenEntertainmentFileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelected(this)">
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+
+  <!-- STATE MANAGEMENT & DRILL-DOWN NAVIGATION SCRIPT -->
+  <script>
+    const mockEmployees = {
+      'EBB01': { name: 'Sarah Jenkins', empNo: 'EBB01', pos: 'Marketing Lead', comp: 'PeopleHCM Sdn Bhd', dept: 'Marketing' },
+      '004177': { name: 'Marcus Tan', empNo: '004177', pos: 'Senior Engineer', comp: 'PeopleHCM Sdn Bhd', dept: 'Engineering' },
+      '0000101': { name: 'Aisha Omar', empNo: '0000101', pos: 'Product Designer', comp: 'PeopleHCM Sdn Bhd', dept: 'Design' },
+      '000582': { name: 'Daniel Lee', empNo: '000582', pos: 'Operations Specialist', comp: 'PeopleHCM Sdn Bhd', dept: 'Operations' }
+    };
+
+    const formData = {
+      applicationInfo: {
+        claimYear: '2026',
+        claimMonth: 'September',
+        travelReqNo: '',
+        benefitType: 'CLIENT ENTERTAINMENT',
+        startDate: '23/09/2026',
+        endDate: '23/09/2026',
+        costCentre: 'MANAGEMENT',
+        project: '',
+        entertainedPerson: '',
+        placeEntertained: '',
+        currency: 'MYR'
+      },
+      claimDetails: {
+        addedDetails: [],
+        addedEmployees: [],
+        addedGuests: []
+      },
+      activeCategory: '',
+      currentView: 'view-1-main',
+      uploadTarget: 'main',
+      subAttachments: [],
+      mainAttachments: []
+    };
+
+    function toDateInputValue(value) {
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    function toDisplayDate(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+    }
+
+    function updateStepper(stepNum) {
+      const steps = document.querySelectorAll('.stepper-item');
+      const lineFill = document.getElementById('stepperLineFill');
+      if (!steps.length) return;
+
+      const totalSteps = steps.length;
+      let progressRatio = totalSteps > 1 ? (stepNum - 1) / (totalSteps - 1) : 0;
+      if (lineFill) {
+        lineFill.style.width = (progressRatio * 75) + '%';
+      }
+
+      steps.forEach((stepEl, idx) => {
+        const s = idx + 1;
+        stepEl.classList.remove('active', 'completed');
+        const circle = stepEl.querySelector('.stepper-circle');
+
+        if (circle) circle.textContent = s;
+
+        if (s < stepNum) {
+          stepEl.classList.add('completed');
+        } else if (s === stepNum) {
+          stepEl.classList.add('active');
+        }
+      });
+    }
+
+    function navigateToStep(stepNum) {
+      if (stepNum === 1) {
+        switchView('view-1-main', 'Entertainment Claim');
+      } else if (stepNum === 2) {
+        openCategoryItems('details');
+      } else if (stepNum === 3) {
+        openCategoryItems('employees');
+      } else if (stepNum === 4) {
+        openCategoryItems('guests');
+      }
+    }
+
+    function getSavedProgressStep() {
+      if (formData.claimDetails.addedGuests.length) return 4;
+      if (formData.claimDetails.addedEmployees.length) return 3;
+      if (formData.claimDetails.addedDetails.length) return 2;
+      return 1;
+    }
+
+    function switchView(viewId, headerTitle) {
+      formData.currentView = viewId;
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById(viewId);
+      if (targetView) targetView.classList.add('active');
+
+      const titleTextEl = document.getElementById('headerTitleText');
+      if (titleTextEl && headerTitle) {
+        titleTextEl.innerText = headerTitle;
+      }
+
+      // Sync stepper node status
+      if (viewId === 'view-1-main' || viewId === 'view-2-categories') {
+        updateStepper(getSavedProgressStep());
+      } else if (formData.activeCategory === 'details') {
+        updateStepper(2);
+      } else if (formData.activeCategory === 'employees') {
+        updateStepper(3);
+      } else if (formData.activeCategory === 'guests') {
+        updateStepper(4);
+      } else {
+        updateStepper(1);
+      }
+
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    function handleHeaderBack() {
+      if (formData.currentView === 'view-4-entry') {
+        switchView('view-3-list', getCategoryTitle(formData.activeCategory));
+      } else if (formData.currentView === 'view-3-list') {
+        switchView('view-2-categories', 'Entertainment Categories');
+      } else if (formData.currentView === 'view-2-categories') {
+        switchView('view-1-main', 'Entertainment Claim');
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
+
+    function getCategoryTitle(catKey) {
+      if (catKey === 'details') return 'Detail';
+      if (catKey === 'employees') return 'Employees';
+      if (catKey === 'guests') return 'Guests';
+      return 'Claim Details';
+    }
+
+    function openCategoryItems(categoryKey) {
+      formData.activeCategory = categoryKey;
+      renderView3List();
+      updateEntertainmentListAction();
+      switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function goToNextEntertainmentStep() {
+      const nextCategory = {
+        details: 'employees',
+        employees: 'guests'
+      }[formData.activeCategory];
+      if (nextCategory) {
+        openCategoryItems(nextCategory);
+      } else {
+        submitEntertainmentClaim();
+      }
+    }
+
+    function updateEntertainmentListAction() {
+      const button = document.getElementById('entertainmentListNextButton');
+      if (!button) return;
+      const isFinalStep = formData.activeCategory === 'guests';
+      button.onclick = isFinalStep ? submitEntertainmentClaim : goToNextEntertainmentStep;
+      button.innerHTML = isFinalStep
+        ? '<span>Submit</span><i class="fa-solid fa-paper-plane"></i>'
+        : '<span>Next</span><i class="fa-solid fa-arrow-right"></i>';
+    }
+
+    function toggleItemCard(cardId) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const body = card.querySelector('.item-details-body');
+      const icon = card.querySelector('.toggle-icon');
+      if (!body) return;
+
+      const isHidden = body.style.display === 'none';
+      body.style.display = isHidden ? 'block' : 'none';
+      if (icon) {
+        icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+    }
+
+    function renderLegacyView3List() {
+      const catKey = formData.activeCategory;
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const container = document.getElementById('v3ItemsContainer');
+
+      let items = [];
+      let catName = getCategoryTitle(catKey);
+      let iconHtml = '';
+
+      if (catKey === 'details') {
+        items = formData.claimDetails.addedDetails;
+        iconHtml = '<i class="fa-solid fa-receipt"></i>';
+      } else if (catKey === 'employees') {
+        items = formData.claimDetails.addedEmployees;
+        iconHtml = '<i class="fa-solid fa-users"></i>';
+      } else if (catKey === 'guests') {
+        items = formData.claimDetails.addedGuests;
+        iconHtml = '<i class="fa-solid fa-user-tie"></i>';
+      }
+
+      if (iconBox) iconBox.innerHTML = iconHtml;
+      if (titleText) titleText.innerText = catName;
+      if (countText) countText.innerText = `Total Records: ${items.length}`;
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              ${iconHtml}
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Click "+ Add Item" above to add a new record to ${catName}</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+      items.forEach((item, idx) => {
+        const cardId = `entCard_${catKey}_${idx}`;
+        const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
+        if (catKey === 'details') {
+          html += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-receipt"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type || 'Entertainment Item'}</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desc || 'No description'}</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expense Category:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'DINING & FOOD'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expense Date:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.date || '24/09/2026'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'Project Alpha'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Receipt / Ref No:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.ref || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Entertained Person / Org:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.entertainedPerson || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Place Entertained:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.placeEntertained || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Original Amount:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.amt || 0} ${item.currency || 'MYR'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Forex Rate:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.forexRate || 1}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Claim Amount (RM):</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.localAmount || item.amt || 0).toFixed(2)}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'N/A'}</div>
+                  </div>
+                  ${item.attachments && item.attachments.length > 0 ? `
+                  <div style="grid-column: span 2; margin-top: 6px; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+                    <span style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Attachments:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      ${item.attachments.map(att => `
+                        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-paperclip"></i> ${att}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (catKey === 'employees') {
+          html += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.14); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-user"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.name}</div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif;">#${item.empNo}</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Employee"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Employee"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Employee Name:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.name}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Employee ID:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">#${item.empNo}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Position / Title:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.pos || 'Staff'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Company:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.comp || 'Company'}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Department:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dept || 'Engineering'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (catKey === 'guests') {
+          html += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-user-tie"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.name} <span style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); margin-left: 4px;">${item.rel}</span></div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${item.desig ? item.desig + ' • ' : ''}${item.comp}</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Guest"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Guest"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Guest Name:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.name}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Designation / Title:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desig || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Organization / Company:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.comp || 'Acme Corp'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Relationship:</span>
+                    <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">${item.rel || 'Client'}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Detail / Remarks:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.detail || 'N/A'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+
+    function renderDetailRows(rows, attachments = null) {
+      const detailRows = rows.map(([label, value, isAmount = false]) => `
+        <div class="claim-data-row">
+          <span class="claim-data-label">${label}</span>
+        <span class="claim-data-value${isAmount && !String(label).startsWith('Local Amount') ? ' amount' : ''}">${value ?? '-'}</span>
+        </div>
+      `).join('');
+      if (attachments === null) return `<div class="claim-data-list">${detailRows}</div>`;
+      const filenames = attachments.length ? attachments : ['xxxx.jpg'];
+      return `<div class="claim-data-list">${detailRows}
+        <div class="claim-data-row">
+          <span class="claim-data-label">Attachment</span>
+          <span class="claim-data-value">${filenames.map(name => `<span class="file-chip"><i class="fa-solid fa-paperclip"></i> ${name}</span>`).join('')}</span>
+        </div>
+      </div>`;
+    }
+
+    function renderView3List() {
+      const catKey = formData.activeCategory;
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const container = document.getElementById('v3ItemsContainer');
+      const config = {
+        details: { items: formData.claimDetails.addedDetails, icon: 'fa-receipt', color: 'var(--purple-primary)', bg: 'rgba(124, 58, 237, 0.14)' },
+        employees: { items: formData.claimDetails.addedEmployees, icon: 'fa-user', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.14)' },
+        guests: { items: formData.claimDetails.addedGuests, icon: 'fa-user-tie', color: '#10b981', bg: 'rgba(16, 185, 129, 0.14)' }
+      }[catKey];
+      if (!config || !container) return;
+
+      const items = config.items || [];
+      if (iconBox) iconBox.innerHTML = `<i class="fa-solid ${config.icon}"></i>`;
+      if (titleText) titleText.innerText = getCategoryTitle(catKey);
+      if (countText) {
+        if (catKey === 'details') {
+          const totalAmount = items.reduce((sum, item) => sum + (Number(item.localAmount ?? item.amt) || 0), 0);
+          countText.textContent = `Total Amount: RM ${totalAmount.toFixed(2)}`;
+        } else {
+          countText.textContent = `Total Pax: ${items.length}`;
+        }
+      }
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              <i class="fa-solid ${config.icon}"></i>
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Click "+ Add Item" above to add your first record</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 16px;">${items.map((item, idx) => {
+        const cardId = `entCard_${catKey}_${idx}`;
+        let title = '';
+        let amount = '';
+        let rows = [];
+        let attachments = null;
+        if (catKey === 'details') {
+          title = item.type || 'Entertainment Detail';
+          amount = `RM ${(item.localAmount ?? item.amt ?? 0).toFixed(2)}`;
+          rows = [
+            ['Expense', item.type], ['Date', item.date], ['Project', item.project],
+            ['Receipt #', item.ref || '-'], ['Description', item.desc || '-'],
+            ['Entertained Person/Org', item.entertainedPerson || '-'],
+            ['Place Entertained', item.placeEntertained || '-'],
+            ['Amount', `RM ${(item.amt || 0).toFixed(2)}`, true],
+            ['Foreign Currency', item.currency || 'RINGGIT MALAYSIA'],
+            ['Forex Rate', item.forexRate ?? 1],
+            ['Local Amount', `RM ${(item.localAmount ?? item.amt ?? 0).toFixed(2)}`, true]
+          ];
+          attachments = item.attachments || [];
+        } else if (catKey === 'employees') {
+          title = item.name || 'Employee';
+          rows = [
+            ['Employee', item.name || '-'],
+            ['Position', item.pos || '-'], ['Company', item.comp || '-'], ['Department', item.dept || '-']
+          ];
+        } else {
+          title = item.name || 'Guest';
+          rows = [
+            ['Attendee', item.name || '-'], ['Company', item.comp || '-'],
+            ['Designation', item.desig || '-'], ['Relationship', item.rel || '-'],
+            ['Detail', item.detail || '-']
+          ];
+        }
+        return `
+          <div id="${cardId}" style="transition: all 0.25s ease; ${idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;'}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: ${config.bg}; color: ${config.color}; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid ${config.icon}"></i>
+                </div>
+                <div style="min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere;">${title}</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                ${amount ? `<span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${amount}</span>` : ''}
+                <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete"></i>
+              </div>
+            </div>
+            <div class="item-details-body" style="display: none; padding-top: 10px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+              ${renderDetailRows(rows, attachments)}
+            </div>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
+    function deleteSubItem(idx) {
+      const catKey = formData.activeCategory;
+      if (catKey === 'details') formData.claimDetails.addedDetails.splice(idx, 1);
+      else if (catKey === 'employees') formData.claimDetails.addedEmployees.splice(idx, 1);
+      else if (catKey === 'guests') formData.claimDetails.addedGuests.splice(idx, 1);
+
+      recalcAllTotals();
+      renderView3List();
+      if (typeof showToast === 'function') showToast('🗑️ Record removed!');
+    }
+
+    function openEntryForm(mode = 'add', index = -1) {
+      formData.editingIndex = index;
+      const catKey = formData.activeCategory;
+      const container = document.getElementById('v4SubFormContainer');
+
+      if (catKey === 'details') {
+        const item = (index >= 0 && formData.claimDetails.addedDetails[index]) ? formData.claimDetails.addedDetails[index] : null;
+        formData.subAttachments = item && item.attachments ? [...item.attachments] : [];
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT CLAIM DETAILS' : 'ADD CLAIM DETAILS'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Expense</label>
+              <div class="select-wrapper">
+                <select id="expenseTypeSelect" class="form-ctrl">
+                  <option value="" ${!item ? 'selected' : ''}>Select Expense</option>
+                  <option value="DINING & FOOD" ${item && item.type === 'DINING & FOOD' ? 'selected' : ''}>DINING &amp; FOOD</option>
+                  <option value="BEVERAGES" ${item && item.type === 'BEVERAGES' ? 'selected' : ''}>BEVERAGES</option>
+                  <option value="ENTERTAINMENT TICKET" ${item && item.type === 'ENTERTAINMENT TICKET' ? 'selected' : ''}>ENTERTAINMENT TICKET</option>
+                  <option value="CORPORATE GIFT" ${item && item.type === 'CORPORATE GIFT' ? 'selected' : ''}>CORPORATE GIFT</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Date</label>
+              <input type="date" id="detailExpenseDate" class="form-ctrl" value="${toDateInputValue(item ? item.date : '24/09/2026')}" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Project</label>
+              <div class="select-wrapper">
+                <select id="detailProjectSelect" class="form-ctrl">
+                  <option value="" ${!item || !item.project ? 'selected' : ''}>- Select Project -</option>
+                  <option value="Project Alpha" ${item && item.project === 'Project Alpha' ? 'selected' : ''}>Project Alpha</option>
+                  <option value="Enterprise Migration" ${item && item.project === 'Enterprise Migration' ? 'selected' : ''}>Enterprise Migration</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Receipt #</label>
+              <input type="text" id="detailReceiptNo" class="form-ctrl" value="${item ? (item.ref || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Description</label>
+              <input type="text" id="detailDescription" class="form-ctrl" value="${item ? (item.desc || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Entertained Person/Org</label>
+              <input type="text" id="detailEntertainedPerson" class="form-ctrl" value="${item ? (item.entertainedPerson || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Place Entertained</label>
+              <input type="text" id="detailPlaceEntertained" class="form-ctrl" value="${item ? (item.placeEntertained || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Amount</label>
+              <input type="number" id="detailAmountInput" class="form-ctrl" value="${item ? item.amt : '0'}" step="0.01" oninput="calcSubLocalAmount()" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Foreign Currency</label>
+              <div class="select-wrapper">
+                <select id="detailCurrencyInput" class="form-ctrl" onchange="calcSubLocalAmount()">
+                  <option value="RINGGIT MALAYSIA" ${!item || item.currency === 'RINGGIT MALAYSIA' || item.currency === 'MYR' ? 'selected' : ''}>RINGGIT MALAYSIA</option>
+                  <option value="US DOLLAR" ${item && item.currency === 'US DOLLAR' ? 'selected' : ''}>US DOLLAR</option>
+                  <option value="SINGAPORE DOLLAR" ${item && item.currency === 'SINGAPORE DOLLAR' ? 'selected' : ''}>SINGAPORE DOLLAR</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Forex Rate</label>
+              <input type="number" id="detailForexRate" class="form-ctrl" value="${item ? (item.forexRate ?? 1) : 1}" step="0.01" oninput="calcSubLocalAmount()" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Local Amount</label>
+              <input type="text" id="detailLocalAmount" class="form-ctrl" value="${item ? Number(item.localAmount ?? item.amt ?? 0).toFixed(2) : '0.00'}" readonly style="font-weight: 800;" />
+            </div>
+
+            <!-- Upload Attachment -->
+            <div style="margin-top: 14px;">
+              <label class="field-label form-section-heading" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+                </div>
+              </div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
+            </div>
+
+          </div>
+        `;
+      } else if (catKey === 'employees') {
+        const item = (index >= 0 && formData.claimDetails.addedEmployees[index]) ? formData.claimDetails.addedEmployees[index] : null;
+        formData.subAttachments = [];
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT EMPLOYEE' : 'ADD EMPLOYEE'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Employee</label>
+              <div class="select-wrapper">
+                <select id="employeeSelect" class="form-ctrl" onchange="handleEmployeeSelect(this.value)">
+                  <option value="" ${!item ? 'selected' : ''}>- Select employee -</option>
+                  <option value="EBB01" ${item && item.empNo === 'EBB01' ? 'selected' : ''}>Sarah Jenkins (#EBB01)</option>
+                  <option value="004177" ${item && item.empNo === '004177' ? 'selected' : ''}>Marcus Tan (#004177)</option>
+                  <option value="0000101" ${item && item.empNo === '0000101' ? 'selected' : ''}>Aisha Omar (#0000101)</option>
+                  <option value="000582" ${item && item.empNo === '000582' ? 'selected' : ''}>Daniel Lee (#000582)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Position</label>
+              <input type="text" id="employeePosition" class="form-ctrl" value="${item ? (item.pos || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Company</label>
+              <input type="text" id="employeeCompany" class="form-ctrl" value="${item ? (item.comp || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Department</label>
+              <input type="text" id="employeeDepartment" class="form-ctrl" value="${item ? (item.dept || '') : ''}" placeholder="" />
+            </div>
+          </div>
+        `;
+      } else if (catKey === 'guests') {
+        const item = (index >= 0 && formData.claimDetails.addedGuests[index]) ? formData.claimDetails.addedGuests[index] : null;
+        formData.subAttachments = [];
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT GUEST' : 'ADD GUEST'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Attendee</label>
+              <input type="text" id="guestNameInput" class="form-ctrl" value="${item ? (item.name || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Company</label>
+              <input type="text" id="guestCompanyInput" class="form-ctrl" value="${item ? (item.comp || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Designation</label>
+              <input type="text" id="guestDesignationInput" class="form-ctrl" value="${item ? (item.desig || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Relationship</label>
+              <div class="select-wrapper">
+                <select id="guestRelationshipSelect" class="form-ctrl">
+                  <option value="" ${!item ? 'selected' : ''}>- Select Relationship -</option>
+                  <option value="Client" ${item && item.rel === 'Client' ? 'selected' : ''}>Client / Customer</option>
+                  <option value="Prospect" ${item && item.rel === 'Prospect' ? 'selected' : ''}>Prospect Lead</option>
+                  <option value="Vendor" ${item && item.rel === 'Vendor' ? 'selected' : ''}>Vendor / Supplier</option>
+                  <option value="Partner" ${item && item.rel === 'Partner' ? 'selected' : ''}>Business Partner</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Detail</label>
+              <input type="text" id="guestDetailInput" class="form-ctrl" value="${item ? (item.detail || '') : ''}" placeholder="" />
+            </div>
+          </div>
+        `;
+      }
+
+      renderSubChips();
+      switchView('view-4-entry', mode === 'edit' ? `Edit ${getCategoryTitle(catKey)}` : `Add ${getCategoryTitle(catKey)}`);
+    }
+
+    function handleEmployeeSelect(val) {
+      const emp = mockEmployees[val];
+      if (emp) {
+        document.getElementById('employeePosition').value = emp.pos;
+        document.getElementById('employeeCompany').value = emp.comp;
+        document.getElementById('employeeDepartment').value = emp.dept;
+      }
+    }
+
+    function calcSubLocalAmount() {
+      const amt = parseFloat(document.getElementById('detailAmountInput')?.value || 0);
+      const rate = parseFloat(document.getElementById('detailForexRate')?.value || 1);
+      const local = (amt * rate).toFixed(2);
+      const locEl = document.getElementById('detailLocalAmount');
+      if (locEl) locEl.value = local;
+    }
+
+    function saveSubItem() {
+      const catKey = formData.activeCategory;
+      const editIdx = formData.editingIndex;
+
+      if (catKey === 'details') {
+        const type = document.getElementById('expenseTypeSelect')?.value || '';
+        const date = toDisplayDate(document.getElementById('detailExpenseDate')?.value) || '24/09/2026';
+        const project = document.getElementById('detailProjectSelect')?.value || '';
+        const ref = document.getElementById('detailReceiptNo')?.value || '';
+        const desc = document.getElementById('detailDescription')?.value || '';
+        const entertainedPerson = document.getElementById('detailEntertainedPerson')?.value || '';
+        const placeEntertained = document.getElementById('detailPlaceEntertained')?.value || '';
+        const amt = parseFloat(document.getElementById('detailAmountInput')?.value || 0);
+        const currency = document.getElementById('detailCurrencyInput')?.value || 'RINGGIT MALAYSIA';
+        const forexRate = parseFloat(document.getElementById('detailForexRate')?.value || 1);
+        const localAmount = parseFloat(document.getElementById('detailLocalAmount')?.value || amt);
+
+        const newItem = { type, date, project, ref, desc, entertainedPerson, placeEntertained, amt, currency, forexRate, localAmount, attachments: [...formData.subAttachments] };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.claimDetails.addedDetails[editIdx] = newItem;
+        } else {
+          formData.claimDetails.addedDetails.push(newItem);
+        }
+      } else if (catKey === 'employees') {
+        const val = document.getElementById('employeeSelect').value;
+        const emp = mockEmployees[val] || {
+          name: document.getElementById('employeeSelect')?.options[document.getElementById('employeeSelect')?.selectedIndex]?.text.split(' (')[0] || 'Employee',
+          empNo: val || 'EMP',
+          pos: document.getElementById('employeePosition')?.value || 'Staff',
+          dept: document.getElementById('employeeDepartment')?.value || 'General',
+          comp: document.getElementById('employeeCompany')?.value || 'Company'
+        };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.claimDetails.addedEmployees[editIdx] = emp;
+        } else {
+          formData.claimDetails.addedEmployees.push(emp);
+        }
+      } else if (catKey === 'guests') {
+        const name = document.getElementById('guestNameInput').value;
+        const comp = document.getElementById('guestCompanyInput').value;
+        const desig = document.getElementById('guestDesignationInput').value;
+        const rel = document.getElementById('guestRelationshipSelect').value;
+        const detail = document.getElementById('guestDetailInput')?.value || '';
+        const newItem = { name, comp, desig, rel, detail };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.claimDetails.addedGuests[editIdx] = newItem;
+        } else {
+          formData.claimDetails.addedGuests.push(newItem);
+        }
+      }
+
+      formData.editingIndex = -1;
+      recalcAllTotals();
+      openCategoryItems(catKey);
+
+      if (typeof showToast === 'function') showToast('✅ Record saved!');
+    }
+
+    function recalcAllTotals() {
+      const totalAmt = formData.claimDetails.addedDetails.reduce((sum, item) => {
+        return sum + (Number(item.localAmount ?? item.amt) || 0);
+      }, 0);
+      const intPax = formData.claimDetails.addedEmployees.length;
+      const extPax = formData.claimDetails.addedGuests.length;
+      const totalPax = intPax + extPax;
+      const avgPax = totalPax > 0 ? (totalAmt / totalPax) : 0;
+
+      // Update View 1
+      const v1Total = document.getElementById('v1TotalClaimDisplay');
+      const v1Sub = document.getElementById('v1ItemsCountSubtitle');
+      if (v1Total) v1Total.innerText = `RM ${totalAmt.toFixed(2)}`;
+      if (v1Sub) v1Sub.innerText = `${formData.claimDetails.addedDetails.length} item(s) • ${totalPax} Pax`;
+
+      document.getElementById('summaryTotalAmount').innerText = totalAmt.toFixed(2);
+      document.getElementById('summaryInternalPax').innerText = intPax;
+      document.getElementById('summaryExternalPax').innerText = extPax;
+      document.getElementById('summaryAvgPax').innerText = avgPax.toFixed(2);
+
+      // Update View 2
+      const catDetAmt = document.getElementById('catDetailsAmount');
+      const catDetSub = document.getElementById('catDetailsSubtitle');
+      if (catDetAmt) catDetAmt.innerText = `RM ${totalAmt.toFixed(2)}`;
+      if (catDetSub) catDetSub.innerText = `Total Records: ${formData.claimDetails.addedDetails.length}`;
+
+      const catEmpCnt = document.getElementById('catEmployeesCount');
+      const catEmpSub = document.getElementById('catEmployeesSubtitle');
+      if (catEmpCnt) catEmpCnt.innerText = `${intPax} Pax`;
+      if (catEmpSub) catEmpSub.innerText = `Total Pax: ${intPax}`;
+
+      const catGstCnt = document.getElementById('catGuestsCount');
+      const catGstSub = document.getElementById('catGuestsSubtitle');
+      if (catGstCnt) catGstCnt.innerText = `${extPax} Pax`;
+      if (catGstSub) catGstSub.innerText = `Total Pax: ${extPax}`;
+    }
+
+    function triggerFileUpload(target) {
+      formData.uploadTarget = target;
+      const input = document.getElementById('hiddenEntertainmentFileInput');
+      if (input) input.click();
+    }
+
+    function handleFileSelected(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      if (formData.uploadTarget === 'sub') {
+        formData.subAttachments.push(file.name);
+        renderSubChips();
+      } else if (formData.uploadTarget === 'main') {
+        formData.mainAttachments.push(file.name);
+        renderMainChips();
+      }
+      input.value = '';
+    }
+
+    function removeSubAttachment(index) {
+      formData.subAttachments.splice(index, 1);
+      renderSubChips();
+    }
+
+    function renderSubChips() {
+      const container = document.getElementById('subChipsList');
+      if (!container) return;
+      container.innerHTML = formData.subAttachments.map((name, index) => `
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${name}">${name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="removeSubAttachment(${index})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function removeMainAttachment(index) {
+      formData.mainAttachments.splice(index, 1);
+      renderMainChips();
+    }
+
+    function renderMainChips() {
+      const container = document.getElementById('mainChipsList');
+      if (!container) return;
+      container.innerHTML = formData.mainAttachments.map((name, index) => `
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${name}">${name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="removeMainAttachment(${index})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function saveEntertainmentDraft() {
+      if (typeof showToast === 'function') showToast('💾 Entertainment Claim draft saved!');
+      else alert('Entertainment Claim draft saved!');
+    }
+
+    function submitEntertainmentClaim() {
+      if (typeof showToast === 'function') showToast('🚀 Entertainment Claim submitted successfully!');
+      else alert('Entertainment Claim submitted successfully!');
+      window.location.href = '../index.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      recalcAllTotals();
+    });
+  </script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>
+

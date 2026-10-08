@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Timesheet Highlight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/project-task.css">
+  <link rel="stylesheet" href="../../../css/timesheet-highlight.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/project-task/project-task-app.js" defer></script>
+  <script src="../../../js/project-task/timesheet-highlight-data.js" defer></script>
+  <script src="../../../js/project-task/timesheet-highlight.js" defer></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="project-task-page timesheet-highlight-page">
+  <preview-top-bar active-page="project-task"></preview-top-bar>
+  <div class="phone-container">
+    <header class="project-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="project-header-row">
+        <button type="button" class="project-back" id="timesheetBack" aria-label="Back to Project and Task"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+        <div class="project-header-title"><h1 id="timesheetPageTitle">Timesheet Highlight</h1></div>
+      </div>
+    </header>
+    <main class="main-content project-task-content timesheet-highlight-content">
+      <section id="timesheetViewTable" data-timesheet-view="table" aria-label="Timesheet employee totals">
+        <div class="timesheet-filter-summary">
+          <div><small>Current Filter</small><strong id="timesheetFilterSummary">All Employees &bull; All Projects &bull; All Tasks</strong></div>
+          <button type="button" id="timesheetFilterTrigger" aria-label="Open Data Filter" aria-haspopup="dialog" aria-controls="timesheetDataFilter"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+        </div>
+        <div class="timesheet-action-summary">
+          <div class="timesheet-summary-row">
+            <div><span class="timesheet-summary-label">Total Records</span><strong class="timesheet-summary-count" id="timesheetTotalRecords">0</strong></div>
+            <button type="button" id="timesheetViewChart" class="timesheet-view-chart"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
+          </div>
+          <div class="timesheet-summary-row">
+            <div><span class="timesheet-summary-label">Total Hours</span><strong class="timesheet-summary-hours" id="timesheetTotalHours">0.00 hrs</strong></div>
+            <div class="timesheet-export-actions">
+              <button type="button" id="timesheetExportPdf" class="timesheet-export-pdf" title="Export PDF" aria-label="Export PDF"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></button>
+              <button type="button" id="timesheetExportExcel" class="timesheet-export-excel" title="Export Excel" aria-label="Export Excel"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="timesheet-table-card">
+          <div class="timesheet-table-scroll">
+            <table id="timesheetHighlightTable"><thead><tr><th scope="col">Emp#</th><th scope="col">Name</th><th scope="col">Hours</th></tr></thead><tbody></tbody></table>
+          </div>
+          <div id="timesheetEmpty" class="timesheet-empty" hidden><i class="fa-solid fa-table-list" aria-hidden="true"></i><h2>No Timesheet Records</h2><p>Adjust the filters to find employee hours.</p></div>
+        </div>
+      </section>
+      <section id="timesheetViewChartSection" data-timesheet-view="chart" aria-label="Timesheet hours breakdown" hidden>
+        <div class="timesheet-breakdown-card"><label for="timesheetChartMetric">Breakdown By</label><div class="timesheet-select"><select id="timesheetChartMetric"></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div></div>
+        <div class="timesheet-donut-card">
+          <div class="timesheet-chart-heading"><div><h2 id="timesheetChartTitle">Timesheet hours by project</h2><p>Share of total hours</p></div></div>
+          <div class="timesheet-donut"><svg id="timesheetChartDonut" viewBox="0 0 180 180" role="img" aria-label="Timesheet hours breakdown"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="timesheetChartSegments"></g></svg><div class="timesheet-donut-center"><strong id="timesheetChartTotal">0.00</strong><span>Total Hours</span></div></div>
+          <p id="timesheetChartNote" class="timesheet-chart-note"></p>
+        </div>
+        <div class="timesheet-legend-card"><div class="timesheet-legend-head"><span id="timesheetChartColumn">Project</span><span>Hours</span><span>% Total</span></div><div id="timesheetChartLegend" class="timesheet-legend"></div><div id="timesheetChartViewAllFooter" class="timesheet-legend-footer"><button type="button" id="timesheetChartViewAll" aria-expanded="false"><span>View all projects</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></div></div>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <favourite-sheet></favourite-sheet>
+    <div id="timesheetDataFilter" class="timesheet-modal-overlay standard-filter-sheet" hidden>
+      <form id="timesheetFilterForm" class="timesheet-filter-sheet standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="timesheetFilterTitle" novalidate>
+        <div class="standard-filter-handle" aria-hidden="true"></div>
+        <header class="standard-filter-header"><h2 id="timesheetFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="timesheetResetFilter" class="standard-filter-reset" aria-label="Reset filter"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" class="standard-filter-close" data-timesheet-close aria-label="Close Data Filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="timesheet-filter-fields">
+          <div><label for="timesheetFilterKeyword">Search Keyword</label><input id="timesheetFilterKeyword" type="search" placeholder="Search name or employee ID..." maxlength="150"></div>
+          <div class="timesheet-date-fields"><div><label for="timesheetFilterStart">Start Date</label><input id="timesheetFilterStart" type="date"></div><div><label for="timesheetFilterEnd">End Date</label><input id="timesheetFilterEnd" type="date"></div></div>
+          <div><label for="timesheetFilterProject">Project</label><div class="timesheet-select"><select id="timesheetFilterProject"></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div></div>
+          <div><label for="timesheetFilterTask">Task</label><div class="timesheet-select"><select id="timesheetFilterTask"></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div></div>
+          <p id="timesheetFilterError" role="alert" hidden></p>
+        </div>
+        <footer class="timesheet-filter-footer standard-filter-footer"><button type="submit" id="timesheetApplyFilter" class="standard-filter-apply">Apply Filter</button></footer>
+      </form>
+    </div>
+  </div>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

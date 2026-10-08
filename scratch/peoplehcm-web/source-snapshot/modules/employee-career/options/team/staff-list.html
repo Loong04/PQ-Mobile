@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Staff List</title>
+  <script>(()=>{const q=new URLSearchParams(location.search).get('theme');document.documentElement.dataset.theme=q==='light'?'light':'dark';})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../../css/theme.css">
+  <link rel="stylesheet" href="../../../../css/app.css">
+  <link rel="stylesheet" href="../../css/employee-career.css">
+  <link rel="stylesheet" href="../../css/staff-list.css">
+  <link rel="stylesheet" href="../../css/staff-list-trend.css">
+  <link rel="stylesheet" href="../../css/staff-list-summary.css">
+  <script src="../../../../js/components.js"></script>
+  <script src="../../../../js/app.js" defer></script>
+  <script src="../../js/employee-career-option.js" defer></script>
+  <script src="../../js/staff-list.js" defer></script>
+</head>
+<body class="employee-career-option-page staff-list-page"><preview-top-bar active-page="v2"></preview-top-bar><div class="phone-container">
+  <header class="employee-career-header">
+    <phone-status-bar time="9:41"></phone-status-bar>
+    <div class="employee-career-header-row">
+      <a id="staffListBack" class="employee-career-back" data-option-back href="../../index.html?scope=team" aria-label="Back to Employee and Career"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+      <div class="employee-career-heading"><h1 id="staffListTitle">Staff List</h1></div>
+      <span class="employee-career-header-spacer"></span>
+    </div>
+  </header>
+  <main class="main-content employee-career-content">
+    <section id="staffListTableView" aria-label="Staff listing">
+      <div class="staff-list-filter-summary filter-summary-bar">
+        <div><small>Current Filter</small><strong id="staffListFilterSummary">All Employees</strong></div>
+        <button type="button" id="staffListFilterTrigger" title="Open Filter Options" aria-label="Open staff filter" aria-haspopup="dialog" aria-controls="staffListFilterOverlay"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+      </div>
+      <div class="staff-list-action-summary action-summary-bar">
+        <div class="staff-list-summary-row">
+          <div><span class="staff-list-summary-label">Total Records</span><strong id="staffListTotalRecords" class="staff-list-summary-count">0</strong></div>
+          <button type="button" id="staffListViewChart" class="view-chart-btn"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
+        </div>
+        <div class="staff-list-summary-row">
+          <div><span class="staff-list-summary-label">As At</span><strong id="staffListAsAt" class="staff-list-summary-date"></strong></div>
+          <div class="staff-list-export-actions">
+            <button type="button" id="staffListExportPdf" title="Export PDF" aria-label="Export PDF"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></button>
+            <button type="button" id="staffListExportExcel" title="Export Excel" aria-label="Export Excel"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="staff-list-table-card">
+        <div class="staff-list-table-scroll" role="region" aria-label="Staff table, scroll horizontally for more columns" tabindex="0">
+          <table id="staffListTable"><thead><tr><th scope="col">Emp#</th><th scope="col">Name</th><th scope="col">Age</th><th scope="col"><abbr title="Years of Service">YOS</abbr></th><th scope="col">Branch</th><th scope="col">Department</th><th scope="col">Position</th></tr></thead><tbody></tbody></table>
+        </div>
+        <div id="staffListEmpty" class="staff-list-empty" hidden><i class="fa-solid fa-users" aria-hidden="true"></i><h2>No Staff Found</h2><p>Adjust the filters to find employees.</p></div>
+      </div>
+    </section>
+    <section id="staffListSummaryView" aria-label="Staff listing summary" hidden>
+      <div class="staff-list-period-card"><small>Staff Statistics</small><strong><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span id="staffListSummaryAsAt"></span></strong></div>
+      <div id="staffListSummaryCards" class="staff-list-summary-grid"></div>
+      <div class="staff-list-summary-footer"><button type="button" id="staffListSummaryShowAll"><span>Show All</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div>
+    </section>
+    <section id="staffListChartView" aria-label="Staff analysis" hidden>
+      <div class="staff-list-breakdown-card">
+        <label for="staffListChartMetric">Breakdown By</label>
+        <div class="staff-list-select"><select id="staffListChartMetric"><option value="branch">Branch</option><option value="department">Department</option><option value="position">Position</option><option value="age">Age</option><option value="yos">Years of Service</option></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div class="staff-list-donut-card">
+        <div class="staff-list-chart-heading staff-list-chart-actions">
+          <div class="staff-list-chart-copy"><h2 id="staffListChartTitle">Staff by branch</h2><p>Share of total staff</p></div>
+          <div class="staff-list-chart-action-stack">
+            <button type="button" id="staffListViewTrend" class="staff-list-view-trend"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>View Trend</span></button>
+            <button type="button" id="staffListViewSummary" class="staff-list-view-summary"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i><span>View Summary</span></button>
+          </div>
+        </div>
+        <div class="staff-list-donut">
+          <svg id="staffListChartDonut" viewBox="0 0 180 180" role="img" aria-label="Staff by branch"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="staffListChartSegments"></g></svg>
+          <div class="staff-list-donut-center"><strong id="staffListChartTotal">0</strong><span>Total Staff</span></div>
+        </div>
+        <p id="staffListChartNote" class="staff-list-chart-note"></p>
+      </div>
+      <div class="staff-list-legend-card">
+        <div class="staff-list-legend-head"><span id="staffListChartColumn">Branch</span><span>Staff</span><span>% of Total</span></div>
+        <div id="staffListChartLegend" class="staff-list-legend"></div>
+        <div id="staffListChartViewAllFooter" class="staff-list-legend-footer"><button type="button" id="staffListChartViewAll" aria-expanded="false"><span>View all branches</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></div>
+      </div>
+    </section>
+    <section id="staffListTrendView" aria-label="Monthly staff trend" hidden>
+      <div class="staff-list-period-card"><div class="staff-list-trend-heading"><small>Last 12 Months</small></div><strong><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span id="staffListTrendRange"></span></strong></div>
+      <button type="button" id="staffListTrendTotal" class="staff-list-total-card"><span><strong>Total Staff</strong><small id="staffListTrendAsAt"></small></span><strong id="staffListTrendTotalCount">0</strong><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+      <div class="staff-list-monthly-card"><h2>Monthly staff count</h2><p>Select a month to view its breakdown.</p><div class="staff-list-monthly-head"><span>Month</span><span>Staff</span></div><div id="staffListTrendBars"></div></div>
+    </section>
+    <section id="staffListAnalysisView" aria-label="Selected month staff analysis" hidden>
+      <div class="staff-list-breakdown-card">
+        <label for="staffListAnalysisChartMetric">Breakdown By</label>
+        <div class="staff-list-select"><select id="staffListAnalysisChartMetric"><option value="branch">Branch</option><option value="department">Department</option><option value="position">Position</option><option value="age">Age</option><option value="yos">Years of Service</option></select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div class="staff-list-donut-card">
+        <div class="staff-list-chart-heading"><h2 id="staffListAnalysisChartTitle">Staff by branch</h2><p id="staffListAnalysisPeriod"></p></div>
+        <div class="staff-list-donut">
+          <svg id="staffListAnalysisChartDonut" viewBox="0 0 180 180" role="img" aria-label="Staff by branch"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="staffListAnalysisChartSegments"></g></svg>
+          <div class="staff-list-donut-center"><strong id="staffListAnalysisChartTotal">0</strong><span>Total Staff</span></div>
+        </div>
+        <p id="staffListAnalysisChartNote" class="staff-list-chart-note"></p>
+      </div>
+      <div class="staff-list-legend-card">
+        <div class="staff-list-legend-head"><span id="staffListAnalysisChartColumn">Branch</span><span>Staff</span><span>% of Total</span></div>
+        <div id="staffListAnalysisChartLegend" class="staff-list-legend"></div>
+        <div id="staffListAnalysisChartViewAllFooter" class="staff-list-legend-footer"><button type="button" id="staffListAnalysisChartViewAll" aria-expanded="false"><span>View all branches</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></div>
+      </div>
+    </section>
+  </main>
+  <phone-bottom-nav active="apps"></phone-bottom-nav>
+  <left-profile-drawer></left-profile-drawer><notification-sheet></notification-sheet><favourite-sheet></favourite-sheet>
+  <div id="staffListFilterOverlay" class="staff-list-filter-overlay standard-filter-sheet" hidden>
+    <form id="staffListFilterForm" class="staff-list-filter-panel standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="staffListFilterTitle">
+      <div class="standard-filter-handle" aria-hidden="true"></div>
+      <header class="standard-filter-header"><h2 id="staffListFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="staffListResetFilter" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" id="staffListCloseFilter" class="standard-filter-close" aria-label="Close staff filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+      <div class="staff-list-filter-fields">
+        <div><label for="staffListFilterKeyword">Search Keyword</label><input id="staffListFilterKeyword" type="search" placeholder="Employee Number or Name" maxlength="150"></div>
+        <div><label for="staffListFilterAsAt">As At</label><input id="staffListFilterAsAt" type="date" required></div>
+        <div><label for="staffListFilterCategory">Staff Category</label><select id="staffListFilterCategory"><option value="">All Staff</option></select></div>
+        <div><label for="staffListFilterBranch">Branch</label><select id="staffListFilterBranch"></select></div>
+        <div><label for="staffListFilterDepartment">Department</label><select id="staffListFilterDepartment"></select></div>
+        <div><label for="staffListFilterPosition">Position</label><select id="staffListFilterPosition"></select></div>
+      </div>
+      <footer class="standard-filter-footer"><button type="submit" id="staffListApplyFilter" class="standard-filter-apply">Apply Filter</button></footer>
+    </form>
+  </div>
+</div></body></html>

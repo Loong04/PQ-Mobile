@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Claims - Travel Mileage</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 100px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* VIEW CONTAINERS (4-LEVEL DRILL-DOWN ISOLATION) */
+    .view-container {
+      display: none;
+      width: 100%;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .view-container.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .category-card:active {
+      transform: scale(0.98);
+      border-color: var(--purple-primary);
+    }
+
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .section-title-accent {
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .section-title-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field-label .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .form-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
+    }
+    .form-ctrl:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 1;
+      background: var(--bg-input);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .btn-draft-bright {
+      padding: 11px 24px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-draft-bright:active {
+      transform: scale(0.96);
+    }
+
+    .btn-submit-primary {
+      padding: 11px 26px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-submit-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-add-purple {
+      padding: 9px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-step-back {
+      padding: 11px 22px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-step-back:active {
+      transform: scale(0.96);
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
+    .claim-data-list {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+    }
+    .claim-data-row {
+      display: grid;
+      grid-template-columns: minmax(112px, 42%) minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+    .claim-data-row:last-child {
+      border-bottom: none;
+    }
+    .claim-data-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .claim-data-value {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .claim-data-value.amount {
+      color: var(--text-primary);
+    }
+
+    /* Top Claim Stepper Progress Indicator Standard */
+    .claim-stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+    .stepper-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stepper-line-bg {
+      position: absolute;
+      top: 15px;
+      left: 12.5%;
+      right: 12.5%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      z-index: 1;
+    }
+    .stepper-line-fill {
+      position: absolute;
+      top: 15px;
+      left: 12.5%;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
+    }
+    .stepper-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      z-index: 3;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+    }
+    .stepper-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #171529;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .stepper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    /* Completed State: Green Outline & Text */
+    .stepper-item.completed .stepper-circle {
+      border-color: #10b981;
+      background: #171529;
+      color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+    .stepper-item.completed .stepper-label {
+      color: #34d399;
+    }
+    /* Active State: Vibrant Purple Filled Circle */
+    .stepper-item.active .stepper-circle {
+      border-color: #a855f7;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
+    }
+    .stepper-item.active .stepper-label {
+      color: #ffffff;
+      font-weight: 900;
+    }
+    html[data-theme="light"] .claim-stepper-card .stepper-line-bg { background: rgba(100, 116, 139, 0.24); }
+    html[data-theme="light"] .claim-stepper-card .stepper-circle { background: #f1f5f9; border-color: #cbd5e1; color: #64748b; }
+    html[data-theme="light"] .claim-stepper-card .stepper-label { color: #64748b; }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.completed .stepper-circle { background: #ecfdf5; border-color: #10b981; color: #059669; box-shadow: 0 0 10px rgba(16, 185, 129, 0.16); }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.completed .stepper-label { color: #059669; }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.active .stepper-circle { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border-color: #a855f7; color: #ffffff; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.34); }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.active .stepper-label { color: #6d28d9; font-weight: 900; }
+  </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="13:08" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" id="headerBackBtn" onclick="handleHeaderBack()" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; outline: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Travel Mileage</h1>
+        </div>
+        <div style="width: 36px;"></div>
+      </div>
+    </div>
+
+    <!-- Main Content Container (4-Level Drill-Down Views) -->
+    <div class="main-content">
+
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Mileage, 3: Travel, 4: Expenses) -->
+      <div class="claim-stepper-card">
+        <div class="stepper-track-container">
+          <div class="stepper-line-bg"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%;"></div>
+          
+          <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
+            <div class="stepper-circle">1</div>
+            <span class="stepper-label">General</span>
+          </div>
+          <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
+            <div class="stepper-circle">2</div>
+            <span class="stepper-label">Mileage</span>
+          </div>
+          <div class="stepper-item" id="stepNode-3" onclick="navigateToStep(3)">
+            <div class="stepper-circle">3</div>
+            <span class="stepper-label">Travel</span>
+          </div>
+          <div class="stepper-item" id="stepNode-4" onclick="navigateToStep(4)">
+            <div class="stepper-circle">4</div>
+            <span class="stepper-label">Expenses</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 1: MAIN FORM VIEW (主申请表单 - 钻取 Level 1) -->
+      <!-- ========================================================= -->
+      <div class="view-container active" id="view-1-main">
+
+        <!-- MAIN APPLICATION DETAILS CARD -->
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">APPLICATION DETAILS</span>
+          </div>
+
+          <!-- Claim Period : -->
+          <div class="field-group">
+            <label class="field-label">Claim Period</label>
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+              <div class="select-wrapper">
+                <select id="v1ClaimPeriodYear" class="form-ctrl">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <select id="v1ClaimPeriodMonth" class="form-ctrl">
+                  <option value="September" selected>September</option>
+                  <option value="August">August</option>
+                  <option value="July">July</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Travelling Request # : -->
+          <div class="field-group">
+            <label class="field-label">Travelling Request #</label>
+            <div class="select-wrapper">
+              <select id="v1TravellingReqNo" class="form-ctrl">
+                <option value="" selected>- Select Travelling Request # -</option>
+                <option value="TR-2026-001">TR-2026-001 (KL Site Visit)</option>
+                <option value="TR-2026-002">TR-2026-002 (Penang Client Meeting)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Benefit Type : -->
+          <div class="field-group">
+            <label class="field-label">Benefit Type</label>
+            <div class="select-wrapper">
+              <select id="v1TravelClaimType" class="form-ctrl">
+                <option value="" selected>Select Benefit</option>
+                <option value="MILEAGE">MILEAGE (RM0.80/KM)</option>
+                <option value="TRAVEL RECORD">TRAVEL RECORD</option>
+                <option value="PARKING & TOLLS">PARKING &amp; TOLL RECEIPTS</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Claim Date : -->
+          <div class="field-group">
+            <label class="field-label">Claim Date</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="date" id="v1ClaimStartDate" class="form-ctrl" value="2026-09-23" aria-label="Claim Date From" />
+              <input type="date" id="v1ClaimEndDate" class="form-ctrl" value="2026-09-23" aria-label="Claim Date To" />
+            </div>
+          </div>
+
+          <!-- Cost Centre : -->
+          <div class="field-group">
+            <label class="field-label">Cost Centre</label>
+            <div class="select-wrapper">
+              <select id="v1CostCentre" class="form-ctrl">
+                <option value="MANAGEMENT" selected>MANAGEMENT</option>
+                <option value="ADMINISTRATION">ADMINISTRATION</option>
+                <option value="OPERATIONS">OPERATIONS</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Charge To : -->
+          <div class="field-group">
+            <label class="field-label">Charge To</label>
+            <div class="select-wrapper">
+              <select id="v1ChargeTo" class="form-ctrl">
+                <option value="" selected>- Select Charge -</option>
+                <option value="Company HQ">Company HQ</option>
+                <option value="Project Budget">Project Budget</option>
+                <option value="Client Account">Client Account</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Purpose : -->
+          <div class="field-group">
+            <label class="field-label">Purpose</label>
+            <input type="text" id="v1Purpose" class="form-ctrl" placeholder="" />
+          </div>
+
+          <!-- Project : -->
+          <div class="field-group">
+            <label class="field-label">Project</label>
+            <div class="select-wrapper">
+              <select id="v1Project" class="form-ctrl">
+                <option value="" selected>- Select Project -</option>
+                <option value="PROJ-01">HQ Digitalization</option>
+                <option value="PROJ-02">Enterprise Migration</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Claim Currency : -->
+          <div class="field-group">
+            <label class="field-label">Claim Currency</label>
+            <div class="select-wrapper">
+              <select id="v1ClaimCurrency" class="form-ctrl">
+                <option value="MYR" selected>RINGGIT MALAYSIA</option>
+                <option value="USD">US DOLLAR</option>
+                <option value="SGD">SINGAPORE DOLLAR</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Claim Total : -->
+          <div class="field-group">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+              <span class="field-label" style="margin-bottom: 0;">Claim Total</span>
+              <span id="travelClaimTotalDisplay" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">0.00</span>
+            </div>
+          </div>
+
+          <!-- Remarks : (Exact label matching Image 4) -->
+          <div class="field-group">
+            <label class="field-label">Remarks</label>
+            <input type="text" id="v1Remarks" class="form-ctrl" placeholder="" />
+          </div>
+
+          <!-- Upload Attachment -->
+          <div class="field-group">
+            <label class="field-label form-section-heading">Upload Attachment</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;"><i class="fa-solid fa-file-arrow-up"></i></div>
+                <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+                <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);"><i class="fa-solid fa-camera"></i></div>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+              </div>
+            </div>
+            <div id="mainChipsList" class="attachment-upload-list"></div>
+          </div>
+
+        </div>
+
+        <!-- AGGREGATED SUMMARY ROW (Level 1 Total Claim & Drill-down Entry) -->
+        <div class="category-summary-row" onclick="switchView('view-2-categories', 'Claim Categories')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
+              <i class="fa-solid fa-calculator"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL CLAIM AMOUNT</div>
+              <div id="v1TotalClaimDisplay" style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">RM 0.00</div>
+              <div id="v1ItemsCountSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">0 claim items added</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
+            <span>Details</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </div>
+        </div>
+
+
+
+        <!-- BOTTOM ACTION BUTTONS (Save Draft & Submit side-by-side on right matching Image 4) -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+          <button type="button" class="form-cancel-btn" data-page-form-cancel onclick="handleHeaderBack()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('mileage')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 2: CATEGORY SUMMARY VIEW (分类聚合页 - Level 2) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-2-categories">
+        
+        <div style="margin-bottom: 14px;">
+          <h2 class="form-section-heading" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Claim Categories (3)</h2>
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Select a category to view or add detailed item receipts</span>
+        </div>
+
+        <!-- CATEGORY 1: MILEAGE -->
+        <div class="category-card" onclick="openCategoryItems('mileage')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-route"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Mileage</div>
+              <div id="catMileageSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catMileageAmount" style="font-size: 15px; font-weight: 800; color: var(--purple-primary);">0</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- CATEGORY 2: TRAVEL -->
+        <div class="category-card" onclick="openCategoryItems('travel')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-plane-departure"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Travel</div>
+              <div id="catTravelSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catTravelAmount" style="font-size: 15px; font-weight: 800; color: #3b82f6;">0</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- CATEGORY 3: EXPENSE -->
+        <div class="category-card" onclick="openCategoryItems('expense')">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Expenses</div>
+              <div id="catExpenseSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catExpenseAmount" style="font-size: 15px; font-weight: 800; color: #10b981;">0</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'Travel Mileage')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Application</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('mileage')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 3: ITEM LIST VIEW (明细项列表页 - Level 3) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-3-list">
+        
+        <!-- Unified Card for Header and Items -->
+        <div class="form-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 16px;">
+          
+          <!-- Category Summary Title Header (Now integrated) -->
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <h2 class="form-section-heading" id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Mileage</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Amount: RM 0.00</span>
+              </div>
+            </div>
+            <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+          <div id="v3ItemsContainer" style="padding: 16px;">
+            <!-- Populated by JS -->
+          </div>
+          
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-2-categories', 'Claim Categories')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Categories</span>
+          </button>
+          <button type="button" id="travelClaimListNextButton" class="btn-submit-primary" onclick="goToNextTravelClaimStep()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW (子表单录入页 - Level 4) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-4-entry">
+        
+        <!-- SUB-FORM FORM CARDS CONTAINER -->
+        <div id="v4SubFormContainer">
+          <!-- Populated by JS according to active category (Mileage / Travel / Expense) -->
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-3-list')">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="hiddenTravelFileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelected(this)">
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+
+  <!-- DRILL-DOWN NAVIGATION & FORM STATE MANAGEMENT SCRIPT -->
+  <script>
+    const formData = {
+      applicationInfo: {
+        claimPeriodYear: '2026',
+        claimPeriodMonth: 'September',
+        travellingReqNo: '',
+        travelClaimType: 'Select Benefit',
+        claimStartDate: '23/09/2026',
+        claimEndDate: '23/09/2026',
+        costCentre: 'MANAGEMENT',
+        chargeTo: '',
+        purpose: '',
+        project: '',
+        claimCurrency: 'RINGGIT MALAYSIA',
+        remarks: ''
+      },
+      mainAttachments: [],
+      claimDetails: {
+        mileageItems: [],
+        travelItems: [],
+        generalExpenseItems: []
+      },
+      activeCategory: '',
+      currentView: 'view-1-main',
+      uploadTarget: 'main'
+    };
+
+    function toDateInputValue(value) {
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    function toDisplayDate(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+    }
+
+    function updateStepper(stepNum) {
+      const steps = document.querySelectorAll('.stepper-item');
+      const lineFill = document.getElementById('stepperLineFill');
+      if (!steps.length) return;
+
+      const totalSteps = steps.length;
+      let progressRatio = totalSteps > 1 ? (stepNum - 1) / (totalSteps - 1) : 0;
+      if (lineFill) {
+        lineFill.style.width = (progressRatio * 75) + '%';
+      }
+
+      steps.forEach((stepEl, idx) => {
+        const s = idx + 1;
+        stepEl.classList.remove('active', 'completed');
+        const circle = stepEl.querySelector('.stepper-circle');
+        if (circle) circle.textContent = s;
+
+        if (s < stepNum) {
+          stepEl.classList.add('completed');
+        } else if (s === stepNum) {
+          stepEl.classList.add('active');
+        }
+      });
+    }
+
+    function navigateToStep(stepNum) {
+      if (stepNum === 1) {
+        switchView('view-1-main', 'Travel Mileage');
+      } else if (stepNum === 2) {
+        openCategoryItems('mileage');
+      } else if (stepNum === 3) {
+        openCategoryItems('travel');
+      } else if (stepNum === 4) {
+        openCategoryItems('expense');
+      }
+    }
+
+    function getSavedProgressStep() {
+      if (formData.claimDetails.generalExpenseItems.length) return 4;
+      if (formData.claimDetails.travelItems.length) return 3;
+      if (formData.claimDetails.mileageItems.length) return 2;
+      return 1;
+    }
+
+    function switchView(viewId, headerTitle) {
+      formData.currentView = viewId;
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById(viewId);
+      if (targetView) targetView.classList.add('active');
+
+      const titleTextEl = document.getElementById('headerTitleText');
+      if (titleTextEl && headerTitle) {
+        titleTextEl.innerText = headerTitle;
+      }
+
+      // Automatically sync top stepper state based on view & active category
+      if (viewId === 'view-1-main' || viewId === 'view-2-categories') {
+        updateStepper(getSavedProgressStep());
+      } else if (formData.activeCategory === 'mileage') {
+        updateStepper(2);
+      } else if (formData.activeCategory === 'travel') {
+        updateStepper(3);
+      } else if (formData.activeCategory === 'expense') {
+        updateStepper(4);
+      } else {
+        updateStepper(1);
+      }
+
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    function handleHeaderBack() {
+      if (formData.currentView === 'view-4-entry') {
+        switchView('view-3-list', getCategoryTitle(formData.activeCategory));
+      } else if (formData.currentView === 'view-3-list') {
+        switchView('view-2-categories', 'Claim Categories');
+      } else if (formData.currentView === 'view-2-categories') {
+        switchView('view-1-main', 'Travel Mileage');
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
+
+    function getCategoryTitle(catKey) {
+      if (catKey === 'mileage') return 'Mileage';
+      if (catKey === 'travel') return 'Travel';
+      if (catKey === 'expense') return 'Expenses';
+      return 'Claim';
+    }
+
+    function openCategoryItems(categoryKey) {
+      formData.activeCategory = categoryKey;
+      renderView3List();
+      updateTravelClaimListAction();
+      switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function goToNextTravelClaimStep() {
+      const nextCategory = {
+        mileage: 'travel',
+        travel: 'expense'
+      }[formData.activeCategory];
+      if (nextCategory) {
+        openCategoryItems(nextCategory);
+      } else {
+        submitTravelClaim();
+      }
+    }
+
+    function updateTravelClaimListAction() {
+      const button = document.getElementById('travelClaimListNextButton');
+      if (!button) return;
+      const isFinalStep = formData.activeCategory === 'expense';
+      button.onclick = isFinalStep ? submitTravelClaim : goToNextTravelClaimStep;
+      button.innerHTML = isFinalStep
+        ? '<span>Submit</span><i class="fa-solid fa-paper-plane"></i>'
+        : '<span>Next</span><i class="fa-solid fa-arrow-right"></i>';
+    }
+
+    function toggleItemCard(cardId) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const body = card.querySelector('.item-details-body');
+      const icon = card.querySelector('.toggle-icon');
+      if (!body) return;
+
+      const isHidden = body.style.display === 'none';
+      body.style.display = isHidden ? 'block' : 'none';
+      if (icon) {
+        icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+    }
+
+    function renderLegacyView3List() {
+      const catKey = formData.activeCategory;
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const container = document.getElementById('v3ItemsContainer');
+
+      let items = [];
+      let catName = getCategoryTitle(catKey);
+      let iconHtml = '';
+
+      if (catKey === 'mileage') {
+        items = formData.claimDetails.mileageItems || [];
+        iconHtml = '<i class="fa-solid fa-route"></i>';
+      } else if (catKey === 'travel') {
+        items = formData.claimDetails.travelItems || [];
+        iconHtml = '<i class="fa-solid fa-plane-departure"></i>';
+      } else if (catKey === 'expense') {
+        items = formData.claimDetails.generalExpenseItems || [];
+        iconHtml = '<i class="fa-solid fa-receipt"></i>';
+      }
+
+      if (iconBox) iconBox.innerHTML = iconHtml;
+      if (titleText) titleText.innerText = catName;
+      const amountKeys = catKey === 'expense' ? ['localAmount', 'amount'] : ['amount'];
+      const categoryMetric = getCategoryMetric(items, amountKeys);
+      if (countText) countText.innerText = `${categoryMetric.subtitle}: ${categoryMetric.value}`;
+
+      if (!container) return;
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              ${iconHtml}
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Click "+ Add Item" above to add your first record</div>
+          </div>
+        `;
+        return;
+      }
+
+      let listHtml = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+      items.forEach((item, idx) => {
+        const cardId = `itemCard_${catKey}_${idx}`;
+        const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
+        if (catKey === 'mileage') {
+          listHtml += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-route"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.orig || 'Kuala Lumpur HQ'} → ${item.dest || 'Penang Branch'}</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                      ${item.distKm || 0} KM • Meter: ${item.meterIn || 0} - ${item.meterOut || 0}
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View (All Form Fields) -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Origin Location:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.orig || 'Kuala Lumpur HQ'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Destination:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dest || 'Penang Branch'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Departure Date & Time:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.depDate || '23/09/2026'} ${item.depTime || '13:07'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Arrival Date & Time:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.arrDate || '23/09/2026'} ${item.arrTime || '15:07'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Vehicle:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.vehicle || 'Personal Car (VAA 1234)'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Way:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.way || 'Return'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'Project Alpha'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Odometer In / Out:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.meterIn || 0} - ${item.meterOut || 0} km</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Total Distance:</span>
+                    <div style="font-weight: 800; color: var(--purple-primary); margin-top: 2px;">${item.distKm || 0} KM</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Claim Amount:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.amount || 0).toFixed(2)}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'N/A'}</div>
+                  </div>
+                  ${item.attachments && item.attachments.length > 0 ? `
+                  <div style="grid-column: span 2; margin-top: 6px; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+                    <span style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Attachments:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      ${item.attachments.map(att => `
+                        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-paperclip"></i> ${att}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (catKey === 'travel') {
+          listHtml += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.14); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-plane-departure"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.orig || 'Location'} → ${item.dest || 'Destination'}</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                      ${item.transport || 'Transit'} ${item.receiptNo ? `• Ref: ${item.receiptNo}` : ''}
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View (All Form Fields) -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Origin:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.orig || 'Kuala Lumpur HQ'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Destination:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dest || 'Penang Branch'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Departure Date & Time:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.depDate || '23/09/2026'} ${item.depTime || '13:07'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Arrival Date & Time:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.arrDate || '23/09/2026'} ${item.arrTime || '15:07'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Transport Mode:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.transport || 'Flight / Transit'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Way:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.way || 'Return'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Travel Days:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.noOfDays || 1} Days</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'Project Alpha'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Task:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.task || 'Site Survey'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Ticket / Ref No:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.receiptNo || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Claim Amount:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.amount || 0).toFixed(2)}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'N/A'}</div>
+                  </div>
+                  ${item.attachments && item.attachments.length > 0 ? `
+                  <div style="grid-column: span 2; margin-top: 6px; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+                    <span style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Attachments:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      ${item.attachments.map(att => `
+                        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-paperclip"></i> ${att}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (catKey === 'expense') {
+          listHtml += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-receipt"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type || item.expense || 'Expense Item'} ${item.receiptNo ? `(#${item.receiptNo})` : ''}</div>
+                    <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                      ${item.companyName || item.company || 'Merchant'} ${item.project ? `• ${item.project}` : ''}
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.amount || 0).toFixed(2)}</div>
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View (All Form Fields) -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expense Type:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'General Expense'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expenses From</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dateFrom || '24/09/2026'} ${item.timeFrom || '10:56'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Expenses To</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.dateTo || '24/09/2026'} ${item.timeTo || '12:56'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'Project Alpha'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Receipt / Ref No:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.receiptNo || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Merchant / Vendor:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.companyName || item.company || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Business Reg. No (RN):</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.businessRN || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Original Amount:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.amount || 0} ${item.currency || 'MYR'}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Forex Rate:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.forexRate || 1}</div>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-weight: 600;">Claim Amount (RM):</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.localAmount || item.amount || 0).toFixed(2)}</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
+                    <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'N/A'}</div>
+                  </div>
+                  ${item.attachments && item.attachments.length > 0 ? `
+                  <div style="grid-column: span 2; margin-top: 6px; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+                    <span style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Attachments:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      ${item.attachments.map(att => `
+                        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-paperclip"></i> ${att}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      listHtml += '</div>';
+
+      container.innerHTML = listHtml;
+    }
+
+    function renderDetailRows(rows, attachments) {
+      const detailRows = rows.map(([label, value, isAmount = false]) => `
+        <div class="claim-data-row">
+          <span class="claim-data-label">${label}</span>
+          <span class="claim-data-value${isAmount && !String(label).startsWith('Local Amount') ? ' amount' : ''}">${value ?? '-'}</span>
+        </div>
+      `).join('');
+      const filenames = attachments && attachments.length ? attachments : ['xxxx.jpg'];
+      return `<div class="claim-data-list">${detailRows}
+        <div class="claim-data-row">
+          <span class="claim-data-label">Attachment</span>
+          <span class="claim-data-value">${filenames.map(name => `<span class="file-chip"><i class="fa-solid fa-paperclip"></i> ${name}</span>`).join('')}</span>
+        </div>
+      </div>`;
+    }
+
+    function renderView3List() {
+      const catKey = formData.activeCategory;
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const container = document.getElementById('v3ItemsContainer');
+      const config = {
+        mileage: { items: formData.claimDetails.mileageItems, amountKeys: ['amount'], icon: 'fa-route', color: 'var(--purple-primary)', bg: 'rgba(124, 58, 237, 0.14)' },
+        travel: { items: formData.claimDetails.travelItems, amountKeys: ['amount'], icon: 'fa-plane-departure', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.14)' },
+        expense: { items: formData.claimDetails.generalExpenseItems, amountKeys: ['localAmount', 'amount'], icon: 'fa-receipt', color: '#10b981', bg: 'rgba(16, 185, 129, 0.14)' }
+      }[catKey];
+      if (!config || !container) return;
+
+      const items = config.items || [];
+      const categoryMetric = getCategoryMetric(items, config.amountKeys);
+      if (iconBox) iconBox.innerHTML = `<i class="fa-solid ${config.icon}"></i>`;
+      if (titleText) titleText.innerText = getCategoryTitle(catKey);
+      if (countText) countText.innerText = `${categoryMetric.subtitle}: ${categoryMetric.value}`;
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              <i class="fa-solid ${config.icon}"></i>
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Click "+ Add Item" above to add your first record</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 16px;">${items.map((item, idx) => {
+        const cardId = `itemCard_${catKey}_${idx}`;
+        const itemAmount = catKey === 'expense'
+          ? (Number(item.localAmount ?? item.amount) || 0)
+          : (Number(item.amount) || 0);
+        let title = '';
+        let rows = [];
+        if (catKey === 'mileage') {
+          title = `${item.orig || '-'} &rarr; ${item.dest || '-'}`;
+          rows = [
+            ['Origin', item.orig], ['Destination', item.dest],
+            ['Departure', `${item.depDate || '-'} ${item.depTime || ''}`.trim()],
+            ['Arrival', `${item.arrDate || '-'} ${item.arrTime || ''}`.trim()],
+            ['Way', item.way], ['Project', item.project], ['Vehicle', item.vehicle],
+            ['Meter In', item.meterIn ?? 0], ['Meter Out', item.meterOut ?? 0],
+            ['Distance(KM)', item.distKm ?? item.distanceKm ?? 0],
+            ['Amount', `RM ${(item.amount || 0).toFixed(2)}`, true], ['Description', item.desc || '-']
+          ];
+        } else if (catKey === 'travel') {
+          title = `${item.orig || '-'} &rarr; ${item.dest || '-'}`;
+          rows = [
+            ['Origin', item.orig], ['Destination', item.dest],
+            ['Departure', `${item.depDate || '-'} ${item.depTime || ''}`.trim()],
+            ['Arrival', `${item.arrDate || '-'} ${item.arrTime || ''}`.trim()],
+            ['Transport', item.transport], ['Way', item.way], ['No Of Days', item.noOfDays],
+            ['Project', item.project], ['Task', item.task], ['Description', item.desc || '-'],
+            ['Receipt #', item.receiptNo || '-'], ['Amount', `RM ${(item.amount || 0).toFixed(2)}`, true]
+          ];
+        } else {
+          title = item.type || item.expense || 'Expense';
+          rows = [
+            ['Expense', item.type || item.expense],
+            ['Start Date & Time', `${item.dateFrom || '-'} ${item.timeFrom || ''}`.trim()],
+            ['End Date & Time', `${item.dateTo || '-'} ${item.timeTo || ''}`.trim()],
+            ['Project', item.project], ['Receipt #', item.receiptNo || '-'], ['Description', item.desc || '-'],
+            ['Company Name', item.companyName || item.company || '-'], ['Business RN', item.businessRN || '-'],
+            ['Amount', `RM ${(item.amount || 0).toFixed(2)}`, true],
+            ['Claim Currency', item.currency || 'RINGGIT MALAYSIA'], ['Forex Rate', item.forexRate ?? 1],
+            ['Local Amount', `RM ${(item.localAmount ?? item.amount ?? 0).toFixed(2)}`, true]
+          ];
+        }
+        return `
+          <div id="${cardId}" style="transition: all 0.25s ease; ${idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;'}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: ${config.bg}; color: ${config.color}; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid ${config.icon}"></i>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere;">${title}</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">RM ${itemAmount.toFixed(2)}</span>
+                <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
+              </div>
+            </div>
+            <div class="item-details-body" style="display: none; padding-top: 10px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+              ${renderDetailRows(rows, item.attachments)}
+            </div>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
+    function deleteSubItem(idx) {
+      const catKey = formData.activeCategory;
+      if (catKey === 'mileage') formData.claimDetails.mileageItems.splice(idx, 1);
+      else if (catKey === 'travel') formData.claimDetails.travelItems.splice(idx, 1);
+      else if (catKey === 'expense') formData.claimDetails.generalExpenseItems.splice(idx, 1);
+
+      recalcAllTotals();
+      renderView3List();
+
+      if (typeof showToast === 'function') showToast('🗑️ Item removed!');
+    }
+
+    // LEVEL 4 ENTRY FORM BUILDER
+    function openEntryForm(mode = 'add', index = -1) {
+      formData.editingIndex = index;
+      const catKey = formData.activeCategory;
+      const container = document.getElementById('v4SubFormContainer');
+      if (!container) return;
+
+      let items = [];
+      if (catKey === 'mileage') items = formData.claimDetails.mileageItems || [];
+      else if (catKey === 'travel') items = formData.claimDetails.travelItems || [];
+      else if (catKey === 'expense') items = formData.claimDetails.generalExpenseItems || [];
+
+      const item = (index >= 0 && items[index]) ? items[index] : null;
+
+      if (catKey === 'mileage') {
+        const amtVal = item && typeof item.amount === 'number' ? item.amount.toFixed(2) : (item && item.amount ? item.amount : '0.00');
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT MILEAGE DETAILS' : 'ADD MILEAGE DETAILS'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Origin</label>
+              <div class="select-wrapper">
+                <select id="mOriginSelect" class="form-ctrl">
+                  <option value="">- Select Location -</option>
+                  <option value="Kuala Lumpur HQ" ${!item || item.orig === 'Kuala Lumpur HQ' ? 'selected' : ''}>Kuala Lumpur HQ</option>
+                  <option value="Petaling Jaya Office" ${item && item.orig === 'Petaling Jaya Office' ? 'selected' : ''}>Petaling Jaya Office</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Destination</label>
+              <div class="select-wrapper">
+                <select id="mDestSelect" class="form-ctrl">
+                  <option value="">- Select Location -</option>
+                  <option value="Penang Branch" ${!item || item.dest === 'Penang Branch' ? 'selected' : ''}>Penang Branch</option>
+                  <option value="Johor Bahru Site" ${item && item.dest === 'Johor Bahru Site' ? 'selected' : ''}>Johor Bahru Site</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Departure</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="date" id="mDepDate" class="form-ctrl" value="${toDateInputValue(item ? item.depDate : '23/09/2026')}" />
+                <input type="time" id="mDepTime" class="form-ctrl" value="${item ? (item.depTime || '13:07') : '13:07'}" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Arrival</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="date" id="mArrDate" class="form-ctrl" value="${toDateInputValue(item ? item.arrDate : '23/09/2026')}" />
+                <input type="time" id="mArrTime" class="form-ctrl" value="${item ? (item.arrTime || '15:07') : '15:07'}" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Way</label>
+              <div class="select-wrapper">
+                <select id="mWaySelect" class="form-ctrl">
+                  <option value="Return" ${!item || item.way === 'Return' ? 'selected' : ''}>Return</option>
+                  <option value="One Way" ${item && item.way === 'One Way' ? 'selected' : ''}>One Way</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Project</label>
+              <div class="select-wrapper">
+                <select id="mProjectSelect" class="form-ctrl">
+                  <option value="" ${!item || !item.project ? 'selected' : ''}>- Select Project -</option>
+                  <option value="Project Alpha" ${item && item.project === 'Project Alpha' ? 'selected' : ''}>Project Alpha</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Vehicle</label>
+              <div class="select-wrapper">
+                <select id="mVehicleSelect" class="form-ctrl">
+                  <option value="" ${item && !item.vehicle ? 'selected' : ''}>- Select Vehicle -</option>
+                  <option value="Personal Car (VAA 1234)" ${!item || item.vehicle === 'Personal Car (VAA 1234)' ? 'selected' : ''}>Personal Car (VAA 1234)</option>
+                  <option value="Company Car (WXX 8899)" ${item && item.vehicle === 'Company Car (WXX 8899)' ? 'selected' : ''}>Company Car (WXX 8899)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Meter In</label>
+              <input type="number" id="mMeterIn" class="form-ctrl" value="${item ? (item.meterIn || 0) : 0}" oninput="calcSubMileage()" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Meter Out</label>
+              <input type="number" id="mMeterOut" class="form-ctrl" value="${item ? (item.meterOut || 0) : 0}" oninput="calcSubMileage()" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Distance(KM)</label>
+              <input type="number" id="mDistanceKm" class="form-ctrl" value="${item ? (item.distKm || item.distanceKm || 0) : 0}" oninput="calcSubMileageKm()" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Amount</label>
+              <input type="number" id="mAmount" class="form-ctrl" value="${amtVal}" step="0.01" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Description</label>
+              <input type="text" id="mDesc" class="form-ctrl" value="${item ? (item.desc || '') : ''}" placeholder="" />
+            </div>
+
+            <div style="margin-top: 14px;">
+              <label class="field-label form-section-heading" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+                </div>
+              </div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
+            </div>
+          </div>
+        `;
+      } else if (catKey === 'travel') {
+        const amtVal = item && typeof item.amount === 'number' ? item.amount.toFixed(2) : (item && item.amount ? item.amount : '0.00');
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT TRAVEL DETAILS' : 'ADD TRAVEL DETAILS'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Origin</label>
+              <div class="select-wrapper">
+                <select id="tOriginSelect" class="form-ctrl">
+                  <option value="">- Select Location -</option>
+                  <option value="Kuala Lumpur HQ" ${!item || item.orig === 'Kuala Lumpur HQ' ? 'selected' : ''}>Kuala Lumpur HQ</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Destination</label>
+              <div class="select-wrapper">
+                <select id="tDestSelect" class="form-ctrl">
+                  <option value="">- Select Location -</option>
+                  <option value="Penang Branch" ${!item || item.dest === 'Penang Branch' ? 'selected' : ''}>Penang Branch</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Departure</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="date" id="tDepDate" class="form-ctrl" value="${toDateInputValue(item ? item.depDate : '23/09/2026')}" />
+                <input type="time" id="tDepTime" class="form-ctrl" value="${item ? (item.depTime || '13:07') : '13:07'}" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Arrival</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="date" id="tArrDate" class="form-ctrl" value="${toDateInputValue(item ? item.arrDate : '23/09/2026')}" />
+                <input type="time" id="tArrTime" class="form-ctrl" value="${item ? (item.arrTime || '15:07') : '15:07'}" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Transport</label>
+              <div class="select-wrapper">
+                <select id="tTransportSelect" class="form-ctrl">
+                  <option value="">- Select Transport -</option>
+                  <option value="Flight" ${!item || item.transport === 'Flight' ? 'selected' : ''}>Flight</option>
+                  <option value="Grab / Taxi" ${item && item.transport === 'Grab / Taxi' ? 'selected' : ''}>Grab / Taxi</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Way</label>
+              <div class="select-wrapper">
+                <select id="tWaySelect" class="form-ctrl">
+                  <option value="Return" ${!item || item.way === 'Return' ? 'selected' : ''}>Return</option>
+                  <option value="One Way" ${item && item.way === 'One Way' ? 'selected' : ''}>One Way</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">No Of Days</label>
+              <input type="number" id="tNoOfDays" class="form-ctrl" value="${item ? (item.noOfDays || 1) : 1}" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Project</label>
+              <div class="select-wrapper">
+                <select id="tProjectSelect" class="form-ctrl">
+                  <option value="" ${!item || !item.project ? 'selected' : ''}>- Select Project -</option>
+                  <option value="Project Alpha" ${item && item.project === 'Project Alpha' ? 'selected' : ''}>Project Alpha</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Task</label>
+              <div class="select-wrapper">
+                <select id="tTaskSelect" class="form-ctrl">
+                  <option value="" ${!item || !item.task ? 'selected' : ''}>- Select Task -</option>
+                  <option value="Site Survey" ${item && item.task === 'Site Survey' ? 'selected' : ''}>Site Survey</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Description</label>
+              <input type="text" id="tDesc" class="form-ctrl" value="${item ? (item.desc || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Receipt #</label>
+              <input type="text" id="tReceiptNo" class="form-ctrl" value="${item ? (item.receiptNo || '') : ''}" placeholder="" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Amount</label>
+              <input type="number" id="tAmount" class="form-ctrl" value="${amtVal}" step="0.01" />
+            </div>
+
+            <div style="margin-top: 14px;">
+              <label class="field-label form-section-heading" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                </div>
+              </div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
+            </div>
+          </div>
+        `;
+      } else if (catKey === 'expense') {
+        const amtVal = item && typeof item.amount === 'number' ? item.amount.toFixed(2) : (item && item.amount ? item.amount : '0.00');
+        const expType = item ? (item.type || item.expense || 'Hotel Accommodation') : '';
+
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT EXPENSE DETAILS' : 'ADD EXPENSE DETAILS'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Expense</label>
+              <div class="select-wrapper">
+                <select id="eTypeSelect" class="form-ctrl">
+                  <option value="" ${!expType ? 'selected' : ''}>Select Expense</option>
+                  <option value="Hotel Accommodation" ${expType === 'Hotel Accommodation' ? 'selected' : ''}>Hotel Accommodation</option>
+                  <option value="Flight Ticket" ${expType === 'Flight Ticket' ? 'selected' : ''}>Flight Ticket</option>
+                  <option value="Tolls & Parking" ${expType === 'Tolls & Parking' ? 'selected' : ''}>Tolls &amp; Parking</option>
+                  <option value="Office Supplies" ${expType === 'Office Supplies' ? 'selected' : ''}>Office Supplies</option>
+                  <option value="Meals & Entertainment" ${expType === 'Meals & Entertainment' ? 'selected' : ''}>Meals &amp; Entertainment</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Expenses From</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="date" id="eDateFrom" class="form-ctrl" value="${toDateInputValue(item ? item.dateFrom : '24/09/2026')}" />
+                <input type="time" id="eTimeFrom" class="form-ctrl" value="${item ? (item.timeFrom || '10:56') : '10:56'}" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Expenses To</label>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                <input type="date" id="eDateTo" class="form-ctrl" value="${toDateInputValue(item ? item.dateTo : '24/09/2026')}" />
+                <input type="time" id="eTimeTo" class="form-ctrl" value="${item ? (item.timeTo || '12:56') : '12:56'}" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Project</label>
+              <div class="select-wrapper">
+                <select id="eProjectSelect" class="form-ctrl">
+                  <option value="" ${!item || !item.project ? 'selected' : ''}>- Select Project -</option>
+                  <option value="Project Alpha" ${item && item.project === 'Project Alpha' ? 'selected' : ''}>Project Alpha</option>
+                  <option value="Enterprise Migration" ${item && item.project === 'Enterprise Migration' ? 'selected' : ''}>Enterprise Migration</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Receipt #</label>
+              <input type="text" id="eReceiptNo" class="form-ctrl" value="${item ? (item.receiptNo || '') : ''}" placeholder="Receipt Ref Number" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Description</label>
+              <input type="text" id="eDesc" class="form-ctrl" value="${item ? (item.desc || '') : ''}" placeholder="Expense description" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Company Name</label>
+              <input type="text" id="eCompanyName" class="form-ctrl" value="${item ? (item.companyName || item.company || '') : ''}" placeholder="Merchant / Company Name" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Business RN</label>
+              <input type="text" id="eBusinessRN" class="form-ctrl" value="${item ? (item.businessRN || '') : ''}" placeholder="Business Registration Number" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Amount</label>
+              <input type="number" id="eAmount" class="form-ctrl" value="${item ? (item.amount || 0) : 0}" step="0.01" oninput="calcSubExpenseLocal()" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Claim Currency</label>
+              <input type="text" id="eCurrency" class="form-ctrl" value="${item ? (item.currency || 'RINGGIT MALAYSIA') : 'RINGGIT MALAYSIA'}" readonly />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Forex Rate</label>
+              <input type="number" id="eForex" class="form-ctrl" value="${item ? (item.forexRate ?? 1) : 1}" step="0.001" oninput="calcSubExpenseLocal()" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Local Amount</label>
+              <input type="text" id="eLocalAmount" class="form-ctrl" value="${amtVal}" readonly style="font-weight: 800;" />
+            </div>
+
+            <div style="margin-top: 14px;">
+              <label class="field-label form-section-heading" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take a Picture</span>
+                </div>
+              </div>
+              <div id="subChipsList" class="attachment-upload-list"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      formData.subAttachments = (item && item.attachments) ? [...item.attachments] : [];
+      renderSubChips();
+      switchView('view-4-entry', `${mode === 'edit' ? 'Edit' : 'Add'} ${getCategoryTitle(catKey)}`);
+    }
+
+    function calcSubExpenseLocal() {
+      const amt = parseFloat(document.getElementById('eAmount')?.value || 0);
+      const forex = parseFloat(document.getElementById('eForex')?.value || 1);
+      const locEl = document.getElementById('eLocalAmount');
+      if (locEl) locEl.value = (amt * forex).toFixed(2);
+    }
+
+    function calcSubMileage() {
+      const mIn = parseFloat(document.getElementById('mMeterIn')?.value || 0);
+      const mOut = parseFloat(document.getElementById('mMeterOut')?.value || 0);
+      const dist = Math.max(0, mOut - mIn);
+      const distEl = document.getElementById('mDistanceKm');
+      const amtEl = document.getElementById('mAmount');
+      if (distEl) distEl.value = dist;
+      if (amtEl) amtEl.value = (dist * 0.80).toFixed(2);
+    }
+
+    function calcSubMileageKm() {
+      const dist = parseFloat(document.getElementById('mDistanceKm')?.value || 0);
+      const amtEl = document.getElementById('mAmount');
+      if (amtEl) amtEl.value = (dist * 0.80).toFixed(2);
+    }
+
+    function saveSubItem() {
+      const catKey = formData.activeCategory;
+      const isEdit = typeof formData.editingIndex === 'number' && formData.editingIndex >= 0;
+
+      if (catKey === 'mileage') {
+        const orig = document.getElementById('mOriginSelect')?.value || 'Kuala Lumpur HQ';
+        const dest = document.getElementById('mDestSelect')?.value || 'Penang Branch';
+        const depDate = toDisplayDate(document.getElementById('mDepDate')?.value) || '23/09/2026';
+        const depTime = document.getElementById('mDepTime')?.value || '13:07';
+        const arrDate = toDisplayDate(document.getElementById('mArrDate')?.value) || '23/09/2026';
+        const arrTime = document.getElementById('mArrTime')?.value || '15:07';
+        const mIn = parseFloat(document.getElementById('mMeterIn')?.value || 0);
+        const mOut = parseFloat(document.getElementById('mMeterOut')?.value || 0);
+        const dist = parseFloat(document.getElementById('mDistanceKm')?.value || 0);
+        const amt = parseFloat(document.getElementById('mAmount')?.value || 0);
+        const vehicle = document.getElementById('mVehicleSelect')?.value || 'Personal Car (VAA 1234)';
+        const way = document.getElementById('mWaySelect')?.value || 'Return';
+        const project = document.getElementById('mProjectSelect')?.value || '';
+        const desc = document.getElementById('mDesc')?.value || '';
+
+        const newItem = { orig, dest, depDate, depTime, arrDate, arrTime, meterIn: mIn, meterOut: mOut, distKm: dist, distanceKm: dist, amount: amt, vehicle, way, project, desc, attachments: [...(formData.subAttachments || [])] };
+
+        if (isEdit) formData.claimDetails.mileageItems[formData.editingIndex] = newItem;
+        else formData.claimDetails.mileageItems.push(newItem);
+
+      } else if (catKey === 'travel') {
+        const orig = document.getElementById('tOriginSelect')?.value || 'Kuala Lumpur HQ';
+        const dest = document.getElementById('tDestSelect')?.value || 'Penang Branch';
+        const depDate = toDisplayDate(document.getElementById('tDepDate')?.value) || '23/09/2026';
+        const depTime = document.getElementById('tDepTime')?.value || '13:07';
+        const arrDate = toDisplayDate(document.getElementById('tArrDate')?.value) || '23/09/2026';
+        const arrTime = document.getElementById('tArrTime')?.value || '15:07';
+        const transport = document.getElementById('tTransportSelect')?.value || 'Flight';
+        const way = document.getElementById('tWaySelect')?.value || 'Return';
+        const noOfDays = document.getElementById('tNoOfDays')?.value || 1;
+        const project = document.getElementById('tProjectSelect')?.value || '';
+        const task = document.getElementById('tTaskSelect')?.value || '';
+        const receiptNo = document.getElementById('tReceiptNo')?.value || '';
+        const amt = parseFloat(document.getElementById('tAmount')?.value || 0);
+        const desc = document.getElementById('tDesc')?.value || '';
+
+        const newItem = { orig, dest, depDate, depTime, arrDate, arrTime, transport, way, noOfDays, project, task, receiptNo, amount: amt, desc, attachments: [...(formData.subAttachments || [])] };
+
+        if (isEdit) formData.claimDetails.travelItems[formData.editingIndex] = newItem;
+        else formData.claimDetails.travelItems.push(newItem);
+
+      } else if (catKey === 'expense') {
+        const type = document.getElementById('eTypeSelect')?.value || '';
+        const dateFrom = toDisplayDate(document.getElementById('eDateFrom')?.value) || '24/09/2026';
+        const timeFrom = document.getElementById('eTimeFrom')?.value || '10:56';
+        const dateTo = toDisplayDate(document.getElementById('eDateTo')?.value) || '24/09/2026';
+        const timeTo = document.getElementById('eTimeTo')?.value || '12:56';
+        const project = document.getElementById('eProjectSelect')?.value || '';
+        const receiptNo = document.getElementById('eReceiptNo')?.value || '';
+        const desc = document.getElementById('eDesc')?.value || '';
+        const companyName = document.getElementById('eCompanyName')?.value || '';
+        const businessRN = document.getElementById('eBusinessRN')?.value || '';
+        const amt = parseFloat(document.getElementById('eAmount')?.value || 0);
+        const currency = document.getElementById('eCurrency')?.value || 'RINGGIT MALAYSIA';
+        const forexRate = parseFloat(document.getElementById('eForex')?.value || 1);
+        const localAmount = parseFloat(document.getElementById('eLocalAmount')?.value || amt);
+
+        const newItem = { type, expense: type, dateFrom, timeFrom, dateTo, timeTo, project, receiptNo, desc, companyName, company: companyName, businessRN, amount: amt, currency, forexRate, localAmount, attachments: [...(formData.subAttachments || [])] };
+
+        if (isEdit) formData.claimDetails.generalExpenseItems[formData.editingIndex] = newItem;
+        else formData.claimDetails.generalExpenseItems.push(newItem);
+      }
+
+      formData.editingIndex = -1;
+      recalcAllTotals();
+      openCategoryItems(catKey);
+
+      if (typeof showToast === 'function') showToast(isEdit ? '✅ Item updated!' : '✅ Item saved!');
+    }
+
+    function getCategoryMetric(items, amountKeys = [], metricType = 'auto') {
+      const records = Array.isArray(items) ? items : [];
+      const recordCount = records.length;
+
+      if (metricType === 'records') {
+        return {
+          value: `${recordCount}`,
+          subtitle: ''
+        };
+      }
+
+      const paxKeys = ['pax', 'totalPax', 'noOfPax', 'headcount', 'internalAttendees', 'externalAttendees'];
+      const paxKey = paxKeys.find(key => records.some(item => Object.prototype.hasOwnProperty.call(item || {}, key)));
+
+      if (paxKey) {
+        const paxTotal = records.reduce((sum, item) => sum + (Number(item?.[paxKey]) || 0), 0);
+        return {
+          value: `${paxTotal} Pax`,
+          subtitle: ''
+        };
+      }
+
+      if (amountKeys.length) {
+        const amountTotal = records.reduce((sum, item) => {
+          const amountKey = amountKeys.find(key => Object.prototype.hasOwnProperty.call(item || {}, key));
+          return sum + (Number(amountKey ? item?.[amountKey] : 0) || 0);
+        }, 0);
+        return {
+          value: `RM ${amountTotal.toFixed(2)}`,
+          subtitle: 'Total Amount'
+        };
+      }
+
+      return {
+        value: `${recordCount}`,
+        subtitle: ''
+      };
+    }
+
+    function recalcAllTotals() {
+      const mTotal = formData.claimDetails.mileageItems.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+      const tTotal = formData.claimDetails.travelItems.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+      const eTotal = formData.claimDetails.generalExpenseItems.reduce((sum, i) => sum + (Number(i.localAmount ?? i.amount) || 0), 0);
+      const grandTotal = mTotal + tTotal + eTotal;
+      const totalCount = formData.claimDetails.mileageItems.length + formData.claimDetails.travelItems.length + formData.claimDetails.generalExpenseItems.length;
+
+      const totalEl = document.getElementById('travelClaimTotalDisplay');
+      const v1TotalEl = document.getElementById('v1TotalClaimDisplay');
+      const v1SubEl = document.getElementById('v1ItemsCountSubtitle');
+
+      if (totalEl) totalEl.innerText = grandTotal.toFixed(2);
+      if (v1TotalEl) v1TotalEl.innerText = `RM ${grandTotal.toFixed(2)}`;
+      if (v1SubEl) v1SubEl.innerText = `${totalCount} claim item(s) added`;
+
+      const catM = document.getElementById('catMileageAmount');
+      const catMSub = document.getElementById('catMileageSubtitle');
+      const mileageMetric = getCategoryMetric(formData.claimDetails.mileageItems, ['amount']);
+      if (catM) catM.innerText = mileageMetric.value;
+      if (catMSub) catMSub.innerText = mileageMetric.subtitle;
+
+      const catT = document.getElementById('catTravelAmount');
+      const catTSub = document.getElementById('catTravelSubtitle');
+      const travelMetric = getCategoryMetric(formData.claimDetails.travelItems, ['amount']);
+      if (catT) catT.innerText = travelMetric.value;
+      if (catTSub) catTSub.innerText = travelMetric.subtitle;
+
+      const catE = document.getElementById('catExpenseAmount');
+      const catESub = document.getElementById('catExpenseSubtitle');
+      const expenseMetric = getCategoryMetric(formData.claimDetails.generalExpenseItems, ['localAmount', 'amount']);
+      if (catE) catE.innerText = expenseMetric.value;
+      if (catESub) catESub.innerText = expenseMetric.subtitle;
+    }
+
+    function triggerFileUpload(target = 'sub') {
+      formData.uploadTarget = target;
+      const input = document.getElementById('hiddenTravelFileInput');
+      if (input) input.click();
+    }
+
+    function handleFileSelected(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const target = formData.uploadTarget || 'sub';
+      if (target === 'main') {
+        if (!formData.mainAttachments) formData.mainAttachments = [];
+        formData.mainAttachments.push(file.name);
+        renderMainAttachments();
+      } else {
+        if (!formData.subAttachments) formData.subAttachments = [];
+        formData.subAttachments.push(file.name);
+        renderSubChips();
+      }
+      if (typeof showToast === 'function') showToast(`📎 Attachment added: ${file.name}`);
+      input.value = '';
+    }
+
+    function removeSubAttachment(idx) {
+      if (!formData.subAttachments) return;
+      formData.subAttachments.splice(idx, 1);
+      renderSubChips();
+    }
+
+    function removeMainAttachment(idx) {
+      if (!formData.mainAttachments) return;
+      formData.mainAttachments.splice(idx, 1);
+      renderMainAttachments();
+    }
+
+    function renderMainAttachments() {
+      const container = document.getElementById('mainChipsList');
+      if (!container) return;
+      container.innerHTML = (formData.mainAttachments || []).map((name, idx) => `
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${name}">${name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove ${name}" title="Remove attachment" onclick="removeMainAttachment(${idx})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderSubChips() {
+      const container = document.getElementById('subChipsList');
+      if (!container) return;
+      if (!formData.subAttachments || formData.subAttachments.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = formData.subAttachments.map((att, idx) => `
+        <div class="attachment-upload-item">
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${att}">${att}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove ${att}" title="Remove attachment" onclick="removeSubAttachment(${idx})">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function saveDraft() {
+      if (typeof showToast === 'function') showToast('💾 Travel Mileage draft saved!');
+      else alert('Travel Mileage draft saved!');
+    }
+
+    function submitTravelClaim() {
+      if (typeof showToast === 'function') showToast('🚀 Travel Mileage submitted successfully!');
+      else alert('Travel Mileage submitted successfully!');
+      window.location.href = '../index.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      recalcAllTotals();
+    });
+  </script>
+</body>
+</html>

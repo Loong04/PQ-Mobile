@@ -1,0 +1,54 @@
+/* Leave calendar presentation over the existing Attendance roster markup. */
+.attendance-schedule.card { padding: 16px; border-color: var(--border-subtle); box-shadow: var(--shadow-sm); }
+.attendance-schedule-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.attendance-schedule-month { margin: 0; color: var(--text-primary); font-size: 15px; font-weight: 800; }
+.attendance-schedule-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.attendance-schedule-controls button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--border-subtle); border-radius: 10px; background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-weight: 800; cursor: pointer; }
+.attendance-schedule-controls button:hover { background: var(--bg-card-hover); }
+.attendance-schedule-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin-bottom: 8px; color: var(--text-muted); text-align: center; font-size: 11px; font-weight: 800; }
+.attendance-schedule-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; text-align: center; font-size: 12px; font-weight: 700; }
+.attendance-schedule .cal-cell { min-height: 48px; min-width: 0; padding: 4px 1px; justify-content: center; gap: 3px; border: 1px solid var(--border-subtle); border-radius: 12px; background: var(--bg-card); transition: background .2s ease, box-shadow .2s ease, transform .2s ease; }
+.attendance-schedule .cal-cell:empty { border-color: transparent; background: transparent; cursor: default; pointer-events: none; }
+.attendance-schedule .cal-cell:not(:empty):hover { background: var(--schedule-event-background, var(--bg-card-hover)); }
+.attendance-schedule .cal-cell:not(:empty):active { transform: scale(.92); }
+.attendance-schedule .cal-date { width: auto; height: auto; margin-bottom: 0; color: var(--text-primary); font-size: 13.5px; font-weight: 700; line-height: 1; border-radius: 0; }
+.attendance-schedule .cal-cell > :is(.cal-d, .cal-n, .cal-hol, .cal-off, .cal-rest, .cal-cs, .cal-none) { margin: 3px 0 0; padding: 1.5px 5px; border-radius: 5px; font-size: 8px; font-weight: 800; line-height: 1; letter-spacing: .2px; }
+.attendance-schedule .cal-cell:has(.cal-hol, .cal-cs) { --schedule-event-background: rgba(124, 58, 237, .12); background: var(--schedule-event-background); border: 1px solid rgba(124, 58, 237, .25); }
+.attendance-schedule .cal-cell:has(.cal-hol, .cal-cs) .cal-date { color: var(--purple-text); font-weight: 900; }
+.attendance-schedule .cal-cell > :is(.cal-hol, .cal-cs),
+.attendance-schedule .attendance-schedule-info-list :is(.cal-hol, .cal-cs) { background: #7c3aed; color: #fff; box-shadow: 0 2px 6px rgba(124, 58, 237, .4); }
+[data-theme="dark"] .attendance-schedule .cal-cell:has(.cal-hol, .cal-cs) { --schedule-event-background: rgba(124, 58, 237, .22); border-color: rgba(192, 132, 252, .35); }
+.attendance-schedule .cal-cell.today { border: 2px solid #7c3aed; background: rgba(124, 58, 237, .08); box-shadow: 0 0 0 2px rgba(124, 58, 237, .2), 0 4px 12px rgba(124, 58, 237, .2); z-index: 4; }
+.attendance-schedule .cal-cell.today .cal-date { width: auto; height: auto; border-radius: 0; background: transparent; color: var(--purple-text); font-size: 14.5px; font-weight: 900; box-shadow: none; }
+.attendance-schedule .cal-cell.active { border: 2px solid #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, .4), 0 6px 16px rgba(124, 58, 237, .3); background: linear-gradient(135deg, rgba(124, 58, 237, .18), rgba(109, 40, 217, .25)); transform: scale(1.06); z-index: 5; }
+.attendance-schedule .cal-cell.active:not(.today) .cal-date { background: transparent; color: var(--purple-text); font-size: 14.5px; font-weight: 900; }
+.attendance-schedule-controls button:focus-visible { outline: 2px solid var(--purple-text); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .attendance-schedule .cal-cell { transition: none; } }
+
+.attendance-schedule-info-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid var(--purple-border); border-radius: 10px; background: var(--purple-subtle); color: var(--purple-text); font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
+.attendance-schedule-controls .attendance-schedule-info-trigger { width: auto; padding: 0 8px; border-color: var(--purple-border); background: var(--purple-subtle); color: var(--purple-text); font-size: 11px; }
+.attendance-schedule-info-trigger:focus-visible, .attendance-schedule-info-close:focus-visible { outline: 2px solid var(--purple-text); outline-offset: 3px; }
+.attendance-schedule-info-dialog { position: fixed; inset: auto; top: var(--schedule-sheet-top); left: var(--schedule-sheet-left); width: var(--schedule-sheet-width); height: var(--schedule-sheet-height); max-width: none; max-height: none; margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: var(--schedule-sheet-radius, 44px); background: rgba(15, 23, 42, .65); color: var(--text-primary); backdrop-filter: blur(6px); }
+.attendance-schedule-info-dialog[open] { display: flex; align-items: flex-end; }
+.attendance-schedule-info-dialog::backdrop { background: transparent; }
+.attendance-schedule-info-panel { width: 100%; max-height: 88%; padding: 0 20px max(28px, env(safe-area-inset-bottom)); overflow-y: auto; border: 1px solid var(--border-subtle); border-bottom: 0; border-radius: 28px 28px 0 0; background: var(--bg-card); box-shadow: 0 -10px 30px rgba(0, 0, 0, .3); }
+.attendance-schedule-info-handle { width: 36px; height: 4px; margin: 12px auto 16px; border-radius: 4px; background: var(--border-subtle); }
+.attendance-schedule-info-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.attendance-schedule-info-header h3 { margin: 0; font-size: 16px; font-weight: 800; }
+.attendance-schedule-info-close { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--border-subtle); border-radius: 50%; background: var(--bg-input); color: var(--text-muted); cursor: pointer; }
+.attendance-schedule-info-list { display: grid; gap: 0; }
+.attendance-schedule-info-list > div { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border-subtle); }
+.attendance-schedule-info-list > div:last-child { border-bottom: 0; padding-bottom: 0; }
+.attendance-schedule-info-list > div[hidden] { display: none; }
+.attendance-schedule-info-list > div > span:first-child { justify-self: center; margin: 0; }
+.attendance-schedule-info-list > div > span:last-child { color: var(--text-secondary); font-size: 13px; font-weight: 700; }
+.attendance-schedule-info-today { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #7c3aed; color: #fff; font-size: 11px; font-weight: 800; }
+.leave-calendar-info-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.leave-calendar-info-tag { display: inline-block; padding: 3px 6px; border-radius: 5px; background: #7c3aed; color: #fff; font-size: 9px; font-weight: 800; }
+.leave-calendar-info-dot { width: 10px; height: 10px; border-radius: 50%; }
+.leave-calendar-info-dot.is-today { background: #22c55e; }
+.leave-calendar-info-dot.is-upcoming { background: #3b82f6; }
+.leave-calendar-info-count { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--purple-subtle); color: var(--purple-text); font-size: 11px; font-weight: 800; }
+.leave-calendar-info-date { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 12px; font-weight: 700; }
+.leave-calendar-info-date.is-selected { border: 2px solid #7c3aed; background: var(--purple-subtle); color: var(--purple-text); }
+.leave-calendar-info-date.is-other-month { opacity: .35; border-color: transparent; }

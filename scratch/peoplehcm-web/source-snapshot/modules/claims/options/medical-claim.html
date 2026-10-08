@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Claims - Medical Claim</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 100px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .view-container {
+      display: none;
+      width: 100%;
+    }
+    .view-container.active {
+      display: block;
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .category-card:hover {
+      border-color: var(--purple-primary);
+      transform: translateY(-1px);
+    }
+
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .section-title-accent {
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .section-title-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field-label .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .form-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
+    }
+    .form-ctrl:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 1;
+      background: var(--bg-input);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .dark-balance-pill {
+      background: #4b5563;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 4px 16px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    .btn-step-back {
+      padding: 11px 22px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-step-back:active {
+      transform: scale(0.96);
+    }
+
+    .btn-submit-primary {
+      padding: 11px 26px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-submit-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-draft-bright {
+      padding: 11px 24px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-draft-bright:active {
+      transform: scale(0.96);
+    }
+
+    .btn-add-purple {
+      padding: 9px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      margin-top: 0;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
+    .validation-err-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-top: 5px;
+      display: block;
+    }
+
+    /* Top Claim Stepper Progress Indicator Standard */
+    .claim-stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .stepper-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stepper-line-bg {
+      position: absolute;
+      top: 15px;
+      left: 16.66%;
+      right: 16.66%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      z-index: 1;
+    }
+    .stepper-line-fill {
+      position: absolute;
+      top: 15px;
+      left: 16.66%;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
+    }
+    .stepper-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      z-index: 3;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+    }
+    .stepper-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #171529;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .stepper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    /* Completed State: Green Outline & Text on Opaque Dark Background */
+    .stepper-item.completed .stepper-circle {
+      border-color: #10b981;
+      background: #171529;
+      color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+    .stepper-item.completed .stepper-label {
+      color: #34d399;
+    }
+    /* Active State: Vibrant Purple Filled Circle */
+    .stepper-item.active .stepper-circle {
+      border-color: #a855f7;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
+    }
+    .stepper-item.active .stepper-label {
+      color: #ffffff;
+      font-weight: 900;
+    }
+    .medical-data-list {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+    }
+    .medical-data-row {
+      display: grid;
+      grid-template-columns: minmax(118px, 42%) minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .medical-data-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+    .medical-data-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .medical-data-value {
+      min-width: 0;
+      color: var(--text-primary);
+      font-weight: 800;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+  </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Navigation Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" onclick="handleHeaderBack()" class="me-back-btn" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; text-decoration: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Medical Claim</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container (4-Level Drill-down Views) -->
+    <div class="main-content">
+
+      <section id="medicalEntitlementView">
+        <div class="claim-filter-bar" onclick="openMedicalYearFilter()">
+          <div class="claim-filter-copy">
+            <div class="claim-eyebrow">Current filter</div>
+            <div class="claim-filter-value">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span id="medicalFilterText">2026 · All Medical Types</span>
+            </div>
+          </div>
+          <button type="button" class="claim-icon-button" aria-label="Filter medical claims"
+            onclick="event.stopPropagation(); openMedicalYearFilter()">
+            <i class="fa-solid fa-sliders"></i>
+          </button>
+        </div>
+
+        <div class="claim-list-heading">
+          <h2>Medical entitlement</h2>
+          <span id="medicalTypeCountDisplay">1 type</span>
+        </div>
+
+        <div class="claim-option-list">
+          <article class="claim-option-card" data-medical-type="MEDICAL CLAIMS">
+            <div class="claim-option-top">
+              <div class="claim-option-copy">
+                <h3 class="claim-option-title">MEDICAL CLAIMS</h3>
+                <span class="claim-option-balance">RM 640.10 available</span>
+              </div>
+              <button type="button" class="claim-option-action" onclick="openMedicalClaimForm()">
+                <span>Claim</span>
+              </button>
+            </div>
+            <div class="claim-metrics">
+              <div class="claim-metric">
+                <div class="claim-metric-label">Entitled</div>
+                <div class="claim-metric-value">RM 800.00</div>
+              </div>
+              <div class="claim-metric">
+                <div class="claim-metric-label">Claimed</div>
+                <div class="claim-metric-value">RM 0.00</div>
+              </div>
+              <div class="claim-metric is-pending">
+                <div class="claim-metric-label">Pending</div>
+                <div class="claim-metric-value">RM 159.90</div>
+              </div>
+              <div class="claim-metric is-available">
+                <div class="claim-metric-label">Available</div>
+                <div class="claim-metric-value">RM 640.10</div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <div id="medicalClaimWorkflow" style="display: none;">
+      
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Medical, 3: Details) -->
+      <div class="claim-stepper-card">
+        <div class="stepper-track-container">
+          <div class="stepper-line-bg"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%;"></div>
+          
+          <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
+            <div class="stepper-circle">1</div>
+            <span class="stepper-label">General</span>
+          </div>
+          <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
+            <div class="stepper-circle">2</div>
+            <span class="stepper-label">Medical</span>
+          </div>
+          <div class="stepper-item" id="stepNode-3" onclick="navigateToStep(3)">
+            <div class="stepper-circle">3</div>
+            <span class="stepper-label">Details</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ========================================================= -->
+      <!-- VIEW 1: MAIN FORM VIEW (主申请表单) -->
+      <!-- ========================================================= -->
+      <div class="view-container active" id="view-1-main">
+        
+        <!-- MAIN APPLICATION INFO CARD -->
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">APPLICATION DETAILS</span>
+          </div>
+
+          <!-- Benefit Year : -->
+          <div class="field-group">
+            <label class="field-label">Benefit Year</label>
+            <input type="text" id="medicalBenefitYearInput" class="form-ctrl" value="2026" readonly />
+          </div>
+
+          <!-- Benefit Type : -->
+          <div class="field-group">
+            <label class="field-label">Benefit Type</label>
+            <input type="text" id="genBenefitTypeInput" class="form-ctrl" value="MEDICAL CLAIMS" readonly />
+          </div>
+
+          <!-- Entitled Balance & Usable Balance -->
+          <div class="field-group" style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span class="field-label" style="margin-bottom: 0;">Entitled Balance</span>
+              <span id="entitledPillDisplay" class="dark-balance-pill">RM 800.00</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span class="field-label" style="margin-bottom: 0;">Usable Balance</span>
+              <span id="usablePillDisplay" class="dark-balance-pill">RM 640.10</span>
+            </div>
+          </div>
+
+          <!-- Claim Period : -->
+          <div class="field-group">
+            <label class="field-label">Claim Period <span class="req">*</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+              <div class="select-wrapper">
+                <select id="mClaimYear" class="form-ctrl">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <select id="mClaimMonth" class="form-ctrl">
+                  <option value="September" selected>September</option>
+                  <option value="August">August</option>
+                  <option value="July">July</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Receipt Date : -->
+          <div class="field-group">
+            <label class="field-label">Receipt Date <span class="req">*</span></label>
+            <input type="date" id="mReceiptDate" class="form-ctrl" value="2026-09-23" />
+          </div>
+
+          <!-- Receipt No. : -->
+          <div class="field-group">
+            <label class="field-label">Receipt No.</label>
+            <input type="text" id="mReceiptNoInput" class="form-ctrl" value="REC-88310" placeholder="Enter receipt number" />
+          </div>
+
+          <!-- Claim Total -->
+          <div class="field-group">
+            <label class="field-label">Claim Total (RM)</label>
+            <input type="text" id="mClaimTotalInput" class="form-ctrl" value="0.00" readonly />
+          </div>
+
+          <!-- Remark : -->
+          <div class="field-group">
+            <label class="field-label">Remark</label>
+            <input type="text" id="mRemarkInput" class="form-ctrl" placeholder="Enter remark..." />
+          </div>
+        <!-- GENERAL ATTACHMENTS -->
+          <label class="field-label form-section-heading" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: block;">Upload Attachment</label>
+
+          <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                <i class="fa-solid fa-file-arrow-up"></i>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('main')">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                <i class="fa-solid fa-camera"></i>
+              </div>
+              <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+            </div>
+          </div>
+
+          <div id="mainChipsList" class="attachment-upload-list"></div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+          <button type="button" class="form-cancel-btn" data-page-form-cancel onclick="handleHeaderBack()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="navigateToStep(2)">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 2: CATEGORY SUMMARY VIEW (分类聚合导航页 - Level 2) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-2-categories">
+        
+        <div style="margin-bottom: 14px;">
+          <h2 class="form-section-heading" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Medical Categories (2)</h2>
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Select a category to view or add medical details & expenses</span>
+        </div>
+
+        <!-- CATEGORY 1: MEDICAL TREATMENT -->
+        <div class="category-card" onclick="navigateToStep(2)" style="background: var(--bg-card); border-radius: 18px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-notes-medical"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Medical</div>
+              <div id="catTreatmentSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catTreatmentCount" style="font-size: 14px; font-weight: 800; color: var(--purple-primary);">0</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- CATEGORY 2: EXPENSE DETAILS -->
+        <div class="category-card" onclick="openCategoryItems('expense')" style="background: var(--bg-card); border-radius: 18px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Details</div>
+              <div id="catExpenseSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;"></div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="catExpenseAmount" style="font-size: 14px; font-weight: 800; color: #10b981;">0</div>
+            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted); font-size: 14px;"></i>
+          </div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'Medical Claim')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Application</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="goToNextMedicalStep()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 3: ITEM LIST VIEW (明细项列表页) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-3-list">
+        
+        <!-- Unified Card for Header and Items -->
+        <div class="form-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 16px;">
+          
+          <!-- Category Summary Title Header (Now integrated) -->
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <h2 class="form-section-heading" id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Details</h2>
+                <span id="v3CategoryItemsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Total Records: 0</span>
+              </div>
+            </div>
+            <button type="button" id="v3AddItemButton" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+          <div id="v3ItemsContainer" style="padding: 16px;">
+            <!-- Populated by JS -->
+          </div>
+          
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div id="v3BottomActions" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <!-- Populated by JS according to active category -->
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW (子表单录入页) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-4-entry">
+        
+        <!-- SUB-FORM FORM CARDS CONTAINER -->
+        <div id="v4SubFormContainer">
+          <!-- Populated by JS according to active category -->
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div id="v4BottomActions" style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="handleHeaderBack()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        </div>
+
+      </div>
+
+      </div>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="hiddenMedicalFileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelected(this)">
+
+    <div id="medicalYearFilter" class="claim-filter-sheet" onclick="if(event.target===this) closeMedicalYearFilter()">
+      <div class="claim-filter-panel" onclick="event.stopPropagation()">
+        <div class="claim-filter-handle"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title">Filter</h2>
+          <button type="button" class="claim-filter-reset" onclick="resetMedicalYearFilter()">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Reset</span>
+          </button>
+        </div>
+        <div class="claim-filter-fields">
+          <div>
+            <label class="claim-filter-label">Medical Type</label>
+            <div class="claim-filter-select-wrap">
+              <select id="medicalTypeFilterSelect" class="claim-filter-select">
+                <option value="ALL" selected>View All Medical Types</option>
+                <option value="MEDICAL CLAIMS">Medical Claims</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+            </div>
+          </div>
+          <div>
+            <label class="claim-filter-label">Entitlement Year</label>
+            <div class="claim-filter-select-wrap">
+              <select id="medicalYearFilterSelect" class="claim-filter-select">
+                <option value="2026" selected>2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron"></i>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="claim-filter-apply" onclick="applyMedicalYearFilter()">Apply Filter</button>
+      </div>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+
+  <!-- STATE MANAGEMENT & DRILL-DOWN NAVIGATION SCRIPT -->
+  <script>
+    let medicalPageMode = 'entitlement';
+
+    // Global Unified Form Data
+    const formData = {
+      applicationInfo: {
+        claimYear: '2026',
+        claimMonth: 'September',
+        receiptDate: '23/09/2026',
+        receiptNo: 'REC-88310',
+        remark: ''
+      },
+      treatmentItems: [],
+      expenseItems: [],
+      activeCategory: 'treatment',
+      currentView: 'view-1-main',
+      uploadTarget: 'main'
+    };
+
+    function updateStepperUI(stepNum) {
+      const lineFill = document.getElementById('stepperLineFill');
+      if (lineFill) {
+        const pcts = ['0%', '33.333%', '66.667%'];
+        lineFill.style.width = pcts[stepNum - 1] || '0%';
+      }
+
+      for (let i = 1; i <= 3; i++) {
+        const node = document.getElementById(`stepNode-${i}`);
+        if (!node) continue;
+        node.classList.remove('active', 'completed');
+        const circle = node.querySelector('.stepper-circle');
+        if (circle) circle.textContent = i;
+        if (i < stepNum) {
+          node.classList.add('completed');
+        } else if (i === stepNum) {
+          node.classList.add('active');
+        }
+      }
+    }
+
+    function navigateToStep(stepNum) {
+      if (stepNum === 1) {
+        switchView('view-1-main', 'Medical Claim');
+      } else if (stepNum === 2) {
+        formData.activeCategory = 'treatment';
+        const hasMedical = formData.treatmentItems.length > 0;
+        openEntryForm(hasMedical ? 'edit' : 'add', hasMedical ? 0 : -1);
+      } else if (stepNum === 3) {
+        formData.activeCategory = 'expense';
+        renderView3List();
+        switchView('view-3-list', 'Details');
+      }
+    }
+
+    function goToNextMedicalStep() {
+      if (formData.treatmentItems.length === 0) {
+        navigateToStep(2);
+      } else {
+        navigateToStep(3);
+      }
+    }
+
+    function getSavedCategoryStep() {
+      if (formData.expenseItems.length > 0) return 3;
+      if (formData.treatmentItems.length > 0) return 2;
+      return 1;
+    }
+
+    function switchView(viewId, headerTitle) {
+      formData.currentView = viewId;
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById(viewId);
+      if (targetView) targetView.classList.add('active');
+
+      const titleTextEl = document.getElementById('headerTitleText');
+      if (titleTextEl && headerTitle) {
+        titleTextEl.innerText = headerTitle;
+      }
+
+      // General starts at step 1. The category page reflects saved progress,
+      // while category lists and forms keep their corresponding step active.
+      if (viewId === 'view-1-main' || viewId === 'view-2-categories') {
+        updateStepperUI(getSavedCategoryStep());
+      } else if (formData.activeCategory === 'treatment') {
+        updateStepperUI(2);
+      } else if (formData.activeCategory === 'expense') {
+        updateStepperUI(3);
+      } else {
+        updateStepperUI(1);
+      }
+
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    function handleHeaderBack() {
+      if (medicalPageMode === 'entitlement') {
+        window.location.href = '../index.html';
+        return;
+      }
+      if (formData.currentView === 'view-4-entry') {
+        if (formData.activeCategory === 'treatment') {
+          switchView('view-1-main', 'Medical Claim');
+        } else {
+          switchView('view-3-list', 'Details');
+        }
+      } else if (formData.currentView === 'view-3-list') {
+        navigateToStep(2);
+      } else if (formData.currentView === 'view-2-categories') {
+        switchView('view-1-main', 'Medical Claim');
+      } else {
+        medicalPageMode = 'entitlement';
+        document.getElementById('medicalClaimWorkflow').style.display = 'none';
+        document.getElementById('medicalEntitlementView').style.display = 'block';
+        document.getElementById('headerTitleText').innerText = 'Medical Claim';
+        document.querySelector('.main-content').scrollTop = 0;
+      }
+    }
+
+    function openMedicalClaimForm() {
+      medicalPageMode = 'form';
+      document.getElementById('medicalEntitlementView').style.display = 'none';
+      document.getElementById('medicalClaimWorkflow').style.display = 'block';
+      switchView('view-1-main', 'Medical Claim');
+    }
+
+    function openMedicalYearFilter() {
+      document.getElementById('medicalYearFilter').classList.add('is-open');
+    }
+
+    function closeMedicalYearFilter() {
+      document.getElementById('medicalYearFilter').classList.remove('is-open');
+    }
+
+    function resetMedicalYearFilter() {
+      const year = document.getElementById('medicalYearFilterSelect');
+      const type = document.getElementById('medicalTypeFilterSelect');
+      if (year) year.value = '2026';
+      if (type) type.value = 'ALL';
+    }
+
+    function applyMedicalYearFilter() {
+      const year = document.getElementById('medicalYearFilterSelect').value;
+      const typeSelect = document.getElementById('medicalTypeFilterSelect');
+      const type = typeSelect.value;
+      const typeLabel = type === 'ALL' ? 'All Medical Types' : typeSelect.selectedOptions[0].text;
+      let visibleCount = 0;
+
+      document.querySelectorAll('[data-medical-type]').forEach(card => {
+        const matches = type === 'ALL' || card.dataset.medicalType === type;
+        card.style.display = matches ? '' : 'none';
+        if (matches) visibleCount += 1;
+      });
+
+      document.getElementById('medicalFilterText').textContent = `${year} · ${typeLabel}`;
+      document.getElementById('medicalTypeCountDisplay').textContent =
+        `${visibleCount} ${visibleCount === 1 ? 'type' : 'types'}`;
+      const benefitYear = document.getElementById('medicalBenefitYearInput');
+      if (benefitYear) benefitYear.value = year;
+      const claimYear = document.getElementById('mClaimYear');
+      if (claimYear && [...claimYear.options].some(option => option.value === year)) claimYear.value = year;
+      closeMedicalYearFilter();
+    }
+
+    function getCategoryTitle(catKey) {
+      return catKey === 'treatment' ? 'Medical' : 'Details';
+    }
+
+    function openCategoryItems(categoryKey) {
+      formData.activeCategory = categoryKey;
+      renderView3List();
+      switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function renderView3List() {
+      const container = document.getElementById('v3ItemsContainer');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const addItemButton = document.getElementById('v3AddItemButton');
+      const bottomActionsContainer = document.getElementById('v3BottomActions');
+
+      const isTreatment = formData.activeCategory === 'treatment';
+      const items = isTreatment ? formData.treatmentItems : formData.expenseItems;
+
+      if (titleText) titleText.innerText = isTreatment ? 'Medical' : 'Details';
+      if (iconBox) {
+        iconBox.innerHTML = isTreatment ? '<i class="fa-solid fa-notes-medical"></i>' : '<i class="fa-solid fa-receipt"></i>';
+      }
+      if (countText) {
+        const totalAmount = formData.expenseItems.reduce((sum, item) => sum + Number(item.localAmount || 0), 0);
+        countText.innerText = isTreatment ? `Total Records: ${items.length}` : `Total Amount: RM ${totalAmount.toFixed(2)}`;
+      }
+      if (addItemButton) {
+        addItemButton.style.display = isTreatment && items.length >= 1 ? 'none' : 'inline-flex';
+      }
+
+      if (bottomActionsContainer) {
+        bottomActionsContainer.innerHTML = `
+          <button type="button" class="btn-step-back" onclick="navigateToStep(2)">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Medical</span>
+          </button>
+          ${isTreatment
+            ? `<button type="button" class="btn-submit-primary" onclick="navigateToStep(3)">
+                <span>Next</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>`
+            : `<button type="button" class="btn-submit-primary" onclick="submitMedicalClaim()">
+                <span>Submit</span>
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>`}
+        `;
+      }
+
+      if (items.length === 0) {
+        const emptyIcon = isTreatment ? 'fa-notes-medical' : 'fa-folder-open';
+        const emptyTitle = isTreatment ? 'No medical records added yet' : 'No expense items added yet';
+        const emptySub = 'Click "+ Add Item" above to add details';
+
+        container.innerHTML = `
+          <div style="text-align: center; padding: 22px 10px 14px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              <i class="fa-solid ${emptyIcon}"></i>
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">${emptyTitle}</div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">${emptySub}</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+      items.forEach((item, idx) => {
+        const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
+        const cardId = `medCard_${isTreatment ? 'treat' : 'exp'}_${idx}`;
+        if (isTreatment) {
+          html += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-notes-medical"></i>
+                  </div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.patientName || 'Employee'} (${item.patientType || 'Self'})</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Record"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Record"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div class="medical-data-list">
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Patient Type</span>
+                    <span class="medical-data-value">${item.patientType || '-'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Patient Name</span>
+                    <span class="medical-data-value">${item.patientName || '-'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Treatment Type</span>
+                    <span class="medical-data-value">${item.treatmentType || 'Others'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Clinic / Hospital</span>
+                    <span class="medical-data-value">${item.clinicLocation || '-'} · ${item.clinicCategory || '-'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Non-Panel Clinic / Hospital</span>
+                    <span class="medical-data-value">${item.nonPanelClinic || item.clinicName || '-'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Sickness Type</span>
+                    <span class="medical-data-value">${item.sicknessType || '-'}</span>
+                  </div>
+                  ${item.attachments && item.attachments.length > 0 ? `
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Attachments</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      ${item.attachments.map(att => `
+                        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-paperclip"></i> ${att}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          html += `
+            <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fa-solid fa-receipt"></i>
+                  </div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.expenseType || 'Medical Expense'}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${item.localAmount ? item.localAmount.toFixed(2) : '0.00'}</div>
+                  <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                  <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
+                </div>
+              </div>
+
+              <!-- Expandable Detailed View -->
+              <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+                <div class="medical-data-list">
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Receipt No.</span>
+                    <span class="medical-data-value">${item.receiptNo || 'N/A'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Expense Category</span>
+                    <span class="medical-data-value">${item.expenseType || 'General Medical'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Amount</span>
+                    <span class="medical-data-value">${item.amt !== undefined ? item.amt : (item.localAmount || 0)}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Currency</span>
+                    <span class="medical-data-value">${item.currency || 'MYR'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Forex Rate</span>
+                    <span class="medical-data-value">${item.forexRate || 1}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Local Amount (RM)</span>
+                    <span class="medical-data-value">RM ${item.localAmount ? item.localAmount.toFixed(2) : '0.00'}</span>
+                  </div>
+                  <div class="medical-data-row">
+                    <span class="medical-data-label">Attachment</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      ${(item.attachments && item.attachments.length > 0 ? item.attachments : ['xxxx.jpg']).map(att => `
+                        <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-paperclip"></i> ${att}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+
+    function toggleItemCard(cardId) {
+      const cardEl = document.getElementById(cardId);
+      if (!cardEl) return;
+      const bodyEl = cardEl.querySelector('.item-details-body');
+      const iconEl = cardEl.querySelector('.toggle-icon');
+      if (bodyEl) {
+        const isHidden = bodyEl.style.display === 'none' || !bodyEl.style.display;
+        bodyEl.style.display = isHidden ? 'block' : 'none';
+        if (iconEl) {
+          iconEl.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+      }
+    }
+
+    function deleteSubItem(idx) {
+      if (formData.activeCategory === 'treatment') {
+        formData.treatmentItems.splice(idx, 1);
+      } else {
+        formData.expenseItems.splice(idx, 1);
+      }
+      recalcAllTotals();
+      renderView3List();
+      if (typeof showToast === 'function') {
+        showToast('🗑️ Item removed!');
+      }
+    }
+
+    function openEntryForm(mode = 'add', editIndex = -1) {
+      const isTreatment = formData.activeCategory === 'treatment';
+      if (isTreatment && mode === 'add' && formData.treatmentItems.length >= 1) {
+        if (typeof showToast === 'function') {
+          showToast('Medical treatment can only be added once.');
+        }
+        return;
+      }
+
+      formData.editingIndex = editIndex;
+      const container = document.getElementById('v4SubFormContainer');
+      const actions = document.getElementById('v4BottomActions');
+      if (actions) {
+        actions.innerHTML = isTreatment ? `
+          <button type="button" class="btn-draft-bright" onclick="saveDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        ` : `
+          <button type="button" class="btn-step-back" onclick="handleHeaderBack()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        `;
+      }
+
+      if (isTreatment) {
+        const item = (editIndex >= 0 && formData.treatmentItems[editIndex]) ? formData.treatmentItems[editIndex] : null;
+
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT MEDICAL' : 'ADD MEDICAL'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Patient Type <span class="req">*</span></label>
+              <div class="select-wrapper">
+                <select id="mPatientType" class="form-ctrl">
+                  <option value="" ${!item ? 'selected' : ''} disabled>- Select Patient Type -</option>
+                  <option value="Employee" ${item && item.patientType === 'Employee' ? 'selected' : ''}>Employee</option>
+                  <option value="Dependant" ${item && item.patientType === 'Dependant' ? 'selected' : ''}>Dependant</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Patient Name <span class="req">*</span></label>
+              <div class="select-wrapper">
+                <select id="mPatientName" class="form-ctrl">
+                  <option value="" ${!item ? 'selected' : ''} disabled>- Select Patient Name -</option>
+                  <option value="FARHAN BINTI RAHMAT" ${item && item.patientName === 'FARHAN BINTI RAHMAT' ? 'selected' : ''}>FARHAN BINTI RAHMAT</option>
+                  <option value="AHMAD BIN RAHMAT" ${item && item.patientName === 'AHMAD BIN RAHMAT' ? 'selected' : ''}>AHMAD BIN RAHMAT</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Treatment Type</label>
+              <div class="select-wrapper">
+                <select id="mTreatmentType" class="form-ctrl">
+                  <option value="Others" ${!item || item.treatmentType === 'Others' ? 'selected' : ''}>Others</option>
+                  <option value="Outpatient GP" ${item && item.treatmentType === 'Outpatient GP' ? 'selected' : ''}>Outpatient GP</option>
+                  <option value="Outpatient Specialist" ${item && item.treatmentType === 'Outpatient Specialist' ? 'selected' : ''}>Outpatient Specialist</option>
+                  <option value="Dental" ${item && item.treatmentType === 'Dental' ? 'selected' : ''}>Dental</option>
+                  <option value="Optical" ${item && item.treatmentType === 'Optical' ? 'selected' : ''}>Optical</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Clinic / Hospital</label>
+              <div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 10px;">
+                <div class="select-wrapper">
+                  <select id="mClinicLocation" class="form-ctrl" aria-label="Clinic / Hospital Location">
+                    <option value="" ${!item ? 'selected' : ''} disabled>- Select Location -</option>
+                    <option value="Kuala Lumpur" ${item && item.clinicLocation === 'Kuala Lumpur' ? 'selected' : ''}>Kuala Lumpur</option>
+                    <option value="Selangor" ${item && item.clinicLocation === 'Selangor' ? 'selected' : ''}>Selangor</option>
+                    <option value="Penang" ${item && item.clinicLocation === 'Penang' ? 'selected' : ''}>Penang</option>
+                  </select>
+                </div>
+                <div class="select-wrapper">
+                  <select id="mClinicCategory" class="form-ctrl" aria-label="Clinic / Hospital Category">
+                    <option value="Panel Clinic/Hospital" ${!item || item.clinicCategory === 'Panel Clinic/Hospital' ? 'selected' : ''}>Panel Clinic/Hospital</option>
+                    <option value="Non-Panel Clinic/Hospital" ${item && item.clinicCategory === 'Non-Panel Clinic/Hospital' ? 'selected' : ''}>Non-Panel Clinic/Hospital</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-group" id="mNonPanelClinicGroup">
+              <label class="field-label">Non-Panel Clinic / Hospital</label>
+              <input type="text" id="mNonPanelClinic" class="form-ctrl" value="${item ? (item.nonPanelClinic || (item.clinicCategory === 'Non-Panel Clinic/Hospital' ? item.clinicName : '') || '') : ''}" placeholder="Enter non-panel clinic or hospital" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Sickness Type</label>
+              <div class="select-wrapper">
+                <select id="mSicknessType" class="form-ctrl">
+                  <option value="" ${!item ? 'selected' : ''} disabled>- Select Sickness -</option>
+                  <option value="Fever & Flu" ${item && item.sicknessType === 'Fever & Flu' ? 'selected' : ''}>Fever &amp; Flu</option>
+                  <option value="Stomach Flu" ${item && item.sicknessType === 'Stomach Flu' ? 'selected' : ''}>Stomach Flu</option>
+                  <option value="Headache & Migraine" ${item && item.sicknessType === 'Headache & Migraine' ? 'selected' : ''}>Headache &amp; Migraine</option>
+                  <option value="General Consultation" ${item && item.sicknessType === 'General Consultation' ? 'selected' : ''}>General Consultation</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="category-summary-row" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
+                <i class="fa-solid fa-receipt"></i>
+              </div>
+              <div>
+                <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">DETAILS</div>
+                <div id="v2DetailsCount" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">0 item(s) added</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
+              <span>Details</span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
+          </div>
+        `;
+        switchView('view-4-entry', `${mode === 'edit' ? 'Edit' : 'Add'} Medical`);
+        recalcAllTotals();
+      } else {
+        const item = (editIndex >= 0 && formData.expenseItems[editIndex]) ? formData.expenseItems[editIndex] : null;
+
+        container.innerHTML = `
+          <div class="form-card">
+            <div class="section-header-bar no-top-border">
+              <span class="section-title-accent"></span>
+              <span class="section-title-text">${item ? 'EDIT DETAILS' : 'ADD DETAILS'}</span>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Receipt No.</label>
+              <input type="text" id="detReceiptNoInput" class="form-ctrl" value="${item ? item.receiptNo : (document.getElementById('mReceiptNoInput')?.value || 'REC-88310')}" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Expense Category <span class="req">*</span></label>
+              <div class="select-wrapper">
+                <select id="expensesTypeSelect" class="form-ctrl">
+                  <option value="Consultation Fee" ${!item || item.expenseType === 'Consultation Fee' ? 'selected' : ''}>Consultation Fee</option>
+                  <option value="Medication & Pharmacy" ${item && item.expenseType === 'Medication & Pharmacy' ? 'selected' : ''}>Medication &amp; Pharmacy</option>
+                  <option value="Laboratory Test" ${item && item.expenseType === 'Laboratory Test' ? 'selected' : ''}>Laboratory Test</option>
+                  <option value="Diagnostic X-Ray" ${item && item.expenseType === 'Diagnostic X-Ray' ? 'selected' : ''}>Diagnostic X-Ray</option>
+                  <option value="Treatment Fee" ${item && item.expenseType === 'Treatment Fee' ? 'selected' : ''}>Treatment Fee</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
+              <div>
+                <label class="field-label">Amount <span class="req">*</span></label>
+                <input type="number" id="detAmountInput" class="form-ctrl" value="${item ? item.amt : '120.00'}" step="0.01" oninput="calcSubLocalAmount()" />
+              </div>
+              <div>
+                <label class="field-label">Currency</label>
+                <div class="select-wrapper">
+                  <select id="detCurrencySelect" class="form-ctrl" onchange="calcSubLocalAmount()">
+                    <option value="RINGGIT MALAYSIA" ${!item || item.currency === 'RINGGIT MALAYSIA' || item.currency === 'MYR' ? 'selected' : ''}>RINGGIT MALAYSIA</option>
+                    <option value="US DOLLAR" ${item && item.currency === 'US DOLLAR' ? 'selected' : ''}>US DOLLAR</option>
+                    <option value="SINGAPORE DOLLAR" ${item && item.currency === 'SINGAPORE DOLLAR' ? 'selected' : ''}>SINGAPORE DOLLAR</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
+              <div>
+                <label class="field-label">Forex Rate</label>
+                <input type="number" id="detForexRateInput" class="form-ctrl" value="${item ? item.forexRate : '1.000'}" step="0.001" oninput="calcSubLocalAmount()" />
+              </div>
+              <div>
+                <label class="field-label">Local Amount (RM)</label>
+                <input type="text" id="detLocalAmountInput" class="form-ctrl" value="${item ? item.localAmount.toFixed(2) : '120.00'}" readonly style="font-weight: 800;" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label form-section-heading">Upload Attachment</label>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('detail')">
+                  <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                  </div>
+                  <span style="font-size: 12.5px; font-weight: 700; color: var(--purple-primary);">Select File(s)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('detail')">
+                  <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+                </div>
+              </div>
+              <div id="detailChipsList" class="attachment-upload-list">
+                ${(item && item.attachments && item.attachments.length > 0 ? item.attachments : []).map(att => `
+                  <div class="file-chip attachment-upload-item" data-file-name="${att}">
+                    <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+                    <span class="attachment-upload-name" title="${att}">${att}</span>
+                    <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="this.closest('.attachment-upload-item').remove()">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+          </div>
+        `;
+        switchView('view-4-entry', `${mode === 'edit' ? 'Edit' : 'Add'} Details`);
+      }
+    }
+
+    function calcSubLocalAmount() {
+      const amt = parseFloat(document.getElementById('detAmountInput')?.value || 0);
+      const rate = parseFloat(document.getElementById('detForexRateInput')?.value || 1);
+      const local = (amt * rate).toFixed(2);
+      const locEl = document.getElementById('detLocalAmountInput');
+      if (locEl) locEl.value = local;
+    }
+
+    function saveSubItem() {
+      const editIdx = formData.editingIndex;
+      if (formData.activeCategory === 'treatment') {
+        const patientType = document.getElementById('mPatientType')?.value || '';
+        const patientName = document.getElementById('mPatientName')?.value || '';
+        const treatmentType = document.getElementById('mTreatmentType')?.value || 'Others';
+        const clinicLocation = document.getElementById('mClinicLocation')?.value || '';
+        const clinicCategory = document.getElementById('mClinicCategory')?.value || 'Panel Clinic/Hospital';
+        const nonPanelClinic = document.getElementById('mNonPanelClinic')?.value || '';
+        const sicknessType = document.getElementById('mSicknessType')?.value || '';
+
+        const newItem = { patientType, patientName, treatmentType, clinicLocation, clinicCategory, nonPanelClinic, clinicName: nonPanelClinic, sicknessType };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.treatmentItems[editIdx] = newItem;
+        } else if (formData.treatmentItems.length === 0) {
+          formData.treatmentItems.push(newItem);
+        } else {
+          if (typeof showToast === 'function') {
+            showToast('Medical treatment can only be added once.');
+          }
+          openCategoryItems('treatment');
+          return;
+        }
+      } else {
+        const receiptNo = document.getElementById('detReceiptNoInput')?.value || 'REC-88310';
+        const expenseType = document.getElementById('expensesTypeSelect')?.value || 'Consultation Fee';
+        const amt = parseFloat(document.getElementById('detAmountInput')?.value || 0);
+        const currency = document.getElementById('detCurrencySelect')?.value || 'MYR';
+        const forexRate = parseFloat(document.getElementById('detForexRateInput')?.value || 1);
+        const localAmount = parseFloat(document.getElementById('detLocalAmountInput')?.value || 0);
+        const existingAttachments = typeof editIdx === 'number' && editIdx >= 0
+          ? formData.expenseItems[editIdx]?.attachments
+          : null;
+        const detailChips = Array.from(document.querySelectorAll('#detailChipsList .file-chip'))
+          .map(chip => chip.dataset.fileName || chip.textContent.trim())
+          .filter(Boolean);
+        const attachments = detailChips.length > 0
+          ? detailChips
+          : (existingAttachments && existingAttachments.length > 0 ? existingAttachments : ['xxxx.jpg']);
+
+        const newItem = { receiptNo, expenseType, amt, currency, forexRate, localAmount, attachments };
+        if (typeof editIdx === 'number' && editIdx >= 0) {
+          formData.expenseItems[editIdx] = newItem;
+        } else {
+          formData.expenseItems.push(newItem);
+        }
+      }
+
+      formData.editingIndex = -1;
+      recalcAllTotals();
+      if (formData.activeCategory === 'treatment') {
+        // Once Medical is saved, continue to the repeatable Details step.
+        navigateToStep(3);
+      } else {
+        // Details remains the repeatable Add Item step.
+        openCategoryItems('expense');
+      }
+
+      if (typeof showToast === 'function') {
+        showToast('✅ Saved successfully!');
+      }
+    }
+
+    function recalcAllTotals() {
+      const grandTotal = formData.expenseItems.reduce((sum, i) => sum + i.localAmount, 0);
+      
+      const claimTotalInput = document.getElementById('mClaimTotalInput');
+      if (claimTotalInput) claimTotalInput.value = grandTotal.toFixed(2);
+
+      const catTreatmentSub = document.getElementById('catTreatmentSubtitle');
+      const catTreatmentCount = document.getElementById('catTreatmentCount');
+      if (catTreatmentSub) catTreatmentSub.innerText = '';
+      if (catTreatmentCount) catTreatmentCount.innerText = `${formData.treatmentItems.length}`;
+
+      const catExpenseSub = document.getElementById('catExpenseSubtitle');
+      const catExpenseAmt = document.getElementById('catExpenseAmount');
+      if (catExpenseSub) catExpenseSub.innerText = formData.expenseItems.length > 0
+        ? `Total Records: ${formData.expenseItems.length}`
+        : '';
+      if (catExpenseAmt) catExpenseAmt.innerText = formData.expenseItems.length > 0
+        ? `RM ${grandTotal.toFixed(2)}`
+        : '0';
+      const detailsCount = document.getElementById('v2DetailsCount');
+      if (detailsCount) detailsCount.innerText = `Total Records: ${formData.expenseItems.length}`;
+    }
+
+    function triggerFileUpload(target) {
+      formData.uploadTarget = target;
+      const input = document.getElementById('hiddenMedicalFileInput');
+      if (input) input.click();
+    }
+
+    function handleFileSelected(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const containerId = `${formData.uploadTarget}ChipsList`;
+      const container = document.getElementById(containerId);
+      if (container) {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip attachment-upload-item';
+        chip.dataset.fileName = file.name;
+        chip.innerHTML = `
+          <span class="attachment-upload-icon"><i class="fa-solid fa-paperclip"></i></span>
+          <span class="attachment-upload-name" title="${file.name}">${file.name}</span>
+          <button type="button" class="attachment-upload-remove" aria-label="Remove attachment" title="Remove attachment" onclick="this.closest('.attachment-upload-item').remove()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        `;
+        container.appendChild(chip);
+      }
+    }
+
+    function saveDraft() {
+      if (typeof showToast === 'function') {
+        showToast('💾 Medical Claim draft saved!');
+      } else {
+        alert('Medical Claim draft saved!');
+      }
+    }
+
+    function submitMedicalClaim() {
+      if (typeof showToast === 'function') {
+        showToast('🚀 Medical Claim submitted successfully!');
+      } else {
+        alert('Medical Claim submitted successfully!');
+      }
+      window.location.href = '../index.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      recalcAllTotals();
+    });
+  </script>
+</body>
+</html>

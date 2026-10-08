@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Asset Highlight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+  <link rel="stylesheet" href="../css/asset-highlight.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../js/admin-app.js" defer></script>
+  <script src="../js/asset-highlight-data.js" defer></script>
+  <script src="../js/asset-highlight.js" defer></script>
+</head>
+<body class="admin-page asset-highlight-page">
+  <preview-top-bar active-page="workplace"></preview-top-bar>
+  <div class="phone-container">
+    <header class="admin-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="admin-header-row">
+        <a class="admin-back" id="assetBack" data-admin-back href="../index.html?scope=team" aria-label="Back to Workplace Team"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <div class="admin-heading"><h1 id="assetPageTitle">Asset Highlight</h1></div>
+        <span aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content admin-content">
+      <section id="assetReport" aria-label="Employee asset totals">
+        <div class="asset-filter-summary">
+          <div><small>Current Filter</small><strong id="assetFilterSummary">All Employees &bull; All Asset Types</strong></div>
+          <button type="button" id="assetFilterTrigger" aria-label="Open Data Filter" aria-haspopup="dialog" aria-controls="assetDataFilter"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+        </div>
+        <div class="attendance-report-summary" aria-live="polite">
+          <div class="attendance-report-summary-row">
+            <div><span class="attendance-report-summary-label">Total Records</span><strong class="asset-records" id="assetTotalRecords">0</strong></div>
+            <button type="button" id="assetViewChart" class="asset-view-chart"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
+          </div>
+        </div>
+        <div class="asset-table-card">
+          <div class="asset-table-scroll"><table id="assetTable" aria-label="Employee assets, value in Malaysian ringgit">
+            <colgroup><col class="asset-col-emp"><col><col class="asset-col-count"><col class="asset-col-value"></colgroup>
+            <thead><tr><th scope="col">Emp#</th><th scope="col">Name</th><th scope="col">Count</th><th scope="col">Value</th></tr></thead><tbody></tbody>
+          </table></div>
+          <div id="assetEmpty" class="asset-empty" hidden><i class="fa-solid fa-box-open" aria-hidden="true"></i><h2>No Asset Records</h2><p>Adjust the filters to find employee assets.</p></div>
+        </div>
+      </section>
+      <section id="assetChart" class="attendance-report-chart" aria-label="Asset breakdown" hidden>
+        <section class="attendance-report-breakdown asset-chart-controls">
+          <div><label for="assetChartDimension">BREAKDOWN BY</label><select id="assetChartDimension"><option value="branch">Branch</option></select></div>
+        </section>
+        <section class="attendance-report-chart-card">
+          <h3 id="assetChartTitle">Asset count by branch</h3><p id="assetChartSubtitle">Share of total asset count</p>
+          <div class="attendance-report-donut"><svg id="assetChartDonut" viewBox="0 0 180 180" role="img" aria-label="Asset count breakdown"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="assetChartSegments"></g></svg><div class="attendance-report-donut-center"><strong id="assetChartTotal">0</strong><small id="assetChartTotalLabel">Total Count</small></div></div>
+          <p class="attendance-report-note" id="assetChartNote"></p>
+        </section>
+        <section class="attendance-report-legend">
+          <div class="attendance-report-legend-head"><span id="assetChartColumn">Branch</span><span>Count</span><span>% Total</span></div>
+          <div id="assetChartLegend"></div>
+        </section>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <div id="assetDataFilter" class="asset-filter-overlay standard-filter-sheet" hidden>
+      <form id="assetFilterForm" class="standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="assetFilterTitle">
+        <div class="standard-filter-handle" aria-hidden="true"></div>
+        <header class="standard-filter-header"><h2 id="assetFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="assetResetFilter" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" id="assetCloseFilter" class="standard-filter-close" aria-label="Close Data Filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="standard-filter-inline-body">
+          <div><label for="assetKeyword">Search Keyword</label><input type="search" name="keyword" id="assetKeyword" placeholder="Search name, employee ID or asset..." maxlength="150"></div>
+          <div><label for="assetDescription">Description</label><input type="text" name="description" id="assetDescription" placeholder="Search asset description..." maxlength="150"></div>
+          <div><label for="assetType">Asset Type</label><select name="assetType" id="assetType"></select></div>
+          <div><label for="assetEffectiveDate">Effective Date</label><input type="date" name="effectiveDate" id="assetEffectiveDate"></div>
+          <div><label for="assetCompany">Company</label><select name="company" id="assetCompany"></select></div>
+          <div><label for="assetBranch">Branch</label><select name="branch" id="assetBranch"></select></div>
+          <div><label for="assetDepartment">Department</label><select name="department" id="assetDepartment"></select></div>
+        </div>
+        <footer class="standard-filter-footer"><button type="submit" id="assetApplyFilter" class="standard-filter-apply">Apply Filter</button></footer>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

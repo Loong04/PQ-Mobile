@@ -51,7 +51,7 @@ async function screenshot(page, name) {
       assert.equal(await page.$eval('#workplaceCalendarMonth', node => node.textContent), 'February 2024');
       assert.equal((await cells(page)).length, 29, 'Leap-year February must include the 29th');
       await page.click('#workplaceCalendarGrid [data-date="2024-02-29"]');
-      assert.ok((await page.$eval('#workplaceCalendarSelection', node => node.textContent)).includes('Thursday, 29 February 2024'));
+      assert.equal(await page.$eval('#workplaceCalendarGrid .selected', node => node.dataset.date), '2024-02-29');
       await page.keyboard.press('ArrowRight');
       assert.equal(await page.$eval('#workplaceCalendarMonth', node => node.textContent), 'March 2024');
       assert.equal(await page.$eval('#workplaceCalendarGrid .selected', node => node.dataset.date), '2024-03-01');

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Work Hour Violations</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+  <link rel="stylesheet" href="../../../css/attendance-violation.css">
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="attendance-highlight-page violation-page">
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+  <div class="phone-container">
+    <div class="cal-top-header">
+      <phone-status-bar time="4:20" style="color: #ffffff;"></phone-status-bar>
+      <div class="violation-header-row">
+        <button type="button" class="violation-header-back" onclick="goBack()" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+        <h1 id="headerTitle">Work Hour Violations</h1>
+      </div>
+    </div>
+    <div class="main-content">
+      <div id="violationReport">
+        <div class="date-switcher-card">
+          <button type="button" class="date-nav-btn" onclick="shiftDate(-1)" aria-label="Previous Day"><i class="fa-solid fa-chevron-left"></i></button>
+          <button type="button" class="date-current-badge" onclick="openFilterModal()" aria-label="Change date"><i class="fa-regular fa-calendar-check"></i><span id="currentDateDisplay">16 Jan 2026</span></button>
+          <button type="button" class="date-nav-btn" onclick="shiftDate(1)" aria-label="Next Day"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="filter-summary-bar" id="filterBarContainer">
+          <div class="violation-filter-summary"><div class="filter-bar-label">CURRENT FILTER</div><div class="filter-bar-value" id="filterSummaryText">All Branches • All Departments</div></div>
+          <button type="button" class="filter-trigger-btn" onclick="openFilterModal()" aria-label="Filter Options"><i class="fa-solid fa-sliders"></i></button>
+        </div>
+        <div class="hist-tab-switcher" role="tablist" aria-label="Violation type">
+          <button type="button" id="boxContinuous" class="hist-tab-btn active" role="tab" aria-selected="true" aria-controls="viewContinuous" onclick="switchViolationTab('continuous')"><span>Continuous Work</span></button>
+          <button type="button" id="boxRest" class="hist-tab-btn" role="tab" aria-selected="false" aria-controls="viewRest" tabindex="-1" onclick="switchViolationTab('rest')"><span>Below 30 Rest Hour</span></button>
+        </div>
+        <div id="viewContinuous" class="violation-list" role="tabpanel" aria-labelledby="boxContinuous"></div>
+        <div id="viewRest" class="violation-list" role="tabpanel" aria-labelledby="boxRest" hidden></div>
+      </div>
+    </div>
+    <div class="modal-overlay violation-filter-overlay" id="filterModal" hidden onclick="closeFilterModal(event)">
+      <section class="modal-content violation-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="filterTitle" onclick="event.stopPropagation()">
+        <div class="violation-sheet-handle"></div>
+        <div class="filter-header-row">
+          <h2 id="filterTitle">Data Filter</h2>
+          <div class="violation-filter-actions standard-filter-header-actions">
+            <button type="button" class="filter-reset-btn" id="filterResetButton" onclick="resetFilterModal()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            <button type="button" class="violation-close" onclick="closeFilterModalDirect()" aria-label="Close filter"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <form id="violationFilterForm" class="violation-filter-form">
+          <div class="form-field"><label for="filterDateInput">Date</label><input type="date" id="filterDateInput" class="form-field-input" required value="2026-01-16"></div>
+          <div class="form-field"><label for="filterBranchSelect">Branch</label><select id="filterBranchSelect" class="form-field-select"><option value="all">- All Branches -</option></select></div>
+          <div class="form-field"><label for="filterDeptSelect">Department</label><select id="filterDeptSelect" class="form-field-select"><option value="all">- All Departments -</option></select></div>
+          <button type="submit" id="filterApplyButton" class="filter-apply-btn"><i class="fa-solid fa-filter"></i><span>Apply Filter</span></button>
+        </form>
+      </section>
+    </div>
+    <div class="modal-overlay violation-detail-overlay" id="detailModal" hidden onclick="closeDetailModal(event)">
+      <section class="modal-content violation-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="detailName" onclick="event.stopPropagation()">
+        <div class="violation-detail-header">
+          <div class="violation-detail-identity"><h2 id="detailName">Employee Details</h2><span class="attendance-report-emp" id="detailEmpNo"></span></div>
+          <button type="button" class="violation-close" onclick="closeDetailModalDirect()" aria-label="Close details"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="violation-detail-body">
+          <div class="violation-detail-meta"><span>Total Records: <strong id="detailRecordCount">0</strong></span></div>
+          <div class="violation-detail-table-wrap"><table class="violation-detail-table"><thead><tr><th scope="col">Date</th><th scope="col">Shift</th><th scope="col">Clock Time</th></tr></thead><tbody id="detailTableBody"></tbody></table></div>
+          <p class="attendance-report-empty" id="detailEmpty" hidden>No attendance details available.</p>
+        </div>
+      </section>
+    </div>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <favourite-sheet></favourite-sheet>
+  </div>
+  <script src="../../../js/attendance-violation-report.js"></script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

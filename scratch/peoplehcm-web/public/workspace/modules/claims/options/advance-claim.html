@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claims - Advance Request</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 100px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .view-container {
+      display: none;
+      width: 100%;
+    }
+    .view-container.active {
+      display: block;
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .category-card:hover {
+      border-color: var(--purple-primary);
+      transform: translateY(-1px);
+    }
+
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .section-header-bar.no-top-border {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .section-title-accent {
+      width: 3.5px;
+      height: 15px;
+      background: #a855f7;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .section-title-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field-label .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .form-ctrl {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+      font-family: inherit;
+    }
+    .form-ctrl:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .form-ctrl[readonly] {
+      opacity: 1;
+      background: var(--bg-input);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "\f0d7";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .btn-step-back {
+      padding: 11px 22px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-step-back:active {
+      transform: scale(0.96);
+    }
+
+    .btn-submit-primary {
+      padding: 11px 26px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-submit-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-draft-bright {
+      padding: 11px 24px;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-draft-bright:active {
+      transform: scale(0.96);
+    }
+
+    .btn-add-purple {
+      padding: 9px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .attachment-upload-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .attachment-upload-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+    .attachment-upload-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--purple-primary);
+      font-size: 12px;
+    }
+    .attachment-upload-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .attachment-upload-remove {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .attachment-upload-remove:hover,
+    .attachment-upload-remove:focus-visible {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      outline: none;
+    }
+
+    .claim-data-list {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+    }
+    .claim-data-row {
+      display: grid;
+      grid-template-columns: minmax(112px, 42%) minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+    .claim-data-row:last-child { border-bottom: none; }
+    .claim-data-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .claim-data-value {
+      color: var(--text-primary);
+      font-weight: 800;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .claim-data-value.amount { color: var(--text-primary); }
+
+    /* Top Claim Stepper Progress Indicator Standard */
+    .claim-stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .stepper-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stepper-line-bg {
+      position: absolute;
+      top: 15px;
+      left: 25%;
+      right: 25%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      z-index: 1;
+    }
+    .stepper-line-fill {
+      position: absolute;
+      top: 15px;
+      left: 25%;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981 0%, #a855f7 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
+    }
+    .stepper-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      z-index: 3;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+    }
+    .stepper-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #171529;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .stepper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    /* Completed State */
+    .stepper-item.completed .stepper-circle {
+      border-color: #10b981;
+      background: #171529;
+      color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+    .stepper-item.completed .stepper-label {
+      color: #34d399;
+    }
+    /* Active State */
+    .stepper-item.active .stepper-circle {
+      border-color: #a855f7;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+      transform: scale(1.08);
+    }
+    .stepper-item.active .stepper-label {
+      color: #ffffff;
+      font-weight: 900;
+    }
+    html[data-theme="light"] .claim-stepper-card .stepper-line-bg { background: rgba(100, 116, 139, 0.24); }
+    html[data-theme="light"] .claim-stepper-card .stepper-circle { background: #f1f5f9; border-color: #cbd5e1; color: #64748b; }
+    html[data-theme="light"] .claim-stepper-card .stepper-label { color: #64748b; }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.completed .stepper-circle { background: #ecfdf5; border-color: #10b981; color: #059669; box-shadow: 0 0 10px rgba(16, 185, 129, 0.16); }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.completed .stepper-label { color: #059669; }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.active .stepper-circle { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border-color: #a855f7; color: #ffffff; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.34); }
+    html[data-theme="light"] .claim-stepper-card .stepper-item.active .stepper-label { color: #6d28d9; font-weight: 900; }
+  </style>
+  <link rel="stylesheet" href="../../../css/form-section-headings.css">
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Navigation Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" onclick="handleHeaderBack()" class="me-back-btn" aria-label="Back" title="Back"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; text-decoration: none;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <h1 id="headerTitleText" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Advance Request</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container (4-Level Drill-down Views) -->
+    <div class="main-content">
+      
+      <!-- TOP STEPPER PROGRESS BAR (1: General, 2: Details) -->
+      <div class="claim-stepper-card">
+        <div class="stepper-track-container" style="justify-content: space-around;">
+          <div class="stepper-line-bg" style="left: 25%; width: 50%;"></div>
+          <div class="stepper-line-fill" id="stepperLineFill" style="left: 25%; width: 0%;"></div>
+          
+          <div class="stepper-item active" id="stepNode-1" onclick="navigateToStep(1)">
+            <div class="stepper-circle">1</div>
+            <span class="stepper-label">General</span>
+          </div>
+          <div class="stepper-item" id="stepNode-2" onclick="navigateToStep(2)">
+            <div class="stepper-circle">2</div>
+            <span class="stepper-label">Details</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 1: MAIN FORM VIEW (主申请表单) -->
+      <!-- ========================================================= -->
+      <div class="view-container active" id="view-1-main">
+        
+        <!-- MAIN APPLICATION INFO CARD -->
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">APPLICATION DETAILS</span>
+          </div>
+
+          <!-- Claim Period : -->
+          <div class="field-group">
+            <label class="field-label">Claim Period</label>
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+              <div class="select-wrapper">
+                <select id="claimPeriodYear" class="form-ctrl">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <select id="claimPeriodMonth" class="form-ctrl">
+                  <option value="September" selected>September</option>
+                  <option value="August">August</option>
+                  <option value="July">July</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Claim Date -->
+          <div class="field-group">
+            <label class="field-label">Claim Date <span class="req">*</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="date" id="claimStartDate" class="form-ctrl" value="2026-09-23" aria-label="Claim date from" />
+              <input type="date" id="claimEndDate" class="form-ctrl" value="2026-09-23" aria-label="Claim date to" />
+            </div>
+          </div>
+
+          <!-- Cost Centre : -->
+          <div class="field-group">
+            <label class="field-label">Cost Centre <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="costCentreSelect" class="form-ctrl">
+                <option value="MANAGEMENT" selected>MANAGEMENT</option>
+                <option value="OPERATIONS">OPERATIONS</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Project : -->
+          <div class="field-group">
+            <label class="field-label">Project</label>
+            <div class="select-wrapper">
+              <select id="projectSelect" class="form-ctrl">
+                <option value="">- Select Project -</option>
+                <option value="PROJ-01">Project Alpha</option>
+                <option value="PROJ-02">Enterprise Migration</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Claim Type : -->
+          <div class="field-group">
+            <label class="field-label">Claim Type <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="claimTypeSelect" class="form-ctrl">
+                <option value="OVERSEAS TRAVEL ADVANCE" selected>OVERSEAS TRAVEL ADVANCE</option>
+                <option value="PROJECT OOP ADVANCE">PROJECT OOP ADVANCE</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Benefit Type : -->
+          <div class="field-group">
+            <label class="field-label">Benefit Type <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="benefitTypeSelect" class="form-ctrl">
+                <option value="ADVANCE" selected>ADVANCE</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Purpose : -->
+          <div class="field-group">
+            <label class="field-label">Purpose</label>
+            <input type="text" id="purposeInput" class="form-ctrl" value="" placeholder="Enter purpose..." />
+          </div>
+
+          <!-- Claim Currency : -->
+          <div class="field-group">
+            <label class="field-label">Claim Currency</label>
+            <div class="select-wrapper">
+              <select id="claimCurrencySelect" class="form-ctrl">
+                <option value="MYR" selected>RINGGIT MALAYSIA</option>
+                <option value="USD">US DOLLAR</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+              <span class="field-label" style="margin-bottom: 0;">Claim Total</span>
+              <span id="advanceClaimTotalDisplay" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">0.00</span>
+            </div>
+          </div>
+
+          <!-- Remarks -->
+          <div class="field-group">
+            <label class="field-label">Remarks</label>
+            <input type="text" id="remarksInput" class="form-ctrl" placeholder="Enter remarks..." />
+          </div>
+
+        </div>
+
+        <!-- AGGREGATED SUMMARY ROW (Level 1 Total Claim & Drill-down Entry) -->
+        <div class="category-summary-row" onclick="openCategoryItems('advance')" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.18) 100%); border: 1.5px solid rgba(124, 58, 237, 0.4); border-radius: 22px; padding: 18px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18); transition: transform 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL ADVANCE REQUESTED</div>
+              <div id="v1TotalClaimDisplay" style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin-top: 2px;">RM 0.00</div>
+              <div id="v1ItemsCountSubtitle" style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 1px;">0 advance items added</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(124, 58, 237, 0.4); padding: 8px 14px; border-radius: 14px; color: var(--purple-primary); font-size: 12.5px; font-weight: 800;">
+            <span>Details</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </div>
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+          <button type="button" class="form-cancel-btn" data-page-form-cancel onclick="handleHeaderBack()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-draft-bright" onclick="saveAdvanceDraft()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Draft</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="openCategoryItems('advance')">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 3: ITEM LIST VIEW (明细项列表页) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-3-list">
+        
+        <!-- Unified Card for Header and Items -->
+        <div class="form-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 16px;">
+          
+          <!-- Category Summary Title Header (Now integrated) -->
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="v3CategoryIconBox" style="width: 42px; height: 42px; border-radius: 14px; background: rgba(124, 58, 237, 0.15); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <h2 class="form-section-heading" id="v3CategoryTitleText" style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Details</h2>
+                <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                  Total Amount: <span id="v3TotalAmountDisplay" style="color: var(--text-primary); font-weight: 800;">RM 0.00</span>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-submit-primary btn-add-item-icon" aria-label="Add Item" title="Add Item" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" onclick="openEntryForm('add')">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- DYNAMIC ITEMS LIST / EMPTY STATE CONTAINER -->
+          <div id="v3ItemsContainer" style="padding: 16px;">
+            <!-- Populated by JS -->
+          </div>
+          
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-1-main', 'Advance Request')">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Application</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="submitAdvanceClaim()">
+            <span>Submit</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 4: ITEM DETAIL ENTRY VIEW (子表单录入页) -->
+      <!-- ========================================================= -->
+      <div class="view-container" id="view-4-entry">
+        
+        <!-- SUB-FORM FORM CARDS CONTAINER -->
+        <div id="v4SubFormContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button type="button" class="btn-step-back" onclick="switchView('view-3-list', getCategoryTitle(formData.activeCategory))">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn-submit-primary" onclick="saveSubItem()">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Save Item</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="hiddenAdvanceFileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelected(this)">
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+
+  <!-- STATE MANAGEMENT & DRILL-DOWN NAVIGATION SCRIPT -->
+  <script>
+    const formData = {
+      applicationInfo: {
+        claimYear: '2026',
+        claimMonth: 'September',
+        startDate: '23/09/2026',
+        endDate: '23/09/2026',
+        costCentre: 'MANAGEMENT',
+        project: '',
+        claimType: 'OVERSEAS TRAVEL ADVANCE',
+        benefitType: 'ADVANCE',
+        purpose: '',
+        currency: 'MYR',
+        remarks: ''
+      },
+      claimDetails: {
+        addedDetails: []
+      },
+      activeCategory: '',
+      currentView: 'view-1-main',
+      uploadTarget: 'sub',
+      editingIndex: -1,
+      subAttachments: []
+    };
+
+    function updateStepperUI(stepNum) {
+      const lineFill = document.getElementById('stepperLineFill');
+      if (lineFill) {
+        lineFill.style.width = stepNum >= 2 ? '50%' : '0%';
+      }
+
+      for (let i = 1; i <= 2; i++) {
+        const node = document.getElementById(`stepNode-${i}`);
+        if (!node) continue;
+        node.classList.remove('active', 'completed');
+        const circle = node.querySelector('.stepper-circle');
+        if (circle) circle.textContent = i;
+        if (i < stepNum) {
+          node.classList.add('completed');
+        } else if (i === stepNum) {
+          node.classList.add('active');
+        }
+      }
+    }
+
+    function navigateToStep(stepNum) {
+      if (stepNum === 1) {
+        switchView('view-1-main', 'Advance Request');
+      } else if (stepNum === 2) {
+        openCategoryItems('advance');
+      }
+    }
+
+    function switchView(viewId, headerTitle) {
+      formData.currentView = viewId;
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById(viewId);
+      if (targetView) targetView.classList.add('active');
+
+      const titleTextEl = document.getElementById('headerTitleText');
+      if (titleTextEl && headerTitle) {
+        titleTextEl.innerText = headerTitle;
+      }
+
+      if (viewId === 'view-3-list' || viewId === 'view-4-entry') {
+        updateStepperUI(2);
+      } else if (viewId === 'view-1-main' && formData.claimDetails.addedDetails.length) {
+        updateStepperUI(2);
+      } else {
+        updateStepperUI(1);
+      }
+
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    function handleHeaderBack() {
+      if (formData.currentView === 'view-4-entry') {
+        switchView('view-3-list', getCategoryTitle(formData.activeCategory));
+      } else if (formData.currentView === 'view-3-list') {
+        switchView('view-1-main', 'Advance Request');
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
+
+    function getCategoryTitle(catKey) {
+      return 'Details';
+    }
+
+    function openCategoryItems(categoryKey) {
+      formData.activeCategory = categoryKey;
+      renderView3List();
+      switchView('view-3-list', getCategoryTitle(categoryKey));
+    }
+
+    function renderLegacyView3List() {
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const countText = document.getElementById('v3CategoryItemsCount');
+      const container = document.getElementById('v3ItemsContainer');
+
+      const items = formData.claimDetails.addedDetails;
+
+      if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-receipt"></i>';
+      if (titleText) titleText.innerText = 'Details';
+      if (countText) countText.innerText = `Total Records: ${items.length}`;
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Click "+ Add Item" above to add a new advance expense item</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+      items.forEach((item, idx) => {
+        const borderStyle = idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;';
+        const cardId = `advCard_${idx}`;
+        html += `
+          <div id="${cardId}" style="transition: all 0.25s ease; ${borderStyle}">
+            <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">${item.type || 'ADVANCE EXPENSE'}</div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">
+                    ${item.desc || 'Expense description'}
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">RM ${(item.localAmount || 0).toFixed(2)}</div>
+                <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; cursor: pointer; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit Item"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete Item"></i>
+              </div>
+            </div>
+
+            <!-- Expandable Detailed View -->
+            <div class="item-details-body" style="display: none; padding-top: 14px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11.5px;">
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Expense:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.type || 'TRAVEL EXPENSE'}</div>
+                </div>
+                <div></div>
+                <div style="grid-column: span 2;">
+                  <span style="color: var(--text-muted); font-weight: 600;">Description:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.desc || 'N/A'}</div>
+                </div>
+                <div style="grid-column: span 2;">
+                  <span style="color: var(--text-muted); font-weight: 600;">Project:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.project || 'Project Alpha'}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Amount:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.amt || 0}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Claim Currency:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.currency || 'IDR'}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Forex Rate:</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">${item.forexRate || 1}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-muted); font-weight: 600;">Local Amount (RM)</span>
+                  <div style="font-weight: 800; color: var(--text-primary); margin-top: 2px;">RM ${(item.localAmount || 0).toFixed(2)}</div>
+                </div>
+              </div>
+              ${item.attachments && item.attachments.length > 0 ? `
+              <div style="margin-top: 12px; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
+                <span style="color: var(--text-muted); font-weight: 600;">Attachments:</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                  ${item.attachments.map(att => `
+                    <div class="file-chip" style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; color: var(--purple-primary); display: flex; align-items: center; gap: 4px;">
+                      <i class="fa-solid fa-paperclip"></i> ${att}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+
+    function renderDetailRows(item) {
+      const rows = [
+        ['Expense', item.type || '-'],
+        ['Description', item.desc || '-'],
+        ['Project', item.project || '-'],
+        ['Amount', item.amt ?? 0],
+        ['Claim Currency', item.currency || '-'],
+        ['Forex Rate', item.forexRate ?? 1],
+        ['Local Amount (RM)', `RM ${(item.localAmount ?? 0).toFixed(2)}`, true]
+      ];
+      const filenames = item.attachments && item.attachments.length ? item.attachments : ['xxxx.jpg'];
+      return `<div class="claim-data-list">
+        ${rows.map(([label, value, isAmount = false]) => `
+          <div class="claim-data-row">
+            <span class="claim-data-label">${label}</span>
+            <span class="claim-data-value${isAmount && !String(label).startsWith('Local Amount') ? ' amount' : ''}">${value}</span>
+          </div>
+        `).join('')}
+        <div class="claim-data-row">
+          <span class="claim-data-label">Attachment</span>
+          <span class="claim-data-value">${filenames.map(name => `<span class="file-chip"><i class="fa-solid fa-paperclip"></i> ${name}</span>`).join('')}</span>
+        </div>
+      </div>`;
+    }
+
+    function renderView3List() {
+      const iconBox = document.getElementById('v3CategoryIconBox');
+      const titleText = document.getElementById('v3CategoryTitleText');
+      const totalAmountText = document.getElementById('v3TotalAmountDisplay');
+      const container = document.getElementById('v3ItemsContainer');
+      const items = formData.claimDetails.addedDetails;
+      const totalAmount = items.reduce((sum, item) => sum + (Number(item.localAmount) || 0), 0);
+
+      if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-receipt"></i>';
+      if (titleText) titleText.innerText = 'Details';
+      if (totalAmountText) totalAmountText.innerText = `RM ${totalAmount.toFixed(2)}`;
+      if (!container) return;
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 16px 10px 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.25); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 20px; margin: 0 auto 12px;">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">No items added yet</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Click "+ Add Item" above to add your first record</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 16px;">${items.map((item, idx) => {
+        const cardId = `advCard_${idx}`;
+        return `
+          <div id="${cardId}" style="transition: all 0.25s ease; ${idx === items.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-subtle); padding-bottom: 16px;'}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;" onclick="toggleItemCard('${cardId}')">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(124, 58, 237, 0.14); color: var(--purple-primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere;">${item.type || 'Advance Detail'}</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">RM ${(item.localAmount ?? 0).toFixed(2)}</span>
+                <i class="fa-solid fa-chevron-down toggle-icon" style="color: var(--text-muted); font-size: 13px; padding: 4px; transition: transform 0.25s ease;" onclick="event.stopPropagation(); toggleItemCard('${cardId}')"></i>
+                <i class="fa-solid fa-pen-to-square" style="color: var(--purple-primary); font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); openEntryForm('edit', ${idx})" title="Edit"></i>
+                <i class="fa-solid fa-trash-can" style="color: #ef4444; font-size: 14px; padding: 4px;" onclick="event.stopPropagation(); deleteSubItem(${idx})" title="Delete"></i>
+              </div>
+            </div>
+            <div class="item-details-body" style="display: none; padding-top: 10px; margin-top: 12px; border-top: 1px dashed var(--border-subtle);">
+              ${renderDetailRows(item)}
+            </div>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
+    function toggleItemCard(cardId) {
+      const cardEl = document.getElementById(cardId);
+      if (!cardEl) return;
+      const bodyEl = cardEl.querySelector('.item-details-body');
+      const iconEl = cardEl.querySelector('.toggle-icon');
+      if (bodyEl) {
+        const isHidden = bodyEl.style.display === 'none' || !bodyEl.style.display;
+        bodyEl.style.display = isHidden ? 'block' : 'none';
+        if (iconEl) {
+          iconEl.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+      }
+    }
+
+    function deleteSubItem(idx) {
+      formData.claimDetails.addedDetails.splice(idx, 1);
+      recalcAllTotals();
+      renderView3List();
+      if (typeof showToast === 'function') showToast('🗑️ Advance item removed!');
+    }
+
+    function openEntryForm(mode = 'add', editIdx = -1) {
+      formData.activeCategory = 'advance';
+      const container = document.getElementById('v4SubFormContainer');
+
+      if (mode === 'edit' && editIdx >= 0) {
+        formData.editingIndex = editIdx;
+      } else {
+        formData.editingIndex = -1;
+      }
+
+      const isEdit = formData.editingIndex >= 0;
+      const item = isEdit ? (formData.claimDetails.addedDetails[formData.editingIndex] || {}) : {};
+      
+      formData.subAttachments = [...(item.attachments || [])];
+      
+      const titleText = isEdit ? 'EDIT ADVANCE EXPENSE DETAILS' : 'ADD ADVANCE EXPENSE DETAILS';
+      const btnText = isEdit ? 'Save Changes' : 'Save Item';
+
+      container.innerHTML = `
+        <div class="form-card">
+          <div class="section-header-bar no-top-border">
+            <span class="section-title-accent"></span>
+            <span class="section-title-text">${titleText}</span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Expense <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="expenseTypeSelect" class="form-ctrl">
+                <option value="TRAVEL EXPENSE" ${item.type === 'TRAVEL EXPENSE' || !item.type ? 'selected' : ''}>TRAVEL EXPENSE</option>
+                <option value="MEAL ALLOWANCE" ${item.type === 'MEAL ALLOWANCE' ? 'selected' : ''}>MEAL ALLOWANCE</option>
+                <option value="ACCOMMODATION" ${item.type === 'ACCOMMODATION' ? 'selected' : ''}>ACCOMMODATION</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Description</label>
+            <input type="text" id="expenseDescription" class="form-ctrl" value="${item.desc !== undefined ? item.desc : ''}" placeholder="Enter expense description..." />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Project <span class="req">*</span></label>
+            <div class="select-wrapper">
+              <select id="expenseProjectSelect" class="form-ctrl">
+                <option value="" ${!item.project ? 'selected' : ''}>- Select Project -</option>
+                <option value="Project Alpha" ${item.project === 'Project Alpha' ? 'selected' : ''}>Project Alpha</option>
+                <option value="Enterprise Migration" ${item.project === 'Enterprise Migration' ? 'selected' : ''}>Enterprise Migration</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
+            <div>
+              <label class="field-label">Amount</label>
+              <input type="number" id="expenseAmount" class="form-ctrl" value="${item.amt !== undefined ? item.amt : 0}" step="1" oninput="calcSubLocalAmount()" />
+            </div>
+            <div>
+              <label class="field-label">Claim Currency <span class="req">*</span></label>
+              <div class="select-wrapper">
+                <select id="expenseCurrency" class="form-ctrl" onchange="calcSubLocalAmount()">
+                  <option value="IDR" ${item.currency === 'IDR' ? 'selected' : ''}>INDONESIAN RUPIAH</option>
+                  <option value="MYR" ${item.currency === 'MYR' || !item.currency ? 'selected' : ''}>RINGGIT MALAYSIA</option>
+                  <option value="USD" ${item.currency === 'USD' ? 'selected' : ''}>US DOLLAR</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="field-group">
+            <div>
+              <label class="field-label">Forex Rate</label>
+              <input type="number" id="expenseForex" class="form-ctrl" value="${item.forexRate !== undefined ? item.forexRate : 1}" step="0.0001" oninput="calcSubLocalAmount()" />
+            </div>
+            <div>
+              <label class="field-label">Local Amount (RM)</label>
+              <input type="number" id="expenseLocalAmount" class="form-ctrl" value="${item.localAmount !== undefined ? item.localAmount.toFixed(2) : '0.00'}" readonly style="font-weight: 800;" />
+            </div>
+          </div>
+
+          <!-- Upload Attachment -->
+          <div style="margin-top: 14px;">
+            <label class="field-label form-section-heading" style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: block;">Upload Attachment</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 8px 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; justify-content: center; color: var(--purple-primary); font-size: 18px;">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--purple-primary);">Select File</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="triggerFileUpload('sub')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 18px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+                <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">Take Picture</span>
+              </div>
+            </div>
+            <div id="subChipsList" class="attachment-upload-list"></div>
+          </div>
+
+        </div>
+      `;
+
+      switchView('view-4-entry', isEdit ? 'Edit Details' : 'Add Details');
+      renderSubChips();
+    }
+
+    function calcSubLocalAmount() {
+      const amt = parseFloat(document.getElementById('expenseAmount')?.value || 0);
+      const rate = parseFloat(document.getElementById('expenseForex')?.value || 1);
+      const local = (amt * rate).toFixed(2);
+      const locEl = document.getElementById('expenseLocalAmount');
+      if (locEl) locEl.value = local;
+    }
+
+    function saveSubItem() {
+      const type = document.getElementById('expenseTypeSelect').value;
+      const desc = document.getElementById('expenseDescription').value || type;
+      const project = document.getElementById('expenseProjectSelect').value;
+      const amt = parseFloat(document.getElementById('expenseAmount').value) || 0;
+      const currency = document.getElementById('expenseCurrency').value;
+      const forexRate = parseFloat(document.getElementById('expenseForex').value) || 1;
+      const localAmount = parseFloat(document.getElementById('expenseLocalAmount').value) || 0;
+
+      const isEdit = formData.editingIndex >= 0;
+      const itemObj = { 
+        type, 
+        desc, 
+        project, 
+        amt, 
+        currency, 
+        forexRate, 
+        localAmount,
+        attachments: [...(formData.subAttachments || [])]
+      };
+
+      if (isEdit) {
+        formData.claimDetails.addedDetails[formData.editingIndex] = itemObj;
+      } else {
+        formData.claimDetails.addedDetails.push(itemObj);
+      }
+
+      formData.editingIndex = -1;
+      recalcAllTotals();
+      openCategoryItems('advance');
+
+      if (typeof showToast === 'function') showToast(isEdit ? '✏️ Advance item updated!' : '✅ Advance item saved!');
+    }
+
+    function recalcAllTotals() {
+      const grandTotal = formData.claimDetails.addedDetails.reduce((sum, i) => sum + i.localAmount, 0);
+
+      // Update View 1
+      const v1Total = document.getElementById('v1TotalClaimDisplay');
+      const generalTotal = document.getElementById('advanceClaimTotalDisplay');
+      const v1Sub = document.getElementById('v1ItemsCountSubtitle');
+      const v3Total = document.getElementById('v3TotalAmountDisplay');
+      if (v1Total) v1Total.innerText = `RM ${grandTotal.toFixed(2)}`;
+      if (generalTotal) generalTotal.innerText = grandTotal.toFixed(2);
+      if (v1Sub) v1Sub.innerText = `${formData.claimDetails.addedDetails.length} advance item(s) added`;
+      if (v3Total) v3Total.innerText = `RM ${grandTotal.toFixed(2)}`;
+
+      // Update View 2
+      const catAdvAmt = document.getElementById('catAdvanceAmount');
+      const catAdvSub = document.getElementById('catAdvanceSubtitle');
+      if (catAdvAmt) catAdvAmt.innerText = `RM ${grandTotal.toFixed(2)}`;
+      if (catAdvSub) catAdvSub.innerText = `Total Records: ${formData.claimDetails.addedDetails.length}`;
+    }
+
+    function triggerFileUpload(target) {
+      formData.uploadTarget = target;
+      const input = document.getElementById('hiddenAdvanceFileInput');
+      if (input) input.click();
+    }
+
+    function handleFileSelected(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      formData.subAttachments.push(file.name);
+      renderSubChips();
+      input.value = '';
+    }
+
+    function removeSubAttachment(idx) {
+      if (!formData.subAttachments) return;
+      formData.subAttachments.splice(idx, 1);
+      renderSubChips();
+    }
+
+    function renderSubChips() {
+      const container = document.getElementById('subChipsList');
+      if (!container) return;
+      if (!formData.subAttachments || formData.subAttachments.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      const rows = formData.subAttachments.map((att, idx) => {
+        const row = document.createElement('div');
+        row.className = 'attachment-upload-item';
+
+        const icon = document.createElement('span');
+        icon.className = 'attachment-upload-icon';
+        icon.innerHTML = '<i class="fa-solid fa-paperclip"></i>';
+
+        const name = document.createElement('span');
+        name.className = 'attachment-upload-name';
+        name.textContent = att;
+        name.title = att;
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'attachment-upload-remove';
+        removeButton.setAttribute('aria-label', 'Remove ' + att);
+        removeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeButton.addEventListener('click', () => removeSubAttachment(idx));
+
+        row.append(icon, name, removeButton);
+        return row;
+      });
+      container.replaceChildren(...rows);
+    }
+
+    function saveAdvanceDraft() {
+      if (typeof showToast === 'function') showToast('💾 Advance Request draft saved!');
+      else alert('Advance Request draft saved!');
+    }
+
+    function submitAdvanceClaim() {
+      if (typeof showToast === 'function') showToast('🚀 Advance Request submitted successfully!');
+      else alert('Advance Request submitted successfully!');
+      window.location.href = '../index.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      recalcAllTotals();
+    });
+  </script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

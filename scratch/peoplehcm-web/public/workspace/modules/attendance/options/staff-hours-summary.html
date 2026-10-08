@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Staff Hours Summary</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 16px 16px 130px !important; position: relative; z-index: 10; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .staff-hours-filter-trigger { width: 100%; text-align: left; font-family: inherit; }
+    .staff-hours-filter-trigger .claim-filter-value { display: block; line-height: 1.5; overflow-wrap: anywhere; }
+    .staff-hours-filter-trigger .claim-icon-button { width: 44px; height: 44px; flex-basis: 44px; }
+    .staff-hours-filter-trigger:focus-visible { outline: 2px solid var(--purple-text); outline-offset: 3px; }
+    #filterModal .claim-filter-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-sheet); }
+    #filterModal .claim-filter-handle, #filterModal .claim-filter-header, #filterModal .claim-filter-apply { flex: 0 0 auto; }
+    #filterModal .claim-filter-fields { min-height: 0; overflow-y: auto; padding: 3px; overscroll-behavior: contain; scrollbar-width: thin; }
+    #filterModal .claim-filter-close { width: 44px; height: 44px; }
+    #filterModal .claim-filter-reset { min-height: 44px; }
+    #filterModal .staff-hours-filter-input { padding-right: 16px; cursor: text; }
+    #filterModal input::placeholder { color: var(--text-muted); opacity: 1; font-size: 12px; font-weight: 500; }
+    #filterModal option { background: var(--bg-phone); color: var(--text-primary); }
+    [data-theme="dark"] #filterModal input { color-scheme: dark; }
+    [data-theme="light"] #filterModal input { color-scheme: light; }
+    
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    /* ================= ENTERPRISE TOAST FILTER BAR ================= */
+    .enterprise-toast-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      position: relative;
+      cursor: pointer;
+    }
+    .toast-info-col {
+      flex: 1;
+      min-width: 0;
+    }
+    .toast-subtitle {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--purple-primary, #7c3aed);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .toast-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .toast-filter-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .toast-filter-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* ================= SECTION HEADERS ================= */
+    .dashboard-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      margin-top: 8px;
+    }
+    .dashboard-section-header h2 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-title-icon {
+      font-size: 15px;
+    }
+    .section-badge {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+
+    /* ================= BENTO & MODERN CARDS ================= */
+    .bento-group-work,
+    .ot-grid-matrix,
+    .exceptions-bento-matrix {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .modern-card {
+      border-radius: 18px !important;
+      padding: 13px 13px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      cursor: pointer !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
+    }
+    .modern-card:hover {
+      transform: translateY(-2px) !important;
+    }
+    .modern-card:active {
+      transform: scale(0.97) !important;
+    }
+    .modern-card.full-width {
+      grid-column: span 2;
+    }
+
+    .card-text-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .card-icon-bubble {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important;
+      transition: transform 0.15s ease;
+    }
+    .modern-card:hover .card-icon-bubble {
+      transform: scale(1.06);
+    }
+    .card-theme-title {
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      line-height: 1.2 !important;
+      margin-bottom: 2px !important;
+      letter-spacing: -0.1px;
+    }
+    .card-theme-sub {
+      font-size: 10.5px !important;
+      font-weight: 600 !important;
+      line-height: 1.2 !important;
+    }
+    .card-big-num {
+      font-size: 14px !important;
+      font-weight: 800 !important;
+    }
+
+    /* Section 1: Work & Attendance */
+    .card-work-section {
+      background: var(--bento-mint-bg, rgba(16, 185, 129, 0.12)) !important;
+      border: 1px solid var(--bento-mint-border, rgba(52, 211, 153, 0.25)) !important;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.06);
+    }
+    .bubble-green {
+      background: rgba(16, 185, 129, 0.2) !important;
+      color: #34d399 !important;
+    }
+    .green-title {
+      color: var(--bento-mint-title, #a7f3d0) !important;
+    }
+    .green-sub {
+      color: var(--bento-mint-sub, #6ee7b7) !important;
+    }
+    .green-progress-bg {
+      background: rgba(16, 185, 129, 0.2) !important;
+    }
+    .green-progress-fill {
+      background: #34d399 !important;
+    }
+
+    /* Section 2: Overtime Analytics */
+    .card-ot-section {
+      background: var(--bento-blue-bg, rgba(59, 130, 246, 0.12)) !important;
+      border: 1px solid var(--bento-blue-border, rgba(96, 165, 250, 0.25)) !important;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.06);
+    }
+    .bubble-blue {
+      background: rgba(59, 130, 246, 0.2) !important;
+      color: #60a5fa !important;
+    }
+    .blue-title {
+      color: var(--bento-blue-title, #bfdbfe) !important;
+    }
+    .blue-sub {
+      color: var(--bento-blue-sub, #93c5fd) !important;
+    }
+
+    /* Section 3: Exceptions & Leave */
+    .card-ex-section {
+      background: var(--bento-rose-bg, rgba(244, 63, 94, 0.12)) !important;
+      border: 1px solid var(--bento-rose-border, rgba(251, 113, 133, 0.25)) !important;
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.06);
+    }
+    .bubble-rose {
+      background: rgba(244, 63, 94, 0.2) !important;
+      color: #fb7185 !important;
+    }
+    .rose-title {
+      color: var(--bento-rose-title, #fecdd3) !important;
+    }
+    .rose-sub {
+      color: var(--bento-rose-sub, #fda4af) !important;
+    }
+    .rose-progress-bg {
+      background: rgba(244, 63, 94, 0.2) !important;
+    }
+    .rose-progress-fill {
+      background: #fb7185 !important;
+    }
+
+    /* Detail List Item Styling (Matches Individual hours-summary.html) */
+    .detail-list-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    /* AGENTS.md View Chart Button Presentation Standard */
+    .view-chart-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 12px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .view-chart-btn:active {
+      transform: scale(0.95);
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    /* Collapsible Filter Accordion Card */
+    .filter-accordion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s;
+    }
+    .filter-header-bar {
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(109, 40, 217, 0.05) 100%);
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .filter-header-bar.expanded {
+      border-bottom-color: var(--border-subtle);
+    }
+    .filter-badge-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      letter-spacing: 0.3px;
+    }
+    .filter-toggle-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.15);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      transition: transform 0.25s ease;
+    }
+    .filter-toggle-icon.open {
+      transform: rotate(180deg);
+    }
+    .filter-body-container {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Modern Enterprise Summary Table Card (Table Show) */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 120px 1fr 90px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(109, 40, 217, 0.08) 100%);
+      padding: 13px 16px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1.5px solid var(--purple-border);
+      align-items: center;
+    }
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 90px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
+    .summary-table-row:active { transform: scale(0.995); background: rgba(124, 58, 237, 0.08); }
+    
+    .summary-table-footer {
+      display: grid;
+      grid-template-columns: 120px 1fr 90px;
+      padding: 13px 16px;
+      background: rgba(124, 58, 237, 0.08);
+      border-top: 1.5px solid var(--purple-border);
+      font-size: 12.5px;
+      font-weight: 800;
+      align-items: center;
+    }
+    .detail-list-item:hover { transform: translateY(-2px); }
+    .detail-list-item:active { transform: scale(0.98); }
+
+    .staff-avatar-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 800;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(167, 139, 250, 0.15) 100%);
+      border: 1.5px solid rgba(167, 139, 250, 0.3);
+      color: #c4b5fd;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+    }
+    
+    .list-info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 800; color: var(--text-primary); }
+    .list-info-sub { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .list-info-val { font-weight: 700; color: var(--text-primary); }
+    .list-badge-count { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 12px; transition: all 0.2s ease; }
+
+    /* Theme Variations for List Items */
+    [data-theme="dark"] .detail-list-item.theme-green {
+      background: var(--bento-mint-bg, rgba(16, 185, 129, 0.12)) !important;
+      border: 1px solid rgba(16, 185, 129, 0.28) !important;
+    }
+    [data-theme="dark"] .detail-list-item.theme-blue {
+      background: var(--bento-blue-bg, rgba(59, 130, 246, 0.12)) !important;
+      border: 1px solid rgba(59, 130, 246, 0.28) !important;
+    }
+    [data-theme="dark"] .detail-list-item.theme-rose {
+      background: var(--bento-rose-bg, rgba(244, 63, 94, 0.12)) !important;
+      border: 1px solid rgba(244, 63, 94, 0.28) !important;
+    }
+
+    [data-theme="light"] .detail-list-item.theme-green {
+      background: #f0fdf4 !important;
+      border: 1px solid #a7f3d0 !important;
+    }
+    [data-theme="light"] .detail-list-item.theme-blue {
+      background: #eff6ff !important;
+      border: 1px solid #bfdbfe !important;
+    }
+    [data-theme="light"] .detail-list-item.theme-rose {
+      background: #fff1f2 !important;
+      border: 1px solid #fecdd3 !important;
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+      opacity: 0; transition: opacity 0.3s ease; border-radius: 44px; overflow: hidden;
+    }
+    .modal-content {
+      width: 100%; background: var(--bg-card); border-top-left-radius: 28px; border-top-right-radius: 28px;
+      padding: 0; max-height: 88%; overflow-y: auto; display: flex; flex-direction: column;
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35); border: 1px solid var(--border-subtle);
+    }
+    
+    /* Form Inputs */
+    .modern-form-group { margin-bottom: 16px; }
+    .modern-label { font-size: 12px; font-weight: 700; color: var(--purple-text, #a78bfa); margin-bottom: 6px; display: block; }
+    .modern-input {
+      width: 100%; padding: 13px 16px; border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      color: var(--text-primary); font-size: 13.5px; font-weight: 700;
+      outline: none; transition: all 0.2s;
+    }
+    .modern-input:focus { border-color: rgba(124, 58, 237, 0.5); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
+    /* Buttons */
+    .modern-btn-primary {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff; border: none; border-radius: 16px; padding: 15px;
+      font-size: 15px; font-weight: 800; cursor: pointer; text-align: center;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35); transition: all 0.2s;
+    }
+    .modern-btn-primary:active { transform: scale(0.98); }
+
+    /* Detail Popup Modal */
+    .popup-modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      z-index: 9999; display: none; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 44px; overflow: hidden;
+    }
+    .popup-modal-content {
+      width: 90%; max-width: 380px; background: var(--bg-card);
+      border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      border: 1px solid var(--border-subtle); transform: scale(0.95);
+      opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85%; overflow: hidden; display: flex; flex-direction: column;
+    }
+    .modal-header-purple {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 4px 16px rgba(76, 29, 149, 0.25); position: relative; z-index: 2;
+    }
+    .modal-header-purple h3 { font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; }
+    .modal-close-round {
+      background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3);
+      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; color: #ffffff; cursor: pointer; backdrop-filter: blur(4px);
+    }
+
+    /* Light Mode Overrides */
+    [data-theme="light"] .enterprise-toast-bar {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+    [data-theme="light"] .toast-subtitle { color: #7c3aed; }
+    [data-theme="light"] .toast-filter-btn {
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid #ddd6fe;
+      color: #7c3aed;
+    }
+    [data-theme="light"] .card-work-section {
+      background: #f0fdf4 !important;
+      border-color: #a7f3d0 !important;
+    }
+    [data-theme="light"] .green-title { color: #065f46 !important; }
+    [data-theme="light"] .green-sub { color: #047857 !important; }
+    [data-theme="light"] .card-ot-section {
+      background: #eff6ff !important;
+      border-color: #bfdbfe !important;
+    }
+    [data-theme="light"] .blue-title { color: #1e3a8a !important; }
+    [data-theme="light"] .blue-sub { color: #1d4ed8 !important; }
+    [data-theme="light"] .card-ex-section {
+      background: #fff1f2 !important;
+      border-color: #fecdd3 !important;
+    }
+    [data-theme="light"] .rose-title { color: #9f1239 !important; }
+    [data-theme="light"] .rose-sub { color: #be123c !important; }
+    [data-theme="light"] .staff-avatar-badge {
+      background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+      border-color: #c084fc;
+      color: #7e22ce;
+    }
+
+    /* Staff dashboard follows the individual Hours Summary KPI system. */
+    :root {
+      --bento-blue-bg: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%);
+      --bento-blue-border: #bfdbfe;
+      --bento-blue-icon: #1d4ed8;
+      --bento-blue-title: #1e3a8a;
+      --bento-blue-sub: #2563eb;
+      --tag-blue-bg: #dbeafe;
+    }
+    [data-theme="dark"] {
+      --bento-blue-bg: rgba(59, 130, 246, .12);
+      --bento-blue-border: rgba(96, 165, 250, .25);
+      --bento-blue-icon: #60a5fa;
+      --bento-blue-title: #bfdbfe;
+      --bento-blue-sub: #93c5fd;
+      --tag-blue-bg: rgba(59, 130, 246, .2);
+    }
+    .summary-kpi-card {
+      min-height: 126px;
+      padding: 14px !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      gap: 12px !important;
+    }
+    .summary-card-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+    .summary-card-header .card-icon-bubble { font-size: 16px; }
+    .summary-card-header .card-theme-title {
+      margin-bottom: 0 !important;
+      text-wrap: balance;
+    }
+    .summary-card-values {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      min-height: 45px;
+      margin-top: auto;
+      text-align: center;
+    }
+    .summary-card-primary {
+      font-size: 24px;
+      font-weight: 850;
+      line-height: .95;
+      letter-spacing: -.7px;
+      font-variant-numeric: tabular-nums;
+    }
+    .summary-card-secondary {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -.2px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .card-work-section .summary-card-primary { color: var(--bento-mint-title); }
+    .card-work-section .summary-card-secondary { color: var(--bento-mint-icon); }
+    .card-ot-section .summary-card-primary { color: var(--bento-blue-title); }
+    .card-ot-section .summary-card-secondary { color: var(--bento-blue-icon); }
+    .card-ex-section {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, .06) 100%) !important;
+      border: 1px solid var(--purple-border) !important;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, .06);
+    }
+    .card-ex-section .summary-card-primary { color: var(--text-primary); }
+    .card-ex-section .summary-card-secondary { color: var(--purple-text); }
+    .bubble-purple {
+      background: var(--tag-violet-bg) !important;
+      color: var(--purple-primary) !important;
+    }
+    .purple-title { color: var(--text-primary) !important; }
+    [data-theme="light"] .card-work-section {
+      background: var(--bento-mint-bg) !important;
+      border: 1px solid #a7f3d0 !important;
+    }
+    [data-theme="light"] .bubble-green {
+      background: var(--tag-green-bg) !important;
+      color: var(--bento-mint-icon) !important;
+    }
+    [data-theme="light"] .card-ot-section {
+      background: var(--bento-blue-bg) !important;
+      border: 1px solid #bfdbfe !important;
+    }
+    [data-theme="light"] .bubble-blue {
+      background: var(--tag-blue-bg) !important;
+      color: var(--bento-blue-icon) !important;
+    }
+    [data-theme="light"] .card-ex-section {
+      background: linear-gradient(135deg, #ffffff 0%, rgba(124, 58, 237, .06) 100%) !important;
+      border: 1px solid #ddd6fe !important;
+    }
+
+    .summary-list-overview {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, .05), rgba(99, 102, 241, .05));
+    }
+    .summary-list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .summary-list-divider { width: 100%; height: 1px; background: var(--border-subtle); }
+    .summary-list-stat { flex: 1; min-width: 0; }
+    .summary-list-stat span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .summary-list-stat strong {
+      display: block;
+      overflow: hidden;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #list-record-count,
+    #daily-record-count { color: var(--purple-primary); font-size: 18px; }
+    .history-card-item.summary-history-card {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--border-subtle);
+      border-left: 5px solid #7c3aed;
+      border-radius: 18px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sm);
+      color: var(--text-primary);
+      cursor: pointer;
+      text-align: left;
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+    .history-card-item.summary-history-card.theme-green {
+      border-left-color: #10b981;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, .06) 100%);
+    }
+    .history-card-item.summary-history-card.theme-blue {
+      border-left-color: #3b82f6;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59, 130, 246, .06) 100%);
+    }
+    .history-card-item.summary-history-card.theme-purple {
+      border-left-color: #7c3aed;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, .06) 100%);
+    }
+    .history-card-item.summary-history-card:hover { box-shadow: var(--shadow-card); }
+    .history-card-item.summary-history-card:active { transform: scale(.985); }
+    .history-card-item.summary-history-card:focus-visible {
+      outline: 3px solid rgba(124, 58, 237, .25);
+      outline-offset: 2px;
+    }
+    .summary-history-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .summary-history-card-heading { min-width: 0; flex: 1; }
+    .summary-history-card-end {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 8px;
+      color: var(--text-muted);
+    }
+    .summary-history-card .history-time-row,
+    .summary-history-card .staff-name-text {
+      margin: 0 0 4px;
+      color: var(--text-primary);
+      font-size: 14.5px;
+      font-weight: 900;
+      line-height: 1.3;
+    }
+    .summary-history-date {
+      color: var(--purple-text);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .summary-history-employee-id {
+      margin-bottom: 4px;
+      color: var(--text-muted);
+      font-family: monospace, sans-serif;
+      font-size: 11.5px;
+      font-weight: 700;
+      opacity: .8;
+    }
+    .summary-history-details {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding: 12px 13px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      background: var(--bg-input);
+    }
+    .summary-history-card.theme-green .summary-history-details {
+      border-color: rgba(16, 185, 129, .18);
+      background: rgba(16, 185, 129, .05);
+    }
+    .summary-history-card.theme-blue .summary-history-details {
+      border-color: rgba(59, 130, 246, .18);
+      background: rgba(59, 130, 246, .05);
+    }
+    .summary-history-card.theme-purple .summary-history-details {
+      border-color: rgba(124, 58, 237, .18);
+      background: rgba(124, 58, 237, .05);
+    }
+    .summary-history-detail {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .summary-history-detail strong {
+      max-width: 62%;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 850;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .summary-history-status[data-status="normal"] { color: #059669; background: rgba(16, 185, 129, .14); border: 1px solid rgba(16, 185, 129, .35); }
+    .summary-history-status[data-status="exception"] { color: #d97706; background: rgba(245, 158, 11, .14); border: 1px solid rgba(245, 158, 11, .35); }
+    [data-theme="dark"] .summary-history-status[data-status="normal"] { color: #34d399; background: rgba(16, 185, 129, .22); border-color: rgba(16, 185, 129, .45); }
+    [data-theme="dark"] .summary-history-status[data-status="exception"] { color: #fbbf24; background: rgba(245, 158, 11, .22); border-color: rgba(245, 158, 11, .45); }
+    .bar-chart-item { margin-bottom: 24px; }
+    .chart-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .chart-label-row .name {
+      min-width: 0;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chart-label-row .val {
+      flex-shrink: 0;
+      color: var(--purple-primary);
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .bar-track {
+      width: 100%;
+      height: 12px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--bg-input);
+    }
+    .bar-fill {
+      width: 0;
+      height: 100%;
+      border-radius: 8px;
+      transition: width 1s cubic-bezier(.4, 0, .2, 1);
+    }
+    .attendance-detail-section-title {
+      padding: 14px 0 7px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .attendance-detail-subtable[hidden] { display: none !important; }
+    .staff-summary-empty {
+      padding: 40px 20px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      background: var(--bg-card);
+      color: var(--text-muted);
+      text-align: center;
+    }
+  </style>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body>
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button onclick="goBack()" aria-label="Back" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; backdrop-filter: blur(8px);">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <h1 id="headerTitle" style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: 0.2px;">Staff Hours Summary</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      
+      <!-- ================= DASHBOARD VIEW ================= -->
+      <div id="view-dashboard" style="display: block;">
+        <button type="button" class="claim-filter-bar staff-hours-filter-trigger" onclick="openFilterModal()" aria-haspopup="dialog" aria-controls="filterModal">
+          <span class="claim-filter-copy">
+            <span class="claim-eyebrow">Filter</span>
+            <span class="claim-filter-value" id="filterSummaryText">16/08/2026 – 14/09/2026</span>
+          </span>
+          <span class="claim-icon-button" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span>
+        </button>
+
+        <div class="dashboard-section-header"><h2>Work & Attendance</h2></div>
+        <div class="bento-group-work">
+          <div class="modern-card summary-kpi-card card-work-section" onclick="openListDetails('Scheduled Work Days')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-green"><i class="fa-solid fa-calendar-days"></i></div><div class="card-theme-title green-title">Scheduled Work Days</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statScheduledDays">0</span><span class="summary-card-secondary" id="pctScheduledDays">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-work-section" onclick="openListDetails('Normal Present Days')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-green"><i class="fa-solid fa-circle-check"></i></div><div class="card-theme-title green-title">Normal Present Days</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statPresentDays">0</span><span class="summary-card-secondary" id="pctPresentDays">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-work-section" onclick="openListDetails('Normal Work Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-green"><i class="fa-solid fa-clock"></i></div><div class="card-theme-title green-title">Normal Work Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statNormalWorkHours">0.00</span><span class="summary-card-secondary" id="pctNormalWorkHours">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-work-section" onclick="openListDetails('Odd Clocking Days')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-green"><i class="fa-solid fa-circle-exclamation"></i></div><div class="card-theme-title green-title">Odd Clocking Days</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statOddClocking">0</span><span class="summary-card-secondary" id="pctOddClocking">0%</span></div>
+          </div>
+        </div>
+
+        <div class="dashboard-section-header"><h2>Overtime Analytics</h2></div>
+        <div class="ot-grid-matrix">
+          <div class="modern-card summary-kpi-card card-ot-section" onclick="openListDetails('Normal OT Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-blue"><i class="fa-solid fa-stopwatch"></i></div><div class="card-theme-title blue-title">Normal OT Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statNormalOt">0.00</span><span class="summary-card-secondary" id="pctNormalOt">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-ot-section" onclick="openListDetails('Other OT Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-blue"><i class="fa-solid fa-moon"></i></div><div class="card-theme-title blue-title">Other OT Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statOtherOt">0.00</span><span class="summary-card-secondary" id="pctOtherOt">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-ot-section" onclick="openListDetails('Unapproved OT Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-blue"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="card-theme-title blue-title">Unapproved OT Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statUnapprovedOt">0.00</span><span class="summary-card-secondary" id="pctUnapprovedOt">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-ot-section" onclick="openListDetails('Planned OT Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-blue"><i class="fa-solid fa-calendar-check"></i></div><div class="card-theme-title blue-title">Plan OT Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statPlannedOt">0.00</span></div>
+          </div>
+        </div>
+
+        <div class="dashboard-section-header"><h2>Exceptions & Leave</h2></div>
+        <div class="exceptions-bento-matrix">
+          <div class="modern-card summary-kpi-card card-ex-section" onclick="openListDetails('Absent OT Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-purple"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="card-theme-title purple-title">Absent OT Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statAbsentOt">0.00</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-ex-section" onclick="openListDetails('Absent Days')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-purple"><i class="fa-solid fa-user-xmark"></i></div><div class="card-theme-title purple-title">Absent Days</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statAbsentDays">0</span><span class="summary-card-secondary" id="pctAbsentDays">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-ex-section" onclick="openListDetails('Leave Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-purple"><i class="fa-solid fa-plane-departure"></i></div><div class="card-theme-title purple-title">Leave Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statLeaveHours">0.00</span><span class="summary-card-secondary" id="pctLeaveHours">0%</span></div>
+          </div>
+          <div class="modern-card summary-kpi-card card-ex-section" onclick="openListDetails('Lost Hours')">
+            <div class="summary-card-header"><div class="card-icon-bubble bubble-purple"><i class="fa-solid fa-circle-minus"></i></div><div class="card-theme-title purple-title">Lost Hours</div></div>
+            <div class="summary-card-values"><span class="summary-card-primary" id="statLostHours">0.00</span><span class="summary-card-secondary" id="pctLostHours">0%</span></div>
+          </div>
+        </div>
+
+        <!-- Scroll Clearance Spacer -->
+        <div style="height: 120px; width: 100%; pointer-events: none;"></div>
+      </div>
+
+      <!-- ================= LIST DETAILS VIEW (STAFF LIST FOR CLICKED CARD) ================= -->
+      <div id="view-list" style="display: none; padding-top: 10px;">
+        <span id="list-title" hidden>Details</span>
+        <div id="staff-list-overview" class="summary-list-overview" aria-label="Staff summary totals">
+          <div class="summary-list-row">
+            <div class="summary-list-stat">
+              <span>Total Records</span>
+              <strong id="list-record-count">0</strong>
+            </div>
+            <button class="view-chart-btn" type="button" onclick="openChart('staff')">
+              <i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span>
+            </button>
+          </div>
+          <div class="summary-list-divider" aria-hidden="true"></div>
+          <div class="summary-list-row">
+            <div class="summary-list-stat">
+              <span id="staff-list-total-label">Total</span>
+              <strong id="staff-list-total-value">0.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <div id="details-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+        </div>
+        <div style="height: 120px; width: 100%; pointer-events: none;"></div>
+      </div>
+
+      <!-- ================= DAILY RECORDS VIEW ================= -->
+      <div id="view-daily-list" style="display: none; padding-top: 10px;">
+        <div id="daily-list-overview" class="summary-list-overview" aria-label="Employee daily totals">
+          <div class="summary-list-row">
+            <div class="summary-list-stat">
+              <span>Total Records</span>
+              <strong id="daily-record-count">0</strong>
+            </div>
+            <button class="view-chart-btn" type="button" onclick="openChart('daily')">
+              <i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span>
+            </button>
+          </div>
+          <div class="summary-list-divider" aria-hidden="true"></div>
+          <div class="summary-list-row">
+            <div class="summary-list-stat">
+              <span>Total Hours</span>
+              <strong id="daily-total-hours">0.00</strong>
+            </div>
+          </div>
+        </div>
+        <div id="daily-list-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        <div style="height: 120px; width: 100%; pointer-events: none;"></div>
+      </div>
+
+      <!-- ================= CHART VIEW ================= -->
+      <div id="view-chart" style="display: none; padding-top: 10px;"></div>
+    </div> <!-- Close main-content -->
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Shared Claim History filter presentation. -->
+    <div class="claim-filter-sheet" id="filterModal" aria-hidden="true" onclick="closeFilterModal(event)">
+      <form class="claim-filter-panel" role="dialog" aria-modal="true" aria-labelledby="staffHoursFilterTitle" onsubmit="event.preventDefault(); applyFilterModal()">
+        <div class="claim-filter-handle" aria-hidden="true"></div>
+        <div class="claim-filter-header">
+          <h2 class="claim-filter-title" id="staffHoursFilterTitle">Filter</h2>
+          <div class="claim-filter-header-actions">
+            <button type="button" class="claim-filter-reset" onclick="resetFilterModal()"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button>
+            <button type="button" class="claim-filter-close" onclick="closeFilterModal(true)" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <div class="claim-filter-fields">
+          <div>
+            <label class="claim-filter-label" for="filterKeyword">Search keyword</label>
+            <input type="search" id="filterKeyword" class="claim-filter-select staff-hours-filter-input" placeholder="Search name, emp ID, department..." autocomplete="off">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterStartDate">Start date</label>
+            <input type="date" id="filterStartDate" class="claim-filter-select staff-hours-filter-input" value="2026-08-16" required onchange="validateStaffHoursDates()">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterEndDate">End date</label>
+            <input type="date" id="filterEndDate" class="claim-filter-select staff-hours-filter-input" value="2026-09-14" required onchange="validateStaffHoursDates()">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterMinHours">Minimum present hours</label>
+            <input type="number" id="filterMinHours" class="claim-filter-select staff-hours-filter-input" placeholder="e.g. 150" value="0" min="0" step="0.01">
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterCompany">Company</label>
+            <div class="claim-filter-select-wrap">
+              <select id="filterCompany" class="claim-filter-select">
+                <option value="all">All Companies</option>
+                <option value="ACME Corporation">ACME Corporation</option>
+                <option value="Tech Global Ltd">Tech Global Ltd</option>
+                <option value="Apex Logistics">Apex Logistics</option>
+                <option value="Nexus Solutions">Nexus Solutions</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div>
+            <label class="claim-filter-label" for="filterCostCentre">Cost centre</label>
+            <div class="claim-filter-select-wrap">
+              <select id="filterCostCentre" class="claim-filter-select">
+                <option value="all">All Cost Centres</option>
+                <option value="CC-101 IT &amp; Tech">CC-101 IT &amp; Tech</option>
+                <option value="CC-102 Sales &amp; Marketing">CC-102 Sales &amp; Marketing</option>
+                <option value="CC-103 HR &amp; Admin">CC-103 HR &amp; Admin</option>
+                <option value="CC-104 Operations">CC-104 Operations</option>
+                <option value="CC-105 Finance">CC-105 Finance</option>
+              </select>
+              <i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="claim-filter-apply">Apply Filter</button>
+      </form>
+    </div>
+
+    <!-- Attendance Details Pop-out Modal Window (Matches Individual Hours Summary Popout Modal) -->
+    <div id="modal-attendance-details" class="popup-modal-overlay" onclick="closeAttendanceDetails(event)">
+      <div class="popup-modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header-purple">
+          <h3>Attendance Details</h3>
+          <button class="modal-close-round" onclick="closeAttendanceDetails(true)" aria-label="Close">
+            <i class="fa-solid fa-xmark" style="font-size: 16px;"></i>
+          </button>
+        </div>
+
+        <div class="sheet-content detail-popout-body" style="padding: 16px 20px 24px; overflow-y: auto; background: var(--bg-card); flex: 1;">
+          <div class="attendance-day-detail-layout" style="display: flex; flex-direction: column;">
+            <table id="attendance-hours-details-table" class="detail-popout-table"><tbody>
+              <tr><td class="detail-popout-label">Employee #</td><td class="detail-popout-value"><span id="ad-emp-no">#EBB01</span></td></tr>
+              <tr><td class="detail-popout-label">Name</td><td class="detail-popout-value"><span id="ad-name">John Tan</span></td></tr>
+              <tr><td class="detail-popout-label">Date</td><td class="detail-popout-value"><span id="ad-date">14 Sep 2026</span></td></tr>
+              <tr><td class="detail-popout-label">Shift</td><td class="detail-popout-value"><span id="ad-shift">8:30 AM - 5:30 PM (GROUP A)</span></td></tr>
+              <tr><td class="detail-popout-label">Day Type</td><td class="detail-popout-value"><span id="ad-day-type">Work Day</span></td></tr>
+              <tr><td class="detail-popout-label">Shift Group</td><td class="detail-popout-value"><span id="ad-shift-group">GROUP A</span></td></tr>
+              <tr><td class="detail-popout-label">Supervisor</td><td class="detail-popout-value"><span id="ad-supervisor">#EBB04</span></td></tr>
+              <tr><td class="detail-popout-label">Clock Times</td><td class="detail-popout-value"><span id="ad-clock-times">08:30 - 17:30</span></td></tr>
+              <tr><td class="detail-popout-label">Normal Hours</td><td class="detail-popout-value"><span id="ad-normal-hours">08:00</span></td></tr>
+              <tr><td class="detail-popout-label">Late In</td><td class="detail-popout-value"><span id="ad-late-in">-</span></td></tr>
+              <tr><td class="detail-popout-label">Early Out</td><td class="detail-popout-value"><span id="ad-early-out">-</span></td></tr>
+              <tr><td class="detail-popout-label">Time Off</td><td class="detail-popout-value"><span id="ad-time-off">-</span></td></tr>
+              <tr><td class="detail-popout-label">Absent</td><td class="detail-popout-value"><span id="ad-absent">No</span></td></tr>
+              <tr><td class="detail-popout-label">Approved OT Hours</td><td class="detail-popout-value"><span id="ad-approved-ot">0.00</span></td></tr>
+              <tr><td class="detail-popout-label">Unapproved OT Hours</td><td class="detail-popout-value"><span id="ad-unapproved-ot">0.00</span></td></tr>
+              <tr><td class="detail-popout-label">Exception</td><td class="detail-popout-value"><span id="ad-exception">-</span></td></tr>
+              <tr><td class="detail-popout-label">Document #</td><td class="detail-popout-value"><span id="ad-doc-no">-</span></td></tr>
+            </tbody></table>
+
+            <div class="attendance-detail-section-title">Leave Info</div>
+            <table id="ad-leave-info-table" class="attendance-detail-subtable is-leave detail-popout-table" hidden>
+              <tbody>
+                <tr><td class="detail-popout-label">Leave Code</td><td id="ad-leave-code" class="detail-popout-value">-</td></tr>
+                <tr><td class="detail-popout-label">Description</td><td id="ad-leave-description" class="detail-popout-value">-</td></tr>
+                <tr><td class="detail-popout-label">Leave Hours</td><td id="ad-leave-hours" class="detail-popout-value">-</td></tr>
+              </tbody>
+            </table>
+
+            <div class="attendance-detail-section-title">Overtime Info</div>
+            <table id="ad-overtime-info-table" class="attendance-detail-subtable is-overtime detail-popout-table" hidden>
+              <tbody>
+                <tr><td class="detail-popout-label">OT Code</td><td id="ad-ot-code" class="detail-popout-value">-</td></tr>
+                <tr><td class="detail-popout-label">Description</td><td id="ad-ot-desc" class="detail-popout-value">-</td></tr>
+                <tr><td class="detail-popout-label">OT Hours</td><td id="ad-ot-hours" class="detail-popout-value">-</td></tr>
+                <tr><td class="detail-popout-label">UOT</td><td id="ad-uot" class="detail-popout-value">-</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="ad-overtime-info-additional"></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentView = "dashboard"; // dashboard | list | daily | chart
+    let mainTitle = "Staff Hours Summary";
+    let listActiveTitle = "Details";
+    let currentStaffItems = [];
+    let selectedStaff = null;
+    let currentDailyItems = [];
+    let chartReturnView = "list";
+    let chartMode = "staff";
+
+    // Sample Staff Dataset with 12 Metrics breakdown per staff
+    const sampleStaffData = [
+    {
+      empNo: "EBB01",
+      name: "John Tan",
+      jobTitle: "Senior Developer",
+      department: "IT Dept",
+      company: "ACME Corporation",
+      costCentre: "CC-101 IT & Tech",
+      scheduledDays: 22,
+      presentDays: 22,
+      normalWorkHours: 176,
+      normalOt: 24,
+      otherOt: 0,
+      plannedOt: 0,
+      unapprovedOt: 0,
+      absentDays: 0,
+      absentOt: 0,
+      oddClocking: 0,
+      leaveHours: 0,
+      lostHours: 0,
+      status: "Verified",
+      shift: "8:30 AM - 5:30 PM (GROUP A)"
+    },
+    {
+      empNo: "EBB02",
+      name: "Sarah Lee",
+      jobTitle: "Marketing Manager",
+      department: "Sales & Marketing",
+      company: "Tech Global Ltd",
+      costCentre: "CC-102 Sales & Marketing",
+      scheduledDays: 22,
+      presentDays: 20,
+      normalWorkHours: 160,
+      normalOt: 32,
+      otherOt: 0,
+      plannedOt: 8,
+      unapprovedOt: 0,
+      absentDays: 3,
+      absentOt: 0.01,
+      oddClocking: 1,
+      leaveHours: 16,
+      lostHours: 0,
+      status: "Verified",
+      shift: "9:00 AM - 6:00 PM (GROUP B)"
+    },
+    {
+      empNo: "EBB03",
+      name: "Alex Wong",
+      jobTitle: "HR Executive",
+      department: "Human Resources",
+      company: "ACME Corporation",
+      costCentre: "CC-103 HR & Admin",
+      scheduledDays: 22,
+      presentDays: 21,
+      normalWorkHours: 168,
+      normalOt: 12,
+      otherOt: 0,
+      plannedOt: 0,
+      unapprovedOt: 0,
+      absentDays: 0,
+      absentOt: 0,
+      oddClocking: 0,
+      leaveHours: 8,
+      lostHours: 0,
+      status: "Verified",
+      shift: "8:30 AM - 5:30 PM (GROUP A)"
+    },
+    {
+      empNo: "EBB04",
+      name: "Michael Chen",
+      jobTitle: "Operations Lead",
+      department: "Operations",
+      company: "Apex Logistics",
+      costCentre: "CC-104 Operations",
+      scheduledDays: 22,
+      presentDays: 22,
+      normalWorkHours: 172,
+      normalOt: 28,
+      otherOt: 12,
+      plannedOt: 10,
+      unapprovedOt: 12,
+      absentDays: 6,
+      absentOt: 0.04,
+      oddClocking: 2,
+      leaveHours: 0,
+      lostHours: 4,
+      status: "Exception",
+      shift: "8:30 AM - 5:30 PM (GROUP A)"
+    },
+    {
+      empNo: "EBB05",
+      name: "Emily Davis",
+      jobTitle: "Finance Analyst",
+      department: "Finance",
+      company: "Tech Global Ltd",
+      costCentre: "CC-105 Finance",
+      scheduledDays: 20,
+      presentDays: 20,
+      normalWorkHours: 160,
+      normalOt: 0,
+      otherOt: 0,
+      plannedOt: 0,
+      unapprovedOt: 0,
+      absentDays: 0,
+      absentOt: 0,
+      oddClocking: 0,
+      leaveHours: 0,
+      lostHours: 0,
+      status: "Pending",
+      shift: "9:00 AM - 6:00 PM (GROUP B)"
+    }
+  ];
+
+    function getMetricConfig(title) {
+      const normalized = title.toLowerCase();
+      if (normalized.includes("scheduled")) return { key: "scheduledDays", label: "Scheduled Days", totalLabel: "Total Scheduled Days", kind: "days" };
+      if (normalized.includes("normal present") || normalized.includes("present days")) return { key: "presentDays", label: "Present Days", totalLabel: "Total Present Days", kind: "days" };
+      if (normalized.includes("normal work")) return { key: "normalWorkHours", label: "Normal Work Hours", totalLabel: "Total Work Hours", kind: "hours" };
+      if (normalized.includes("odd")) return { key: "oddClocking", label: "Odd Clocking Days", totalLabel: "Total Odd Clocking Days", kind: "days" };
+      if (normalized.includes("normal ot")) return { key: "normalOt", label: "Normal OT Hours", totalLabel: "Total Normal OT Hours", kind: "hours" };
+      if (normalized.includes("other ot")) return { key: "otherOt", label: "Other OT Hours", totalLabel: "Total Other OT Hours", kind: "hours" };
+      if (normalized.includes("unapproved")) return { key: "unapprovedOt", label: "Unapproved OT Hours", totalLabel: "Total Unapproved OT Hours", kind: "hours" };
+      if (normalized.includes("plan")) return { key: "plannedOt", label: "Plan OT Hours", totalLabel: "Total Plan OT Hours", kind: "hours" };
+      if (normalized.includes("absent ot")) return { key: "absentOt", label: "Absent OT Hours", totalLabel: "Total Absent OT Hours", kind: "hours" };
+      if (normalized.includes("absent days")) return { key: "absentDays", label: "Absent Days", totalLabel: "Total Absent Days", kind: "days" };
+      if (normalized.includes("leave")) return { key: "leaveHours", label: "Leave Hours", totalLabel: "Total Leave Hours", kind: "hours" };
+      return { key: "lostHours", label: "Lost Hours", totalLabel: "Total Lost Hours", kind: "hours" };
+    }
+
+    function getThemeForTitle(title) {
+      const normalized = title.toLowerCase();
+      if (normalized.includes("absent") || normalized.includes("leave") || normalized.includes("lost")) return "purple";
+      if (normalized.includes("ot")) return "blue";
+      return "green";
+    }
+
+    function getMetricNumber(item, title) {
+      return Number(item[getMetricConfig(title).key]) || 0;
+    }
+
+    function getStaffMetricItems(title) {
+      const activeStaff = filterStaffData();
+      if (title === "Scheduled Work Days" || title === "Normal Present Days" || title === "Normal Work Hours") return activeStaff;
+      return activeStaff.filter(item => getMetricNumber(item, title) > 0);
+    }
+
+    function getStaffCardRows(item, title) {
+      if (title === "Scheduled Work Days") {
+        return [
+          ["Job Title", item.jobTitle],
+          ["Scheduled Days", String(item.scheduledDays)],
+          ["Scheduled Hours", (item.scheduledDays * 8).toFixed(2)]
+        ];
+      }
+      if (title === "Normal Present Days") {
+        const attendanceRate = item.scheduledDays
+          ? Math.round(item.presentDays / item.scheduledDays * 100)
+          : 0;
+        return [
+          ["Job Title", item.jobTitle],
+          ["Scheduled Days", String(item.scheduledDays)],
+          ["Work Days", String(item.presentDays)],
+          ["Attendance Rate", attendanceRate + "%"]
+        ];
+      }
+      if (title === "Normal Work Hours") {
+        return [
+          ["Job Title", item.jobTitle],
+          ["Work Days", String(item.presentDays)],
+          ["Normal Work Hours", item.normalWorkHours.toFixed(2)]
+        ];
+      }
+      const config = getMetricConfig(title);
+      return [
+        ["Job Title", item.jobTitle],
+        [config.label, config.kind === "days" ? String(getMetricNumber(item, title)) : getMetricNumber(item, title).toFixed(2)],
+        ["Department", item.department]
+      ];
+    }
+
+    function renderDetailsList(title) {
+      const container = document.getElementById("details-list-container");
+      const config = getMetricConfig(title);
+      const theme = getThemeForTitle(title);
+      currentStaffItems = getStaffMetricItems(title);
+      const isDirectRecordSummary = title === "Odd Clocking Days" ||
+        title === "Normal OT Hours" ||
+        title === "Unapproved OT Hours" ||
+        title === "Planned OT Hours" ||
+        title === "Absent OT Hours" ||
+        title === "Absent Days" ||
+        title === "Leave Hours" ||
+        title === "Lost Hours";
+      const directRecords = isDirectRecordSummary
+        ? currentStaffItems.flatMap(function (staff) { return buildStaffAttendanceRecords(staff, title); })
+        : [];
+      if (isDirectRecordSummary) currentDailyItems = directRecords;
+      document.getElementById("list-title").textContent = title;
+      document.getElementById("list-record-count").textContent = String(isDirectRecordSummary ? directRecords.length : currentStaffItems.length);
+      document.getElementById("staff-list-total-label").textContent = isDirectRecordSummary ? "Total Hours" : config.totalLabel;
+      document.getElementById("staff-list-total-value").textContent =
+        (isDirectRecordSummary
+          ? directRecords.reduce((total, item) => total + Number(item.metricHours || 0), 0)
+          : currentStaffItems.reduce((total, item) => total + getMetricNumber(item, title), 0)
+        ).toFixed(2);
+
+      if (!(isDirectRecordSummary ? directRecords.length : currentStaffItems.length)) {
+        container.innerHTML = '<div class="staff-summary-empty"><i class="fa-solid fa-inbox" style="font-size:32px;margin-bottom:10px;"></i><div>No staff records found.</div></div>';
+        return;
+      }
+
+      if (isDirectRecordSummary) {
+        container.innerHTML = directRecords.map(function (item, index) {
+          const employeeId = item.empNo.startsWith("#") ? item.empNo : "#" + item.empNo;
+          const detailRows = getDailyCardRows(item, title).map(function (row) {
+            return '<div class="summary-history-detail"><span>' + row[0] + '</span> <strong>' + row[1] + '</strong></div>';
+          }).join("");
+          return '<article class="history-card-item summary-history-card theme-' + theme + '" role="button" tabindex="0" ' +
+            'aria-label="View attendance details for ' + item.name + ' on ' + item.fullDate + '" onclick="openAttendanceDetailsByIndex(' + index + ')" ' +
+            'onkeydown="if(event.key === &quot;Enter&quot; || event.key === &quot; &quot;){event.preventDefault();openAttendanceDetailsByIndex(' + index + ');}">' +
+              '<div class="summary-history-card-header"><div class="summary-history-card-heading">' +
+                '<h3 class="staff-name-text">' + item.name + '</h3>' +
+                '<div class="summary-history-employee-id">' + employeeId + '</div>' +
+                '<div class="summary-history-date">' + item.day + ', ' + item.fullDate + '</div>' +
+              '</div></div>' +
+              '<div class="summary-history-details">' + detailRows + '</div>' +
+            '</article>';
+        }).join("");
+        return;
+      }
+
+      container.innerHTML = currentStaffItems.map(function (item, index) {
+        const employeeId = item.empNo.startsWith("#") ? item.empNo : "#" + item.empNo;
+        const detailRows = getStaffCardRows(item, title).map(function (row) {
+          return '<div class="summary-history-detail"><span>' + row[0] + '</span> <strong>' + row[1] + '</strong></div>';
+        }).join("");
+        return '<article class="history-card-item summary-history-card theme-' + theme + '" role="button" tabindex="0" ' +
+          'aria-label="View ' + item.name + ' daily records" onclick="openStaffDailyDetails(' + index + ')" ' +
+          'onkeydown="if(event.key === &quot;Enter&quot; || event.key === &quot; &quot;){event.preventDefault();openStaffDailyDetails(' + index + ');}">' +
+            '<div class="summary-history-card-header"><div class="summary-history-card-heading">' +
+              '<h3 class="staff-name-text">' + item.name + '</h3>' +
+              '<div class="summary-history-employee-id">' + employeeId + '</div>' +
+            '</div></div>' +
+            '<div class="summary-history-details">' + detailRows + '</div>' +
+          '</article>';
+      }).join("");
+    }
+
+    function openListDetails(title) {
+      listActiveTitle = title === "Plan OT Hours" ? "Planned OT Hours" : title;
+      renderDetailsList(listActiveTitle);
+      setView("list");
+    }
+
+    function getDailyRecordCount(staff, title) {
+      if (title === "Scheduled Work Days") return staff.scheduledDays;
+      if (title === "Normal Present Days" || title === "Normal Work Hours") return staff.presentDays;
+      if (title === "Odd Clocking Days") return staff.oddClocking;
+      if (title === "Absent Days") return staff.absentDays;
+      const metric = getMetricNumber(staff, title);
+      return metric > 0 ? Math.max(1, Math.ceil(metric / 2)) : 0;
+    }
+
+    function getDailyTotalHours(staff, title) {
+      if (title === "Scheduled Work Days") return staff.scheduledDays * 8;
+      if (title === "Normal Present Days" || title === "Normal Work Hours") return staff.normalWorkHours;
+      if (title === "Odd Clocking Days" || title === "Absent Days") return getMetricNumber(staff, title) * 8;
+      return getMetricNumber(staff, title);
+    }
+
+    function getRecordDate(index) {
+      const date = new Date(Date.UTC(2026, 8, 14));
+      let remaining = index;
+      while (remaining > 0) {
+        date.setUTCDate(date.getUTCDate() - 1);
+        const day = date.getUTCDay();
+        if (day !== 0 && day !== 6) remaining -= 1;
+      }
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return {
+        day: days[date.getUTCDay()],
+        fullDate: date.getUTCDate() + " " + months[date.getUTCMonth()] + " " + date.getUTCFullYear()
+      };
+    }
+
+    function buildStaffAttendanceRecords(staff, title) {
+      const count = getDailyRecordCount(staff, title);
+      const totalHours = getDailyTotalHours(staff, title);
+      const perRecord = count ? totalHours / count : 0;
+      const isAbsent = title === "Absent Days";
+      const isLeave = title === "Leave Hours";
+      const isOdd = title === "Odd Clocking Days";
+      const isAbsentOt = title === "Absent OT Hours";
+      const isUnapproved = title === "Unapproved OT Hours";
+      const isApprovedOt = title === "Normal OT Hours" || title === "Other OT Hours";
+      const isPlannedOt = title === "Planned OT Hours";
+      return Array.from({ length: count }, function (_, index) {
+        const date = getRecordDate(index);
+        const clockTimes = isAbsent ? "-" : index === 0 ? "08:30 - 17:30" : "08:" + String(24 + index % 6).padStart(2, "0") + " - 17:" + String(30 + index % 10).padStart(2, "0");
+        const recordHours = title === "Scheduled Work Days" ? 8 : perRecord;
+        const hasUnapprovedException = isUnapproved ||
+          (title === "Normal Present Days" && index === 0 && Number(staff.unapprovedOt) > 0);
+        const unapprovedHours = isUnapproved ? perRecord : hasUnapprovedException ? Number(staff.unapprovedOt) : 0;
+        const hasOvertimeInfo = isApprovedOt || hasUnapprovedException || isPlannedOt;
+        return {
+          empNo: staff.empNo,
+          name: staff.name,
+          day: date.day,
+          fullDate: date.fullDate,
+          shift: staff.shift,
+          shiftFull: staff.shift,
+          shiftGroup: staff.shift.includes("GROUP B") ? "GROUP B" : "GROUP A",
+          supervisor: "#EBB04",
+          dayType: isAbsent ? "Absent Day" : isLeave ? "Leave Day" : "Work Day",
+          clockTimes: clockTimes,
+          normalHours: isAbsent || isLeave ? "-" : "08:00",
+          schedHours: recordHours.toFixed(2),
+          metricHours: recordHours,
+          lateIn: isOdd ? "00:15" : "-",
+          earlyOut: "-",
+          timeOff: isLeave ? "08:00" : "-",
+          absent: isAbsent ? "Yes" : "No",
+          approvedOt: isApprovedOt ? perRecord.toFixed(2) : "0.00",
+          unapprovedOt: hasUnapprovedException ? unapprovedHours.toFixed(2) : "0.00",
+          planHours: isPlannedOt ? perRecord.toFixed(2) : "0.00",
+          absentOtHours: isAbsentOt ? perRecord.toFixed(2) : "0.00",
+          exception: isAbsent ? "Absent" : isLeave ? "On Leave" : isOdd ? "Odd Clocking" :
+            hasUnapprovedException ? "Unapproved OT" : "-",
+          docNo: "-",
+          leaveCode: isLeave ? "AL" : "-",
+          leaveDescription: isLeave ? "Annual Leave" : "-",
+          leaveHours: isLeave ? recordHours.toFixed(2) : "-",
+          otCode: hasOvertimeInfo ? (isPlannedOt ? "OT PLAN" : "OT1") : "-",
+          otDesc: hasOvertimeInfo ? (hasUnapprovedException ? "Unapproved OT Hours" : title) : "-",
+          otHours: isApprovedOt || isPlannedOt ? perRecord.toFixed(2) : hasUnapprovedException ? unapprovedHours.toFixed(2) : "-",
+          uot: hasUnapprovedException ? "Yes" : isPlannedOt ? "No" : "-"
+        };
+      });
+    }
+
+    function getDailyCardRows(item, title) {
+      if (title === "Scheduled Work Days") return [["Clock Times", item.clockTimes], ["Scheduled Hours", item.schedHours]];
+      if (title === "Normal Present Days") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Normal Hours", item.normalHours]];
+      }
+      if (title === "Odd Clocking Days") {
+        return [["Shift", item.shift], ["Clock Time", item.clockTimes], ["Normal Hours", item.normalHours]];
+      }
+      if (title === "Normal OT Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Approved OT Hours", item.approvedOt]];
+      }
+      if (title === "Unapproved OT Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Unapproved OT", item.unapprovedOt]];
+      }
+      if (title === "Planned OT Hours") {
+        return [["Shift", item.shift], ["Clock Time", item.clockTimes], ["Plan Hours", item.planHours]];
+      }
+      if (title === "Absent OT Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Absent OT Hours", item.absentOtHours]];
+      }
+      if (title === "Normal Work Hours") {
+        return [["Clock Times", item.clockTimes], ["Normal Hours", item.normalHours]];
+      }
+      if (title === "Absent Days") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Absent Hours", item.metricHours.toFixed(2)]];
+      }
+      if (title === "Leave Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Leave Description", item.leaveDescription], ["Leave Hours", item.metricHours.toFixed(2)]];
+      }
+      if (title === "Lost Hours") {
+        return [["Shift", item.shift], ["Clock Times", item.clockTimes], ["Lost Hours", item.metricHours.toFixed(2)]];
+      }
+      return [["Clock Times", item.clockTimes], [getMetricConfig(title).label, item.metricHours.toFixed(2)]];
+    }
+
+    function openStaffDailyDetails(index) {
+      selectedStaff = currentStaffItems[index] || sampleStaffData[0];
+      currentDailyItems = buildStaffAttendanceRecords(selectedStaff, listActiveTitle);
+      renderDailyList();
+      setView("daily");
+    }
+
+    function renderDailyList() {
+      const container = document.getElementById("daily-list-container");
+      const theme = getThemeForTitle(listActiveTitle);
+      document.getElementById("daily-record-count").textContent = String(currentDailyItems.length);
+      document.getElementById("daily-total-hours").textContent = getDailyTotalHours(selectedStaff, listActiveTitle).toFixed(2);
+      if (!currentDailyItems.length) {
+        container.innerHTML = '<div class="staff-summary-empty">No daily records found.</div>';
+        return;
+      }
+      container.innerHTML = currentDailyItems.map(function (item, index) {
+        const isNormalPresentDay = listActiveTitle === "Normal Present Days";
+        const employeeId = item.empNo.startsWith("#") ? item.empNo : "#" + item.empNo;
+        const rows = getDailyCardRows(item, listActiveTitle).map(function (row) {
+          return '<div class="summary-history-detail"><span>' + row[0] + '</span> <strong>' + row[1] + '</strong></div>';
+        }).join("");
+        const hasException = Boolean(item.exception && item.exception !== "-");
+        const statusBadge = isNormalPresentDay
+          ? '<span class="card-status-badge summary-history-status" data-status="' + (hasException ? "exception" : "normal") + '">' +
+            '<i class="fa-solid ' + (hasException ? "fa-circle-exclamation" : "fa-check") + '" aria-hidden="true"></i>' +
+            '<span>' + (hasException ? item.exception : "Normal") + '</span></span>'
+          : "";
+        const heading = isNormalPresentDay
+          ? '<h3 class="staff-name-text">' + item.name + '</h3>' +
+            '<div class="summary-history-employee-id">' + employeeId + '</div>' +
+            '<div class="summary-history-date">' + item.day + ', ' + item.fullDate + '</div>'
+          : '<h3 class="history-time-row">' + item.shift + '</h3>' +
+            '<div class="summary-history-date">' + item.day + ', ' + item.fullDate + '</div>';
+        return '<article class="history-card-item summary-history-card theme-' + theme + '" role="button" tabindex="0" ' +
+          'aria-label="View attendance details for ' + item.fullDate + '" onclick="openAttendanceDetailsByIndex(' + index + ')" ' +
+          'onkeydown="if(event.key === &quot;Enter&quot; || event.key === &quot; &quot;){event.preventDefault();openAttendanceDetailsByIndex(' + index + ');}">' +
+            '<div class="summary-history-card-header"><div class="summary-history-card-heading">' +
+              heading +
+            '</div>' + (statusBadge ? '<div class="summary-history-card-end">' + statusBadge + '</div>' : '') + '</div>' +
+            '<div class="summary-history-details">' + rows + '</div>' +
+          '</article>';
+      }).join("");
+    }
+
+    function openAttendanceDetailsByIndex(index) {
+      openAttendanceDetails(currentDailyItems[index]);
+    }
+
+    function setAttendanceDetail(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value || "-";
+    }
+
+    function openAttendanceDetails(data) {
+      if (!data) return;
+      setAttendanceDetail("ad-emp-no", data.empNo.startsWith("#") ? data.empNo : "#" + data.empNo);
+      setAttendanceDetail("ad-name", data.name);
+      setAttendanceDetail("ad-date", data.fullDate);
+      setAttendanceDetail("ad-shift", data.shiftFull);
+      setAttendanceDetail("ad-day-type", data.dayType);
+      setAttendanceDetail("ad-shift-group", data.shiftGroup);
+      setAttendanceDetail("ad-supervisor", data.supervisor);
+      setAttendanceDetail("ad-clock-times", data.clockTimes);
+      setAttendanceDetail("ad-normal-hours", data.normalHours);
+      setAttendanceDetail("ad-late-in", data.lateIn);
+      setAttendanceDetail("ad-early-out", data.earlyOut);
+      setAttendanceDetail("ad-time-off", data.timeOff);
+      setAttendanceDetail("ad-absent", data.absent);
+      setAttendanceDetail("ad-approved-ot", data.approvedOt);
+      setAttendanceDetail("ad-unapproved-ot", data.unapprovedOt);
+      setAttendanceDetail("ad-exception", data.exception);
+      setAttendanceDetail("ad-doc-no", data.docNo);
+      setAttendanceDetail("ad-leave-code", data.leaveCode);
+      setAttendanceDetail("ad-leave-description", data.leaveDescription);
+      setAttendanceDetail("ad-leave-hours", data.leaveHours);
+      setAttendanceDetail("ad-ot-code", data.otCode);
+      setAttendanceDetail("ad-ot-desc", data.otDesc);
+      setAttendanceDetail("ad-ot-hours", data.otHours);
+      setAttendanceDetail("ad-uot", data.uot);
+      document.getElementById("ad-leave-info-table").hidden = data.leaveCode === "-";
+      document.getElementById("ad-overtime-info-table").hidden = data.otCode === "-";
+      document.getElementById("ad-overtime-info-additional").replaceChildren();
+      const exception = document.getElementById("ad-exception");
+      exception.style.color = data.exception === "Unapproved OT" ? "#f59e0b" :
+        data.exception === "-" ? "var(--text-primary)" : "#f59e0b";
+
+      const overlay = document.getElementById("modal-attendance-details");
+      const popup = overlay.querySelector(".popup-modal-content");
+      overlay.style.display = "flex";
+      setTimeout(function () {
+        overlay.style.opacity = "1";
+        popup.style.transform = "scale(1)";
+        popup.style.opacity = "1";
+      }, 10);
+    }
+
+    function closeAttendanceDetails(eventOrForce) {
+      const shouldClose = eventOrForce === true ||
+        (eventOrForce && (eventOrForce.target.id === "modal-attendance-details" || eventOrForce.target.closest(".modal-close-round")));
+      if (!shouldClose) return;
+      if (eventOrForce && eventOrForce.stopPropagation) eventOrForce.stopPropagation();
+      const overlay = document.getElementById("modal-attendance-details");
+      const popup = overlay.querySelector(".popup-modal-content");
+      overlay.style.opacity = "0";
+      popup.style.transform = "scale(0.95)";
+      popup.style.opacity = "0";
+      setTimeout(function () { overlay.style.display = "none"; }, 300);
+    }
+
+    function renderSummaryChart() {
+      const chart = document.getElementById("view-chart");
+      const isStaffChart = chartMode === "staff";
+      const items = isStaffChart ? currentStaffItems : currentDailyItems;
+      const values = items.map(function (item) {
+        return isStaffChart ? getMetricNumber(item, listActiveTitle) : item.metricHours;
+      });
+      const maximum = Math.max.apply(null, values.concat([0]));
+      const gradient = "linear-gradient(90deg, #7c3aed, #a78bfa)";
+      chart.innerHTML = '<h2 style="font-size:16px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">' +
+        (isStaffChart ? "Staff Breakdown" : "Daily Hours Breakdown") + '</h2>' +
+        items.map(function (item, index) {
+          const label = isStaffChart ? item.name : item.day + ", " + item.fullDate;
+          const suffix = getMetricConfig(listActiveTitle).kind === "days" && isStaffChart ? "" : " Hrs";
+          const value = values[index].toFixed(2);
+          const width = maximum ? values[index] / maximum * 100 : 0;
+          return '<div class="bar-chart-item"><div class="chart-label-row"><span class="name">' + label +
+            '</span><span class="val">' + value + suffix + '</span></div><div class="bar-track">' +
+            '<div class="bar-fill" data-width="' + width + '%" style="background:' + gradient + ';"></div></div></div>';
+        }).join("") +
+        '<div style="height:120px;width:100%;pointer-events:none;"></div>';
+      setTimeout(function () {
+        chart.querySelectorAll(".bar-fill").forEach(function (bar) { bar.style.width = bar.dataset.width; });
+      }, 50);
+    }
+
+    function openChart(mode) {
+      chartMode = mode;
+      chartReturnView = currentView;
+      setView("chart");
+    }
+
+    function setView(view) {
+      currentView = view;
+      document.getElementById("view-dashboard").style.display = view === "dashboard" ? "block" : "none";
+      document.getElementById("view-list").style.display = view === "list" ? "block" : "none";
+      document.getElementById("view-daily-list").style.display = view === "daily" ? "block" : "none";
+      document.getElementById("view-chart").style.display = view === "chart" ? "block" : "none";
+      if (view === "dashboard") document.getElementById("headerTitle").textContent = mainTitle;
+      if (view === "list") document.getElementById("headerTitle").textContent = "Staff " + listActiveTitle + " Summary";
+      if (view === "daily") document.getElementById("headerTitle").textContent = listActiveTitle;
+      if (view === "chart") {
+        document.getElementById("headerTitle").textContent =
+          (chartMode === "staff" ? "Staff " + listActiveTitle + " Summary" : listActiveTitle) + " (Chart)";
+        renderSummaryChart();
+      }
+      document.querySelector(".main-content").scrollTop = 0;
+    }
+
+    function goBack() {
+      if (currentView === "chart") {
+        setView(chartReturnView);
+      } else if (currentView === "daily") {
+        setView("list");
+      } else if (currentView === "list") {
+        setView("dashboard");
+      } else {
+        history.back();
+      }
+    }
+
+    // Modal Filter Functions
+    let staffHoursFilterOpener = null;
+
+    function openFilterModal() {
+      const overlay = document.getElementById('filterModal');
+      staffHoursFilterOpener = document.activeElement;
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+      overlay.querySelector('.claim-filter-fields').scrollTop = 0;
+      overlay.querySelector('.claim-filter-close').focus({ preventScroll: true });
+    }
+
+    function closeFilterModal(e) {
+      if (e === true || (e && e.target.id === 'filterModal')) {
+        const overlay = document.getElementById('filterModal');
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        if (staffHoursFilterOpener && staffHoursFilterOpener.isConnected) {
+          staffHoursFilterOpener.focus({ preventScroll: true });
+        }
+      }
+    }
+
+    function validateStaffHoursDates() {
+      const start = document.getElementById('filterStartDate');
+      const end = document.getElementById('filterEndDate');
+      end.setCustomValidity(start.value && end.value && end.value < start.value
+        ? 'End date must be on or after start date.' : '');
+    }
+
+    document.getElementById('filterModal').addEventListener('keydown', function (event) {
+      if (!this.classList.contains('active')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeFilterModal(true);
+      } else if (event.key === 'Tab') {
+        const controls = this.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled)');
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    function resetFilterModal() {
+      document.getElementById('filterKeyword').value = '';
+      document.getElementById('filterStartDate').value = '2026-08-16';
+      document.getElementById('filterEndDate').value = '2026-09-14';
+      document.getElementById('filterMinHours').value = '0';
+      document.getElementById('filterCompany').value = 'all';
+      document.getElementById('filterCostCentre').value = 'all';
+
+      applyFilterModal();
+    }
+
+    function filterStaffData() {
+      const keyword = document.getElementById('filterKeyword').value.trim().toLowerCase();
+      const minHours = parseFloat(document.getElementById('filterMinHours').value) || 0;
+      const company = document.getElementById('filterCompany').value;
+      const costCentre = document.getElementById('filterCostCentre').value;
+
+      return sampleStaffData.filter(item => {
+        if (keyword) {
+          const matchName = item.name.toLowerCase().includes(keyword);
+          const matchEmp = item.empNo.toLowerCase().includes(keyword);
+          const matchDept = item.department.toLowerCase().includes(keyword);
+          if (!matchName && !matchEmp && !matchDept) return false;
+        }
+
+        const totalStaffHours = item.normalWorkHours + item.normalOt + item.otherOt;
+        if (minHours > 0 && totalStaffHours < minHours) {
+          return false;
+        }
+
+        if (company !== 'all' && item.company !== company) {
+          return false;
+        }
+
+        if (costCentre !== 'all' && item.costCentre !== costCentre) {
+          return false;
+        }
+
+        return true;
+      });
+    }
+
+    function formatDate(dStr) {
+      if (!dStr) return '';
+      const parts = dStr.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return dStr;
+    }
+
+    function applyFilterModal() {
+      validateStaffHoursDates();
+      if (!document.querySelector('#filterModal form').reportValidity()) return;
+      const filtered = filterStaffData();
+
+      // Update Filter Summary Header Text
+      const startDate = document.getElementById('filterStartDate').value;
+      const endDate = document.getElementById('filterEndDate').value;
+      const company = document.getElementById('filterCompany').value;
+      const costCentre = document.getElementById('filterCostCentre').value;
+      const minHours = parseFloat(document.getElementById('filterMinHours').value) || 0;
+      const keyword = document.getElementById('filterKeyword').value.trim();
+
+      let text = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+      let extra = [];
+      if (keyword) extra.push(`"${keyword}"`);
+      if (company !== 'all') extra.push(company);
+      if (costCentre !== 'all') extra.push(costCentre);
+      if (minHours > 0) extra.push(`Min ${minHours}h`);
+
+      if (extra.length > 0) {
+        text += ` • ${extra.join(' • ')}`;
+      }
+
+      const filterSummary = document.getElementById('filterSummaryText');
+      if (filterSummary) filterSummary.innerText = text;
+
+      // Recalculate 12 metric totals for active staff selection
+      let totScheduledDays = 0;
+      let totPresentDays = 0;
+      let totNormalHours = 0;
+      let totNormalOt = 0;
+      let totOtherOt = 0;
+      let totPlannedOt = 0;
+      let totUnapprovedOt = 0;
+      let totAbsentDays = 0;
+      let totAbsentOt = 0;
+      let totOddClocking = 0;
+      let totLeaveHours = 0;
+      let totLostHours = 0;
+
+      filtered.forEach(s => {
+        totScheduledDays += s.scheduledDays;
+        totPresentDays += s.presentDays;
+        totNormalHours += s.normalWorkHours;
+        totNormalOt += s.normalOt;
+        totOtherOt += s.otherOt;
+        totPlannedOt += s.plannedOt;
+        totUnapprovedOt += s.unapprovedOt;
+        totAbsentDays += s.absentDays;
+        totAbsentOt += s.absentOt;
+        totOddClocking += s.oddClocking;
+        totLeaveHours += s.leaveHours;
+        totLostHours += s.lostHours;
+      });
+
+      // Update 12 metric DOM elements
+      const dayPercent = value => totScheduledDays ? Math.round(value / totScheduledDays * 100) : 0;
+      const hourPercent = value => totNormalHours ? Math.round(value / totNormalHours * 100) : 0;
+      const hours = value => value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('statScheduledDays').textContent = totScheduledDays.toLocaleString('en-US');
+      document.getElementById('pctScheduledDays').textContent = (totScheduledDays ? 100 : 0) + '%';
+      document.getElementById('statPresentDays').textContent = totPresentDays.toLocaleString('en-US');
+      document.getElementById('pctPresentDays').textContent = dayPercent(totPresentDays) + '%';
+      document.getElementById('statNormalWorkHours').textContent = hours(totNormalHours);
+      document.getElementById('pctNormalWorkHours').textContent = (totNormalHours ? 100 : 0) + '%';
+      document.getElementById('statOddClocking').textContent = totOddClocking.toLocaleString('en-US');
+      document.getElementById('pctOddClocking').textContent = dayPercent(totOddClocking) + '%';
+      document.getElementById('statNormalOt').textContent = hours(totNormalOt);
+      document.getElementById('pctNormalOt').textContent = hourPercent(totNormalOt) + '%';
+      document.getElementById('statOtherOt').textContent = hours(totOtherOt);
+      document.getElementById('pctOtherOt').textContent = hourPercent(totOtherOt) + '%';
+      document.getElementById('statUnapprovedOt').textContent = hours(totUnapprovedOt);
+      document.getElementById('pctUnapprovedOt').textContent = hourPercent(totUnapprovedOt) + '%';
+      document.getElementById('statPlannedOt').textContent = hours(totPlannedOt);
+      document.getElementById('statAbsentOt').textContent = hours(totAbsentOt);
+      document.getElementById('statAbsentDays').textContent = totAbsentDays.toLocaleString('en-US');
+      document.getElementById('pctAbsentDays').textContent = dayPercent(totAbsentDays) + '%';
+      document.getElementById('statLeaveHours').textContent = hours(totLeaveHours);
+      document.getElementById('pctLeaveHours').textContent = hourPercent(totLeaveHours) + '%';
+      document.getElementById('statLostHours').textContent = hours(totLostHours);
+      document.getElementById('pctLostHours').textContent = hourPercent(totLostHours) + '%';
+
+      if (currentView === "list") {
+        renderDetailsList(listActiveTitle);
+      }
+
+      closeFilterModal(true);
+    }
+
+    // Initialize Theme
+    function initTheme() {
+      const savedTheme = localStorage.getItem('peoplehcm_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+    initTheme();
+    applyFilterModal();
+  </script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

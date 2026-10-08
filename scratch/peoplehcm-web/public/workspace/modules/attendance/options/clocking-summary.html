@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Clocking Summary</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
+    .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
+    .main-content { flex: 1; overflow-y: auto; padding: 14px 14px 90px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+    
+    /* Top Header Bar */
+    .cal-top-header {
+      background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%);
+      padding: 12px 16px 14px;
+      border-bottom-left-radius: 22px;
+      border-bottom-right-radius: 22px;
+      box-shadow: 0 8px 24px rgba(46, 16, 101, 0.3);
+      position: relative;
+      z-index: 20;
+    }
+    .header-btn-icon {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.15s ease;
+      backdrop-filter: blur(4px);
+    }
+    .header-btn-icon:active { transform: scale(0.94); }
+
+    /* Executive Filter Summary Bar */
+    .filter-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-summary-bar:hover {
+      border-color: rgba(124, 58, 237, 0.35);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+    }
+    .filter-bar-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .filter-bar-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 270px;
+    }
+    .filter-trigger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .filter-trigger-btn:active { transform: scale(0.92); }
+
+    /* Executive Date Navigation Card */
+    .date-switcher-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 6px 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+    .date-nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .date-nav-btn:hover {
+      background: var(--purple-subtle);
+      color: var(--purple-primary);
+      border-color: var(--purple-border);
+    }
+    .date-nav-btn:active { transform: scale(0.92); }
+    .date-current-badge {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+    .date-current-badge:hover { background: var(--bg-input); }
+
+    /* Summary Stats Row */
+    .summary-info-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .summary-counts-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .count-label-line {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .count-label-line strong {
+      font-weight: 800;
+      color: var(--purple-primary);
+    }
+
+    .view-chart-btn {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #f59e0b;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.15s ease;
+    }
+    .view-chart-btn:active { transform: scale(0.95); }
+
+    /* Modern Summary Table */
+    .summary-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .summary-table-hdr {
+      display: grid;
+      grid-template-columns: 1.6fr 1.6fr 1fr;
+      background: rgba(124, 58, 237, 0.18);
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #a78bfa;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .summary-table-hdr div:last-child {
+      text-align: right;
+    }
+
+    .summary-table-row {
+      display: grid;
+      grid-template-columns: 1.6fr 1.6fr 1fr;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .summary-table-row:last-child { border-bottom: none; }
+    .summary-table-row:hover { background: var(--bg-input); }
+    .summary-table-row:active { transform: scale(0.995); }
+
+    .cell-section { font-weight: 800; color: var(--text-primary); }
+    .cell-cc { color: var(--text-muted); font-size: 12.5px; }
+    .cell-count { text-align: right; font-weight: 900; color: var(--purple-primary); }
+
+    /* Modal Overlay & Bottom Sheet */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 44px;
+      overflow: hidden;
+    }
+    .modal-overlay.active { opacity: 1; }
+
+    /* Centered Popout Modal Dialog styling */
+    .modal-overlay.popout-mode {
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 18px;
+    }
+    .popout-dialog-card {
+      width: 100%;
+      max-width: 380px;
+      max-height: 82vh;
+      background: var(--bg-sheet);
+      border-radius: 22px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+      box-sizing: border-box;
+    }
+    .modal-overlay.active .popout-dialog-card {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    /* Executive Colored Header Bar */
+    .popout-hdr-colored {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      padding: 14px 18px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .popout-hdr-title {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      letter-spacing: 0.3px;
+    }
+    .popout-close-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .popout-close-btn:hover { background: rgba(255, 255, 255, 0.35); }
+    .popout-close-btn:active { transform: scale(0.92); }
+
+    .popout-body-content {
+      padding: 14px 18px;
+      overflow-y: auto;
+      flex: 1;
+      background: var(--bg-sheet);
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .popout-body-content::-webkit-scrollbar,
+    #detailsListContainer::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+    #detailsListContainer {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .bottom-sheet-content {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border: 1px solid var(--border-subtle);
+      border-bottom: none;
+      padding: 16px 20px 28px;
+      box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.45);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 84vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .modal-overlay.active .bottom-sheet-content { transform: translateY(0); }
+    .sheet-handle-pill {
+      width: 38px;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: 4px;
+      margin: 0 auto 16px;
+      opacity: 0.7;
+    }
+
+    /* Personnel Card in Details List */
+    .staff-clock-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .staff-avatar-bubble {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: var(--purple-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .staff-info-col { flex: 1; min-width: 0; }
+    .staff-name-text { font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1.25; }
+    
+    /* REPOSITORY RULE (AGENTS.md):
+       Employee ID placed directly BELOW name with leading # and muted typography */
+    .staff-emp-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.8;
+      font-family: monospace, sans-serif;
+      margin-bottom: 4px;
+      display: block;
+    }
+    
+    .staff-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .clock-type-tag {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .type-in { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .type-out { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    /* Filter Form Elements */
+    .filter-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .filter-modal-title { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0; }
+    .filter-reset-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group-item { margin-bottom: 14px; }
+    .form-field-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--purple-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .form-field-select {
+      width: 100%;
+      padding: 12px 36px 12px 14px;
+      border-radius: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    .form-field-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .form-field-input::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+      cursor: pointer;
+    }
+    .select-chevron-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--purple-primary);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .form-apply-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      font-size: 14.5px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+    }
+
+    .feedback-toast {
+      position: absolute;
+      bottom: 85px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .feedback-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .highlight-report-view,
+    .highlight-chart-view { min-width: 0; }
+    .highlight-table-card {
+      min-height: 480px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-card);
+    }
+    .highlight-table-card .attendance-report-table { min-width: 560px; }
+    .highlight-table-card .summary-table-row {
+      display: table-row !important;
+      padding: 0;
+      transform: none;
+    }
+    .highlight-table-card .summary-table-row td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .highlight-table-card .summary-table-row .cell-count { text-align: right; }
+    .highlight-chart-view > .highlight-analysis-card { display: block; }
+    .highlight-chart-view .attendance-report-legend-row { display: grid; }
+    @media (max-width: 480px) {
+      body { padding: 0; }
+      .phone-container { max-width: none; height: 100vh; border-radius: 0; }
+    }
+  </style>
+  <link rel="stylesheet" href="clocking-summary.css">
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="attendance-highlight-page">
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Top Executive Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="13:10" style="color: #ffffff;"></phone-status-bar>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="header-btn-icon" onclick="handleHeaderBack()" aria-label="Back" title="Back">
+            <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+          </button>
+          <div>
+            <h1 id="pageHeaderTitle" style="font-size: 18.5px; font-weight: 800; color: #ffffff; margin: 0;">Clocking Summary</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      
+      <!-- ================= VIEW 1: SUMMARY TABLE VIEW ================= -->
+      <div id="view-summary" class="highlight-report-view" style="display: block;">
+
+        <div class="date-switcher-card" id="clockingDateSwitcher">
+          <button type="button" class="date-nav-btn" data-clocking-date-shift="-1" onclick="changeClockingSummaryDate(-1)" title="Previous Day" aria-label="Previous Day">
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+          </button>
+          <div class="date-current-badge">
+            <i class="fa-solid fa-calendar-day" style="color: var(--purple-primary); font-size: 14px;" aria-hidden="true"></i>
+            <span id="clockingCurrentDate">05 Oct 2026</span>
+          </div>
+          <button type="button" class="date-nav-btn" data-clocking-date-shift="1" onclick="changeClockingSummaryDate(1)" title="Next Day" aria-label="Next Day">
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <!-- 1. Executive Filter Summary Bar -->
+        <div class="filter-summary-bar highlight-filter-card" id="filterBarContainer" onclick="openFilterModal()" title="Click to filter clocking records">
+          <div style="flex: 1; min-width: 0; padding-right: 8px;">
+            <div class="filter-bar-label">
+              <span>CURRENT FILTER</span>
+            </div>
+            <div class="filter-bar-value" id="filterSummaryText">
+              05 Oct 2026 • 00:00 – 23:59 • All Branches
+            </div>
+          </div>
+          <button type="button" class="filter-trigger-btn" onclick="event.stopPropagation(); openFilterModal();" title="Filter Options" aria-label="Filter Options">
+            <i class="fa-solid fa-sliders" style="font-size: 15px;"></i>
+          </button>
+        </div>
+
+        <div class="attendance-report-summary highlight-summary-card">
+          <div class="attendance-report-summary-row">
+            <div>
+              <span class="attendance-report-summary-label">Total Records</span>
+              <strong id="totalRecordsVal" class="attendance-report-summary-value">2</strong>
+            </div>
+            <button type="button" class="view-chart-btn" onclick="openSummaryChart()" title="View Chart">
+              <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+              <span>View Chart</span>
+            </button>
+          </div>
+          <div class="attendance-report-summary-row">
+            <div>
+              <span class="attendance-report-summary-label">Total Count</span>
+              <strong id="totalCountVal" class="attendance-report-summary-value">6</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section & Cost Centre Table -->
+        <div class="summary-table-card attendance-report-table-card highlight-table-card">
+          <div class="attendance-report-table-scroll">
+            <table class="attendance-report-table">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Cost Centre</th>
+                  <th style="text-align: right;">Count</th>
+                </tr>
+              </thead>
+              <tbody id="summaryTableBody">
+                <!-- Dynamically populated table rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= VIEW 2: DEDICATED CHART PAGE VIEW ================= -->
+      <div id="view-chart" class="highlight-chart-view attendance-report-chart" style="display: none;">
+        <section class="attendance-report-breakdown highlight-analysis-card">
+          <label for="clockingBreakdownSelect">BREAKDOWN BY</label>
+          <div class="clocking-select-wrap">
+            <select id="clockingBreakdownSelect" class="highlight-breakdown-select" onchange="renderDonutChartData()">
+              <option value="branch">Branch</option>
+              <option value="dept">Department</option>
+              <option value="section">Section</option>
+              <option value="costCenter">Cost Centre</option>
+              <option value="type">Clocking Type</option>
+              <option value="mode">Clock Mode</option>
+            </select>
+            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+          </div>
+        </section>
+
+        <section class="attendance-report-chart-card highlight-analysis-card">
+          <h3 id="clockingChartTitle">Clock transactions by branch</h3>
+          <p id="clockingChartSubtitle">Share of the currently filtered clocking transactions</p>
+          <div class="attendance-report-donut">
+            <svg id="summaryDonutSvg" viewBox="0 0 180 180" role="img" aria-label="Clocking distribution">
+              <circle cx="90" cy="90" r="70" fill="transparent" stroke="var(--border-subtle)" stroke-width="22"></circle>
+              <g id="summaryDonutCircles"></g>
+            </svg>
+            <div class="attendance-report-donut-center">
+              <strong id="summaryCenterTotal">6</strong>
+              <small id="summaryCenterBadge">Clock Transactions</small>
+            </div>
+          </div>
+          <div class="attendance-report-note" id="clockingChartNote">Based on the current filter</div>
+        </section>
+
+        <section class="attendance-report-legend highlight-analysis-card">
+          <div class="attendance-report-legend-head">
+            <span id="clockingLegendLabel">BRANCH</span>
+            <span>COUNT</span>
+            <span>% OF TOTAL</span>
+          </div>
+          <div id="summaryChartLegendGrid" class="attendance-report-legend-rows highlight-legend-grid"></div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 3: CLOCKING DETAILS PAGE ================= -->
+      <div id="view-details" class="clocking-details-view" style="display: none;">
+        <section class="clocking-details-page">
+          <div class="clocking-details-toolbar">
+            <span id="detailsRecordCount">Total Records: 0</span>
+            <div class="clocking-details-actions" aria-label="Clocking summary actions">
+              <button type="button" class="view-chart-btn" onclick="openDetailsChart()"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
+              <button type="button" id="clockingExportPdf" onclick="printClockingDetails()"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>PDF</span></button>
+              <button type="button" id="clockingExportExcel" onclick="exportClockingDetails()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i><span>Excel</span></button>
+            </div>
+          </div>
+          <div id="detailsListContainer"></div>
+        </section>
+      </div>
+
+      <!-- ================= VIEW 4: FULL PHONE MAP PAGE ================= -->
+      <div id="view-map" class="clocking-map-view" style="display: none;">
+        <section id="clockingFullMap" class="clocking-full-map" aria-label="Employee clocking location">
+          <span class="clocking-map-block clocking-map-block-one"></span>
+          <span class="clocking-map-block clocking-map-block-two"></span>
+          <span class="clocking-map-block clocking-map-block-three"></span>
+          <span class="clocking-map-block clocking-map-block-four"></span>
+          <span class="clocking-map-pin"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+          <button type="button" class="clocking-map-locate-btn" aria-label="Centre map on location" title="Centre location">
+            <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+          </button>
+          <div class="clocking-map-address-card">
+            <span class="clocking-map-address-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+            <div>
+              <small>Clocking Location</small>
+              <strong id="clockingMapAddress">Location unavailable</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+
+    <!-- Feedback Toast -->
+    <div class="feedback-toast" id="feedbackToast">
+      <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+      <span id="toastMessage">Filter applied</span>
+    </div>
+
+    <!-- MODAL 1: BOTTOM SHEET DATA FILTER MODAL -->
+    <div class="modal-overlay" id="filterModal" aria-hidden="true" onclick="closeFilterModal(event)">
+      <div class="bottom-sheet-content" role="dialog" aria-modal="true" aria-labelledby="clockingFilterTitle" onclick="event.stopPropagation()">
+        <div class="sheet-handle-pill"></div>
+        
+        <div class="filter-header-row">
+          <h3 class="filter-modal-title" id="clockingFilterTitle">Data Filter</h3>
+          <button type="button" class="filter-reset-btn" onclick="resetFilterModal()">
+            <i class="fa-solid fa-rotate-left" style="font-size: 11px;"></i> Reset
+          </button>
+        </div>
+
+        <div class="clocking-filter-fields">
+          <!-- 1. Date -->
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterDateInput">Date</label>
+            <input type="date" id="filterDateInput" class="form-field-input" value="2026-10-05">
+          </div>
+
+          <!-- 2. Start Time & End Time -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="form-group-item">
+            <div>
+              <label class="form-field-label" for="filterStartTimeInput">Start Time</label>
+              <input type="time" id="filterStartTimeInput" class="form-field-input" value="00:00">
+            </div>
+            <div>
+              <label class="form-field-label" for="filterEndTimeInput">End Time</label>
+              <input type="time" id="filterEndTimeInput" class="form-field-input" value="23:59">
+            </div>
+          </div>
+
+          <!-- 3. Branch -->
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterBranchSelect">Branch</label>
+            <div style="position: relative;">
+              <select id="filterBranchSelect" class="form-field-select">
+                <option value="all" selected>- All Branches -</option>
+                <option value="TIMES SQUARE BRANCH">TIMES SQUARE BRANCH</option>
+                <option value="HQ - KL Main">HQ - KL Main</option>
+                <option value="Penang Branch">Penang Branch</option>
+                <option value="Johor Bahru Branch">Johor Bahru Branch</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 4. Department -->
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterDeptSelect">Department</label>
+            <div style="position: relative;">
+              <select id="filterDeptSelect" class="form-field-select">
+                <option value="all" selected>- All Departments -</option>
+                <option value="HUMAN RESOURCE">Human Resources Department</option>
+                <option value="ACCOUNTS">Accounts Department</option>
+                <option value="PLANT OPERATIONS">Plant Operations Department</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 5. Section -->
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterSectionSelect">Section</label>
+            <div style="position: relative;">
+              <select id="filterSectionSelect" class="form-field-select">
+                <option value="all" selected>- All Sections -</option>
+                <option value="BENEFITS">BENEFITS</option>
+                <option value="CORPORATE">CORPORATE</option>
+                <option value="GENERAL HR">GENERAL HR</option>
+                <option value="ASSEMBLY">ASSEMBLY</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 6. Cost Center -->
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterCostCenterSelect">Cost Centre</label>
+            <div style="position: relative;">
+              <select id="filterCostCenterSelect" class="form-field-select">
+                <option value="all" selected>- All Cost Centres -</option>
+                <option value="MANAGEMENT">MANAGEMENT</option>
+                <option value="MID VALLEY">MID VALLEY</option>
+                <option value="CC-101 MANAGEMENT">CC-101 MANAGEMENT</option>
+                <option value="CC-501 HR & OPS">CC-501 HR & OPS</option>
+                <option value="CC-301 PRODUCTION">CC-301 PRODUCTION</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <!-- 7. Clocking Type -->
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterClockTypeSelect">Clocking Type</label>
+            <div style="position: relative;">
+              <select id="filterClockTypeSelect" class="form-field-select">
+                <option value="all" selected>- All Clocking Types -</option>
+                <option value="Clock In">Clock In</option>
+                <option value="Clock Out">Clock Out</option>
+                <option value="Break Out">Break Out</option>
+                <option value="Break In">Break In</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterZoneSelect">Clock-In Zone</label>
+            <div style="position: relative;">
+              <select id="filterZoneSelect" class="form-field-select">
+                <option value="all">- All Shift Locations -</option>
+                <option value="TIMES SQUARE OFFICE">TIMES SQUARE OFFICE</option>
+                <option value="MID VALLEY OFFICE">MID VALLEY OFFICE</option>
+              </select>
+              <div class="select-chevron-icon"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+          </div>
+          <div class="form-group-item">
+            <label class="form-field-label" for="filterRadiusInput">Radius (meter)</label>
+            <input type="number" id="filterRadiusInput" class="form-field-input" min="0" step="1" value="0" inputmode="numeric">
+          </div>
+          <div id="clockingFilterError" class="clocking-filter-error" role="alert" hidden></div>
+          <button type="button" class="form-apply-btn" onclick="applyFilterModal()">
+            <i class="fa-solid fa-filter" style="font-size: 13px;"></i>
+            <span>Apply Filter</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="clocking-summary.js"></script>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

@@ -65,7 +65,8 @@ const detailLabels = () => [...document.querySelectorAll('#historyDetailBody .hi
     await page.reload({ waitUntil: 'load' });
 
     assert.equal(await page.$eval('.history-card-item', node => getComputedStyle(node).borderRadius), '18px');
-    assert.match(await page.$eval('.history-card-title', node => node.textContent.trim()), /^FGV\d{13}$/);
+    assert.equal(await page.$eval('.history-card-title', node => node.textContent.trim()), 'Guest Visit');
+    assert.match(await page.$eval('.history-card-ref', node => node.textContent.trim()), /^Ref: FGV\d{13}$/);
     assert.deepEqual(await page.$$eval('.history-card-item .history-card-row', rows => rows.map(row => [
       row.querySelector('span').textContent.replace(':', '').trim(),
       row.querySelector('strong').textContent.trim()
@@ -108,6 +109,22 @@ const detailLabels = () => [...document.querySelectorAll('#historyDetailBody .hi
       '2nd Merge Text', '3rd Merge Text', 'Reason', 'Remark', 'FileName', 'Acknowledged On'
     ]);
     assert.equal(await page.$eval('#historyDetailBody [data-detail-field="FileName"]', node => node.textContent.trim()), 'guarantee-letter.pdf');
+    await page.click('#closeHistoryDetails');
+    await page.evaluate(key => {
+      const rows = JSON.parse(localStorage.getItem(key));
+      rows.push({ id: 'inventory-attachment', kind: 'inventory-request', title: 'Laptop', date: '2026-10-07', status: 'submitted', createdAt: '2026-10-07T10:00:00Z', fields: [['Request Item', 'Laptop'], ['Quantity', '1'], ['Attachment', 'laptop-quote.pdf']] });
+      rows.push({ id: 'letter-draft-date', kind: 'letter-request', title: 'New letter', date: '2026-10-01', status: 'draft', createdAt: '2026-10-08T10:00:00Z', fields: [['Description', 'Reapplied letter'], ['Letter Type', 'Employment Verification Letter']] });
+      localStorage.setItem(key, JSON.stringify(rows));
+      window.dispatchEvent(new Event('pageshow'));
+    }, historyKey);
+    await page.click('[data-history-kind="inventory-request"]');
+    await page.click('[data-record-id="inventory-attachment"] .history-card-main');
+    assert.match(await page.$eval('#historyDetailBody', n => n.textContent), /laptop-quote.pdf/, 'Existing inventory attachments remain visible');
+    await page.keyboard.press('Escape');
+    await page.click('[data-history-kind="letter-request"]');
+    await page.click('[data-record-id="letter-draft-date"] [data-history-action="apply"]');
+    const submitDate = await page.evaluate(() => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).replace(' Sept ', ' Sep '));
+    assert.equal(await page.$eval('[data-record-id="letter-draft-date"] .history-card-row strong', n => n.textContent), submitDate, 'Reapplied letters display their new submit date');
     assert.equal(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1), true, 'History page must fit the mobile viewport');
     assert.deepEqual(errors, []);
     console.log('PASS: Workplace History cards and grouped details use the consistent design.');

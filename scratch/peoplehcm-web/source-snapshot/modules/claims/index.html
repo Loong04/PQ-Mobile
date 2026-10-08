@@ -1,0 +1,1121 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Claims & Expenses</title>
+  <script src="../../js/components.js"></script>
+  <script src="../../js/app.js" defer></script>
+  <script src="../../js/claims/claims-config.js?v=20261004-quick-option-icons"></script>
+  <script src="../../js/claims/claims-app.js?v=20261002-clickable-calendars" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="../../css/app.css">
+  <link rel="stylesheet" href="../../css/work-status.css">
+  <style>
+    .filter-pill {
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .filter-pill.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    .pending-action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .action-btn-approve {
+      padding: 9.5px 2px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 11.5px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .action-btn-approve:active {
+      transform: scale(0.95);
+    }
+
+    .action-btn-reject {
+      padding: 9.5px 2px;
+      border-radius: 12px;
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: #e11d48;
+      font-weight: 800;
+      font-size: 11.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn-reject:active {
+      transform: scale(0.95);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+
+    .main-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .claim-team-pending {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.05) 100%);
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .claim-team-pending:hover { border-color: rgba(245, 158, 11, 0.55); }
+    .claim-team-pending:active { transform: scale(0.98); }
+    .claim-team-pending:focus-visible { outline: 2px solid #f59e0b; outline-offset: 3px; }
+
+    .claim-team-pending-icon {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: #f59e0b;
+      color: #ffffff;
+      font-size: 18px;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+
+    .claim-team-pending-copy { flex: 1; min-width: 0; }
+    .claim-team-pending-title { display: block; font-size: 14px; font-weight: 800; line-height: 1.2; }
+    .claim-team-pending-description { display: block; margin-top: 3px; color: var(--text-muted); font-size: 11.5px; font-weight: 600; line-height: 1.4; }
+    .claim-team-pending-end { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+    .claim-team-pending-count { padding: 4px 12px; border-radius: 12px; background: #f59e0b; color: #ffffff; font-size: 13px; font-weight: 900; line-height: 1.2; font-variant-numeric: tabular-nums; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4); }
+    .claim-team-pending-end > i { color: var(--text-caption); font-size: 13px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .claim-team-pending { transition: none; }
+    }
+
+    /* Segmented Scope Switcher (Individual vs Team) */
+    .view-mode-switcher {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px;
+      border-radius: 20px;
+      margin-top: 2px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .view-mode-tab {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: none;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .view-mode-tab.active {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+
+    /* Quick Options Grid Bar (4 Columns) */
+    .quick-options-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .quick-opt-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .quick-opt-card:active {
+      transform: scale(0.95);
+    }
+
+    .quick-opt-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .quick-opt-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    /* Breakdown Toggle Pills (Benefits vs Claims) */
+    .breakdown-toggle-group {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      padding: 3px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+
+    .breakdown-toggle-pill {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 13px;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .breakdown-toggle-pill.active {
+      background: #7c3aed;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+    }
+
+    /* AGENTS.md Rule 2: View Chart Button Presentation Standard */
+    .btn-view-chart-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 13px;
+      font-family: inherit;
+      white-space: nowrap;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      margin-top: 14px;
+      transition: transform 0.15s ease;
+    }
+
+    .btn-view-chart-pill:active {
+      transform: scale(0.98);
+    }
+
+    .chart-breakdown-sheet {
+      max-height: 72%;
+      padding: 12px 18px 96px;
+    }
+
+    .chart-breakdown-handle {
+      width: 36px;
+      height: 4px;
+      margin: 0 auto 14px;
+      border-radius: 999px;
+      background: var(--border-subtle);
+    }
+
+    .chart-breakdown-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .chart-breakdown-title {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 17px;
+      font-weight: 850;
+      letter-spacing: -0.2px;
+    }
+
+    .chart-breakdown-context {
+      margin: 4px 0 0;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .chart-breakdown-close {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .chart-breakdown-close:active {
+      transform: scale(0.96);
+    }
+
+    .chart-breakdown-list {
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      background: var(--bg-card);
+    }
+
+    .chart-breakdown-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 76px 52px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chart-breakdown-columns {
+      padding: 10px 14px;
+      background: var(--purple-subtle);
+      color: var(--text-muted);
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    .chart-breakdown-column:nth-child(n + 2) {
+      text-align: right;
+    }
+
+    .chart-breakdown-row {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .chart-breakdown-category {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-breakdown-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 auto;
+      border-radius: 3px;
+    }
+
+    .chart-breakdown-amount,
+    .chart-breakdown-share {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-breakdown-share {
+      color: var(--text-muted);
+    }
+
+    /* 7-Column Calendar Styling */
+    .calendar-week-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .calendar-grid-container {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+
+    .cal-day {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border: 0;
+      padding: 0;
+      background: transparent;
+      appearance: none;
+      font: inherit;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .cal-day.empty {
+      pointer-events: none;
+    }
+
+    button.cal-day:not(.active-pill):hover {
+      background: var(--bg-card-hover);
+    }
+
+    button.cal-day:active {
+      transform: scale(0.94);
+    }
+
+    button.cal-day:focus-visible {
+      outline: 2px solid var(--purple-primary);
+      outline-offset: 2px;
+    }
+
+    .team-calendar-filter-icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 32px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 11px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .team-calendar-filter-icon:hover {
+      border-color: rgba(124, 58, 237, 0.45);
+      background: var(--purple-subtle);
+      color: var(--purple-text);
+    }
+
+    .team-calendar-filter-icon:active {
+      transform: scale(0.94);
+    }
+
+    .team-calendar-filter-icon:focus-visible {
+      outline: 2px solid var(--purple-primary);
+      outline-offset: 2px;
+    }
+
+    .cal-day.today {
+      border: 1.5px solid #10b981;
+      color: #10b981;
+      font-weight: 900;
+    }
+
+    .cal-day.travel-highlight {
+      background: rgba(124, 58, 237, 0.16);
+      color: #7c3aed;
+      font-weight: 900;
+    }
+
+    .cal-day.staff-travel-highlight {
+      background: rgba(124, 58, 237, 0.16);
+      color: #7c3aed;
+      font-weight: 900;
+    }
+
+    .cal-day.active-pill {
+      background: #7c3aed !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    }
+
+    .cal-day .dot-indicator {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #7c3aed;
+      margin-top: 2px;
+    }
+
+    .cal-day.active-pill .dot-indicator {
+      background: #ffffff;
+    }
+
+    .cal-day .staff-count-badge {
+      font-size: 9px;
+      font-weight: 900;
+      background: rgba(124, 58, 237, 0.25);
+      color: #7c3aed;
+      padding: 1px 5px;
+      border-radius: 6px;
+      margin-top: 1px;
+    }
+
+    .cal-day.active-pill .staff-count-badge {
+      background: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+    }
+
+    /* Modal / Drawer Overlay */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-height: 85%;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 22px 18px 100px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-sheet);
+    }
+
+    .modal-overlay.active .modal-sheet {
+      transform: translateY(0);
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .toast-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .claim-square-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .claim-square-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .claim-square-card:active {
+      transform: scale(0.95);
+    }
+
+    .claim-square-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(124, 58, 237, 0.1) !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--purple-primary) !important;
+      margin-bottom: 6px;
+    }
+
+    .claim-square-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .claim-dashboard-status-section {
+      margin-bottom: 22px;
+    }
+
+    .claim-dashboard-quick-section {
+      max-width: 384px;
+      margin: 0 auto 22px;
+    }
+
+    .claim-dashboard-quick-section .claim-square-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .claim-dashboard-quick-section .claim-square-card {
+      min-width: 0;
+      min-height: 90px;
+      padding: 14px 6px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .claim-dashboard-quick-section .claim-square-icon-wrap {
+      width: 38px;
+      height: 38px;
+      margin-bottom: 10px;
+    }
+
+    .claim-dashboard-quick-section .claim-square-title {
+      font-size: 11.5px;
+    }
+
+    .claim-dashboard-quick-section .claim-square-card:focus-visible {
+      outline: 2px solid var(--purple-primary);
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+
+    <!-- Executive Top Header -->
+    <div class="cal-top-header" id="dynamic-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <button class="me-back-btn" id="headerBackButton" onclick="window.ClaimsEngine.handleGlobalBack()"
+          aria-label="Back" title="Back"
+          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+
+        <div style="text-align: center;">
+          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;"
+            id="globalTopTitle">Claims &amp; Expenses</h1>
+        </div>
+
+        <div style="width: 36px;"></div>
+      </div>
+    </div>
+
+    <div class="main-content">
+
+      <!-- TOP SEGMENTED TAB SWITCHER (INDIVIDUAL vs TEAM) -->
+      <div class="view-mode-switcher" id="mainScopeSwitcher">
+        <button id="tabClaimIndividual" class="view-mode-tab active"
+          onclick="window.ClaimsEngine.switchClaimScope('individual')">
+          <i class="fa-solid fa-user" style="font-size: 14px;"></i>
+          Individual
+        </button>
+        <button id="tabClaimTeam" class="view-mode-tab" onclick="window.ClaimsEngine.switchClaimScope('team')">
+          <i class="fa-solid fa-users" style="font-size: 14px;"></i>
+          Team
+        </button>
+      </div>
+
+      <!-- ================= 1. INDIVIDUAL VIEW (SCREENSHOT 1) ================= -->
+      <div id="scopeIndividualSection" style="display: block;">
+
+        <section class="work-status-section claim-dashboard-status-section" aria-labelledby="claimWorkStatusTitle">
+          <h2 id="claimWorkStatusTitle" class="work-status-title">MY DOCUMENT STATUS</h2>
+          <div class="work-status-grid">
+            <a class="work-status-card" data-status="submitted" href="options/history.html?status=submitted">
+              <strong>8</strong>
+              <span>Submitted</span>
+              <small>In Review</small>
+            </a>
+            <a class="work-status-card" data-status="resubmit" href="options/history.html?status=resubmit">
+              <strong>0</strong>
+              <span>Resubmit</span>
+              <small>Needs Action</small>
+            </a>
+            <a class="work-status-card" data-status="approved" href="options/history.html?status=approved">
+              <strong>36</strong>
+              <span>Approved</span>
+              <small>Confirmed</small>
+            </a>
+            <a class="work-status-card" data-status="rejected" href="options/history.html?status=rejected">
+              <strong>1</strong>
+              <span>Rejected</span>
+              <small>Declined</small>
+            </a>
+          </div>
+        </section>
+
+        <section class="claim-dashboard-quick-section" aria-labelledby="claimQuickOptionsTitle">
+          <h2 id="claimQuickOptionsTitle" class="work-status-title">QUICK OPTIONS</h2>
+          <div id="claimOptionsHubGrid" class="claim-square-grid"></div>
+        </section>
+
+        <!-- Card 4: Monthly breakdown -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Monthly breakdown
+            </h3>
+            <select
+              style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 700; outline: none;">
+              <option>Sep 2026</option>
+              <option>Aug 2026</option>
+            </select>
+          </div>
+
+          <!-- Benefits vs Claims Segmented Toggle -->
+          <div class="breakdown-toggle-group">
+            <button id="individual-breakdown-benefits-btn" class="breakdown-toggle-pill active"
+              onclick="window.ClaimsEngine.toggleBreakdownCategory('individual', 'benefits')">Benefits</button>
+            <button id="individual-breakdown-claims-btn" class="breakdown-toggle-pill"
+              onclick="window.ClaimsEngine.toggleBreakdownCategory('individual', 'claims')">Claims</button>
+          </div>
+
+          <!-- Status Filter Dropdown -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Status:</span>
+            <select
+              style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 700; outline: none;">
+              <option>Approved</option>
+              <option>Pending</option>
+              <option>All</option>
+            </select>
+          </div>
+
+          <!-- SVG Donut Chart Container -->
+          <div id="individual-donut-svg-container" style="margin: 16px 0;"></div>
+
+          <!-- Legend Breakdown Table -->
+          <div id="individual-breakdown-legend-container"></div>
+
+          <!-- AGENTS.md Rule 2: View Chart Button Presentation Standard -->
+          <button type="button" class="btn-view-chart-pill" onclick="window.ClaimsEngine.openChartBreakdownSheet('individual')">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>View Chart</span>
+            
+          </button>
+        </div>
+
+        <!-- Card 5: My travel -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+            <div>
+              <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin: 0;">My travel</h3>
+              <p style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">1 trip this month
+              </p>
+            </div>
+            <button id="individualCalendarToday" type="button" onclick="window.ClaimsEngine.selectIndividualCalendarDay(24, true)"
+              style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer;">Today</button>
+          </div>
+
+          <!-- Month Navigator -->
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px;">
+            <button
+              style="background: none; border: 1px solid var(--border-subtle); border-radius: 10px; width: 28px; height: 28px; color: var(--text-primary); cursor: pointer;"><i
+                class="fa-solid fa-chevron-left" style="font-size: 11px;"></i></button>
+            <span style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">September 2026</span>
+            <button
+              style="background: none; border: 1px solid var(--border-subtle); border-radius: 10px; width: 28px; height: 28px; color: var(--text-primary); cursor: pointer;"><i
+                class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></button>
+          </div>
+
+          <!-- Weekday Headers -->
+          <div class="calendar-week-header">
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+            <div>Sun</div>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div id="individual-calendar-grid" class="calendar-grid-container" style="margin-bottom: 14px;"></div>
+
+          <!-- Calendar Legend -->
+          <div
+            style="display: flex; gap: 16px; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span
+                style="width: 12px; height: 12px; border-radius: 4px; background: rgba(124, 58, 237, 0.2); border: 1px solid #7c3aed; display: inline-block;"></span>
+              Travel dates
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span
+                style="width: 12px; height: 12px; border-radius: 4px; border: 1.5px solid #10b981; display: inline-block;"></span>
+              Today
+            </div>
+          </div>
+
+          <!-- Selected Day Trip Detail Card -->
+          <div id="individual-trip-detail-card"></div>
+        </div>
+
+      </div> <!-- END INDIVIDUAL SECTION -->
+
+
+      <!-- ================= 2. TEAM VIEW (SCREENSHOT 2) ================= -->
+      <div id="scopeTeamSection" style="display: none;">
+        <div id="teamMainDashboard">
+          <section class="team-action-required-card" aria-labelledby="claimTeamActionRequiredTitle">
+            <div class="team-action-required-header">
+              <div class="team-action-required-heading">
+                <span class="team-action-required-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+                <span class="team-action-required-copy">
+                  <strong class="team-action-required-title" id="claimTeamActionRequiredTitle">Action Required</strong>
+                  <span class="team-action-required-description">Items that require your action</span>
+                </span>
+              </div>
+              <span class="team-action-required-badge" id="claimTeamActionRequiredCount">11 Tasks</span>
+            </div>
+            <div class="team-action-required-items">
+              <a class="team-pending-approval-action" href="options/pending-approval.html">
+                <span class="team-pending-approval-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                <span class="team-pending-approval-copy">
+                  <span class="team-pending-approval-title">Pending Approval</span>
+                  <span class="team-pending-approval-description">Staff claims awaiting review</span>
+                </span>
+                <span class="team-pending-approval-end">
+                  <span class="team-pending-approval-count" id="teamDashboardPendingCount">11</span>
+                  <i class="fa-solid fa-chevron-right team-pending-approval-chevron" aria-hidden="true"></i>
+                </span>
+              </a>
+            </div>
+          </section>
+
+          <section class="claim-dashboard-quick-section" aria-labelledby="claimTeamQuickOptionsTitle">
+            <h2 id="claimTeamQuickOptionsTitle" class="work-status-title">QUICK OPTIONS</h2>
+            <div id="managerOptionsGrid" class="claim-square-grid"></div>
+          </section>
+
+          <!-- Card 3: Monthly staff spending -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+              <div>
+                <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Monthly staff
+                  spending</h3>
+                <p style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">All staff • 6
+                  employees</p>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <select
+                  style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 12px; padding: 4px 8px; font-size: 11.5px; font-weight: 700; outline: none;">
+                  <option>Sep 2026</option>
+                </select>
+                <button id="teamSpendingFilterButton" class="team-calendar-filter-icon" type="button" aria-label="Filter monthly staff spending" title="Filter monthly staff spending">
+                  <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Benefits vs Claims Toggle -->
+            <div class="breakdown-toggle-group" style="margin-top: 12px;">
+              <button id="team-breakdown-benefits-btn" class="breakdown-toggle-pill active"
+                onclick="window.ClaimsEngine.toggleBreakdownCategory('team', 'benefits')">Benefits</button>
+              <button id="team-breakdown-claims-btn" class="breakdown-toggle-pill"
+                onclick="window.ClaimsEngine.toggleBreakdownCategory('team', 'claims')">Claims</button>
+            </div>
+
+            <!-- Status Filter Dropdown -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Status:</span>
+              <select
+                style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 700; outline: none;">
+                <option>Approved</option>
+                <option>Pending</option>
+                <option>All</option>
+              </select>
+            </div>
+
+            <!-- SVG Donut Chart Container -->
+            <div id="team-donut-svg-container" style="margin: 16px 0;"></div>
+
+            <!-- Legend Breakdown Table -->
+            <div id="team-breakdown-legend-container"></div>
+
+            <!-- AGENTS.md Rule 2: View Chart Button Presentation Standard -->
+            <button type="button" class="btn-view-chart-pill" onclick="window.ClaimsEngine.openChartBreakdownSheet('team')">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>View Chart</span>
+              
+            </button>
+          </div>
+
+          <!-- Card 4: Staff travel calendar -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+              <div>
+                <h3 style="font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Staff travel
+                  calendar</h3>
+                <p style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px;">6 staff • 8
+                  trips this month</p>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button id="teamCalendarToday" type="button" onclick="window.ClaimsEngine.selectTeamCalendarDay(24, true)"
+                  style="background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;">Today</button>
+                <button id="teamTravelFilterButton" class="team-calendar-filter-icon" type="button" aria-label="Filter staff travel calendar" title="Filter staff travel calendar">
+                  <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Month Navigator -->
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding: 0 4px;">
+              <button
+                style="background: none; border: 1px solid var(--border-subtle); border-radius: 10px; width: 28px; height: 28px; color: var(--text-primary); cursor: pointer;"><i
+                  class="fa-solid fa-chevron-left" style="font-size: 11px;"></i></button>
+              <span style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">September 2026</span>
+              <button
+                style="background: none; border: 1px solid var(--border-subtle); border-radius: 10px; width: 28px; height: 28px; color: var(--text-primary); cursor: pointer;"><i
+                  class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></button>
+            </div>
+
+            <!-- Weekday Headers -->
+            <div class="calendar-week-header">
+              <div>Mon</div>
+              <div>Tue</div>
+              <div>Wed</div>
+              <div>Thu</div>
+              <div>Fri</div>
+              <div>Sat</div>
+              <div>Sun</div>
+            </div>
+
+            <!-- Team Calendar Days Grid -->
+            <div id="team-calendar-grid" class="calendar-grid-container" style="margin-bottom: 14px;"></div>
+
+            <!-- Calendar Legend -->
+            <div
+              style="display: flex; gap: 16px; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span
+                  style="width: 12px; height: 12px; border-radius: 4px; background: rgba(124, 58, 237, 0.2); border: 1px solid #7c3aed; display: inline-block;"></span>
+                Staff travelling
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span
+                  style="width: 12px; height: 12px; border-radius: 4px; border: 1.5px solid #10b981; display: inline-block;"></span>
+                Today
+              </div>
+            </div>
+
+            <!-- Selected Day Staff Travel List (Adheres strictly to AGENTS.md Employee ID Standard) -->
+            <div id="team-trip-detail-card"></div>
+          </div>
+
+        </div> <!-- END teamMainDashboard -->
+      </div> <!-- END TEAM SECTION -->
+
+    </div> <!-- END MAIN CONTENT -->
+
+    <!-- ALL CLAIM OPTIONS MODAL SHEET -->
+    <div class="modal-overlay" id="allOptionsModalOverlay"
+      onclick="if(event.target===this) window.ClaimsEngine.closeAllClaimOptionsModal()">
+      <div class="modal-sheet">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-grid-2" style="color: var(--purple-primary); font-size: 18px;"></i>
+            <h3 id="allOptionsModalTitle"
+              style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin: 0;">Quick Options (9)</h3>
+          </div>
+          <button onclick="window.ClaimsEngine.closeAllClaimOptionsModal()"
+            style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer;"><i
+              class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="allClaimOptionsModalGrid" class="claim-square-grid"></div>
+      </div>
+    </div>
+
+    <!-- INDIVIDUAL / TEAM CHART BREAKDOWN SHEET -->
+    <div class="modal-overlay" id="chartBreakdownModalOverlay"
+      onclick="if(event.target===this) window.ClaimsEngine.closeChartBreakdownSheet()">
+      <section class="modal-sheet chart-breakdown-sheet" role="dialog" aria-modal="true"
+        aria-labelledby="chartBreakdownTitle">
+        <div class="chart-breakdown-handle" aria-hidden="true"></div>
+        <div class="chart-breakdown-header">
+          <div>
+            <h3 id="chartBreakdownTitle" class="chart-breakdown-title">Chart breakdown</h3>
+            <p id="chartBreakdownContext" class="chart-breakdown-context"></p>
+          </div>
+          <button type="button" id="chartBreakdownCloseButton" class="chart-breakdown-close"
+            onclick="window.ClaimsEngine.closeChartBreakdownSheet()" aria-label="Close chart breakdown">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="chart-breakdown-list">
+          <div class="chart-breakdown-grid chart-breakdown-columns" aria-hidden="true">
+            <span class="chart-breakdown-column">Category</span>
+            <span class="chart-breakdown-column">Amount</span>
+            <span class="chart-breakdown-column">Share</span>
+          </div>
+          <div id="chartBreakdownRows"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastNotification" class="toast-box">
+      <span id="toastText">Action completed successfully</span>
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <indicators-sheet></indicators-sheet>
+  </div>
+
+</body>
+
+</html>
+
+

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-peoplehcm-web="" data-web-native="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Pending Approval</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="/vendor/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../../../css/payroll-pending-approval.css">
+  <link rel="stylesheet" href="../../../css/pending-approval-filter.css">
+  <link rel="stylesheet" href="../../../css/approval-actions.css">
+  <link rel="stylesheet" href="../css/workplace-pending-approval.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../js/admin-app.js" defer></script>
+  <script src="../../../js/pending-approval-filter.js" defer></script>
+  <script src="../js/workplace-pending-store.js" defer></script>
+  <script src="../js/workplace-pending-approval.js" defer></script>
+<link rel="stylesheet" href="/web-adapter/desktop.css" data-web-presentation>
+</head>
+<body class="admin-page payroll-pending-page workplace-pending-page unified-approval-actions">
+  <preview-top-bar active-page="workplace"></preview-top-bar>
+  <div class="phone-container">
+    <header class="admin-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="admin-header-row">
+        <a class="admin-back" data-admin-back href="../index.html?scope=team" aria-label="Back to Workplace Team"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <div class="admin-heading"><h1>Pending Approval</h1></div>
+        <span aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content payroll-pending-content">
+      <div class="approval-filter-summary">
+        <div class="payroll-pending-summary-copy"><small>Current Filter</small><div class="payroll-pending-summary-value"><span id="workplacePendingFilterSummary">All Requests • All Dates</span></div></div>
+        <button id="workplacePendingFilterTrigger" type="button" aria-label="Open pending approval filter" aria-haspopup="dialog" aria-controls="workplacePendingFilter"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+      </div>
+      <div class="payroll-pending-list-heading"><h2>Pending Approvals (<span id="workplacePendingCount">0</span>)</h2><label class="payroll-pending-select-all"><input id="workplacePendingSelectAll" type="checkbox">Select All</label></div>
+      <p id="workplacePendingError" class="workplace-approval-notice is-error" role="status" hidden></p>
+      <p id="workplacePendingFeedback" class="workplace-approval-notice" role="status" aria-live="polite" hidden></p>
+      <section id="workplacePendingQueue" aria-label="Guest Visit pending approvals"></section>
+      <div id="workplacePendingEmpty" class="payroll-pending-empty" hidden><i class="fa-solid fa-circle-check" aria-hidden="true"></i><h3>No pending approvals</h3><p id="workplacePendingEmptyText">Guest Visit requests awaiting review will appear here.</p></div>
+    </main>
+    <aside id="workplacePendingBulk" class="payroll-pending-bulk" aria-label="Selected requests" hidden><strong><span id="workplacePendingSelectedCount">0</span> selected</strong><div class="pending-action-grid" data-approval-bulk></div></aside>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <div id="workplaceApprovalMenu" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel payroll-approval-menu" role="dialog" aria-modal="true" aria-labelledby="workplaceApprovalMenuTitle">
+        <div class="payroll-approval-handle" aria-hidden="true"></div>
+        <div class="payroll-approval-menu-heading"><h2 id="workplaceApprovalMenuTitle">Request Options</h2><button type="button" class="payroll-approval-close" data-close-workplace-approval aria-label="Close request options"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <div class="payroll-approval-menu-options">
+          <button id="workplacePendingViewDetails" type="button" class="payroll-approval-menu-option"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>View Details</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button id="workplacePendingViewWorkflow" type="button" class="payroll-approval-menu-option"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>View Workflow</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+      </section>
+    </div>
+    <div id="workplaceApprovalDetails" class="payroll-approval-overlay" hidden>
+      <form id="workplaceApprovalReview" class="payroll-approval-panel" role="dialog" aria-modal="true" aria-labelledby="workplaceApprovalDetailsTitle" novalidate>
+        <header class="payroll-approval-details-header"><h2 id="workplaceApprovalDetailsTitle">Guest Visit Request Approval</h2><button type="button" class="payroll-approval-close" data-close-workplace-approval aria-label="Close approval details"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button></header>
+        <div class="payroll-approval-details-body">
+          <section id="approvalPanel-general" class="claim-detail-section" aria-label="General"></section>
+          <section id="approvalPanel-guest" class="claim-detail-section" aria-label="Guest"></section>
+          <section id="approvalPanel-attendee" class="claim-detail-section" aria-label="Attendee"></section>
+          <section id="approvalPanel-other" class="claim-detail-section" aria-label="Other"></section>
+          <div id="workplaceApprovalComments" class="claim-detail-approver-comments"></div>
+          <p id="workplaceApprovalDetailFeedback" class="workplace-approval-notice is-error" role="status" hidden></p>
+        </div>
+        <footer id="workplaceApprovalDetailActions" class="payroll-approval-details-footer pending-action-grid"></footer>
+      </form>
+    </div>
+    <div id="workplaceApprovalWorkflow" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel payroll-approval-workflow" role="dialog" aria-modal="true" aria-labelledby="workplaceApprovalWorkflowTitle">
+        <header class="payroll-approval-workflow-header"><div class="payroll-approval-handle" aria-hidden="true"></div><div class="payroll-approval-workflow-heading"><i class="fa-solid fa-diagram-project payroll-approval-workflow-icon" aria-hidden="true"></i><div><h2 id="workplaceApprovalWorkflowTitle">Approval Workflow</h2><p>Approval status &amp; history</p></div><button type="button" class="payroll-approval-close" data-close-workplace-approval aria-label="Close workflow"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div id="workplaceApprovalWorkflowBody" class="payroll-approval-workflow-body"></div>
+        <footer class="payroll-approval-workflow-footer"><button type="button" class="action-btn-cancel" data-close-workplace-approval>Close Workflow</button></footer>
+      </section>
+    </div>
+  </div>
+<script src="/web-adapter/translations.js" defer data-web-presentation></script><script src="/web-adapter/bridge.js" defer data-web-presentation></script><script type="module" src="/web-entry.js" data-web-presentation></script>
+</body>
+</html>

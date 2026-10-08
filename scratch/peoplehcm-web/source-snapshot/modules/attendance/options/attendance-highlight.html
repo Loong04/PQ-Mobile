@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Attendance Highlights</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+  <link rel="stylesheet" href="../../../css/attendance-hours-highlight.css">
+</head>
+<body class="attendance-highlight-page hours-highlight-page" data-highlight-kind="attendance">
+  <preview-top-bar active-page="attendance"></preview-top-bar>
+  <div class="phone-container">
+    <div class="cal-top-header"><phone-status-bar time="9:41" style="color:#fff"></phone-status-bar><div class="hours-highlight-header">
+      <button type="button" class="header-btn-icon" onclick="handleBackNavigation()" aria-label="Back"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button><h1 id="pageHeaderTitle">Attendance Highlights</h1>
+    </div></div>
+    <div class="main-content">
+      <div id="highlightReportView" class="highlight-report-view">
+        <div class="filter-summary-bar highlight-filter-card"><div class="hours-highlight-filter-copy"><div class="filter-bar-label">CURRENT FILTER</div><div class="filter-bar-value"><i class="fa-solid fa-filter" aria-hidden="true"></i><span id="highlightFilterSummaryText"></span></div></div>
+          <button type="button" id="highlightFilterTrigger" class="filter-trigger-btn" onclick="openHighlightFilterModal()" aria-label="Open Filter Options"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+        </div>
+        <div class="attendance-report-summary highlight-summary-card">
+          <div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label">Total Records</span><strong class="attendance-report-summary-value" id="highlightTotalRecords">0</strong></div><button type="button" class="view-chart-btn" onclick="showHoursHighlightSection('chart')"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button></div>
+          <div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label" id="highlightMetricLabel">Total Lost Hours</span><strong class="highlight-summary-total" id="highlightMetricValue">0.00</strong></div><div class="hours-highlight-exports"><button type="button" class="action-icon-btn pdf" onclick="handleExportAction('PDF')" aria-label="Export PDF"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></button><button type="button" class="action-icon-btn excel" onclick="handleExportAction('Excel')" aria-label="Export Excel"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></button></div></div>
+        </div>
+        <div class="attendance-report-table-card highlight-table-card"><div class="attendance-report-table-scroll"><table class="attendance-report-table"><thead><tr><th scope="col">Emp #</th><th scope="col">Name</th><th scope="col" class="hours-number">Hours</th><th scope="col">Branch</th><th scope="col">Department</th><th scope="col">Position</th></tr></thead><tbody id="attendanceHighlightTableBody"></tbody></table></div></div>
+      </div>
+      <div id="highlightChartView" class="highlight-chart-view" hidden>
+        <section class="highlight-analysis-card highlight-breakdown-card"><label for="highlightMetricSelect">BREAKDOWN BY</label><select class="highlight-breakdown-select" id="highlightMetricSelect"><option value="branch">Branch</option></select></section>
+        <section class="highlight-analysis-card highlight-donut-card">
+          <div class="hours-highlight-chart-heading"><div><h2 id="highlightChartTitle">Hours by branch</h2><p id="highlightChartSubtitle">Share of total hours</p></div><button type="button" class="view-trend-btn" id="highlightViewTrend" onclick="showHoursHighlightSection('trend')"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>View Trend</span></button></div>
+          <div class="highlight-donut"><svg viewBox="0 0 180 180" role="img" aria-label="Hours breakdown"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="highlightDonutCircles"></g></svg><div class="hours-highlight-donut-center"><strong id="highlightCenterTotal">0.00</strong><small>Total Lost Hours</small></div></div>
+          <div class="hours-highlight-chart-note" id="highlightChartNote"></div>
+        </section>
+        <section class="highlight-analysis-card highlight-legend-card">
+          <div class="hours-highlight-legend-head"><span>BRANCH</span><span>HOURS</span><span>% OF TOTAL</span></div><div id="highlightChartLegend" class="highlight-legend-grid"></div>
+          <button type="button" class="hours-highlight-legend-footer" id="highlightViewAll" hidden>View all branches</button>
+        </section>
+      </div>
+      <div id="highlightTrendView" class="highlight-trend-view" hidden>
+        <section class="highlight-analysis-card highlight-period-card"><small>SELECTED PERIOD</small><p><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span id="trendSelectedRangeText"></span></p></section>
+        <button type="button" id="trendTotalCard" class="highlight-analysis-card highlight-trend-total" onclick="openHighlightPeriodAnalysis()"><span><b>Total Lost Hours</b><small>Available dated records</small></span><strong id="trendTotalHours">0.00</strong></button>
+        <section class="highlight-analysis-card highlight-monthly-card"><h2>Monthly hours</h2><p>Available dated records in the selected period</p><div class="highlight-monthly-head"><span>MONTH</span><span>HOURS</span></div><div id="trendMonthlyBarsContainer" class="highlight-trend-bars"></div></section>
+      </div>
+      <div id="highlightAnalysisView" class="highlight-analysis-view" hidden>
+        <section class="highlight-analysis-card highlight-breakdown-card"><label for="highlightAnalysisMetricSelect">BREAKDOWN BY</label><select class="highlight-breakdown-select" id="highlightAnalysisMetricSelect"><option value="branch">Branch</option></select></section>
+        <section class="highlight-analysis-card highlight-donut-card">
+          <div class="hours-highlight-chart-heading"><div><h2 id="highlightAnalysisChartTitle">Hours by branch</h2><p id="highlightAnalysisSubtitle"></p></div></div>
+          <div class="highlight-donut"><svg viewBox="0 0 180 180" role="img" aria-label="Hours breakdown"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="highlightAnalysisDonutCircles"></g></svg><div class="hours-highlight-donut-center"><strong id="highlightAnalysisCenterTotal">0.00</strong><small>Total Lost Hours</small></div></div>
+          <div class="hours-highlight-chart-note" id="highlightAnalysisChartNote"></div>
+        </section>
+        <section class="highlight-analysis-card highlight-legend-card">
+          <div class="hours-highlight-legend-head"><span>BRANCH</span><span>HOURS</span><span>% OF TOTAL</span></div><div id="highlightAnalysisChartLegend" class="highlight-legend-grid"></div>
+          <button type="button" class="hours-highlight-legend-footer" id="highlightAnalysisViewAll" hidden>View all branches</button>
+        </section>
+      </div>
+    </div>
+    <div id="highlightFilterModal" class="modal-overlay highlight-filter-overlay" hidden onclick="closeHighlightFilterModal(event)">
+      <section class="highlight-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="highlightFilterTitle" onclick="event.stopPropagation()">
+        <div class="highlight-filter-handle"></div><div class="highlight-filter-header"><h2 id="highlightFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="highlightResetFilter" class="standard-filter-reset" onclick="resetHighlightFilterModal()"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" class="standard-filter-close" onclick="closeHighlightFilterModal()" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></div>
+        <form id="highlightFilterForm" class="highlight-filter-form">
+          <div><label for="filterKeyword">Search Keyword</label><input type="search" id="filterKeyword" placeholder="Employee Number or Name"></div>
+          <div><label for="filterDepartment">Department</label><select id="filterDepartment"><option value="all">- All Departments -</option><option value="unspecified">Not specified</option></select></div>
+          <div><label for="filterCostCenter">Cost Center</label><select id="filterCostCenter"><option value="all">- All Cost Centers -</option><option value="unspecified">Not specified</option></select></div>
+          <div><label for="filterFromDate">Start Date</label><input type="date" id="filterFromDate" value="2026-09-08" required></div>
+          <div><label for="filterToDate">End Date</label><input type="date" id="filterToDate" value="2026-10-07" required></div>
+          <div><label for="filterHighlightType">Highlight Type</label><select id="filterHighlightType"><option value="Total Lost Hours">Total Lost Hours</option></select></div>
+          <div><label for="filterRangeMin">Hours Range</label><div class="highlight-hours-range"><input type="number" id="filterRangeMin" min="0" step="0.01" value="0" required aria-label="Minimum hours"><span>–</span><input type="number" id="filterRangeMax" min="0" step="0.01" value="99999999" required aria-label="Maximum hours"></div></div>
+          <button type="submit" id="highlightApplyFilter" class="standard-filter-apply">Apply Filter</button>
+        </form>
+      </section>
+    </div>
+    <div id="highlightDetailsModal" class="modal-overlay highlight-details-overlay" hidden onclick="closeHighlightDetailsModal(event)">
+      <section class="highlight-details-dialog" role="dialog" aria-modal="true" aria-labelledby="highlightDetailName" onclick="event.stopPropagation()">
+        <div class="highlight-details-header"><div><h2 id="highlightDetailName"></h2><span id="highlightDetailEmpNo" class="attendance-report-emp"></span><small>Staff Attendance Details</small></div><button type="button" class="hours-highlight-close" onclick="closeHighlightDetailsModal()" aria-label="Close details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <div class="leave-highlight-details-list" id="highlightDetailsList"></div>
+      </section>
+    </div>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+  </div>
+  <script src="../../../js/attendance-hours-highlight-data.js"></script>
+  <script src="../../../js/attendance-hours-highlight.js"></script>
+</body>
+</html>

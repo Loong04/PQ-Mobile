@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PeopleHCM - Team Claims Management</title>
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/claims/claims-config.js"></script>
+  <script src="../../../js/claims/claims-app.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px 0;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 900px;
+      background: var(--bg-phone);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-phone);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 90px;
+      position: relative;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    .cal-top-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+      padding: 12px 16px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.28);
+      position: relative;
+      z-index: 20;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 18px;
+    }
+
+    .team-approval-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <preview-top-bar active-page="claims"></preview-top-bar>
+
+  <div class="phone-container">
+    
+    <!-- Header -->
+    <div class="cal-top-header">
+      <phone-status-bar time="9:41" style="color: #ffffff;"></phone-status-bar>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+        <button class="me-back-btn" onclick="javascript:history.back()" aria-label="Back" title="Back"
+          style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff;">
+          <i class="fa-solid fa-chevron-left" style="font-size: 16px;"></i>
+        </button>
+        
+        <div style="text-align: center;">
+          <h1 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.2;">Team Claims</h1>
+        </div>
+        
+        <a href="../index.html" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
+          <i class="fa-solid fa-house" style="font-size: 14px;"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="main-content">
+      
+      <!-- Pending Banner -->
+      <div class="card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%); border: 1px solid rgba(245, 158, 11, 0.3);">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+               <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-user-check"></i>
+               </div>
+               <div>
+                  <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Pending Team Requests</h3>
+                  <p style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);" id="teamPendingTotalVal">Total: RM 1,371.00</p>
+               </div>
+            </div>
+            <span id="teamPendingCountVal" style="font-size: 12px; font-weight: 800; color: #ffffff; background: #f59e0b; padding: 4px 12px; border-radius: 12px;">4 Requests</span>
+         </div>
+         <button onclick="window.ClaimsEngine.approveAllTeamClaims()" style="width: 100%; padding: 10px; border-radius: 14px; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #d97706; font-size: 12.5px; font-weight: 800; cursor: pointer;">
+            ✔ Approve All Team Requests
+         </button>
+      </div>
+
+      <!-- Pending Approval Queue -->
+      <div class="card">
+         <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px;">Approvals Requiring Action</h3>
+         <div id="teamApprovalsQueue"></div>
+      </div>
+
+      <!-- Staff Entitlement Roster Card -->
+      <div class="card">
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Team Benefit Roster</h3>
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">2026 Balances</span>
+         </div>
+
+         <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; border: 1px solid var(--border-subtle);">
+               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                  <div>
+                     <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Sarah Chen</div>
+                     <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#EBB01</div>
+                     <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Marketing Lead</div>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: #10b981;">RM 2,550.00 Bal</span>
+               </div>
+               <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+                  <div style="width: 33%; height: 100%; background: #7c3aed; border-radius: 10px;"></div>
+               </div>
+            </div>
+
+            <div style="background: var(--bg-input); border-radius: 14px; padding: 12px; border: 1px solid var(--border-subtle);">
+               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                  <div>
+                     <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">Marcus Tan</div>
+                     <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 4px;">#004177</div>
+                     <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Senior Engineer</div>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 800; color: #10b981;">RM 2,850.00 Bal</span>
+               </div>
+               <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+                  <div style="width: 25%; height: 100%; background: #3b82f6; border-radius: 10px;"></div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+    </div>
+
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <indicators-sheet></indicators-sheet>
+  </div>
+
+</body>
+</html>
