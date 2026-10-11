@@ -198,25 +198,28 @@ document.addEventListener('DOMContentLoaded', () => {
     $('visitAttendeeCategoryCount').textContent = String(attendeeIds.length);
     $('visitOtherCategoryCount').textContent = String(form.querySelectorAll('[data-other-request]:checked').length);
   }
-  function addRecordDetails(record, title, subtitle, values, index, category, employeeId) {
+  function addRecordDetails(record, title, subtitle, values, index, category, employeeId, alwaysVisible = false) {
     const header = node('div', 'visit-record-header');
     const copy = node('div', 'visit-record-copy');
     copy.append(node('h3', 'visit-record-name', title));
     if (employeeId) copy.append(node('span', 'visit-employee-id', '#' + employeeId));
     if (subtitle) copy.append(node('p', 'visit-record-subtitle', subtitle));
-    const toggle = node('button', 'visit-record-toggle');
-    toggle.type = 'button';
-    toggle.dataset.toggleRecord = '';
-    toggle.setAttribute('aria-expanded', 'false');
-    toggle.setAttribute('aria-controls', 'visitRecord-' + category + '-' + index);
-    toggle.setAttribute('aria-label', 'Details for ' + title);
-    const icon = node('i', 'fa-solid fa-chevron-down');
-    icon.setAttribute('aria-hidden', 'true');
-    toggle.append(icon);
-    header.append(copy, toggle);
+    header.append(copy);
     const details = node('div', 'visit-record-details');
-    details.id = toggle.getAttribute('aria-controls');
-    details.hidden = true;
+    if (!alwaysVisible) {
+      const toggle = node('button', 'visit-record-toggle');
+      toggle.type = 'button';
+      toggle.dataset.toggleRecord = '';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-controls', 'visitRecord-' + category + '-' + index);
+      toggle.setAttribute('aria-label', 'Details for ' + title);
+      const icon = node('i', 'fa-solid fa-chevron-down');
+      icon.setAttribute('aria-hidden', 'true');
+      toggle.append(icon);
+      header.append(toggle);
+      details.id = toggle.getAttribute('aria-controls');
+      details.hidden = true;
+    }
     details.append(detailRows(values));
     record.append(header, details);
   }
@@ -311,10 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
     $('visitAttendeeEmpty').hidden = attendeeIds.length > 0;
     attendeeIds.forEach((id, index) => {
       const employee = employees[id];
-      const record = node('article', 'visit-record');
-      addRecordDetails(record, employee.name, employee.department, [['Department', employee.department], ['Position', employee.position]], index, 'attendee', id);
+      const record = node('article', 'visit-record visit-attendee-record');
+      addRecordDetails(record, employee.name, '', [['Department', employee.department], ['Position', employee.position]], index, 'attendee', id, true);
       const actions = node('div', 'visit-record-actions');
-      actions.append(record.querySelector('.visit-record-toggle'), recordButton('Edit', 'data-edit-attendee', index, employee.name), recordButton('Remove', 'data-remove-attendee', index, employee.name));
+      actions.append(recordButton('Edit', 'data-edit-attendee', index, employee.name), recordButton('Remove', 'data-remove-attendee', index, employee.name));
       record.querySelector('.visit-record-header').append(actions);
       list.append(record);
     });
@@ -348,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   $('visitAttendeeCancelEdit').addEventListener('click', cancelAttendeeEntry);
   $('visitAttendeeList').addEventListener('click', event => {
-    toggleRecord(event);
     const edit = event.target.closest('[data-edit-attendee]');
     if (edit) {
       editingAttendee = Number(edit.dataset.editAttendee);

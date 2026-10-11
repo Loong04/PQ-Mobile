@@ -49,6 +49,61 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
         fits: true
       });
 
+      const fieldLabels = await page.$$eval(
+        '#shiftChangeRequestForm .attendance-form-summary-row > span, ' +
+          '#shiftChangeRequestForm .attendance-form-shift-time-row > span, ' +
+          '#shiftChangeRequestForm .attendance-form-field > label',
+        nodes => nodes.map(node => ({
+          text: node.textContent.trim(),
+          color: getComputedStyle(node).color
+        }))
+      );
+      assert.deepEqual(
+        fieldLabels.map(label => label.text),
+        ['Date', 'Original Shift', 'New Shift', 'New Shift Start', 'New Shift End', 'Reason', 'Remarks']
+      );
+      assert.equal(
+        new Set(fieldLabels.map(label => label.color)).size,
+        1,
+        `${theme}: every Shift Change field label uses the same text color`
+      );
+
+      const formTextColors = await page.$eval('#shiftChangeRequestForm', form => {
+        const samples = [
+          ['Section title', form.querySelector('.form-section-heading--new')],
+          ['Date label', form.querySelector('.attendance-form-summary-row > span')],
+          ['Date value', document.getElementById('shiftMetaDate')],
+          ['Original Shift value', document.getElementById('shiftMetaOriginal')],
+          ['New Shift label', form.querySelector('label[for="shiftChangeNewShift"]')],
+          ['New Shift input', document.getElementById('shiftChangeNewShift')],
+          ['New Shift Start label', form.querySelector('.attendance-form-shift-time-row > span')],
+          ['New Shift Start value', document.getElementById('shiftChangeStart')],
+          ['Reason label', form.querySelector('label[for="shiftChangeReason"]')],
+          ['Reason input', document.getElementById('shiftChangeReason')],
+          ['Remarks label', form.querySelector('label[for="shiftChangeRemarks"]')],
+          ['Remarks input', document.getElementById('shiftChangeRemarks')]
+        ].map(([name, node]) => ({ name, color: getComputedStyle(node).color }));
+        const placeholderStyle = getComputedStyle(document.getElementById('shiftChangeRemarks'), '::placeholder');
+        return {
+          samples,
+          placeholder: {
+            color: placeholderStyle.color,
+            opacity: placeholderStyle.opacity
+          }
+        };
+      });
+      const expectedTextColor = formTextColors.samples[0].color;
+      assert.equal(
+        formTextColors.samples.every(sample => sample.color === expectedTextColor),
+        true,
+        `${theme}: Shift Change labels, values, and input text all match the section title color`
+      );
+      assert.deepEqual(
+        formTextColors.placeholder,
+        { color: expectedTextColor, opacity: '1' },
+        `${theme}: the Remarks placeholder uses the same fully opaque text color`
+      );
+
       await page.select('#shiftChangeNewShift', 'W02');
       assert.deepEqual(
         await page.$$eval('#shiftChangeStart, #shiftChangeEnd', nodes => nodes.map(node => node.textContent.trim())),

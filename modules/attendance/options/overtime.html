@@ -32,31 +32,34 @@
 
     /* Tabs (Segmented Control Container) */
     .pill-tabs-container {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: 20px;
-      padding: 6px;
-      gap: 6px;
+      padding: 5px;
+      gap: 4px;
       margin-top: 10px;
       margin-bottom: 24px;
-      overflow-x: auto;
-      scrollbar-width: none;
+      overflow-x: hidden;
       box-shadow: var(--shadow-sm);
     }
-    .pill-tabs-container::-webkit-scrollbar { display: none; }
-    
+
     .pill-tab {
-      padding: 10px 16px;
+      width: 100%;
+      min-width: 0;
+      padding: 7px 3px;
       border-radius: 14px;
       border: 1px solid transparent;
-      font-size: 13.5px;
+      font-size: clamp(10px, 3vw, 12.5px);
       font-weight: 700;
+      line-height: 1.2;
       color: var(--text-secondary);
       background: transparent;
       cursor: pointer;
       white-space: nowrap;
-      flex-shrink: 0;
+      justify-content: center;
+      flex-shrink: 1;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .pill-tab:hover {
@@ -182,10 +185,16 @@
           <button class="pill-tab" onclick="activateFilter(this)">Last Month</button>
         </div>
 
-        <div style="margin-bottom: 20px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between;">
-           <span style="font-size: 13.5px; font-weight: 700; color: var(--text-muted);">Total Hours</span>
-           <span style="font-size: 16px; font-weight: 900; color: #a78bfa;">2.00 <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">HRS</span></span>
-        </div>
+        <section id="overtimeSummaryCard" class="history-total-records-card overtime-summary-card" aria-label="Overtime summary">
+          <div class="overtime-summary-metric">
+            <span class="history-total-records-label">Total Records</span>
+            <strong id="overtimeTotalRecords" class="history-total-records-value" aria-live="polite">0</strong>
+          </div>
+          <div class="overtime-summary-metric overtime-summary-metric--hours">
+            <span class="history-total-records-label">Total Hours</span>
+            <strong id="overtimeTotalHours" class="history-total-records-value">2.00 <span class="overtime-summary-unit">HRS</span></strong>
+          </div>
+        </section>
 
         <article class="history-card-item history-item-card ot-record-card" data-status="unapproved-ot" role="button" tabindex="0" aria-label="View overtime details for Mon, 14 Sep 2026" onclick="openDetails()" onkeydown="if(event.key === 'Enter' || event.key === ' '){event.preventDefault(); openDetails();}">
           <div class="ot-record-top">
@@ -252,6 +261,13 @@
             <div class="modern-form-group ot-credit-row">
               <div><strong id="otCreditLabel">Convert to Leave Credit</strong></div>
               <button type="button" class="modern-switch" role="switch" aria-checked="false" aria-labelledby="otCreditLabel" onclick="this.classList.toggle('on'); this.setAttribute('aria-checked', String(this.classList.contains('on')))"><span class="modern-switch-thumb"></span></button>
+            </div>
+            <div id="otNeedTransportField" class="modern-form-group">
+              <span id="otNeedTransportLabel" class="modern-label">Need Transport</span>
+              <div class="ot-transport-row">
+                <span id="otNeedTransportDescription">Transport required</span>
+                <button id="otNeedTransport" type="button" class="modern-switch ot-transport-switch on" role="switch" aria-checked="true" aria-labelledby="otNeedTransportLabel otNeedTransportDescription" onclick="this.classList.toggle('on'); this.setAttribute('aria-checked', String(this.classList.contains('on')))"><span class="modern-switch-thumb" aria-hidden="true"></span></button>
+              </div>
             </div>
             <div class="modern-form-group"><label class="modern-label" for="otRemarks">Remarks</label><textarea id="otRemarks" class="modern-input" rows="3" placeholder="Add additional notes here..."></textarea></div>
             <div class="modern-form-group">
@@ -373,7 +389,7 @@
                  <span style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 6px;">UNAUTHORISED OT</span>
               </div>
               <div style="display: flex; justify-content: space-between; padding: 12px 0;">
-                 <span class="form-section-heading" style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Attachments</span>
+                 <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Attachments</span>
                  <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">No Data</span>
               </div>
            </div>
@@ -416,9 +432,18 @@
       }
     }
 
+    function updateOvertimeSummary() {
+      const records = Array.from(document.querySelectorAll("#view-dashboard .ot-record-card")).filter(record => (
+        !record.hidden && getComputedStyle(record).display !== "none"
+      ));
+      const count = document.getElementById("overtimeTotalRecords");
+      if (count) count.textContent = String(records.length);
+    }
+
     function activateFilter(btn) {
       document.querySelectorAll(".pill-tab").forEach(el => el.classList.remove("active"));
       btn.classList.add("active");
+      updateOvertimeSummary();
     }
 
     function openDetails() {
@@ -486,6 +511,8 @@
       }
       setTimeout(() => { switchView('dashboard'); }, 800);
     }
+
+    document.addEventListener("DOMContentLoaded", updateOvertimeSummary);
   </script>
 </body>
 </html>

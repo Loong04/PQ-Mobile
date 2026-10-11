@@ -127,6 +127,16 @@ const draftKey = 'peoplehcm:guest-visit:draft:v1';
       assert.match(await page.$eval('#visitAttendeeList', n => n.textContent), /Aina Rahman/);
       assert.equal(await page.$eval('#visitAttendeeList .visit-employee-id', n => n.textContent), '#EBB01');
       assert.ok(await page.$eval('#visitAttendeeList .visit-employee-id', n => n.previousElementSibling.textContent === 'Aina Rahman'));
+      assert.equal(await page.$('#visitAttendeeList [data-toggle-record]'), null, 'Attendee records must not require an expand control');
+      assert.equal(await page.$eval('#visitAttendeeList .visit-record-details', n => n.hidden), false, 'Attendee details must always be visible');
+      assert.deepEqual(
+        await page.$$eval('#visitAttendeeList .visit-record-details dl > div', rows => rows.map(row => [
+          row.querySelector('dt').textContent.trim(),
+          row.querySelector('dd').textContent.trim()
+        ])),
+        [['Department', 'Human Resources'], ['Position', 'People Operations Executive']],
+        'Attendee rows must show all saved details directly'
+      );
       await click('#visitAttendeeList [data-edit-attendee]');
       assert.equal(await page.$eval('#visitStaff', n => n.value), 'EBB01');
       await page.select('#visitStaff', 'EBB03');
@@ -263,6 +273,6 @@ const draftKey = 'peoplehcm:guest-visit:draft:v1';
       assert.equal(await page.$eval('html', n => n.dataset.theme), theme);
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: Guest Visit Mileage-style summary/categories/lists/entries, layered Cancel/Back, guest and attendee editing, expandable details, switches, validation, attachment lifecycle and editor draft restoration; both themes and three mobile widths.');
+    console.log('PASS: Guest Visit Mileage-style summary/categories/lists/entries, layered Cancel/Back, guest editing, always-visible attendee details, switches, validation, attachment lifecycle and editor draft restoration; both themes and three mobile widths.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

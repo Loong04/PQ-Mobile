@@ -141,6 +141,7 @@
         border-radius: 44px;
         overflow: hidden;
       }
+
     </style>
     <link rel="stylesheet" href="../../../css/form-section-headings.css">
 </head>
@@ -229,6 +230,11 @@
           </div>
           <button type="button" onclick="openFilterModal()" aria-label="Open History Filter Options" title="Open History Filter Options"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
         </div>
+
+        <section class="history-total-records-card" aria-label="History record count">
+          <span class="history-total-records-label">Total Records</span>
+          <strong id="attendanceHistoryTotalRecords" class="history-total-records-value" aria-live="polite">0</strong>
+        </section>
 
         <!-- Clocking History List View (Separated Clock In & Clock Out) -->
         <div id="viewClockingHistory">
@@ -750,8 +756,8 @@
           </div>
 
           <footer class="attendance-history-form-actions attendance-history-action-footer">
-            <button type="button" class="attendance-history-form-cancel attendance-history-action-cancel" data-ot-form-cancel onclick="closeOtDetailsDirect()">Cancel</button>
-            <button type="submit" form="historyOtForm" class="attendance-history-form-submit attendance-history-action-submit" data-history-submit>Submit</button>
+            <button type="button" class="attendance-history-form-cancel attendance-history-action-cancel" data-ot-form-cancel onclick="closeOtDetailsDirect()"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button>
+            <button type="submit" form="historyOtForm" class="attendance-history-form-submit attendance-history-action-submit" data-history-submit><span>Submit</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
           </footer>
         </section>
       </div>
@@ -833,8 +839,8 @@
           </div>
 
           <footer class="attendance-history-form-actions attendance-history-action-footer">
-            <button type="button" class="attendance-history-form-cancel attendance-history-action-cancel" data-feedback-form-cancel onclick="closeFeedbackDetailsDirect()">Cancel</button>
-            <button type="submit" form="historyFeedbackForm" class="attendance-history-form-submit attendance-history-action-submit" data-history-submit>Submit</button>
+            <button type="button" class="attendance-history-form-cancel attendance-history-action-cancel" data-feedback-form-cancel onclick="closeFeedbackDetailsDirect()"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Cancel</span></button>
+            <button type="submit" form="historyFeedbackForm" class="attendance-history-form-submit attendance-history-action-submit" data-history-submit><span>Submit</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
           </footer>
         </section>
       </div>
@@ -1178,7 +1184,90 @@
       }
 
       upgradeAttendanceHistoryCardFacts();
+
+      const attendanceHistoryViewByTab = {
+        clocking: 'viewClockingHistory',
+        ot: 'viewOtHistory',
+        feedback: 'viewFeedbackHistory',
+      };
+      let activeAttendanceHistoryTab = 'clocking';
+      let attendanceHistoryFiltersApplied = false;
+
+      function getAttendanceHistoryCardDate(card) {
+        const action = card.getAttribute('onclick') || '';
+        const namedDate = action.match(/'(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})'/);
+        if (namedDate) {
+          const months = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+          const month = months[namedDate[2].toLowerCase()];
+          if (month) return `${namedDate[3]}-${month}-${namedDate[1].padStart(2, '0')}`;
+        }
+        const slashDate = action.match(/'(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+\([^)]+\))?'/);
+        return slashDate
+          ? `${slashDate[3]}-${slashDate[2].padStart(2, '0')}-${slashDate[1].padStart(2, '0')}`
+          : '';
+      }
+
+      function attendanceHistoryCardMatches(card, tab, filters) {
+        const recordDate = getAttendanceHistoryCardDate(card);
+        const dateMatches = (!filters.from || !recordDate || recordDate >= filters.from)
+          && (!filters.to || !recordDate || recordDate <= filters.to);
+        const recordStatus = (card.dataset.status || '').toLowerCase();
+        const statusMatches = tab === 'clocking'
+          || filters.status === 'all'
+          || recordStatus === filters.status
+          || (filters.status === 'pending' && recordStatus === 'pending-review');
+        return dateMatches && statusMatches;
+      }
+
+      function updateAttendanceHistoryEmptyState(view, visibleCount) {
+        let emptyState = view.querySelector(':scope > .attendance-history-empty-state');
+        if (!emptyState) {
+          emptyState = document.createElement('p');
+          emptyState.className = 'attendance-history-empty-state';
+          emptyState.setAttribute('role', 'status');
+          emptyState.textContent = 'No records found. Try another date range or status.';
+          view.appendChild(emptyState);
+        }
+        emptyState.hidden = !attendanceHistoryFiltersApplied || visibleCount > 0;
+      }
+
+      function updateAttendanceHistoryTotalRecords(tab = activeAttendanceHistoryTab) {
+        const activeView = document.getElementById(
+          attendanceHistoryViewByTab[tab] || attendanceHistoryViewByTab.clocking,
+        );
+        const total = activeView
+          ? Array.from(activeView.querySelectorAll('.history-card-item'))
+              .filter(card => card.style.display !== 'none').length
+          : 0;
+        const totalRecords = document.getElementById('attendanceHistoryTotalRecords');
+        if (totalRecords) totalRecords.textContent = String(total);
+      }
+
+      function applyAttendanceHistoryFilters() {
+        const filters = {
+          from: document.getElementById('filterFromDate')?.value || '',
+          to: document.getElementById('filterToDate')?.value || '',
+          status: document.getElementById('filterStatusSelect')?.value.toLowerCase() || 'all',
+        };
+
+        Object.entries(attendanceHistoryViewByTab).forEach(([tab, viewId]) => {
+          const view = document.getElementById(viewId);
+          if (!view) return;
+          let visibleCount = 0;
+          view.querySelectorAll('.history-card-item').forEach(card => {
+            const visible = !attendanceHistoryFiltersApplied
+              || attendanceHistoryCardMatches(card, tab, filters);
+            card.style.display = visible ? '' : 'none';
+            if (visible) visibleCount += 1;
+          });
+          updateAttendanceHistoryEmptyState(view, visibleCount);
+        });
+
+        updateAttendanceHistoryTotalRecords();
+      }
+
       function switchMainTab(tab) {
+        activeAttendanceHistoryTab = tab;
         document.getElementById("filterStatusGroup").hidden = tab === "clocking";
         const btnClocking = document.getElementById("tabClocking");
         const btnOt = document.getElementById("tabOt");
@@ -1205,7 +1294,11 @@
           if (btnFeedback) btnFeedback.classList.add("active");
           if (viewFeedback) viewFeedback.style.display = "block";
         }
+
+        updateAttendanceHistoryTotalRecords(tab);
       }
+
+      updateAttendanceHistoryTotalRecords("clocking");
 
       function openFilterModal() {
         const m = document.getElementById("filterModal");
@@ -1246,6 +1339,8 @@
         if (statusSel) statusSel.value = "all";
         document.getElementById("filterSummaryTitle").innerText =
           "16/08/2026 - 14/09/2026";
+        attendanceHistoryFiltersApplied = false;
+        applyAttendanceHistoryFilters();
         if (typeof showToast === "function") showToast('<i class="fa-solid fa-rotate-left" style="color: var(--purple-primary); margin-right: 6px;"></i>Filter Reset');
         closeFilterModalDirect();
       }
@@ -1259,6 +1354,8 @@
           document.getElementById("filterSummaryTitle").innerText =
             `${fD} - ${tD}`;
         }
+        attendanceHistoryFiltersApplied = true;
+        applyAttendanceHistoryFilters();
         if (typeof showToast === "function") showToast('<i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>Filter Applied');
         closeFilterModalDirect();
       }

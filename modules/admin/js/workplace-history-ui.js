@@ -264,8 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
       && (!filter.type || recordType(row) === filter.type));
     document.querySelector('.admin-heading h1').textContent = kind === 'inventory-request' ? 'Inventory History' : labels[kind] + ' History';
     $('historyCategoryTitle').textContent = labels[kind] + ' History';
-    $('historyRecordHeading').hidden = kind !== 'inventory-request';
-    $('historyRecordCount').textContent = 'Total Records: ' + rows.length;
+    $('historyRecordHeading').hidden = false;
+    $('historyRecordCount').textContent = String(rows.length);
     const summary = [
       filter.from ? 'From ' + date(filter.from) : '',
       filter.to ? 'To ' + date(filter.to) : '',

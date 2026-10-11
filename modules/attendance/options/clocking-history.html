@@ -254,6 +254,7 @@
       vertical-align: middle;
       word-break: break-word;
     }
+
   </style>
 </head>
 <body>
@@ -305,6 +306,11 @@
           <i class="fa-solid fa-sliders" style="font-size: 16px;"></i>
         </button>
       </div>
+
+      <section class="history-total-records-card" aria-label="History record count">
+        <span class="history-total-records-label">Total Records</span>
+        <strong id="legacyAttendanceHistoryTotalRecords" class="history-total-records-value" aria-live="polite">0</strong>
+      </section>
 
       <!-- Clocking History List View (Separated Clock In & Clock Out) -->
       <div id="viewClockingHistory">
@@ -1139,7 +1145,27 @@
         closeFeedbackDetailsDirect();
       }
 
+      let activeLegacyAttendanceHistoryTab = 'clocking';
+
+      function updateLegacyAttendanceHistoryTotalRecords() {
+        const viewByTab = {
+          clocking: 'viewClockingHistory',
+          ot: 'viewOtHistory',
+          feedback: 'viewFeedbackHistory'
+        };
+        const activeView = document.getElementById(
+          viewByTab[activeLegacyAttendanceHistoryTab] || viewByTab.clocking
+        );
+        const total = activeView
+          ? Array.from(activeView.querySelectorAll('.history-card-item'))
+              .filter(card => card.style.display !== 'none').length
+          : 0;
+        const totalRecords = document.getElementById('legacyAttendanceHistoryTotalRecords');
+        if (totalRecords) totalRecords.textContent = String(total);
+      }
+
       function switchMainTab(tab) {
+        activeLegacyAttendanceHistoryTab = tab;
         const btnClocking = document.getElementById('tabClocking');
         const btnOt = document.getElementById('tabOt');
         const btnFeedback = document.getElementById('tabFeedback');
@@ -1165,6 +1191,8 @@
           if (btnFeedback) btnFeedback.classList.add('active');
           if (viewFeedback) viewFeedback.style.display = 'block';
         }
+
+        updateLegacyAttendanceHistoryTotalRecords();
       }
 
       function openFilterModal() {
@@ -1265,6 +1293,8 @@
             emptyEl.style.display = 'none';
           }
         });
+
+        updateLegacyAttendanceHistoryTotalRecords();
       }
 
       function resetFilterModal() {
@@ -1307,6 +1337,8 @@
             if (typeof showToast === 'function') showToast(`<i class="fa-solid fa-magnifying-glass" style="color: var(--purple-primary); margin-right: 6px;"></i>Filtered by: ${statusLabel}`);
           }, 300);
         }
+
+        updateLegacyAttendanceHistoryTotalRecords();
       });
     </script>
 </body>

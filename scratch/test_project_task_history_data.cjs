@@ -61,7 +61,7 @@ async function closeDetails(page) {
         await page.$$eval('.project-history-list-heading h2', headings => headings.map(heading => heading.textContent.trim())),
         ['Work Plan History', 'Timesheet History']
       );
-      assert.equal(await page.$eval('#workPlanHistoryCount', count => count.textContent.trim()), '2 Records');
+      assert.equal(await page.$eval('#workPlanHistoryCount', count => count.textContent.trim()), '2');
       assert.equal(await page.$('#workPlanHistoryEmpty'), null);
       assert.equal(await page.$('#timesheetHistoryEmpty'), null);
       assert.deepEqual(
@@ -101,14 +101,14 @@ async function closeDetails(page) {
         return {
           primaryBackground: primary.backgroundImage,
           primaryColor: primary.color,
-          dangerBackground: danger.backgroundColor,
+          dangerBackground: danger.backgroundImage,
           dangerColor: danger.color
         };
       }, draftCardSelector);
       assert.match(actionStyles.primaryBackground, /linear-gradient/);
       assert.equal(actionStyles.primaryColor, 'rgb(255, 255, 255)');
-      assert.equal(actionStyles.dangerBackground, 'rgb(255, 241, 242)');
-      assert.equal(actionStyles.dangerColor, 'rgb(225, 29, 72)');
+      assert.match(actionStyles.dangerBackground, /linear-gradient/);
+      assert.equal(actionStyles.dangerColor, 'rgb(255, 255, 255)');
       await page.hover(draftCardSelector + ' .project-history-card-action-primary');
       await new Promise(resolve => setTimeout(resolve, 220));
       assert.equal(

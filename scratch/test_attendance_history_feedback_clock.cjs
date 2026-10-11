@@ -30,7 +30,6 @@ const puppeteer = require('puppeteer');
         const remarksStyle = getComputedStyle(remarks);
         return {
           title: overlay.querySelector('#feedbackPlanFormTitle')?.textContent.trim(),
-          subtitle: overlay.querySelector('.attendance-history-form-heading p')?.textContent.trim(),
           clockTitle: overlay.querySelector('[data-feedback-clock-title]')?.textContent.trim(),
           hasClockIcon: Boolean(overlay.querySelector('[data-feedback-clock-title] i')),
           hasBack: Boolean(overlay.querySelector('[data-feedback-form-back]')),
@@ -60,7 +59,6 @@ const puppeteer = require('puppeteer');
         };
       });
       assert.equal(formLayout.title, 'Attendance Feedback');
-      assert.equal(formLayout.subtitle, 'Attendance History');
       assert.equal(formLayout.clockTitle, 'Clock Time');
       assert.equal(formLayout.hasClockIcon, false);
       assert.ok(formLayout.hasBack && !formLayout.hasCloseIcon, `${theme}: feedback form uses page navigation`);
@@ -68,7 +66,14 @@ const puppeteer = require('puppeteer');
       assert.ok(formLayout.fieldsStacked && formLayout.fits, `${theme}: feedback fields use the standard stacked form layout`);
       assert.deepEqual(formLayout.sections, ['Request Summary', 'Clock Time', 'Feedback Details', 'Upload Attachments', 'Approver Comments']);
       assert.deepEqual(formLayout.actions, ['Cancel', 'Submit']);
-      assert.deepEqual(formLayout.actionStyles[0], { text: 'Cancel', backgroundColor: 'rgb(255, 241, 242)', backgroundImage: 'none', color: 'rgb(225, 29, 72)', borderRadius: '999px', disabled: false });
+      assert.deepEqual(formLayout.actionStyles[0], {
+        text: 'Cancel',
+        backgroundColor: theme === 'light' ? 'rgb(255, 255, 255)' : 'rgba(22, 21, 46, 0.65)',
+        backgroundImage: 'none',
+        color: theme === 'light' ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)',
+        borderRadius: '999px',
+        disabled: false
+      });
       assert.equal(formLayout.actionStyles[1].text, 'Submit');
       assert.match(formLayout.actionStyles[1].backgroundImage, /linear-gradient/);
       assert.deepEqual({ color: formLayout.actionStyles[1].color, borderRadius: formLayout.actionStyles[1].borderRadius, disabled: formLayout.actionStyles[1].disabled }, { color: 'rgb(255, 255, 255)', borderRadius: '999px', disabled: false });

@@ -21,11 +21,33 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
       await page.setViewport({ width, height });
       await page.goto(pageUrl + '?theme=' + theme, { waitUntil: 'domcontentloaded' });
 
-      assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.hidden), false, 'Update stays visible at its fixed position');
-      assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), true);
+      assert.deepEqual(
+        await page.$eval('#attendanceUpdateBtn', node => ({
+          hidden: node.hidden,
+          disabled: node.disabled,
+          rendered: node.getClientRects().length > 0
+        })),
+        { hidden: true, disabled: true, rendered: false },
+        'Update stays hidden until a verification changes'
+      );
+      assert.ok(
+        await page.evaluate(() => {
+          const list = document.querySelector('.attendance-list-view').getBoundingClientRect();
+          const content = document.querySelector('.main-content').getBoundingClientRect();
+          return Math.abs(list.bottom - content.bottom) <= 1;
+        }),
+        'Hidden Update leaves no blank action-card reserve above the bottom navigation'
+      );
       await page.click('.attendance-verify-button');
-      assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.hidden), false);
-      assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), false);
+      assert.deepEqual(
+        await page.$eval('#attendanceUpdateBtn', node => ({
+          hidden: node.hidden,
+          disabled: node.disabled,
+          rendered: node.getClientRects().length > 0
+        })),
+        { hidden: false, disabled: false, rendered: true },
+        'Selecting a Verify checkbox reveals Update'
+      );
 
       const layout = await page.evaluate(() => {
         const bar = document.querySelector('.attendance-total-bar');
@@ -39,6 +61,7 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
           verifyInsideSummaryRow: summaryRow.contains(document.getElementById('verifyAllBtn')),
           rightGap: frameRect.right - buttonRect.right,
           navGap: navRect.top - buttonRect.bottom,
+          actionReserve: Math.round(document.querySelector('.attendance-list-view').getBoundingClientRect().bottom - document.querySelector('.main-content').getBoundingClientRect().bottom),
           radius: getComputedStyle(updateButton).borderRadius,
           top: buttonRect.top,
           fits: updateButton.scrollWidth <= updateButton.clientWidth + 1
@@ -48,6 +71,7 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
       assert.equal(layout.outsideScroller, true);
       assert.equal(layout.verifyInsideSummaryRow, true);
       assert.ok(Math.abs(layout.rightGap - 20) <= 1 && Math.abs(layout.navGap - 20) <= 1, 'Update sits at bottom right above bottom navigation');
+      assert.equal(layout.actionReserve, 80, 'Visible Update reserves its action area above the bottom navigation');
       assert.equal(layout.radius, '999px');
       assert.equal(layout.fits, true);
       await page.hover('.main-content');
@@ -59,16 +83,40 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
       await page.screenshot({ path: path.resolve(__dirname, `individual-attendance-fixed-update-${theme}-${width}-${height}.png`) });
 
       await page.click('#attendanceUpdateBtn');
-      assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.hidden), false);
-      assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), true);
+      assert.deepEqual(
+        await page.$eval('#attendanceUpdateBtn', node => ({
+          hidden: node.hidden,
+          disabled: node.disabled,
+          rendered: node.getClientRects().length > 0
+        })),
+        { hidden: true, disabled: true, rendered: false },
+        'Saving hides Update again'
+      );
+      assert.ok(
+        await page.evaluate(() => {
+          const list = document.querySelector('.attendance-list-view').getBoundingClientRect();
+          const content = document.querySelector('.main-content').getBoundingClientRect();
+          return Math.abs(list.bottom - content.bottom) <= 1;
+        }),
+        'Saving removes the Update action-card reserve'
+      );
+      await page.$eval('.main-content', node => { node.scrollTop = 0; });
       await page.click('.attendance-verify-button');
-      assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), false, 'Clearing saved verification enables a new update');
+      assert.deepEqual(
+        await page.$eval('#attendanceUpdateBtn', node => ({
+          hidden: node.hidden,
+          disabled: node.disabled,
+          rendered: node.getClientRects().length > 0
+        })),
+        { hidden: false, disabled: false, rendered: true },
+        'Changing a saved checkbox reveals Update again'
+      );
       assert.deepEqual(errors, []);
       await page.close();
       }
     }
 
-    console.log('PASS: Individual Attendance Update stays at bottom right, saves verification, and avoids cards/navigation in both themes and short screens.');
+    console.log('PASS: Individual Attendance Update and its reserved action area appear only for unsaved checkbox changes.');
   } finally {
     await browser.close();
   }

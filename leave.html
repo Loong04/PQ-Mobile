@@ -4458,6 +4458,10 @@
         </div>
 
 
+        <section class="history-total-records-card" aria-label="History record count">
+          <span class="history-total-records-label">Total Records</span>
+          <strong id="leaveHistoryTotalRecords" class="history-total-records-value" aria-live="polite">0</strong>
+        </section>
 
         <!-- DYNAMIC HISTORY CARDS LIST -->
         <div id="myHistoryCardsList" style="display: flex; flex-direction: column; gap: 14px;">
@@ -9451,6 +9455,9 @@
     function buildHistoryActionsHTML(item, centered = false) {
       let actionHTML = '';
       if (item.status === 'submitted' || item.status === 'approved' || item.status === 'draft') {
+        const cancelStyle = centered
+          ? 'padding: 8px 16px; border-radius: 20px; background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; font-size: 12px; font-weight: 700; cursor: pointer;'
+          : 'padding: 8px 16px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: white; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);';
         let applyBtn = '';
         if (item.status === 'draft') {
           applyBtn = `
@@ -9464,7 +9471,7 @@
           <div style="margin-top: 12px; display: flex; justify-content: ${centered ? 'center' : 'flex-end'}; gap: 8px;">
             ${applyBtn}
             <button type="button" onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'cancelled')"
-              style="padding: 8px 16px; border-radius: 20px; background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; font-size: 12px; font-weight: 700; cursor: pointer;">
+              style="${cancelStyle}">
               Cancel
             </button>
           </div>
@@ -9626,6 +9633,9 @@
 
         return true;
       });
+
+      const totalRecords = document.getElementById('leaveHistoryTotalRecords');
+      if (totalRecords) totalRecords.textContent = String(filtered.length);
 
       // Update counts
       const allCount = data.length;

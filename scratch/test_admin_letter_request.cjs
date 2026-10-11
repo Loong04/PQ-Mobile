@@ -17,6 +17,20 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/admin/options/lett
       assert.equal(await page.$('.admin-coming-card'), null);
       assert.deepEqual(await page.$$eval('#letterRequestForm label', nodes => nodes.map(n => n.textContent.trim())),
         ['Letter Type', 'Description', '1st Merge Text', '2nd Merge Text', '3rd Merge Text', 'Reason', 'Remarks']);
+      assert.deepEqual(await page.$$eval('#letterRequestForm .form-section-heading', nodes => nodes.map(node => node.textContent.trim())), ['Letter Details'], 'Merge Text and Request Details must not be split into separate sections');
+      assert.equal(await page.$$eval('#letterRequestForm .letter-request-section', nodes => nodes.length), 1);
+      const mergeFields = await page.$$eval('#letterRequestMerge1, #letterRequestMerge2, #letterRequestMerge3', (nodes) => nodes.map(node => ({
+        tag: node.tagName,
+        minHeight: getComputedStyle(node).minHeight,
+        width: node.getBoundingClientRect().width
+      })));
+      const remarksField = await page.$eval('#letterRequestRemarks', node => ({
+        minHeight: getComputedStyle(node).minHeight,
+        width: node.getBoundingClientRect().width
+      }));
+      assert.ok(mergeFields.every(field => field.tag === 'TEXTAREA'), 'All Merge Text fields must be multiline textareas');
+      assert.ok(mergeFields.every(field => field.minHeight === remarksField.minHeight), 'Merge Text fields must match the Remarks height');
+      assert.ok(mergeFields.every(field => Math.abs(field.width - remarksField.width) <= 1), 'Merge Text fields must match the Remarks width');
       await page.click('#letterRequestSubmit');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'letterRequestType');
       assert.match(await page.$eval('#letterRequestFeedback', n => n.textContent), /letter type/i);
@@ -30,7 +44,7 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/admin/options/lett
       for (const width of [360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
         assert.ok(await page.$eval('main', n => n.scrollWidth <= n.clientWidth + 1));
-        assert.ok(await page.$$eval('.form-section-heading', nodes => nodes.length === 3 && nodes.every(n => {
+        assert.ok(await page.$$eval('.form-section-heading', nodes => nodes.length === 1 && nodes.every(n => {
           const accent = getComputedStyle(n, '::before');
           return accent.width === '3.5px' && accent.height === '15px' && accent.backgroundColor === 'rgb(168, 85, 247)';
         })));

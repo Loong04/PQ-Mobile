@@ -58,11 +58,12 @@ async function run() {
       const style = getComputedStyle(button);
       return {
         size: { width: rect.width, height: rect.height },
-        background: style.backgroundColor,
+        background: style.backgroundImage,
         color: style.color
       };
     });
-    assert.deepEqual({ background: cancelPresentation.background, color: cancelPresentation.color }, { background: 'rgb(255, 241, 242)', color: 'rgb(225, 29, 72)' }, 'Cancel must keep the light blush style in dark mode');
+    assert.match(cancelPresentation.background, /linear-gradient/);
+    assert.equal(cancelPresentation.color, 'rgb(255, 255, 255)', 'Cancel must use the purple primary style in dark mode');
     await page.click('#historyFilterTrigger');
     const taxFilterLabels = await page.evaluate(() => ({
       from: document.getElementById('historyDateFromLabel').textContent.trim(),

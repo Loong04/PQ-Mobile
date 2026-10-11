@@ -633,15 +633,72 @@
     .summary-history-detail strong.is-exception { color: #f59e0b; }
     .summary-history-detail strong.is-clear { color: #10b981; }
 
-    /* Chart Styles */
-    .bar-chart-item { margin-bottom: 24px; }
-    .chart-label-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
-    .chart-label-row .name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-    .chart-label-row .val { font-size: 14px; font-weight: 900; color: var(--purple-primary); }
-    .bar-track { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; position: relative; }
-    .bar-fill { height: 100%; border-radius: 8px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0; }
-    .bar-fill.green { background: linear-gradient(90deg, #10b981, #34d399); }
-    .bar-fill.blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    /* Date, horizontal bar and metric value share a single row. */
+    .summary-chart-heading { margin-bottom: 16px; }
+    .summary-chart-heading h2 { color: var(--text-primary); font-size: 17px; font-weight: 800; }
+    .summary-chart-heading p { margin-top: 5px; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+    .summary-chart-card {
+      --chart-date-width: 72px;
+      --chart-value-width: 64px;
+      --chart-column-gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sm);
+    }
+    .summary-chart-columns, #view-chart .bar-chart-item, .summary-chart-axis {
+      display: grid;
+      grid-template-columns: var(--chart-date-width) minmax(0, 1fr) var(--chart-value-width);
+      column-gap: var(--chart-column-gap);
+      align-items: center;
+    }
+    .summary-chart-columns {
+      padding-bottom: 12px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .6px;
+    }
+    .summary-chart-value-heading { grid-column: 3; text-align: right; }
+    .summary-chart-plot { position: relative; }
+    .summary-chart-gridlines {
+      position: absolute;
+      inset-block: 0;
+      left: calc(var(--chart-date-width) + var(--chart-column-gap));
+      right: calc(var(--chart-value-width) + var(--chart-column-gap));
+      pointer-events: none;
+    }
+    .summary-chart-gridline { position: absolute; inset-block: 0; border-left: 1px dashed var(--border-subtle); }
+    #view-chart .bar-chart-item { position: relative; min-height: 44px; }
+    #view-chart .name { min-width: 0; color: var(--text-secondary); font-size: 12px; font-weight: 700; line-height: 1.4; }
+    .summary-chart-year { display: block; margin-top: 1px; color: var(--text-muted); font-size: 10px; font-weight: 600; }
+    #view-chart .val { min-width: 0; color: var(--text-primary); font-size: 12px; font-weight: 800; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    #view-chart .bar-track { width: 100%; height: 16px; min-width: 0; position: relative; }
+    #view-chart .bar-fill {
+      width: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #9333ea, #8b5cf6);
+      box-shadow: 0 2px 6px rgba(124, 58, 237, .18);
+      transition: width .45s cubic-bezier(.2, .7, .3, 1);
+    }
+    .summary-chart-axis { margin-top: 4px; }
+    .summary-chart-ticks { grid-column: 2; position: relative; min-height: 24px; border-top: 1px solid var(--border-subtle); }
+    .summary-chart-tick { position: absolute; top: 6px; color: var(--text-muted); font-size: 9px; font-weight: 600; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+    .summary-chart-tick:first-child { transform: none; }
+    .summary-chart-tick:last-child { transform: translateX(-100%); }
+    .summary-chart-axis-label { margin-top: 8px; color: var(--text-secondary); font-size: 11px; font-weight: 700; text-align: center; }
+    .summary-chart-empty { padding: 28px 0; color: var(--text-muted); font-size: 13px; text-align: center; }
+    @media (max-width: 375px) {
+      .summary-chart-card { --chart-date-width: 64px; --chart-value-width: 58px; --chart-column-gap: 10px; padding: 12px; }
+      #view-chart .name, #view-chart .val { font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #view-chart .bar-fill { transition: none; }
+    }
 
     /* Pop-up Modal (Attendance Details) */
     .popup-modal-overlay {
@@ -1535,30 +1592,7 @@
       </div>
 
       <!-- ================= CHART VIEW (Full Page) ================= -->
-      <div id="view-chart" style="display: none; padding-top: 10px;">
-        <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 20px;">Daily Hours Breakdown</h2>
-        
-        <div class="bar-chart-item">
-          <div class="chart-label-row"><span class="name">16 Sep (Mon)</span><span class="val">8.00 Hrs</span></div>
-          <div class="bar-track"><div class="bar-fill green" data-width="100%"></div></div>
-        </div>
-        
-        <div class="bar-chart-item">
-          <div class="chart-label-row"><span class="name">17 Sep (Tue)</span><span class="val">8.00 Hrs</span></div>
-          <div class="bar-track"><div class="bar-fill green" data-width="100%"></div></div>
-        </div>
-        
-        <div class="bar-chart-item">
-          <div class="chart-label-row"><span class="name">18 Sep (Wed)</span><span class="val">8.00 Hrs</span></div>
-          <div class="bar-track"><div class="bar-fill green" data-width="100%"></div></div>
-        </div>
-
-        <div class="bar-chart-item">
-          <div class="chart-label-row"><span class="name">19 Sep (Thu)</span><span class="val">4.00 Hrs</span></div>
-          <div class="bar-track"><div class="bar-fill orange" data-width="50%" style="background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div></div>
-        </div>
-        <div style="height: 120px; width: 100%; pointer-events: none;"></div>
-      </div>
+      <div id="view-chart" style="display: none; padding-top: 10px;"></div>
 
       <!-- ================= LIST DETAILS VIEW ================= -->
       <div id="view-list" style="display: none; padding-top: 10px;">
@@ -2276,42 +2310,106 @@
       }
     }
 
+    function getSummaryChartScale(values, isDays) {
+      const maximum = Math.max(...values, 0) || 1;
+      const rawStep = maximum / 4;
+      const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+      const step = Math.max(isDays ? 1 : 0, [1, 2, 5, 10].find(value => value * magnitude >= rawStep) * magnitude);
+      const intervals = Math.ceil(maximum / step);
+      return { maximum: step * intervals, ticks: Array.from({ length: intervals + 1 }, (_, index) => Number((index * step).toFixed(6))) };
+    }
+
     function renderSummaryChart() {
-      const hours = currentDetailItems.map(item => getSummaryTotalHours(listActiveTitle, [item]));
-      const maximum = Math.max(...hours, 0);
+      const isDays = listActiveTitle.endsWith('Days');
+      const values = currentDetailItems.map(item => isDays ? 1 : Math.max(0, getSummaryTotalHours(listActiveTitle, [item])));
+      const scale = getSummaryChartScale(values, isDays);
       const chart = document.getElementById('view-chart');
       chart.replaceChildren();
+      const headingGroup = document.createElement('div');
+      headingGroup.className = 'summary-chart-heading';
       const heading = document.createElement('h2');
-      heading.style.cssText = 'font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 20px;';
-      heading.textContent = 'Daily Hours Breakdown';
-      chart.append(heading);
+      heading.textContent = 'Daily Breakdown';
+      const subtitle = document.createElement('p');
+      subtitle.textContent = listActiveTitle;
+      headingGroup.append(heading, subtitle);
+      chart.append(headingGroup);
+
+      const card = document.createElement('section');
+      card.className = 'summary-chart-card';
+      card.setAttribute('aria-label', `${listActiveTitle} by date`);
+      chart.append(card);
+      if (!currentDetailItems.length) {
+        const empty = document.createElement('p');
+        empty.className = 'summary-chart-empty';
+        empty.textContent = 'No records found.';
+        card.append(empty);
+        return;
+      }
+
+      const columns = document.createElement('div');
+      columns.className = 'summary-chart-columns';
+      const dateHeading = document.createElement('span');
+      dateHeading.textContent = 'DATE';
+      const valueHeading = document.createElement('span');
+      valueHeading.className = 'summary-chart-value-heading';
+      valueHeading.textContent = isDays ? 'DAYS' : 'HOURS';
+      columns.append(dateHeading, valueHeading);
+      card.append(columns);
+
+      const plot = document.createElement('div');
+      plot.className = 'summary-chart-plot';
+      const gridlines = document.createElement('div');
+      gridlines.className = 'summary-chart-gridlines';
+      gridlines.setAttribute('aria-hidden', 'true');
+      scale.ticks.forEach(tick => {
+        const line = document.createElement('span');
+        line.className = 'summary-chart-gridline';
+        line.style.left = `${tick / scale.maximum * 100}%`;
+        gridlines.append(line);
+      });
+      plot.append(gridlines);
       currentDetailItems.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'bar-chart-item';
-        const labels = document.createElement('div');
-        labels.className = 'chart-label-row';
         const date = document.createElement('span');
         date.className = 'name';
-        date.textContent = `${item.day}, ${item.fullDate}`;
+        date.textContent = item.fullDate.replace(/\s+\d{4}$/, '');
+        const year = document.createElement('span');
+        year.className = 'summary-chart-year';
+        year.textContent = item.fullDate.match(/\d{4}$/)?.[0] || '';
+        date.append(year);
         const value = document.createElement('span');
         value.className = 'val';
-        value.textContent = `${hours[index].toFixed(2)} Hrs`;
-        labels.append(date, value);
+        value.textContent = isDays ? `${values[index]} Day` : `${values[index].toFixed(2)} Hrs`;
+        row.setAttribute('aria-label', `${item.fullDate}: ${value.textContent}`);
         const track = document.createElement('div');
         track.className = 'bar-track';
+        track.setAttribute('aria-hidden', 'true');
         const fill = document.createElement('div');
         fill.className = 'bar-fill';
-        fill.style.background = 'linear-gradient(90deg, #7c3aed, #a78bfa)';
-        fill.dataset.width = `${maximum ? hours[index] / maximum * 100 : 0}%`;
+        fill.dataset.width = `${Number((values[index] / scale.maximum * 100).toFixed(4))}%`;
         track.append(fill);
-        row.append(labels, track);
-        chart.append(row);
+        row.append(date, track, value);
+        plot.append(row);
       });
-      if (!currentDetailItems.length) {
-        const empty = document.createElement('p');
-        empty.textContent = 'No records found.';
-        chart.append(empty);
-      }
+      card.append(plot);
+
+      const axis = document.createElement('div');
+      axis.className = 'summary-chart-axis';
+      const ticks = document.createElement('div');
+      ticks.className = 'summary-chart-ticks';
+      scale.ticks.forEach(tick => {
+        const label = document.createElement('span');
+        label.className = 'summary-chart-tick';
+        label.textContent = String(tick);
+        label.style.left = `${tick / scale.maximum * 100}%`;
+        ticks.append(label);
+      });
+      axis.append(ticks);
+      const axisLabel = document.createElement('p');
+      axisLabel.className = 'summary-chart-axis-label';
+      axisLabel.textContent = `Total ${listActiveTitle}`;
+      card.append(axis, axisLabel);
     }
 
     function setView(view) {

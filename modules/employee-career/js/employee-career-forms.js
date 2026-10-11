@@ -145,7 +145,7 @@
 
     project.addEventListener('change', renderTasks);
     renderTasks();
-    bindSubmit(form, 'Whereabout submitted successfully');
+    bindSubmit(form, 'Whereabout saved successfully');
   }
 
   function initConfirmStaff() {

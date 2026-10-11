@@ -27,6 +27,9 @@ const historyKey = 'peoplehcm:workplace:history:v1';
     assert.deepEqual(await page.$$eval('#inventoryRequestForm .claim-field-label', labels => labels.map(label => label.childNodes[0].textContent.trim())), [
       'Request Item', 'Quantity', 'Required By', 'Reason', 'Remarks'
     ]);
+    assert.deepEqual(await page.$$eval('#inventoryRequestForm > .claim-form-card > .inventory-request-section > .form-section-heading', headings => headings.map(heading => heading.textContent.trim())), ['Request Details'], 'Remarks must not be split into an Additional Information section');
+    assert.equal(await page.$$eval('#inventoryRequestForm .inventory-request-section', sections => sections.length), 1);
+    assert.equal(await page.$eval('#inventoryRequestRemarks', node => node.closest('.claim-form-stack').contains(document.getElementById('inventoryRequestReason'))), true, 'Reason and Remarks must use one continuous field stack');
     assert.equal(await page.$eval('#inventoryUploadFieldset legend', node => node.textContent.trim()), 'Upload Attachments');
     assert.deepEqual(await page.$$eval('#inventoryUploadActions button', buttons => buttons.map(button => button.textContent.trim())), ['Select File(s)', 'Take a Picture']);
     assert.equal(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1), true, 'Inventory form must fit the mobile viewport');
@@ -76,7 +79,7 @@ const historyKey = 'peoplehcm:workplace:history:v1';
     await page.goto(historyUrl + '?category=inventory-request&theme=light', { waitUntil: 'load' });
     assert.equal(await page.$eval('[data-history-kind="inventory-request"]', node => node.classList.contains('active')), true);
     assert.equal(await page.$eval('#historyCategoryTitle', node => node.textContent.trim()), 'Inventory Request History');
-    assert.equal(await page.$eval('#historyRecordCount', node => node.textContent.trim()), 'Total Records: 3', 'Saved requests coexist with the two screenshot inventory records');
+    assert.equal(await page.$eval('#historyRecordCount', node => node.textContent.trim()), '3', 'Saved requests coexist with the two screenshot inventory records');
     assert.equal(await page.$eval('#workplaceHistoryList .history-card-title', node => node.textContent.trim()), 'IT Accessories');
     await page.click('#workplaceHistoryList .history-card-item');
     assert.ok((await page.$eval('#historyDetailBody', node => node.textContent)).includes('package.json'));

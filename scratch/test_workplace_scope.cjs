@@ -17,7 +17,13 @@ const puppeteer = require('puppeteer');
       assert.ok(await page.$(individual), 'Workplace must offer an Individual / Team switch');
       const counts = await page.$$eval('[data-document-status] strong', nodes => nodes.map(node => node.textContent));
       const stored = await page.evaluate(() => localStorage.getItem('peoplehcm:workplace:history:v1'));
-      assert.deepEqual(await page.$$eval('#workplaceIndividualPanel .admin-option-title', nodes => nodes.map(node => node.textContent)), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Inventory Request', 'Policy / SOP', 'History']);
+      assert.deepEqual(await page.$$eval('#workplaceIndividualPanel > section .admin-options > .admin-option .admin-option-title', nodes => nodes.map(node => node.textContent.trim())), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Inventory Request', 'View All']);
+      await page.click('[data-workplace-options-open]');
+      assert.ok(await page.$('#workplaceOptionsDialog[open]'));
+      assert.deepEqual(await page.$$eval('#workplaceOptionsDialog .admin-option-title', nodes => nodes.map(node => node.textContent.trim())), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Inventory Request', 'History']);
+      assert.equal((await page.$eval('#workplaceOptionsDialog', node => node.textContent)).includes('Policy / SOP'), false);
+      await page.keyboard.press('Escape');
+      assert.equal(await page.$('#workplaceOptionsDialog[open]'), null);
       assert.equal(await page.$eval(individual, node => node.getAttribute('aria-selected')), 'true');
       assert.equal(await page.$eval('#workplaceIndividualPanel', node => node.hidden), false);
       await page.screenshot({ path: path.resolve(__dirname, `workplace-individual-${theme}-${width}.png`) });
@@ -58,7 +64,7 @@ const puppeteer = require('puppeteer');
         assert.equal(await page.$eval(scope === 'team' ? team : individual, node => node.getAttribute('aria-selected')), 'true', 'New options must return to their own scope');
       }
       assert.deepEqual(errors, []);
-      console.log(`PASS: Workplace scope switching, original Individual options and History, ${theme}, ${width}px`);
+      console.log(`PASS: Workplace scope switching, six-option landing grid, View All sheet and History, ${theme}, ${width}px`);
       await page.close();
     }
   } finally { await browser.close(); }

@@ -3,9 +3,9 @@
   const key = 'peoplehcm:workplace:book-resource:v1';
   const calendarSampleKey = 'peoplehcm:workplace:book-resource:calendar-samples:v1';
   const resources = [
-    { id: 'selangor-room', name: 'SELANGOR ROOM' },
-    { id: 'meeting-room', name: 'MEETING ROOM' },
-    { id: 'projector', name: 'PROJECTOR' }
+    { id: 'selangor-room', name: 'SELANGOR ROOM', roomNo: 'MR-01' },
+    { id: 'meeting-room', name: 'MEETING ROOM', roomNo: 'MR-02' },
+    { id: 'projector', name: 'PROJECTOR', roomNo: 'N/A' }
   ];
   const tasks = [
     { id: 'meeting', name: 'Meeting' },

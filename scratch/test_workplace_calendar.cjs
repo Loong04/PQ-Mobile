@@ -28,6 +28,12 @@ async function screenshot(page, name) {
       });
       await page.goto(url + '?theme=' + theme, { waitUntil: 'domcontentloaded' });
       assert.ok(await page.$('#workplaceCalendar'), 'Workplace dashboard must include the Leave-style calendar');
+      assert.equal(await page.$eval('#workplaceCalendarTitle', node => node.textContent.trim()), 'Book Resource Calendar', 'Calendar card must identify the booking feature it represents');
+      assert.ok(await page.$eval('#workplaceCalendarTitle', node =>
+        node.parentElement.id === 'workplaceCalendar'
+        && node.nextElementSibling?.classList.contains('calendar-card')
+        && !node.closest('.calendar-card')
+      ), 'Book Resource Calendar title must sit outside the calendar card like My Leave Calendar');
       assert.equal(await page.$eval('#workplaceCalendarMonth', node => node.textContent), 'October 2026');
       assert.equal((await cells(page)).length, 31);
       assert.equal(await page.$eval('#workplaceCalendarGrid button:first-child', node => node.dataset.date), '2026-09-28', 'The calendar week begins on Monday');

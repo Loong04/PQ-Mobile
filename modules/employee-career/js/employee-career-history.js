@@ -39,7 +39,7 @@
       ? [f.from ? 'From ' + date(f.from) : '', f.to ? 'To ' + date(f.to) : '', f.type, f.category, f.status ? 'Submitted' : '']
       : [f.year || 'All Years', f.month ? months[Number(f.month)-1] : 'All Months'];
     $('historyFilterSummary').textContent = summary.filter(Boolean).join(' / ') || 'All Feedback';
-    $('historyRecordCount').textContent = rows.length + (rows.length === 1 ? ' Record' : ' Records');
+    $('historyRecordCount').textContent = String(rows.length);
     $('historyEmptyState').hidden = rows.length > 0;
     $('careerHistoryList').innerHTML = rows.map(row => {
       const title = kind === 'feedback' ? row.title : row.description;

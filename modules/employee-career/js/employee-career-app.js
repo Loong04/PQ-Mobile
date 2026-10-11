@@ -13,6 +13,11 @@
     const items = options[activeScope] || [];
     if (!grid) return;
     const documentStatus = document.getElementById('employeeCareerDocumentStatus');
+    document.querySelectorAll('[data-career-scope="team"]').forEach(section => { section.hidden = activeScope !== 'team'; });
+    const pending = document.getElementById('employeeCareerPendingApproval');
+    if (pending) pending.href = `options/pending-approval.html?scope=team&theme=${theme()}`;
+    const expiry = document.getElementById('employeeCareerExpiry');
+    if (expiry) expiry.hidden = activeScope !== 'individual';
     if (documentStatus) {
       documentStatus.hidden = activeScope !== 'individual';
       documentStatus.querySelectorAll('[data-document-status]').forEach(link => {

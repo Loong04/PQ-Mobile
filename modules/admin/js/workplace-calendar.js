@@ -57,7 +57,6 @@
       header.append(heading, node('span', 'status-pill ' + (planned ? 'draft' : 'approved'), planned ? 'Plan' : 'Confirmed'));
       const details = node('dl', 'history-card-details workplace-booking-rows');
       const rows = [
-        ['Booking Date', new Date(record.date + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })],
         ['Time', `${record.startTime} – ${record.endTime}`],
         ['Task', store.tasks.find(task => task.id === record.task).name],
         ['Purpose', record.purpose], ['Meeting Ref #', record.meetingRef], ['Remarks', record.remarks]
@@ -69,7 +68,7 @@
         details.append(row);
       }
       const actions = node('div', 'history-card-actions');
-      const action = node('button', planned ? 'history-submit-btn' : 'history-cancel-btn', planned ? 'Confirm' : 'Delete');
+      const action = node('button', 'history-submit-btn', planned ? 'Confirm' : 'Delete');
       action.type = 'button';
       action.dataset.bookingAction = planned ? 'confirm' : 'delete';
       action.setAttribute('aria-label', `${planned ? 'Confirm' : 'Delete'} ${store.resources.find(resource => resource.id === record.resource).name}, ${record.startTime} – ${record.endTime}`);

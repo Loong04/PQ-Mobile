@@ -1,8 +1,33 @@
 /* Keep Admin option and return links in the currently selected theme. */
 document.addEventListener('DOMContentLoaded', () => {
   const scopeTabs = [...document.querySelectorAll('.workplace-scope-tab')];
+  const optionsDialog = document.getElementById('workplaceOptionsDialog');
+  const optionsTrigger = document.querySelector('[data-workplace-options-open]');
+  function positionOptionsDialog() {
+    if (!optionsDialog) return;
+    const phone = document.querySelector('.phone-container');
+    const bounds = phone.getBoundingClientRect();
+    Object.entries({ top: bounds.top, left: bounds.left, width: bounds.width, height: bounds.height }).forEach(([key, value]) => {
+      optionsDialog.style.setProperty('--schedule-sheet-' + key, value + 'px');
+    });
+    optionsDialog.style.setProperty('--schedule-sheet-radius', getComputedStyle(phone).borderRadius);
+  }
+  function closeOptionsDialog() {
+    if (optionsDialog?.open) optionsDialog.close();
+  }
+  optionsTrigger?.addEventListener('click', () => {
+    positionOptionsDialog();
+    optionsDialog.showModal();
+  });
+  optionsDialog?.addEventListener('click', event => {
+    if (event.target === optionsDialog) closeOptionsDialog();
+  });
+  window.addEventListener('resize', () => {
+    if (optionsDialog?.open) positionOptionsDialog();
+  });
   function setScope(scope, updateUrl = true) {
     const activeScope = scope === 'team' ? 'team' : 'individual';
+    if (activeScope === 'team') closeOptionsDialog();
     scopeTabs.forEach(tab => {
       const selected = tab.id === (activeScope === 'team' ? 'workplaceTabTeam' : 'workplaceTabIndividual');
       tab.classList.toggle('active', selected);
@@ -29,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (scopeTabs.length) setScope(new URLSearchParams(location.search).get('scope'), false);
   function updateAdminLinks() {
-    document.querySelectorAll('.admin-option, .team-pending-approval-action, [data-admin-back], [data-document-status]').forEach(link => {
+    document.querySelectorAll('a.admin-option, .team-pending-approval-action, [data-admin-back], [data-document-status]').forEach(link => {
       const url = new URL(link.href, window.location.href);
       url.searchParams.set('theme', getCurrentTheme());
       link.href = url.href;

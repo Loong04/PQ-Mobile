@@ -100,7 +100,11 @@ const puppeteer = require('puppeteer');
       assert.equal(layout.switches[1].trackColor, 'rgb(16, 185, 129)', `${theme}: enabled switch uses the standard green state`);
       assert.notEqual(layout.switches[0].trackColor, layout.switches[1].trackColor, `${theme}: disabled switch uses a neutral state`);
       assert.equal(layout.legacyChecks, 0, `${theme}: square checkbox rows are removed`);
-      assert.deepEqual(layout.actionStyles.cancel, { backgroundColor: 'rgb(255, 241, 242)', color: 'rgb(225, 29, 72)', borderRadius: '999px' });
+      assert.deepEqual(layout.actionStyles.cancel, {
+        backgroundColor: theme === 'light' ? 'rgb(255, 255, 255)' : 'rgba(22, 21, 46, 0.65)',
+        color: theme === 'light' ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)',
+        borderRadius: '999px'
+      });
       assert.match(layout.actionStyles.submit.backgroundImage, /linear-gradient/);
       assert.deepEqual({ color: layout.actionStyles.submit.color, borderRadius: layout.actionStyles.submit.borderRadius, disabled: layout.actionStyles.submit.disabled }, { color: 'rgb(255, 255, 255)', borderRadius: '999px', disabled: false });
 

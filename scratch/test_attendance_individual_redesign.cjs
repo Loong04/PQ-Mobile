@@ -54,6 +54,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     assert.equal(await page.$eval('#attendanceTotalHoursValue', node => node.textContent.trim()), '8.00/2.00');
 
     const cards = await page.$$eval('.attendance-record-card', nodes => nodes.map(node => ({
+      exception: node.dataset.exception,
       historyClass: node.classList.contains('history-card-item'),
       radius: getComputedStyle(node).borderRadius,
       background: getComputedStyle(node).backgroundImage,
@@ -71,6 +72,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
       hasVerifyCheckbox: Boolean(node.querySelector('.attendance-verify-button .verify-checkbox-box')),
       hasStatusPill: node.querySelector('.attendance-verify-button')?.classList.contains('attendance-status-pill'),
       detailLabels: Array.from(node.querySelectorAll('.attendance-record-detail > span')).map(label => label.textContent.trim()),
+      timeValue: node.querySelector('.attendance-record-detail strong')?.textContent.trim(),
       exceptionStatus: node.querySelector('.attendance-exception-status')?.textContent.replace(/\s+/g, ' ').trim(),
       statusInTopControls: Boolean(node.querySelector('.attendance-record-top .attendance-record-controls .attendance-exception-status')),
       verifyBeforeStatus: (() => {
@@ -80,10 +82,17 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
         return Boolean(verify && status && verify.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING
           && status.getBoundingClientRect().top > verify.getBoundingClientRect().top);
       })(),
-      hasActions: Boolean(node.querySelector('.attendance-card-actions'))
+      hasActions: Boolean(node.querySelector('.attendance-card-actions')),
+      actions: Array.from(node.querySelectorAll('.attendance-card-actions .card-action-btn'), button => button.textContent.trim())
     })));
-    assert.equal(cards.length, 2);
-    cards.forEach((card, index) => {
+    assert.equal(cards.length, 3);
+    const cardTreatments = {
+      none: { accent: 'rgb(16, 185, 129)', rgb: /16, 185, 129/ },
+      'unapproved-ot': { accent: 'rgb(245, 158, 11)', rgb: /245, 158, 11/ },
+      'late-in': { accent: 'rgb(124, 58, 237)', rgb: /124, 58, 237/ }
+    };
+    cards.forEach(card => {
+      const treatment = cardTreatments[card.exception];
       assert.equal(card.historyClass, true, 'Attendance record uses History Card container');
       assert.equal(card.radius, '18px');
       assert.match(card.background, /linear-gradient/);
@@ -93,11 +102,11 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
       assert.equal(card.detailsTriggerTag, 'BUTTON');
       assert.equal(card.verifyTag, 'BUTTON');
       assert.ok(card.accentWidth >= 4, 'Attendance card has the reference left accent');
-      assert.equal(card.accentColor, index === 0 ? 'rgb(16, 185, 129)' : 'rgb(245, 158, 11)');
-      assert.match(card.background, index === 0 ? /16, 185, 129/ : /245, 158, 11/);
+      assert.equal(card.accentColor, treatment.accent);
+      assert.match(card.background, treatment.rgb);
       assert.equal(card.hasSummaryPanel, true, 'Attendance card has an inset summary panel');
-      assert.match(card.summaryBackground, index === 0 ? /16, 185, 129/ : /245, 158, 11/);
-      assert.match(card.summaryBorderColor, index === 0 ? /16, 185, 129/ : /245, 158, 11/);
+      assert.match(card.summaryBackground, treatment.rgb);
+      assert.match(card.summaryBorderColor, treatment.rgb);
       assert.match(card.reference, /^Date: /);
       assert.equal(card.hasVerifyCheckbox, true, 'Verify uses a square checkbox');
       assert.equal(card.hasStatusPill, false, 'Verify is not presented as a status pill');
@@ -106,9 +115,27 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
       assert.equal(card.verifyBeforeStatus, true, 'Verify checkbox appears above exception status');
       assert.equal(card.hasActions, true);
     });
-    assert.deepEqual(cards.map(card => card.exceptionStatus), ['No Exception', 'Unapproved OT']);
+    assert.deepEqual(cards.map(card => card.exceptionStatus), ['No Exception', 'Unapproved OT', 'Late In']);
+    assert.deepEqual(
+      cards.map(card => card.timeValue),
+      ['07:38', '08:09, 19:40', '08:42, 17:30'],
+      'Attendance card Times values use commas rather than dot separators'
+    );
+    assert.deepEqual(
+      cards.map(card => ({ exception: card.exception, actions: card.actions })),
+      [
+        { exception: 'none', actions: ['Change Shift', 'Feedback'] },
+        { exception: 'unapproved-ot', actions: ['Change Shift', 'Feedback'] },
+        { exception: 'late-in', actions: ['Change Shift', 'Feedback'] }
+      ],
+      'Every Attendance record, including Unapproved OT, keeps both card actions'
+    );
     assert.equal(await page.$eval('#verifyAllBtn', node => node.tagName), 'BUTTON');
-    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), true, 'Update starts disabled');
+    assert.deepEqual(
+      await page.$eval('#attendanceUpdateBtn', node => ({ disabled: node.disabled, hidden: node.hidden })),
+      { disabled: true, hidden: true },
+      'Update starts disabled and hidden'
+    );
 
     const actionColors = await page.$eval('.attendance-record-card', node => {
       const shift = getComputedStyle(node.querySelector('.btn-shift-change'));
@@ -128,7 +155,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
       0,
       'Attendance card action buttons use text without icons'
     );
-    assert.equal(await page.$$eval('.main-content .attendance-record-card', nodes => nodes.length), 2, 'Attendance cards stay inside main content');
+    assert.equal(await page.$$eval('.main-content .attendance-record-card', nodes => nodes.length), 3, 'Attendance cards stay inside main content');
     assert.ok(await page.$eval('phone-bottom-nav .bottom-nav', node => node.getBoundingClientRect().height) > 0, 'Bottom navigation keeps its rendered height');
 
     await page.focus('.attendance-card-details-trigger');
@@ -155,18 +182,27 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     await page.focus('.attendance-verify-button');
     await page.keyboard.press('Enter');
     assert.equal(await page.$eval('.attendance-verify-button', node => node.getAttribute('aria-pressed')), 'true');
+    assert.deepEqual(
+      await page.$eval('#attendanceUpdateBtn', node => ({ disabled: node.disabled, hidden: node.hidden })),
+      { disabled: false, hidden: false },
+      'A checkbox change reveals Update'
+    );
 
     await page.$eval('#verifyAllBtn', button => button.scrollIntoView({ block: 'start' }));
     await page.click('#verifyAllBtn');
     assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), false, 'Verify All enables Update');
     assert.deepEqual(
       await page.$$eval('.attendance-verify-button', buttons => buttons.map(button => button.getAttribute('aria-pressed'))),
-      ['true', 'true']
+      ['true', 'true', 'true']
     );
     await page.click('#attendanceUpdateBtn');
-    assert.equal(await page.$eval('#attendanceUpdateBtn', node => node.disabled), true, 'Update disables after saving');
+    assert.deepEqual(
+      await page.$eval('#attendanceUpdateBtn', node => ({ disabled: node.disabled, hidden: node.hidden })),
+      { disabled: true, hidden: true },
+      'Update hides after saving'
+    );
 
-    await page.$eval('.attendance-record-card .btn-shift-change', node => {
+    await page.$eval('.attendance-record-card[data-exception="unapproved-ot"] .btn-shift-change', node => {
       node.scrollIntoView({ block: 'center' });
       node.click();
     });
@@ -178,11 +214,11 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
       const titleBlock = header?.querySelector('.attendance-form-header-title');
       const headerBox = header?.getBoundingClientRect();
       const titleBox = titleBlock?.getBoundingClientRect();
-      const mutedReference = document.createElement('span');
-      mutedReference.style.color = 'var(--text-muted)';
-      overlay.appendChild(mutedReference);
-      const mutedColor = getComputedStyle(mutedReference).color;
-      mutedReference.remove();
+      const primaryReference = document.createElement('span');
+      primaryReference.style.color = 'var(--text-primary)';
+      overlay.appendChild(primaryReference);
+      const primaryColor = getComputedStyle(primaryReference).color;
+      primaryReference.remove();
       return {
         hasStatusBar: Boolean(header?.querySelector('phone-status-bar')),
         hasBackButton: Boolean(header?.querySelector('[data-shift-change-back]')),
@@ -202,7 +238,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
           color: getComputedStyle(label).color,
           fontWeight: getComputedStyle(label).fontWeight
         })),
-        mutedColor,
+        primaryColor,
         hasSummary: Boolean(form?.querySelector('.attendance-form-summary')),
         hasFormCard: Boolean(form?.querySelector('.attendance-form-card')),
         hasCancel: Boolean(form?.querySelector('.attendance-form-cancel')),
@@ -225,7 +261,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     assert.equal(shiftForm.formTag, 'FORM');
     assert.deepEqual(shiftForm.labels.map(label => label.text), ['New Shift', 'Reason', 'Remarks']);
     assert.equal(shiftForm.labels.every(label => label.hasControl), true, 'Every Shift Change label is connected to its control');
-    assert.equal(shiftForm.labels.every(label => label.color === shiftForm.mutedColor), true, 'Shift Change labels use the Leave form muted color');
+    assert.equal(shiftForm.labels.every(label => label.color === shiftForm.primaryColor), true, 'Shift Change labels match the form values');
     assert.equal(shiftForm.labels.every(label => label.fontWeight === '700'), true, 'Shift Change labels use the Leave form weight');
     assert.equal(shiftForm.hasSummary, true);
     assert.equal(shiftForm.hasFormCard, true, 'Shift Change fields use the Leave-style white form card');
@@ -300,7 +336,9 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
         }),
         feedbackBack: buttonAppearance(feedbackBack),
         attendanceBack: buttonAppearance(attendanceBack),
-        labels: Array.from(card?.querySelectorAll('label') || []).map(label => label.textContent.replace(/\s+/g, ' ').trim())
+        labels: Array.from(card?.querySelectorAll('label') || [])
+          .filter(label => label.getClientRects().length > 0)
+          .map(label => label.textContent.replace(/\s+/g, ' ').trim())
       };
     });
     assert.equal(feedbackDetails.hasHeaderRightIcon, false, 'Attendance Feedback header has no right-side info icon');
@@ -360,7 +398,8 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
       }))),
       [
         { exception: 'none', hidden: true, display: 'none' },
-        { exception: 'unapproved-ot', hidden: false, display: 'flex' }
+        { exception: 'unapproved-ot', hidden: false, display: 'flex' },
+        { exception: 'late-in', hidden: true, display: 'none' }
       ]
     );
 
@@ -369,7 +408,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
     await page.click('#attendanceFilterReset');
     assert.equal(await page.$eval('#attendanceExceptionFilter', node => node.value), 'all');
     assert.equal(await page.$eval('#attendanceCurrentFilterValue', node => node.textContent.trim()), 'All Exceptions');
-    assert.equal(await page.$$eval('.attendance-record-card:not([hidden])', nodes => nodes.length), 2);
+    assert.equal(await page.$$eval('.attendance-record-card:not([hidden])', nodes => nodes.length), 3);
 
     for (const width of [360, 390, 420]) {
       await page.setViewport({ width, height: 844, deviceScaleFactor: 1 });
@@ -381,7 +420,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
           overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           mainOverflow: document.querySelector('.main-content').scrollWidth - document.querySelector('.main-content').clientWidth,
           metaRows: new Set(Array.from(document.querySelector('#attendanceMetaBar').children).map(node => Math.round(node.getBoundingClientRect().top))).size,
-          updateVisible: !document.getElementById('attendanceUpdateBtn').disabled
+          updateVisible: !document.getElementById('attendanceUpdateBtn').hidden
         }));
         assert.ok(layout.overflow <= 1, `${theme} ${width}px has no document overflow`);
         assert.ok(layout.mainOverflow <= 1, `${theme} ${width}px has no content overflow`);

@@ -583,7 +583,7 @@
     const filters = getWorkPlanFilters();
     const records = getWorkPlans().filter(record => matchesWorkPlanFilters(record, filters));
     byId('workPlanHistoryList').replaceChildren(...records.map(createWorkPlanCard));
-    byId('workPlanHistoryCount').textContent = records.length + (records.length === 1 ? ' Record' : ' Records');
+    byId('workPlanHistoryCount').textContent = String(records.length);
     updateWorkPlanFilterSummary(filters);
   }
 
@@ -615,7 +615,7 @@
       .filter(record => matchesTimesheetFilters(record, filters))
       .sort((first, second) => second.date.localeCompare(first.date));
     byId('timesheetHistoryList').replaceChildren(...records.map(createTimesheetCard));
-    byId('timesheetHistoryCount').textContent = records.length + (records.length === 1 ? ' Record' : ' Records');
+    byId('timesheetHistoryCount').textContent = String(records.length);
     updateTimesheetFilterSummary(filters);
   }
 

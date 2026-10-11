@@ -18,7 +18,8 @@
     .phone-container { width: 100%; max-width: 420px; height: 900px; background: var(--bg-phone); border-radius: 44px; overflow: hidden; box-shadow: var(--shadow-phone); position: relative; display: flex; flex-direction: column; }
     .attendance-list-view { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; overflow: hidden; margin-bottom: 78px; }
     .attendance-list-view > .cal-top-header { flex-shrink: 0; }
-    .main-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-padding-top: 96px; margin-bottom: 80px; padding: 0 16px 16px; position: relative; z-index: 10; scrollbar-width: none; }
+    .main-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-padding-top: 96px; margin-bottom: 0; padding: 0 16px 16px; position: relative; z-index: 10; scrollbar-width: none; }
+    .attendance-list-view.has-pending-update .main-content { margin-bottom: 80px; }
     .main-content::-webkit-scrollbar { display: none; }
     
     .summary-card {
@@ -133,7 +134,7 @@
       scrollbar-color: rgba(124, 58, 237, 0.35) transparent;
     }
 
-    /* Jump Bar & Pill Slider */
+    /* Fixed four-column period tabs */
     .me-jump-bar-wrapper {
       position: sticky;
       top: 0;
@@ -154,23 +155,26 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     .me-jump-bar {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+      overflow-x: hidden;
       padding: 5px;
-      scroll-behavior: smooth;
     }
-    .me-jump-bar::-webkit-scrollbar { display: none; }
     .me-jump-pill {
-      padding: 7px 15px;
+      width: 100%;
+      min-width: 0;
+      padding: 7px 3px;
       border-radius: 10px;
       border: 1px solid transparent;
       background: transparent;
       color: var(--text-secondary);
-      font-size: 12.5px;
+      font-size: clamp(10px, 3vw, 12.5px);
       font-weight: 700;
+      line-height: 1.2;
       white-space: nowrap;
+      justify-content: center;
+      flex-shrink: 1;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       outline: none;
@@ -422,6 +426,17 @@
       border-color: var(--border-subtle);
       border-left-color: #f59e0b;
     }
+    .history-card-item.attendance-record-card.late-in-theme {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, 0.08) 100%);
+      border-color: var(--border-subtle);
+      border-left-color: #7c3aed;
+      box-shadow: var(--shadow-sm);
+    }
+    html[data-theme="dark"] .history-card-item.attendance-record-card.late-in-theme {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, 0.1) 100%);
+      border-color: var(--border-subtle);
+      border-left-color: #7c3aed;
+    }
     .history-card-item.attendance-record-card[hidden] { display: none !important; }
     .attendance-record-card:active { transform: scale(0.985); }
     .attendance-record-top {
@@ -457,6 +472,14 @@
     }
     html[data-theme="dark"] .attendance-exception-status { color: #34d399; }
     html[data-theme="dark"] .attendance-exception-status.is-exception { color: #fbbf24; }
+    .late-in-theme .attendance-exception-status.is-exception {
+      border-color: rgba(124, 58, 237, 0.38);
+      background: rgba(124, 58, 237, 0.14);
+      color: #6d28d9;
+    }
+    html[data-theme="dark"] .late-in-theme .attendance-exception-status.is-exception {
+      color: #c4b5fd;
+    }
     .attendance-card-details-trigger {
       min-width: 0;
       padding: 0;
@@ -534,6 +557,10 @@
     .exception-theme .attendance-record-summary-panel {
       border-color: rgba(245, 158, 11, 0.18);
       background: rgba(245, 158, 11, 0.05);
+    }
+    .late-in-theme .attendance-record-summary-panel {
+      border-color: rgba(124, 58, 237, 0.24);
+      background: rgba(124, 58, 237, 0.06);
     }
     .attendance-record-detail {
       display: flex;
@@ -937,6 +964,30 @@
         color: #ef4444;
         margin-left: 2px;
       }
+
+      .feedback-late-in-fields[hidden] {
+        display: none !important;
+      }
+      .feedback-context-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        background: var(--bg-input);
+        color: var(--text-primary);
+        padding: 14px 16px;
+        font-family: inherit;
+        font-size: 13.5px;
+        font-weight: 700;
+        line-height: 1.25;
+        outline: none;
+        opacity: 1;
+      }
+      select.feedback-context-control {
+        appearance: none;
+        cursor: pointer;
+        padding-right: 42px;
+      }
       
       /* Summary Grid for exception fields */
       .summary-grid {
@@ -1100,7 +1151,7 @@
       font-size: 12.5px;
     }
     .attendance-form-summary-row span {
-      color: var(--text-secondary);
+      color: var(--text-primary);
       font-weight: 600;
     }
     .attendance-form-summary-row strong {
@@ -1124,7 +1175,7 @@
       font-size: 12.5px;
     }
     .attendance-form-shift-time-row span {
-      color: var(--text-secondary);
+      color: var(--text-primary);
       font-weight: 600;
     }
     .attendance-form-shift-time-row strong {
@@ -1138,7 +1189,7 @@
       gap: 8px;
     }
     .attendance-form-field label {
-      color: var(--text-muted);
+      color: var(--text-primary);
       font-size: 13px;
       font-weight: 700;
     }
@@ -1164,6 +1215,10 @@
       resize: vertical;
       font-weight: 500;
       line-height: 1.5;
+    }
+    #shiftChangeRequestForm .attendance-form-control::placeholder {
+      color: var(--text-primary);
+      opacity: 1;
     }
     .attendance-form-control:focus {
       border-color: var(--purple-primary);
@@ -1269,7 +1324,7 @@
         <div class="attendance-meta-item">Supervisor: <strong>EBB04</strong></div>
       </div>
 
-      <!-- Sticky Horizontal Category Navigation Bar -->
+      <!-- Sticky Period Tab Bar -->
       <div class="me-jump-bar-wrapper" style="margin: -12px -16px 16px -16px; border-radius: 0 0 16px 16px; padding: 12px 16px;">
         <div class="me-jump-bar-container">
           <div class="me-jump-bar" id="meJumpBar">
@@ -1278,7 +1333,6 @@
             <button class="me-jump-pill">This Month</button>
             <button class="me-jump-pill">Last Month</button>
           </div>
-          <div class="me-jump-bar-fade" id="meJumpFade">›</div>
         </div>
       </div>
 
@@ -1379,7 +1433,7 @@
            <div class="attendance-record-summary-panel">
                <div class="attendance-record-detail">
                    <span>Times</span>
-                   <strong>08:09 • 19:40</strong>
+                   <strong>08:09, 19:40</strong>
                </div>
                <div class="attendance-record-detail">
                    <span>Normal Hours</span>
@@ -1392,14 +1446,60 @@
            </div>
            
            <div class="attendance-card-actions">
+               <button onclick="event.stopPropagation(); openModal('shiftChangeModalOverlay')" class="card-action-btn btn-shift-change">
+                 Change Shift
+               </button>
                <button onclick="event.stopPropagation(); openFeedbackModal('14 Sep 2026', '8.30AM–5.30PM (W01)', 'Unapproved OT')" class="card-action-btn btn-feedback">
+                 Feedback
+               </button>
+           </div>
+      </div>
+
+      <!-- Attendance Card 3 (Late In Exception) -->
+      <div class="history-card-item attendance-record-card late-in-theme" data-exception="late-in" data-date="2026-09-13">
+           <div class="attendance-record-top">
+              <button class="attendance-card-details-trigger" type="button" onclick="openModal('attendanceDetailsModalOverlay')" aria-label="View attendance details for 13 September 2026">
+                 <span>
+                    <span class="history-time-row">W01: 8.30AM – 5.30PM</span>
+                    <span class="attendance-record-reference">Date: Sun, 13 Sep 2026</span>
+                 </span>
+              </button>
+              <div class="attendance-record-controls">
+                <button class="attendance-verify-button" type="button" onclick="toggleSingleVerify(this)" title="Verify this record" aria-pressed="false">
+                    <span class="verify-checkbox-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                    <span data-verify-label>Verify</span>
+                </button>
+                <span class="attendance-exception-status is-exception"><i class="fa-solid fa-clock" aria-hidden="true"></i>Late In</span>
+              </div>
+           </div>
+
+           <div class="attendance-record-summary-panel">
+               <div class="attendance-record-detail">
+                   <span>Times</span>
+                   <strong>08:42, 17:30</strong>
+               </div>
+               <div class="attendance-record-detail">
+                   <span>Normal Hours</span>
+                   <strong>7.80</strong>
+               </div>
+               <div class="attendance-record-detail">
+                   <span>OT Hours</span>
+                   <strong>0.00</strong>
+               </div>
+           </div>
+
+           <div class="attendance-card-actions">
+               <button onclick="event.stopPropagation(); openModal('shiftChangeModalOverlay')" class="card-action-btn btn-shift-change">
+                 Change Shift
+               </button>
+               <button onclick="event.stopPropagation(); openFeedbackModal('13 Sep 2026', '8.30AM–5.30PM (W01)', 'Late In', { lateInMinutes: '12 minutes', lateInReason: 'Traffic Congestion' })" class="card-action-btn btn-feedback">
                  Feedback
                </button>
            </div>
       </div>
       
     </div>
-      <button class="attendance-update-btn" type="button" id="attendanceUpdateBtn" onclick="updateAttendanceVerification()" disabled>Update</button>
+      <button class="attendance-update-btn" type="button" id="attendanceUpdateBtn" onclick="updateAttendanceVerification()" disabled hidden>Update</button>
     </div>
     <phone-bottom-nav active="apps"></phone-bottom-nav>
 
@@ -1687,6 +1787,30 @@
                     </select>
                     <div class="arrow" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted);">
                        <i class="fa-solid fa-chevron-down" style="font-size: 13px;"></i>
+                    </div>
+                 </div>
+              </div>
+
+              <div id="feedbackLateInFields" class="feedback-late-in-fields" hidden>
+                 <div class="modern-form-group">
+                    <label class="modern-label" for="fbLateInMinutes" style="margin-bottom: 8px;">Late In Minutes</label>
+                    <input class="feedback-context-control" id="fbLateInMinutes" type="text" value="" readonly>
+                 </div>
+
+                 <div class="modern-form-group">
+                    <label class="modern-label" for="fbLateInReason" style="margin-bottom: 8px;">Late In Reason</label>
+                    <div class="custom-select" style="position: relative;">
+                       <select class="feedback-context-control" id="fbLateInReason">
+                          <option value="">- Select Late In Reason -</option>
+                          <option value="Traffic Congestion">Traffic Congestion</option>
+                          <option value="Public Transport Delay">Public Transport Delay</option>
+                          <option value="Weather Condition">Weather Condition</option>
+                          <option value="Emergency">Emergency</option>
+                          <option value="Other">Other</option>
+                       </select>
+                       <div class="arrow" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted);">
+                          <i class="fa-solid fa-chevron-down" style="font-size: 13px;"></i>
+                       </div>
                     </div>
                  </div>
               </div>
@@ -2002,6 +2126,8 @@
       const hasChanges = Array.from(document.querySelectorAll('.attendance-verify-button'))
         .some(button => (button.getAttribute('aria-pressed') === 'true') !== attendanceSavedVerification.get(button));
       updateButton.disabled = !hasChanges;
+      updateButton.hidden = !hasChanges;
+      updateButton.closest('.attendance-list-view')?.classList.toggle('has-pending-update', hasChanges);
     }
 
     function updateAttendanceVerification() {
@@ -2061,14 +2187,13 @@
       }
     }
 
-    // Interactive Jump-Bar Pill Slider
+    // Interactive period tabs
     document.addEventListener('DOMContentLoaded', () => {
       const pills = document.querySelectorAll('.me-jump-pill');
       pills.forEach(pill => {
         pill.addEventListener('click', function() {
           pills.forEach(p => p.classList.remove('active'));
           this.classList.add('active');
-          this.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         });
       });
       renderFeedbackClockCards();
@@ -2246,11 +2371,22 @@
       editingCardTarget = null;
     }
 
-    function openFeedbackModal(dateStr, shiftStr, exceptionStr) {
+    function openFeedbackModal(dateStr, shiftStr, exceptionStr = '', exceptionDetails = {}) {
       const dateEl = document.getElementById('fbMetaDate');
       const shiftEl = document.getElementById('fbMetaShift');
+      const lateInFields = document.getElementById('feedbackLateInFields');
+      const lateInMinutes = document.getElementById('fbLateInMinutes');
+      const lateInReason = document.getElementById('fbLateInReason');
+      const isLateIn = String(exceptionStr).trim().toLowerCase() === 'late in';
       if (dateEl && dateStr) dateEl.textContent = dateStr;
       if (shiftEl && shiftStr) shiftEl.textContent = shiftStr;
+      if (lateInMinutes) lateInMinutes.value = '';
+      if (lateInReason) lateInReason.value = '';
+      if (lateInFields) lateInFields.hidden = !isLateIn;
+      if (isLateIn) {
+        if (lateInMinutes) lateInMinutes.value = exceptionDetails.lateInMinutes || '';
+        if (lateInReason) lateInReason.value = exceptionDetails.lateInReason || '';
+      }
       
       renderFeedbackClockCards();
       openModal('feedbackModalOverlay');

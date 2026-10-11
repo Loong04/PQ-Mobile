@@ -11,11 +11,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/app.css">
+  <link rel="stylesheet" href="../../css/detail-popout.css">
   <link rel="stylesheet" href="css/employee-career.css">
+  <link rel="stylesheet" href="css/employee-career-team.css">
   <script src="../../js/components.js"></script>
   <script src="../../js/app.js" defer></script>
   <script src="js/employee-career-config.js"></script>
+  <script src="js/staff-events-data.js"></script>
+  <script src="js/employee-career-pending-data.js"></script>
   <script src="js/employee-career-app.js" defer></script>
+  <script src="js/employee-career-team.js" defer></script>
 </head>
 <body class="employee-career-page">
   <preview-top-bar active-page="v2"></preview-top-bar>
@@ -33,6 +38,22 @@
         <button type="button" id="employeeCareerTabIndividual" class="employee-career-scope-tab active" role="tab" aria-selected="true"><i class="fa-solid fa-user" aria-hidden="true"></i><span>Individual</span></button>
         <button type="button" id="employeeCareerTabTeam" class="employee-career-scope-tab" role="tab" aria-selected="false" tabindex="-1"><i class="fa-solid fa-users" aria-hidden="true"></i><span>Team</span></button>
       </div>
+      <section id="employeeCareerTeamActions" class="team-action-required-card employee-career-team-action-card" data-career-scope="team" aria-labelledby="employeeCareerTeamActionTitle" hidden>
+        <div class="team-action-required-header">
+          <div class="team-action-required-heading">
+            <span class="team-action-required-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+            <span class="team-action-required-copy"><strong id="employeeCareerTeamActionTitle" class="team-action-required-title">Action Required</strong><span class="team-action-required-description">Items that require your action</span></span>
+          </div>
+          <span id="employeeCareerTeamTaskCount" class="team-action-required-badge">0 Tasks</span>
+        </div>
+        <div class="team-action-required-items">
+          <a id="employeeCareerPendingApproval" class="team-pending-approval-action" href="options/pending-approval.html?scope=team">
+            <span class="team-pending-approval-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <span class="team-pending-approval-copy"><strong class="team-pending-approval-title">Pending Approval</strong><span class="team-pending-approval-description">Staff requests awaiting review</span></span>
+            <span class="team-pending-approval-end"><span id="employeeCareerPendingCount" class="team-pending-approval-count">0</span><i class="fa-solid fa-chevron-right team-pending-approval-chevron" aria-hidden="true"></i></span>
+          </a>
+        </div>
+      </section>
       <section id="employeeCareerDocumentStatus" class="employee-career-document-status" aria-labelledby="employeeCareerDocumentStatusTitle">
         <h2 id="employeeCareerDocumentStatusTitle">My Document Status</h2>
         <div class="employee-career-status-grid">
@@ -42,10 +63,58 @@
           <a class="employee-career-status-card rejected" data-document-status="rejected" href="options/history.html" aria-label="Rejected: 1 document. Open History"><strong>1</strong><span class="employee-career-status-name">Rejected</span><small>Declined</small></a>
         </div>
       </section>
-      <section class="employee-career-quick" aria-labelledby="employeeCareerQuickTitle">
+      <section id="employeeCareerQuickOptions" class="employee-career-quick" aria-labelledby="employeeCareerQuickTitle">
         <h2 id="employeeCareerQuickTitle">Quick Options</h2>
         <div id="employeeCareerOptions" class="employee-career-grid" role="list"></div>
       </section>
+      <details id="employeeCareerExpiry" class="employee-career-expiry" open hidden>
+        <summary class="employee-career-expiry-header">
+          <span class="employee-career-expiry-icon" aria-hidden="true"><i class="fa-solid fa-id-card"></i></span>
+          <h2 id="employeeCareerExpiryTitle">License, Exam and Membership Expiry</h2>
+          <i class="fa-solid fa-chevron-down employee-career-expiry-chevron" aria-hidden="true"></i>
+        </summary>
+        <table class="employee-career-expiry-table" aria-labelledby="employeeCareerExpiryTitle">
+          <colgroup><col class="expiry-type-col"><col class="expiry-description-col"><col class="expiry-days-col"><col class="expiry-date-col"></colgroup>
+          <thead><tr><th scope="col">Type</th><th scope="col">Description</th><th scope="col">DueDay</th><th scope="col">Expiry</th></tr></thead>
+          <tbody>
+            <tr><td>License</td><td>Sample Description 1</td><td class="expiry-overdue">-5,381</td><td class="expiry-overdue"><time datetime="2012-01-18">18/01/2012</time></td></tr>
+            <tr><td>License</td><td>Sample Description 2</td><td class="expiry-overdue">-5,321</td><td class="expiry-overdue"><time datetime="2012-03-18">18/03/2012</time></td></tr>
+            <tr><td>Exam</td><td>6 SIGMA BLACK BELT LEVEL</td><td class="expiry-overdue">-3,207</td><td class="expiry-overdue"><time datetime="2017-12-31">31/12/2017</time></td></tr>
+            <tr><td>License</td><td>PILOT LICENSE</td><td class="expiry-overdue">-2,842</td><td class="expiry-overdue"><time datetime="2018-12-31">31/12/2018</time></td></tr>
+            <tr><td>License</td><td>FIREARM LICENSE</td><td class="expiry-overdue">-2,111</td><td class="expiry-overdue"><time datetime="2020-12-31">31/12/2020</time></td></tr>
+            <tr><td>Event</td><td>Typhoid Vaccine Booster Dose</td><td class="expiry-overdue">-1,333</td><td class="expiry-overdue"><time datetime="2023-02-17">17/02/2023</time></td></tr>
+            <tr><td>Event</td><td>Passport Expiry</td><td class="expiry-overdue">-214</td><td class="expiry-overdue"><time datetime="2026-03-12">12/03/2026</time></td></tr>
+            <tr><td>Event</td><td>Contract Expiry</td><td class="expiry-overdue">-211</td><td class="expiry-overdue"><time datetime="2026-03-15">15/03/2026</time></td></tr>
+            <tr><td>Event</td><td>Medical Checkup Due</td><td class="expiry-overdue">-205</td><td class="expiry-overdue"><time datetime="2026-03-21">21/03/2026</time></td></tr>
+            <tr><td>Member</td><td>OTHERS</td><td>2,911,793</td><td><time datetime="9998-12-31">31/12/9998</time></td></tr>
+          </tbody>
+        </table>
+      </details>
+      <section id="employeeCareerHeadcountActions" class="employee-career-headcount-actions" data-career-scope="team" aria-labelledby="employeeCareerWorkforceTitle" hidden>
+        <header class="employee-career-workforce-header">
+          <span class="employee-career-workforce-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
+          <div><h2 id="employeeCareerWorkforceTitle">Today's Workforce</h2><p>Your team's headcount and open positions</p></div>
+        </header>
+        <div class="employee-career-workforce-grid">
+          <button id="employeeCareerActiveHeadcount" type="button" class="employee-career-headcount-action">
+            <span class="employee-career-headcount-label"><span class="employee-career-headcount-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span><span>Active Headcount</span></span>
+            <span class="employee-career-headcount-bottom"><span id="employeeCareerActiveHeadcountTotal" class="employee-career-headcount-total"></span><span class="employee-career-headcount-view">View<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></span>
+          </button>
+          <button id="employeeCareerVacantPosition" type="button" class="employee-career-headcount-action">
+            <span class="employee-career-headcount-label"><span class="employee-career-headcount-icon" aria-hidden="true"><i class="fa-solid fa-briefcase"></i></span><span>Vacant Position</span></span>
+            <span class="employee-career-headcount-bottom"><span class="employee-career-headcount-total" aria-label="Count unavailable">&mdash;</span><span class="employee-career-headcount-view">View<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></span>
+          </button>
+        </div>
+      </section>
+      <details id="employeeCareerStaffEvents" class="employee-career-team-events" data-career-scope="team" open hidden>
+        <summary class="employee-career-expiry-header"><span class="employee-career-expiry-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span><h2 id="employeeCareerStaffEventsTitle">Staff Events</h2><i class="fa-solid fa-chevron-down employee-career-expiry-chevron" aria-hidden="true"></i></summary>
+        <div class="employee-career-event-filter"><label for="employeeCareerEventFilter">Event</label><select id="employeeCareerEventFilter"><option value="">All</option></select></div>
+        <table class="employee-career-event-table" aria-labelledby="employeeCareerStaffEventsTitle">
+          <colgroup><col style="width:36%"><col style="width:12%"><col style="width:19%"><col style="width:33%"></colgroup>
+          <thead><tr><th scope="col">Event</th><th scope="col">Count</th><th scope="col">Detail</th><th scope="col">Chart</th></tr></thead>
+          <tbody id="employeeCareerStaffEventRows"></tbody>
+        </table>
+      </details>
     </main>
     <div id="employeeCareerAllOptions" class="employee-career-sheet-overlay" aria-hidden="true">
       <section class="employee-career-sheet" role="dialog" aria-modal="true" aria-labelledby="employeeCareerAllOptionsTitle">
@@ -57,6 +126,17 @@
         <div id="employeeCareerAllOptionsGrid" class="employee-career-grid employee-career-all-grid" role="list"></div>
       </section>
     </div>
+    <div id="employeeCareerTeamEventOverlay" class="detail-popout-overlay employee-career-team-overlay" aria-hidden="true" hidden>
+      <section class="detail-popout-panel" role="dialog" aria-modal="true" aria-labelledby="employeeCareerTeamEventTitle">
+        <header class="detail-popout-header"><h2 id="employeeCareerTeamEventTitle" class="detail-popout-title"></h2><button id="employeeCareerTeamEventClose" type="button" class="detail-popout-close" aria-label="Close Staff Events"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="career-event-total"><span>Total Records</span><strong id="employeeCareerTeamEventTotal"></strong></div>
+        <div class="detail-popout-body" tabindex="0" role="region" aria-label="Staff event details and chart">
+          <div id="employeeCareerTeamEventDetails"><table class="career-event-people-table"><thead><tr><th scope="col">Employee</th><th scope="col">Date</th></tr></thead><tbody id="employeeCareerTeamEventPeople"></tbody></table><p id="employeeCareerTeamEventAvailable" class="career-event-available"></p><p id="employeeCareerTeamEventEmpty" class="career-event-empty" hidden>No employee details available for this event.</p></div>
+          <div id="employeeCareerTeamEventChart" hidden><p class="career-event-chart-caption">Employees by event</p><div id="employeeCareerTeamEventBars" class="career-event-chart-bars"></div></div>
+        </div>
+      </section>
+    </div>
+    <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>
     <phone-bottom-nav active="apps"></phone-bottom-nav>
     <left-profile-drawer></left-profile-drawer>
     <notification-sheet></notification-sheet>

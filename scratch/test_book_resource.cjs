@@ -26,6 +26,11 @@ async function screenshot(page, filename) {
       assert.equal(await page.$eval('#bookingEditor', n => n.hidden), true);
       assert.equal(await page.$$eval('#bookingRecords .history-card-item', n => n.length), 1);
       assert.equal(await page.$$eval('#bookingRecords .fa-chevron-right', n => n.length), 0);
+      assert.equal(await page.$eval('.history-total-records-label', n => n.textContent.trim()), 'Total Records');
+      assert.equal(await page.$eval('#bookingRecordCount', n => n.textContent.trim()), '1');
+      assert.ok(await page.$eval('.history-total-records-card', n => n.getBoundingClientRect().width >= n.parentElement.getBoundingClientRect().width - 1), 'Total Records must use the shared full-width summary card');
+      assert.ok(await page.$eval('#bookingRecordCount', n => n.classList.contains('history-total-records-value')), 'Total Records value must use the shared summary typography');
+      assert.equal(await page.$$eval('#bookingRecords .booking-employee-name, #bookingRecords .booking-employee-id', n => n.length), 0, 'Book Resource cards must not repeat employee identity');
       await screenshot(page, `book-resource-records-${theme}-${width}.png`);
       await page.click('#bookingAdd');
       assert.equal(await page.$eval('#bookingAdd', n => n.getAttribute('aria-expanded')), 'true');
@@ -53,11 +58,54 @@ async function screenshot(page, filename) {
       assert.equal(await page.$$eval('[data-booking-status="plan"]', n => n.length), 1);
       assert.equal(await page.$$eval('[data-booking-status="plan"] [data-booking-action]', n => n.length), 2);
       assert.equal(await page.$$eval('#bookingRecords script', n => n.length), 0);
-      assert.match(await page.$eval('#bookingRecords', n => n.textContent), /MEET-001.*Bring agenda/s);
+      assert.doesNotMatch(await page.$eval('[data-booking-status="plan"]', n => n.textContent), /Meeting Ref|MEET-001/i, 'Meeting reference must not appear on the record card');
+      await page.click('[data-booking-status="plan"] .history-card-details');
+      assert.equal(await page.$eval('#bookingDetailsDialog', n => !n.hidden), true, 'Clicking a record card must open its details');
+      const detailDesign = await page.$eval('#bookingDetailsDialog', overlay => {
+        const panel = overlay.querySelector('.detail-popout-panel');
+        const header = overlay.querySelector('.detail-popout-header');
+        const body = overlay.querySelector('.detail-popout-body');
+        const firstLabel = overlay.querySelector('.detail-popout-label');
+        return {
+          tag: overlay.tagName,
+          overlayDisplay: getComputedStyle(overlay).display,
+          overlayAlign: getComputedStyle(overlay).alignItems,
+          panelClass: panel?.classList.contains('detail-popout-panel'),
+          headerBackground: header ? getComputedStyle(header).backgroundImage : '',
+          bodyOverflow: body ? getComputedStyle(body).overflowY : '',
+          labelBackground: firstLabel ? getComputedStyle(firstLabel).backgroundColor : '',
+          valueBackground: firstLabel?.nextElementSibling ? getComputedStyle(firstLabel.nextElementSibling).backgroundColor : ''
+        };
+      });
+      assert.equal(detailDesign.tag, 'DIV');
+      assert.equal(detailDesign.overlayDisplay, 'flex');
+      assert.equal(detailDesign.overlayAlign, 'center');
+      assert.equal(detailDesign.panelClass, true);
+      assert.match(detailDesign.headerBackground, /gradient/i);
+      assert.match(detailDesign.bodyOverflow, /auto|scroll/);
+      assert.notEqual(detailDesign.labelBackground, detailDesign.valueBackground);
+      assert.deepEqual(await page.$$eval('#bookingDetailsContent .detail-popout-label', nodes => nodes.map(node => node.textContent.trim())), ['References', 'Emp #', 'Name', 'Booking Date', 'Start', 'End', 'Meeting Room #', 'Resource', 'Task', 'Status', 'Purpose', 'Remark']);
+      const detailValues = await page.$$eval('#bookingDetailsContent .detail-popout-value', nodes => nodes.map(node => node.textContent.trim()));
+      assert.equal(detailValues[0], 'MEET-001');
+      assert.equal(detailValues[1], '#EBB12');
+      assert.equal(detailValues[2], 'Farhan binti rahmat');
+      assert.equal(detailValues[4], '10:00');
+      assert.equal(detailValues[5], '11:00');
+      assert.equal(detailValues[6], 'MR-01');
+      assert.equal(detailValues[7], 'SELANGOR ROOM');
+      assert.equal(detailValues[8], 'Meeting');
+      assert.equal(detailValues[9], 'Plan');
+      assert.match(detailValues[10], /Team discussion/);
+      assert.equal(detailValues[11], 'Bring agenda');
+      await screenshot(page, `book-resource-details-${theme}-${width}.png`);
+      await page.click('#bookingDetailsClose');
+      assert.equal(await page.$eval('#bookingDetailsDialog', n => n.hidden), true);
       await page.reload({ waitUntil: 'domcontentloaded' });
       assert.equal(await page.$$eval('#bookingRecords .history-card-item', n => n.length), 2);
+      assert.equal(await page.$eval('#bookingRecordCount', n => n.textContent.trim()), '2');
       await screenshot(page, `book-resource-plan-${theme}-${width}.png`);
       await page.click('[data-booking-action="confirm"]');
+      assert.equal(await page.$eval('#bookingDetailsDialog', n => n.hidden), true, 'Card action buttons must not open details');
       assert.equal(await page.$$eval('[data-booking-action="confirm"]', n => n.length), 0);
       assert.equal(await page.$$eval('[data-booking-status="confirmed"]', n => n.length), 2);
       await page.click('#bookingAdd');
@@ -70,10 +118,9 @@ async function screenshot(page, filename) {
       await page.click('#bookingBook');
       assert.equal(await page.$$eval('[data-booking-status="confirmed"]', n => n.length), 3);
       assert.equal(await page.$$eval('[data-booking-action="confirm"]', n => n.length), 0);
+      assert.ok(await page.$$eval('[data-booking-action="delete"]', buttons => buttons.length > 0 && buttons.every(button => button.classList.contains('history-submit-btn') && !button.classList.contains('history-cancel-btn'))), 'Card Delete buttons must use the shared purple action style');
       assert.equal(await page.$eval('.admin-content', n => n.scrollWidth > n.clientWidth), false);
-      const identity = await page.$eval('.booking-employee-id', n => ({ text: n.textContent, below: n.getBoundingClientRect().top >= n.previousElementSibling.getBoundingClientRect().bottom }));
-      assert.match(identity.text, /^#/);
-      assert.equal(identity.below, true);
+      assert.equal(await page.$$eval('#bookingRecords .booking-employee-name, #bookingRecords .booking-employee-id', n => n.length), 0);
       while (await page.$('[data-booking-action="delete"]')) await page.click('[data-booking-action="delete"]');
       assert.equal(await page.$eval('#bookingEmpty', n => n.hidden), false);
       await page.reload({ waitUntil: 'domcontentloaded' });
@@ -117,7 +164,7 @@ async function screenshot(page, filename) {
       assert.match(await page.$eval('#bookingFeedback', n => n.textContent), /Unable to load/);
       assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), '{broken', 'Corrupt records must not be overwritten');
       assert.deepEqual(errors, []);
-      console.log(`PASS ${theme} ${width}: Add, validation, Plan, Confirm, Book, Delete, persistence, safe text, identity, layout, storage errors, save retry, reduced motion`);
+      console.log(`PASS ${theme} ${width}: Add, validation, Plan, Confirm, Book, Delete, persistence, safe text, identity removal, shared total card, layout, storage errors, save retry, reduced motion`);
       await page.close();
     }
   } finally { await browser.close(); }

@@ -100,7 +100,7 @@
         && (active.status === 'all' || active.status === record.status)
         && (record.description || record.remarks || '').toLocaleLowerCase().includes(active.description.toLocaleLowerCase());
     });
-    $('historyRecordCount').textContent = `${matching.length} ${matching.length === 1 ? 'Record' : 'Records'}`;
+    $('historyRecordCount').textContent = String(matching.length);
     $('historyEmptyState').hidden = matching.length > 0;
     $('historyEmptyText').textContent = records[kind].length ? 'Try another date range or filter.' : 'Your saved deduction requests will appear here.';
     const createRequest = $('historyCreateRequest');
