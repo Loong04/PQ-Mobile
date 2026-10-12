@@ -40,23 +40,40 @@ const puppeteer = require('puppeteer');
             await page.evaluate(ref => openHistoryDetailsModal(ref), card.ref);
             assert.deepEqual(await page.$$eval(`${actions} button`, buttons => buttons.map(button => button.textContent.trim())), expected,
               `${theme}/${width}/${card.ref}: details actions must match the card`);
+            assert.equal(await page.$eval(actions, node => node.hidden), !expected.length);
             if (expected.length) {
               const layout = await page.$eval(actions, node => {
-                const body = node.closest('.history-details-body');
+                const panel = node.closest('.history-details-dialog');
+                const body = panel.querySelector('.history-details-body');
                 body.scrollTop = body.scrollHeight;
-                const table = body.querySelector('table').getBoundingClientRect();
-                const rects = [...node.querySelectorAll('button')].map(button => button.getBoundingClientRect());
-                const bodyRect = body.getBoundingClientRect();
+                const footerStyle = getComputedStyle(node);
+                const buttonStyles = [...node.querySelectorAll('button')].map(button => {
+                  const style = getComputedStyle(button);
+                  return {
+                    background: style.backgroundImage,
+                    color: style.color,
+                    radius: style.borderRadius,
+                    padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]
+                  };
+                });
                 return {
-                  belowTable: rects.every(rect => rect.top >= table.bottom),
-                  center: (rects[0].left + rects.at(-1).right) / 2,
-                  tableCenter: (table.left + table.right) / 2,
-                  visible: rects.every(rect => rect.top >= bodyRect.top && rect.bottom <= bodyRect.bottom + 1),
-                  fits: body.scrollWidth <= body.clientWidth + 1
+                  directChild: node.parentElement === panel,
+                  outsideScrollableBody: !body.contains(node),
+                  justifyContent: footerStyle.justifyContent,
+                  gap: footerStyle.gap,
+                  buttonStyles,
+                  fits: panel.scrollWidth <= panel.clientWidth + 1
                 };
               });
-              assert.ok(layout.belowTable && layout.visible && layout.fits);
-              assert.ok(Math.abs(layout.center - layout.tableCenter) < 2, 'Actions must be centered below the table');
+              assert.ok(layout.directChild && layout.outsideScrollableBody && layout.fits);
+              assert.equal(layout.justifyContent, 'flex-end');
+              assert.equal(layout.gap, '8px');
+              layout.buttonStyles.forEach(style => {
+                assert.match(style.background, /rgb\(124, 58, 237\).*rgb\(109, 40, 217\)/);
+                assert.equal(style.color, 'rgb(255, 255, 255)');
+                assert.equal(style.radius, '20px');
+                assert.deepEqual(style.padding, ['8px', '16px', '8px', '16px']);
+              });
               if (width === 390 && tab === 'leave' && ['draft', 'submitted'].includes(card.status)) {
                 await page.screenshot({ path: path.join(__dirname, `leave_history_details_${card.status}_${theme}.png`) });
               }
@@ -98,7 +115,7 @@ const puppeteer = require('puppeteer');
       assert.match(await page.$eval('#historyDetailsTableBody', node => node.textContent), /LV-2026-0041/);
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: Leave History details mirror card actions, centered below the table across both themes and three widths; Apply/Cancel update both views and cancellation can be dismissed.');
+    console.log('PASS: Leave History details mirror card actions in a fixed right-aligned purple footer across both themes and three widths; Apply/Cancel update both views and cancellation can be dismissed.');
   } finally {
     await browser.close();
   }

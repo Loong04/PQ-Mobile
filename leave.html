@@ -9591,32 +9591,18 @@
       return labels[type] || 'Leave';
     }
 
-    function buildHistoryActionsHTML(item, centered = false) {
-      let actionHTML = '';
-      if (item.status === 'submitted' || item.status === 'approved' || item.status === 'draft') {
-        const cancelStyle = centered
-          ? 'padding: 8px 16px; border-radius: 20px; background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; font-size: 12px; font-weight: 700; cursor: pointer;'
-          : 'padding: 8px 16px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: white; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);';
-        let applyBtn = '';
-        if (item.status === 'draft') {
-          applyBtn = `
-            <button type="button" onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'submitted')"
-              style="padding: 8px 16px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: white; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);">
-              Apply
-            </button>
-          `;
-        }
-        actionHTML = `
-          <div style="margin-top: 12px; display: flex; justify-content: ${centered ? 'center' : 'flex-end'}; gap: 8px;">
-            ${applyBtn}
-            <button type="button" onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'cancelled')"
-              style="${cancelStyle}">
-              Cancel
-            </button>
-          </div>
-        `;
+    function buildHistoryActionsHTML(item, context = 'card') {
+      if (!['submitted', 'approved', 'draft'].includes(item.status)) return '';
+      const isDetail = context === 'detail';
+      const cardStyle = 'padding: 8px 16px; border-radius: 20px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border: none; color: white; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);';
+      const buttonAttributes = isDetail ? 'class="history-detail-action"' : `style="${cardStyle}"`;
+      const buttons = [];
+      if (item.status === 'draft') {
+        buttons.push(`<button type="button" ${buttonAttributes} onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'submitted')">Apply</button>`);
       }
-      return actionHTML;
+      buttons.push(`<button type="button" ${buttonAttributes} onclick="event.stopPropagation(); cancelHistoryItem('${item.ref}', 'cancelled')">Cancel</button>`);
+      if (isDetail) return buttons.join('');
+      return `<div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;">${buttons.join('')}</div>`;
     }
 
     function buildLeaveCardHTML(item) {
@@ -10000,7 +9986,7 @@
 
       const actions = document.getElementById('historyDetailsActions');
       if (actions) {
-        actions.innerHTML = isOffTime ? '' : buildHistoryActionsHTML(item, true);
+        actions.innerHTML = isOffTime ? '' : buildHistoryActionsHTML(item, 'detail');
         actions.hidden = !actions.innerHTML;
       }
       const overlay = document.getElementById('historyDetailsModalOverlay');
@@ -12799,8 +12785,8 @@
             <!-- Populated by JS -->
           </tbody>
         </table>
-        <div id="historyDetailsActions" hidden></div>
       </div>
+      <footer id="historyDetailsActions" class="history-detail-actions" hidden></footer>
     </div>
   </div>
 

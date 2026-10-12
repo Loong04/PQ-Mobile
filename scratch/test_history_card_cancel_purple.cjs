@@ -43,14 +43,14 @@ assertPurple(
 
 const leave = read('leave.html');
 const leaveCancel = leave.match(
-  /const cancelStyle = centered[\s\S]*?:\s*'([^']*linear-gradient[^']+)'/i
+  /const cardStyle = '([^']*linear-gradient[^']+)'/i
 );
 assert.ok(leaveCancel, 'Missing Leave history card Cancel style');
 assertPurple(leaveCancel[1], 'Leave history Cancel');
 assert.match(
   leave,
-  /cancelHistoryItem\('\$\{item\.ref\}',\s*'cancelled'\)[\s\S]{0,200}style="\$\{cancelStyle\}"[\s\S]{0,100}Cancel/i,
-  'Leave card Cancel button must use the scoped card/detail style'
+  /const buttonAttributes = isDetail \? 'class="history-detail-action"' : `style="\$\{cardStyle\}"`/i,
+  'Leave detail actions must use the shared detail class while cards retain the purple card style'
 );
 
 const cardCancelSources = [

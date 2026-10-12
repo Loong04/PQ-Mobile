@@ -140,6 +140,35 @@ async function runWorkplace(browser) {
   await page.close();
 }
 
+async function runLeave(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 844 });
+  await page.goto(pathToFileURL(path.join(root, 'leave.html')).href, { waitUntil: 'networkidle0' });
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'dark';
+    showLeaveSection('viewMyLeaveHistory');
+    switchHistoryTab('leave');
+  });
+  const draft = await page.$eval('#myHistoryCardsList [data-status=draft]', node => ({
+    ref: node.dataset.ref,
+    actions: [...node.querySelectorAll('button')].map(button => button.textContent.trim())
+  }));
+  assert.deepEqual(draft.actions, ['Apply', 'Cancel']);
+  await page.evaluate(ref => openHistoryDetailsModal(ref), draft.ref);
+  assert.deepEqual(await actionLabels(page, '#historyDetailsActions'), ['Apply', 'Cancel']);
+  await assertPurpleActions(page, '#historyDetailsActions');
+  assert.equal(await page.$eval('#historyDetailsActions', node => node.parentElement.classList.contains('history-details-dialog')), true);
+  await page.evaluate(() => closeHistoryDetailsModal());
+
+  const terminal = await page.$eval('#myHistoryCardsList [data-status=rejected], #myHistoryCardsList [data-status=cancelled]', node => node.dataset.ref);
+  await page.evaluate(ref => openHistoryDetailsModal(ref), terminal);
+  assert.equal(await page.$eval('#historyDetailsActions', node => node.hidden), true);
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -149,7 +178,8 @@ async function main() {
   try {
     if (!requested || requested === 'style') await runStyle(browser);
     if (!requested || requested === 'workplace') await runWorkplace(browser);
-    if (requested && !['style', 'workplace'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'leave') await runLeave(browser);
+    if (requested && !['style', 'workplace', 'leave'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }
