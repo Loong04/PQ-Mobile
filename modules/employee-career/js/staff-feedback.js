@@ -52,13 +52,14 @@
   };
   const formatDate = value => value ? new Date(value + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
   const employeeNumber = row => '#' + String(row.empNo).replace(/^#/, '');
-  const historyStatus = status => ({ Pending: 'submitted', 'In Progress': 'draft', Resolved: 'approved' }[status] || '');
-  const statusIcon = status => ({ Pending: 'fa-clock', 'In Progress': 'fa-spinner', Resolved: 'fa-circle-check' }[status] || 'fa-circle-info');
+  const statusLabel = status => status === 'Pending' ? 'Pending' : 'Responded';
+  const historyStatus = status => statusLabel(status) === 'Pending' ? 'submitted' : 'draft';
+  const statusIcon = status => statusLabel(status) === 'Pending' ? 'fa-clock' : 'fa-reply';
   const statusBadge = status => {
     const badge = element('span', 'status-pill staff-feedback-status ' + historyStatus(status));
     const icon = element('i', 'fa-solid ' + statusIcon(status));
     icon.setAttribute('aria-hidden', 'true');
-    badge.append(icon, document.createTextNode(status || '—'));
+    badge.append(icon, document.createTextNode(statusLabel(status) || '—'));
     return badge;
   };
 
@@ -70,7 +71,7 @@
       (!applied.endDate || row.date <= applied.endDate) &&
       (!applied.type || row.type === applied.type) &&
       (!applied.category || row.category === applied.category) &&
-      (!applied.status || row.status === applied.status)
+      (!applied.status || statusLabel(row.status) === applied.status)
     );
     const cards = visibleRows.map(row => {
       const card = element('article', 'history-card-item staff-feedback-card');
@@ -108,7 +109,7 @@
     if (applied.startDate && applied.endDate) summary.push(`${formatDate(applied.startDate)} – ${formatDate(applied.endDate)}`);
     else if (applied.startDate) summary.push(`From ${formatDate(applied.startDate)}`);
     else if (applied.endDate) summary.push(`Until ${formatDate(applied.endDate)}`);
-    ['type', 'category', 'status'].forEach(key => { if (applied[key]) summary.push(applied[key]); });
+    ['type', 'category', 'status'].forEach(key => { if (applied[key]) summary.push(key === 'status' ? statusLabel(applied[key]) : applied[key]); });
     $('staffFeedbackFilterSummary').textContent = summary.join(' · ') || 'All Feedback';
   }
 
@@ -131,7 +132,7 @@
       ['Feedback Date 2', formatDate(record.feedbackDate2)], ['Feedback Note', record.feedbackNote ?? record.feedback],
       ['Feedback Remarks', record.feedbackRemarks], ['Submit Date', formatDate(record.submitDate)],
       ['Reviewer Comment', record.reviewerComment], ['Reviewed By', record.reviewedBy],
-      ['Reviewed Date', formatDate(record.reviewedDate)], ['Rating', record.rating], ['Reward', record.reward], ['Status', record.status]
+      ['Reviewed Date', formatDate(record.reviewedDate)], ['Rating', record.rating], ['Reward', record.reward], ['Status', statusLabel(record.status)]
     ];
     const rows = fields.map(([label, value]) => {
       const row = element('tr', '');
@@ -177,9 +178,13 @@
       category: { title: 'Feedback by category', column: 'Feedback Category' }
     }[metric];
     const counts = new Map();
-    visibleRows.forEach(row => { const label = row[metric] || 'Unspecified'; counts.set(label, (counts.get(label) || 0) + 1); });
+    visibleRows.forEach(row => {
+      const value = row[metric] || 'Unspecified';
+      const label = metric === 'status' ? statusLabel(value) : value;
+      counts.set(label, (counts.get(label) || 0) + 1);
+    });
     const palette = ['#a78bfa', '#f59e0b', '#34d399', '#60a5fa', '#f472b6'];
-    const statusColors = { Pending: '#f59e0b', 'In Progress': '#7c3aed', Resolved: '#10b981' };
+    const statusColors = { Pending: '#f59e0b', Responded: '#7c3aed' };
     let currentOffset = 0;
     const circumference = 439.82;
     const legend = [];

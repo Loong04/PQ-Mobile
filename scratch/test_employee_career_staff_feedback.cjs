@@ -57,7 +57,11 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
         valueSize: '20px'
       }, 'Staff Feedback Total Records matches the shared History summary card');
       const statusIcons = await page.$$eval('.staff-feedback-card .staff-feedback-status', badges => Object.fromEntries(badges.map(badge => [badge.textContent.trim(), badge.querySelector('i')?.className || ''])));
-      assert.deepEqual(statusIcons, { Pending: 'fa-solid fa-clock', 'In Progress': 'fa-solid fa-spinner', Resolved: 'fa-solid fa-circle-check' });
+      assert.deepEqual(statusIcons, { Pending: 'fa-solid fa-clock', Responded: 'fa-solid fa-reply' });
+      assert.deepEqual(
+        await page.$$eval('#staffFeedbackStatus option', nodes => nodes.map(node => node.textContent.trim())),
+        ['All Statuses', 'Pending', 'Responded']
+      );
       for (const width of [360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
         assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1), `No main overflow at ${width}px`);
@@ -97,6 +101,10 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
       assert.ok(await page.$eval('phone-bottom-nav .bottom-nav', node => node.getBoundingClientRect().height > 0));
      assert.equal(await page.$eval('#staffFeedbackChartTotal', node => node.textContent), '60');
      assert.equal(await page.$$eval('.staff-feedback-legend-count', nodes => nodes.reduce((sum, node) => sum + Number(node.textContent), 0)), 60);
+     assert.deepEqual(
+       await page.$$eval('.staff-feedback-legend-name span:last-child', nodes => nodes.map(node => node.textContent.trim())),
+       ['Pending', 'Responded']
+     );
      assert.ok(await page.$$eval('.staff-feedback-legend-row', nodes => nodes.every(node => node.children.length === 3)));
       const benefitChartLayout = await page.evaluate(() => {
         const card = document.querySelector('.staff-feedback-chart-card');
@@ -114,7 +122,7 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
           roundMarkers: markers.every(marker => getComputedStyle(marker).borderRadius === '50%')
         };
       });
-      assert.deepEqual(benefitChartLayout, { cardRadius: '28px', titleSize: '17px', figureWidth: 195, svgWidth: 195, segmentCount: 3, strokeWidths: ['22', '22', '22'], roundMarkers: true });
+      assert.deepEqual(benefitChartLayout, { cardRadius: '28px', titleSize: '17px', figureWidth: 195, svgWidth: 195, segmentCount: 2, strokeWidths: ['22', '22'], roundMarkers: true });
      assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1));
      await page.screenshot({ path: path.join(__dirname, `employee_career_staff_feedback_chart_${theme}.png`) });
       await page.click('#staffFeedbackBack');
@@ -163,6 +171,7 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
     await page.keyboard.press('Enter');
     assert.match(await page.$eval('#staffFeedbackDetailsTable', node => node.innerText), /New chairs delivered/);
     assert.match(await page.$eval('#staffFeedbackDetailsTable', node => node.innerText), /Farah Hassan/);
+    assert.equal(await page.$$eval('#staffFeedbackDetailsTable tr', rows => rows.find(row => row.cells[0].textContent.trim() === 'Status').cells[1].textContent.trim()), 'Responded');
     assert.equal(await page.$eval('#staffFeedbackDetailsTable tr:last-child td:last-child', node => node.textContent.trim()), 'No attachments');
     await page.click('#staffFeedbackCloseDetails');
     assert.equal(await page.evaluate(() => document.activeElement.matches('.staff-feedback-card:nth-child(2)')), true);
