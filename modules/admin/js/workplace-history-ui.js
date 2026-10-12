@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let opener = null;
   let inerted = [];
   let samplesReady = false;
+  let activeDetailRecordId = null;
   const emptyValue = '\u2014';
   const date = value => {
     if (!value) return emptyValue;
@@ -235,6 +236,39 @@ document.addEventListener('DOMContentLoaded', () => {
       : fieldValue(fields, 'Inventory Item', 'Request Item', 'Inventory Type') || row.title;
   }
 
+  function historyActions(row) {
+    if (['draft', 'resubmit'].includes(row.status)) {
+      return [
+        { key: 'apply', label: 'Apply', className: 'history-submit-btn' },
+        { key: 'cancel', label: 'Cancel', className: 'history-cancel-btn' }
+      ];
+    }
+    if (['submitted', 'approved'].includes(row.status)) {
+      return [{ key: 'cancel', label: 'Cancel', className: 'history-cancel-btn' }];
+    }
+    return [];
+  }
+
+  function actionDescription(row) {
+    const content = cardContent(row);
+    const reference = referenceNumber(row);
+    return `${content.title}, ${date(row.date)}, ${statuses[row.status]?.[0] || row.status}${reference !== emptyValue ? ', ' + reference : ''}`;
+  }
+
+  function appendHistoryActions(container, row, context = 'card') {
+    container.replaceChildren();
+    const description = actionDescription(row);
+    historyActions(row).forEach(action => {
+      const button = node('button', context === 'detail' ? 'history-detail-action' : action.className, action.label);
+      button.type = 'button';
+      button.dataset.historyAction = action.key;
+      button.setAttribute('aria-label', `${action.label} ${description}`);
+      container.append(button);
+    });
+    if (context === 'detail') container.hidden = !container.childElementCount;
+    return container.childElementCount;
+  }
+
   function render() {
     try {
       if (!samplesReady) {
@@ -285,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
       main.setAttribute('aria-haspopup', 'dialog');
       main.setAttribute('aria-controls', 'historyDetailsModal');
       const reference = referenceNumber(row);
-      const description = `${content.title}, ${date(row.date)}, ${statuses[row.status]?.[0] || row.status}${reference !== emptyValue ? ', ' + reference : ''}`;
+      const description = actionDescription(row);
       main.setAttribute('aria-label', `View ${labels[row.kind]} details: ${description}`);
       const header = node('span', 'history-card-header');
       const heading = node('span', 'history-card-heading');
@@ -301,14 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
       main.append(header, details);
       card.append(main);
       const actions = node('div', 'history-card-actions');
-      for (const action of ['draft', 'resubmit'].includes(row.status) ? ['apply', 'cancel'] : ['submitted', 'approved'].includes(row.status) ? ['cancel'] : []) {
-        const button = node('button', action === 'apply' ? 'history-submit-btn' : 'history-cancel-btn', action === 'apply' ? 'Apply' : 'Cancel');
-        button.type = 'button';
-        button.dataset.historyAction = action;
-        button.setAttribute('aria-label', `${action === 'apply' ? 'Apply' : 'Cancel'} ${description}`);
-        actions.append(button);
-      }
-      if (actions.childElementCount) card.append(actions);
+      if (appendHistoryActions(actions, row, 'card')) card.append(actions);
       list.append(card);
     }
   }
@@ -325,11 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeModal() {
     if (!modal) return;
+    const closingDetails = modal.id === 'historyDetailsModal';
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     inerted.forEach(child => { child.inert = false; });
     inerted = [];
     modal = null;
+    if (closingDetails) activeDetailRecordId = null;
     (opener?.isConnected ? opener : $('historyFilterTrigger')).focus();
   }
 
@@ -349,14 +378,47 @@ document.addEventListener('DOMContentLoaded', () => {
     $('historyFilterError').hidden = true;
   }
 
-  function showDetails(row) {
+  function renderDetails(row) {
     $('historyDetailTitle').textContent = row.kind === 'inventory-request' ? 'Inventory Details' : labels[row.kind] + ' Details';
     const body = $('historyDetailBody');
     body.replaceChildren();
     if (row.kind === 'guest-visit') guestDetail(row, body);
     else if (row.kind === 'letter-request') letterDetail(row, body);
     else inventoryDetail(row, body);
+    appendHistoryActions($('historyDetailActions'), row, 'detail');
+  }
+
+  function showDetails(row) {
+    activeDetailRecordId = row.id;
+    renderDetails(row);
     openModal('historyDetailsModal', 'closeHistoryDetails');
+  }
+
+  function showActionFeedback(message) {
+    $('historyActionFeedback').textContent = message;
+    $('historyActionFeedback').hidden = false;
+  }
+
+  function executeHistoryAction(row, actionKey, source = 'card') {
+    try {
+      const current = window.WorkplaceHistoryStore.list().find(record => record.id === row.id);
+      if (!current) throw new Error('Workplace history record not found.');
+      window.WorkplaceHistoryStore.setStatus(current.id, actionKey === 'apply' ? 'submitted' : 'cancelled');
+      render();
+      showActionFeedback(actionKey === 'apply' ? 'Request submitted.' : 'Request cancelled.');
+      const updatedRecord = records.find(record => record.id === current.id);
+      if (source === 'detail' && activeDetailRecordId === current.id && updatedRecord) {
+        renderDetails(updatedRecord);
+        $('historyDetailBody').focus({ preventScroll: true });
+      } else {
+        const updatedCard = [...document.querySelectorAll('[data-record-id]')].find(card => card.dataset.recordId === current.id);
+        (updatedCard?.querySelector('.history-card-main') || $('historyFilterTrigger')).focus({ preventScroll: true });
+      }
+    } catch {
+      if (source === 'detail' && modal?.id === 'historyDetailsModal') closeModal();
+      render();
+      showActionFeedback('Unable to update this request. Please try again.');
+    }
   }
 
   document.querySelectorAll('[data-history-kind]').forEach(button => button.addEventListener('click', () => {
@@ -373,18 +435,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!record) return;
     const action = event.target.closest('[data-history-action]');
     if (action) {
-      try {
-        window.WorkplaceHistoryStore.setStatus(record.id, action.dataset.historyAction === 'apply' ? 'submitted' : 'cancelled');
-        render();
-        $('historyActionFeedback').textContent = action.dataset.historyAction === 'apply' ? 'Request submitted.' : 'Request cancelled.';
-        $('historyActionFeedback').hidden = false;
-        const updated = [...document.querySelectorAll('[data-record-id]')].find(card => card.dataset.recordId === record.id);
-        (updated?.querySelector('.history-card-main') || $('historyFilterTrigger')).focus({ preventScroll: true });
-      } catch {
-        $('historyActionFeedback').textContent = 'Unable to update this request. Please try again.';
-        $('historyActionFeedback').hidden = false;
-      }
+      event.preventDefault();
+      event.stopPropagation();
+      executeHistoryAction(record, action.dataset.historyAction, 'card');
     } else if (event.target.closest('.history-card-main')) showDetails(record);
+  });
+  $('historyDetailActions').addEventListener('click', event => {
+    const action = event.target.closest('[data-history-action]');
+    if (!action || !activeDetailRecordId) return;
+    event.preventDefault();
+    const record = window.WorkplaceHistoryStore.list().find(row => row.id === activeDetailRecordId)
+      || { id: activeDetailRecordId };
+    executeHistoryAction(record, action.dataset.historyAction, 'detail');
   });
   $('historyFilterTrigger').addEventListener('click', () => {
     fillFilter();

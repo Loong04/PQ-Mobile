@@ -12,16 +12,23 @@ const url = (file, theme) => pathToFileURL(path.resolve(__dirname, '../modules/a
       page.on('pageerror', error => errors.push(error.message));
       await page.setViewport({ width, height: 950 });
       await page.goto(url('index.html', theme), { waitUntil: 'domcontentloaded' });
-      await page.evaluate(() => localStorage.removeItem('peoplehcm:workplace:history:v1'));
+      await page.evaluate(() => {
+        localStorage.removeItem('peoplehcm:workplace:history:v1');
+        localStorage.setItem('peoplehcm:workplace:history:samples:v1', '1');
+        localStorage.setItem('peoplehcm:workplace:history:cancelled-to-submitted:v1', '1');
+      });
       await page.reload({ waitUntil: 'domcontentloaded' });
       assert.equal(await page.$$eval('[data-document-status]', nodes => nodes.length), 4);
-      assert.deepEqual(await page.$$eval('.admin-option-title', nodes => nodes.map(node => node.textContent)), ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Policy / SOP', 'History']);
+      assert.deepEqual(
+        await page.$$eval('#adminOptionsTitle + .admin-options .admin-option-title', nodes => nodes.map(node => node.textContent)),
+        ['News', 'Book Resource', 'Letter Request', 'Guest Visit', 'Inventory Request', 'View All']
+      );
       await page.screenshot({ path: path.resolve(__dirname, `workplace-document-status-${theme}-${width}.png`) });
       for (const status of ['submitted', 'resubmit', 'approved', 'rejected']) {
         await page.click(`[data-document-status="${status}"]`);
         await page.waitForSelector('#workplaceHistoryList');
         assert.equal(new URL(page.url()).searchParams.get('theme'), theme);
-        assert.deepEqual(await page.$$eval('[data-history-kind]', nodes => nodes.map(node => node.textContent)), ['Guest Visit', 'Letter Request']);
+        assert.deepEqual(await page.$$eval('[data-history-kind]', nodes => nodes.map(node => node.textContent)), ['Guest Visit', 'Letter Request', 'Inventory']);
         await page.click('[data-admin-back]');
         await page.waitForSelector('#workplaceDocumentStatus');
       }
@@ -38,7 +45,8 @@ const url = (file, theme) => pathToFileURL(path.resolve(__dirname, '../modules/a
       assert.equal(await page.evaluate(() => window.WorkplaceHistoryStore.list().length), 1, 'Repeated Submit updates the same request');
       await page.goto(url('index.html', theme), { waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('[data-document-status="submitted"] strong', node => node.textContent), '1');
-      await page.click('[data-option-id="history"]');
+      await page.click('[data-workplace-options-open]');
+      await page.click('[data-option-id=history]');
       await page.waitForSelector('#workplaceHistoryList');
       await page.click('[data-history-kind="letter-request"]');
       assert.equal(await page.$$eval('#workplaceHistoryList .history-card-item', nodes => nodes.length), 1);
@@ -49,6 +57,8 @@ const url = (file, theme) => pathToFileURL(path.resolve(__dirname, '../modules/a
       assert.equal(await page.evaluate(() => document.activeElement.id), 'historyDetailBody', 'Details must be keyboard scrollable');
       await page.keyboard.press('PageDown');
       await page.waitForFunction(() => document.getElementById('historyDetailBody').scrollTop > 0);
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.dataset.historyAction), 'cancel', 'Details action remains in the dialog tab order');
       await page.keyboard.press('Tab');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'closeHistoryDetails', 'Details focus remains inside the dialog');
       await page.keyboard.press('Escape');
@@ -84,7 +94,8 @@ const url = (file, theme) => pathToFileURL(path.resolve(__dirname, '../modules/a
       assert.match(await page.$eval('#visitFeedback', node => node.textContent), /saved to History/);
       await page.goto(url('index.html', theme), { waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('[data-document-status="submitted"] strong', node => node.textContent), '2');
-      await page.click('[data-option-id="history"]');
+      await page.click('[data-workplace-options-open]');
+      await page.click('[data-option-id=history]');
       await page.waitForSelector('[data-record-id]');
       await page.click('[data-record-id]');
       assert.match(await page.$eval('#historyDetailBody', node => node.textContent), /Jane.*Aina Rahman/s);

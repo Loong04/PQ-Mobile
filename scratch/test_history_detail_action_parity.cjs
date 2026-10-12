@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const puppeteer = require('puppeteer');
 
 const root = path.resolve(__dirname, '..');
@@ -74,6 +75,71 @@ async function runStyle(browser) {
   }
 }
 
+async function runWorkplace(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 844 });
+  const url = pathToFileURL(path.join(root, 'modules/admin/options/history.html')).href + '?theme=dark';
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    const rows = [
+      { id: 'parity-guest-draft', kind: 'guest-visit', title: 'Guest Visit', date: '2026-10-12', status: 'draft', createdAt: '2026-10-12T03:00:00.000Z', fields: [['Reference #', 'FGV-PARITY-1'], ['Visit Date', '2026-10-12'], ['Visit Time', '09:00 – 10:00'], ['Visitor', '1']] },
+      { id: 'parity-letter-approved', kind: 'letter-request', title: 'Employment Letter', date: '2026-10-11', status: 'approved', createdAt: '2026-10-12T02:00:00.000Z', fields: [['Reference #', 'DRQ-PARITY-1'], ['Request Date', '2026-10-11'], ['Type', 'Employment Letter']] },
+      { id: 'parity-inventory-submitted', kind: 'inventory-request', title: 'Laptop', date: '2026-10-10', status: 'submitted', createdAt: '2026-10-12T01:00:00.000Z', fields: [['Reference #', 'IRQ-PARITY-1'], ['Request Date', '2026-10-10'], ['Inventory Item', 'Laptop'], ['Quantity', '1']] }
+    ];
+    localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify(rows));
+    localStorage.setItem('peoplehcm:workplace:history:samples:v1', '1');
+    localStorage.setItem('peoplehcm:workplace:history:cancelled-to-submitted:v1', '1');
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+
+  assert.deepEqual(await page.$$eval('[data-record-id=parity-guest-draft] [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Apply', 'Cancel']);
+  await page.$eval('[data-record-id=parity-guest-draft] .history-card-main', node => node.click());
+  assert.deepEqual(await actionLabels(page, '#historyDetailActions'), ['Apply', 'Cancel']);
+  await assertPurpleActions(page, '#historyDetailActions');
+
+  await page.$eval('#historyDetailActions [data-history-action=apply]', node => node.click());
+  await page.waitForFunction(() => document.querySelector('[data-record-id=parity-guest-draft]')?.dataset.status === 'submitted');
+  assert.equal(await page.$eval('#historyDetailsModal', node => node.getAttribute('aria-hidden')), 'false');
+  assert.deepEqual(await actionLabels(page, '#historyDetailActions'), ['Cancel']);
+  assert.match(await page.$eval('#historyDetailBody', node => node.textContent), /Submitted/);
+
+  await page.$eval('#historyDetailActions [data-history-action=cancel]', node => node.click());
+  await page.waitForFunction(() => document.querySelector('[data-record-id=parity-guest-draft]')?.dataset.status === 'cancelled');
+  assert.equal(await page.$eval('#historyDetailActions', node => node.hidden), true);
+  await page.keyboard.press('Escape');
+
+  await page.$eval('[data-history-kind=letter-request]', node => node.click());
+  assert.deepEqual(await page.$$eval('[data-record-id=parity-letter-approved] [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Cancel']);
+  await page.$eval('[data-record-id=parity-letter-approved] .history-card-main', node => node.click());
+  assert.deepEqual(await actionLabels(page, '#historyDetailActions'), ['Cancel']);
+  await page.keyboard.press('Escape');
+
+  await page.$eval('[data-history-kind=inventory-request]', node => node.click());
+  assert.deepEqual(await page.$$eval('[data-record-id=parity-inventory-submitted] [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Cancel']);
+  await page.$eval('[data-record-id=parity-inventory-submitted] [data-history-action=cancel]', node => node.click());
+  assert.equal(await page.$eval('#historyDetailsModal', node => node.getAttribute('aria-hidden')), 'true', 'Card actions must not open details');
+
+  await page.evaluate(() => {
+    const rows = JSON.parse(localStorage.getItem('peoplehcm:workplace:history:v1'));
+    const row = rows.find(item => item.id === 'parity-inventory-submitted');
+    row.status = 'submitted';
+    localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify(rows));
+    window.dispatchEvent(new StorageEvent('storage'));
+  });
+  await page.$eval('[data-record-id=parity-inventory-submitted] .history-card-main', node => node.click());
+  await page.evaluate(() => {
+    const rows = JSON.parse(localStorage.getItem('peoplehcm:workplace:history:v1'));
+    localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify(rows.filter(row => row.id !== 'parity-inventory-submitted')));
+  });
+  await page.$eval('#historyDetailActions [data-history-action=cancel]', node => node.click());
+  await page.waitForFunction(() => document.getElementById('historyDetailsModal').getAttribute('aria-hidden') === 'true');
+  assert.match(await page.$eval('#historyActionFeedback', node => node.textContent), /Unable to update/);
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -82,7 +148,8 @@ async function main() {
   });
   try {
     if (!requested || requested === 'style') await runStyle(browser);
-    else throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'workplace') await runWorkplace(browser);
+    if (requested && !['style', 'workplace'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }
