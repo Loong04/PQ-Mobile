@@ -246,6 +246,59 @@ async function runAttendanceFeedback(browser) {
   await page.close();
 }
 
+async function runClaims(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 900 });
+  await page.goto(pathToFileURL(path.join(root, 'modules/claims/options/history.html')).href + '?theme=dark', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    window.__claimHistoryToasts = [];
+    window.showToast = message => window.__claimHistoryToasts.push(message);
+  });
+  const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  const tabs = ['benefit', 'medical', 'ot', 'travel', 'travelRequest', 'entertainment', 'advance', 'expense'];
+  for (const tab of tabs) {
+    await page.evaluate(tab => switchClaimTab(tab), tab);
+    await settle();
+    const card = await page.$eval('#claimHistoryListContainer .history-card-item', node => ({
+      status: node.dataset.status,
+      labels: [...node.querySelectorAll('.history-card-actions button')].map(button => button.textContent.trim())
+    }));
+    assert.ok(card.labels.length, `${tab} fixture must expose a card action`);
+    await page.$eval('#claimHistoryListContainer .history-card-item', node => node.click());
+    assert.deepEqual(await actionLabels(page, '#claimDetailsModalContainer .history-detail-actions'), card.labels, `${tab} detail actions mirror its card`);
+    await assertPurpleActions(page, '#claimDetailsModalContainer .history-detail-actions');
+    const beforeStatus = await page.$eval('#claimHistoryListContainer .history-card-item', node => node.dataset.status);
+    await page.$eval('#claimDetailsModalContainer .history-detail-action', node => node.click());
+    assert.equal(await page.$eval('#claimHistoryListContainer .history-card-item', node => node.dataset.status), beforeStatus, 'Claims actions preserve their existing non-mutating behavior');
+    assert.ok((await page.evaluate(() => window.__claimHistoryToasts.length)) > 0);
+    await page.evaluate(() => closeDetailsModal());
+  }
+
+  await page.evaluate(() => switchClaimTab('benefit'));
+  await settle();
+  const draftIndex = await page.$$eval('#claimHistoryListContainer .history-card-item', nodes => nodes.findIndex(node => node.dataset.status === 'draft'));
+  assert.ok(draftIndex >= 0);
+  const draftLabels = await page.$$eval('#claimHistoryListContainer .history-card-item', (nodes, index) => [...nodes[index].querySelectorAll('.history-card-actions button')].map(button => button.textContent.trim()), draftIndex);
+  assert.deepEqual(draftLabels, ['Submit', 'Cancel']);
+  await page.$$eval('#claimHistoryListContainer .history-card-item', (nodes, index) => nodes[index].click(), draftIndex);
+  assert.deepEqual(await actionLabels(page, '#claimDetailsModalContainer .history-detail-actions'), ['Submit', 'Cancel']);
+  await page.evaluate(() => closeDetailsModal());
+
+  await page.$eval('#claimHistoryListContainer .history-card-item .history-cancel-btn', node => node.click());
+  assert.equal(await page.$eval('#detailsModalOverlay', node => node.classList.contains('active')), false, 'Card action click must not open details');
+
+  await page.evaluate(() => {
+    HISTORY_DATA.benefit[0].status = 'rejected';
+    renderClaimHistoryList();
+  });
+  await page.$eval('#claimHistoryListContainer .history-card-item', node => node.click());
+  assert.equal(await page.$eval('#claimDetailsModalContainer .history-detail-actions', node => node.hidden), true);
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -258,7 +311,8 @@ async function main() {
     if (!requested || requested === 'leave') await runLeave(browser);
     if (!requested || requested === 'attendance-history') await runAttendanceHistory(browser);
     if (!requested || requested === 'attendance-feedback') await runAttendanceFeedback(browser);
-    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'claims') await runClaims(browser);
+    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback', 'claims'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }

@@ -790,6 +790,33 @@
       return { key, text: allowedStatuses[key] };
     }
 
+    function getClaimHistoryActions(item) {
+      const status = getHistoryStatus(item).key;
+      if (status === 'draft') {
+        return [
+          { key: 'submit', label: 'Submit', className: 'history-submit-btn' },
+          { key: 'cancel', label: 'Cancel', className: 'history-cancel-btn' }
+        ];
+      }
+      if (['submitted', 'approved'].includes(status)) {
+        return [{ key: 'cancel', label: 'Cancel', className: 'history-cancel-btn' }];
+      }
+      return [];
+    }
+
+    function renderClaimHistoryActions(item, context = 'card') {
+      const actions = getClaimHistoryActions(item);
+      const buttons = actions.map(action => {
+        const handler = action.key === 'submit' ? 'handleHistorySubmit' : 'handleHistoryCancel';
+        const className = context === 'detail' ? 'history-detail-action' : action.className;
+        return `<button type="button" class="${className}" data-claim-history-action="${action.key}" onclick="${handler}(event, '${item.id}')">${action.label}</button>`;
+      }).join('');
+      if (context === 'detail') {
+        return `<footer class="history-detail-actions" ${buttons ? '' : 'hidden'}>${buttons}</footer>`;
+      }
+      return buttons ? `<div class="history-card-actions">${buttons}</div>` : '';
+    }
+
     function updateFilterDropdownOptions() {
       const select = document.getElementById('filterBenefitTypeSelect');
       const label = document.getElementById('filterBenefitTypeLabel');
@@ -1028,20 +1055,7 @@
           rejected: 'fa-circle-xmark'
         };
         const statusIcon = statusIconMap[displayStatus.key];
-        const canCancel = ['submitted', 'approved', 'draft'].includes(displayStatus.key);
-        const actionLabel = 'Cancel';
-        const actionHtml = displayStatus.key === 'draft'
-          ? `<div class="history-card-actions">
-              <button type="button" class="history-submit-btn" onclick="handleHistorySubmit(event, '${item.id}')">Submit</button>
-              <button type="button" class="history-cancel-btn" onclick="handleHistoryCancel(event, '${item.id}')">${actionLabel}</button>
-            </div>
-          `
-          : canCancel
-            ? `<div class="history-card-actions">
-                <button type="button" class="history-cancel-btn" onclick="handleHistoryCancel(event, '${item.id}')">${actionLabel}</button>
-              </div>
-            `
-            : '';
+        const actionHtml = renderClaimHistoryActions(item, 'card');
 
         const otPeriodDisplay = item.claimPeriod || String(periodDisplay).replace('-', '');
         const cardTitle = activeTabKey === 'ot'
@@ -1639,6 +1653,7 @@
         <div style="padding: 12px 12px 24px; flex: 1 1 auto; min-height: 0; overflow-y: auto; background: var(--bg-card); color: var(--text-primary);">
           ${bodyHtml}
         </div>
+        ${renderClaimHistoryActions(item, 'detail')}
       `;
 
       modal.classList.add('active');
