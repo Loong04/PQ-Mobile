@@ -155,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const subcard = node('div', 'history-detail-subcard');
       subcard.setAttribute('aria-label', label);
       appendTable(subcard, [
-        ['Reference #', referenceNumber(row, fields)],
         ['Company', company || emptyValue],
         ['Relation', relation || emptyValue],
         ['Name', name || emptyValue],
@@ -172,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const subcard = node('div', 'history-detail-subcard');
       subcard.setAttribute('aria-label', label);
       appendTable(subcard, [
-        ['Reference #', referenceNumber(row, fields)],
         ['Emp #', employeeNumber(empNo)],
         ['Name', name || emptyValue],
         ['Department', department || emptyValue],

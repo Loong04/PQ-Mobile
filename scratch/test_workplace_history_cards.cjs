@@ -85,7 +85,7 @@ const detailLabels = () => [...document.querySelectorAll('#historyDetailBody .hi
     ]);
     assert.equal(await page.$eval('#historyDetailBody [data-detail-field="Emp #"]', node => node.textContent.trim()), '#EBB12');
     assert.deepEqual(await page.$$eval('.history-detail-section-title', nodes => nodes.map(node => node.textContent.trim())), [
-      'Guest Information', 'Internal Attendee', 'Attachments'
+      'Guest Information', 'Internal Attendee', 'Attachment'
     ]);
     assert.ok((await page.$eval('#historyDetailBody', node => node.textContent)).includes('Meranti Retail'));
     assert.ok((await page.$eval('#historyDetailBody', node => node.textContent)).includes('visitor-list.pdf'));

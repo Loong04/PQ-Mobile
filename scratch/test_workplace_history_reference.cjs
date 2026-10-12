@@ -40,6 +40,20 @@ const screenshot = async (page, name) => {
       await page.click(first + ' .history-card-main');
       assert.match(await page.$eval('#historyDetailBody', n => n.textContent), /444.*Guest Information.*55.*Customer.*66.*77.*Internal Attendee.*HUMAN RESOURCE.*GROUP HR MANAGER/s);
       assert.match(await page.$eval('#historyDetailBody [data-detail-field="Emp #"]', n => n.textContent), /^#EBB12$/);
+      assert.deepEqual(await page.evaluate(() => {
+        const countReferences = root => [...root.querySelectorAll('th')].filter(cell => cell.textContent.trim() === 'Reference #').length;
+        const sections = [...document.querySelectorAll('#historyDetailBody .history-detail-section')];
+        const section = title => sections.find(item => item.querySelector('.history-detail-section-title')?.textContent.trim() === title);
+        return {
+          main: countReferences(document.querySelector('#historyDetailBody .history-detail-main-table')),
+          guestInformation: countReferences(section('Guest Information')),
+          internalAttendee: countReferences(section('Internal Attendee'))
+        };
+      }), {
+        main: 1,
+        guestInformation: 0,
+        internalAttendee: 0
+      }, 'Only the main Guest Visit details table keeps Reference #');
       assert.equal(await page.$eval('#historyDetailsModal', n => n.getAttribute('aria-hidden')), 'false');
       await screenshot(page, `workplace-history-reference-guest-detail-${theme}-${width}.png`);
       await page.keyboard.press('Escape');
