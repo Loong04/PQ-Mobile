@@ -38,8 +38,22 @@
     return staffRecords.filter(employee => isEffectiveOn(employee, filters.effectiveDate)
       && ['company', 'branch', 'department'].every(key => !filters[key] || employee[key] === filters[key]));
   }
+  function groupLabel(record, metric) {
+    const value = record?.[metric];
+    return value === undefined || value === null || value === '' ? '—' : String(value);
+  }
   function getGroupStaff(metric, label) {
-    return state.filteredStaff.filter(employee => employee[metric] === label);
+    return state.filteredStaff.filter(employee => groupLabel(employee, metric) === label);
+  }
+  function resolveGroupStaff(label) {
+    const group = groupRows(state.filters.summaryBy).find(entry => entry.label === label);
+    const staff = getGroupStaff(state.filters.summaryBy, label);
+    if (!group || staff.length !== group.count) {
+      $('manpowerDrilldownStatus').textContent = `Staff records for ${label} are unavailable. Refresh the current filter and try again.`;
+      return null;
+    }
+    $('manpowerDrilldownStatus').textContent = '';
+    return staff;
   }
   function yearsBetween(start, end) {
     const startDate = new Date(start + 'T00:00:00Z');
@@ -91,7 +105,7 @@
   function groupRows(metric) {
     const grouped = new Map();
     state.rows.forEach(row => {
-      const label = row[metric];
+      const label = groupLabel(row, metric);
       grouped.set(label, (grouped.get(label) || 0) + row.headcount);
     });
     return [...grouped].map(([label, count]) => ({ label, count }));
@@ -172,7 +186,8 @@
     }
   }
   function openGroupStatistics(label, trigger) {
-    const staff = getGroupStaff(state.filters.summaryBy, label);
+    const staff = resolveGroupStaff(label);
+    if (!staff) return;
     const body = $('manpowerStatisticsDetails').tBodies[0];
     body.replaceChildren();
     summarizeGroup(label, staff).forEach(([field, value]) => {
@@ -268,9 +283,14 @@
     $('manpowerStaffEmpty').hidden = staff.length !== 0;
   }
   function showStaffRecords(label, trigger) {
+    const staff = resolveGroupStaff(label);
+    if (!staff) {
+      showView('table');
+      return;
+    }
     state.selectedGroupLabel = label;
     state.staffTrigger = trigger;
-    renderStaffRecords(getGroupStaff(state.filters.summaryBy, label));
+    renderStaffRecords(staff);
     showView('staff');
   }
   function employeeInitials(name) {
@@ -369,6 +389,8 @@
     $('manpowerFilterTrigger').focus();
   }
   function applyFilters(filters) {
+    closeDetailOverlay(false);
+    showView('table');
     state.filters = filters;
     state.metric = filters.summaryBy;
     state.showAll = false;

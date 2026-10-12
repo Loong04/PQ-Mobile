@@ -46,6 +46,15 @@ const controlledStaff = [
     performanceScore: 90, annualAttritionPercent: 3, effectiveFrom: '2026-01-01'
   }
 ];
+const missingValueAggregate = [
+  { company: 'Alpha', branch: 'HQ', department: 'Finance', jobType: 'ACCOUNT EXECUTIVE', headcount: 1, effectiveFrom: '2026-01-01' }
+];
+const missingValueStaff = [{
+  ...controlledStaff[0],
+  base: '',
+  line: null,
+  photo: ''
+}];
 
 (async () => {
   const browser = await puppeteer.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--no-sandbox', '--allow-file-access-from-files'] });
@@ -158,12 +167,19 @@ const controlledStaff = [
     await page.goto(url, { waitUntil: 'load' });
     assert.deepEqual(await table(), [['ACCOUNT EXECUTIVE', '6'], ['TECHNICIAN', '7']]);
     assert.equal(await page.$eval('#manpowerTotalHeadcount', n => n.textContent), '13');
+    await page.click('button[aria-label="View 6 staff records for ACCOUNT EXECUTIVE"]');
+    assert.equal(await page.$eval('#manpowerStaffTotalRecords', node => node.textContent), '6');
+    assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', nodes => nodes.length), 6);
+    await page.click('#manpowerBack');
     await page.click('#manpowerViewChart');
     await page.select('#manpowerChartMetric', 'branch');
     assert.deepEqual(await page.$$eval('#manpowerChartLegend .staff-list-legend-row', rows => rows.map(row => [row.querySelector('.staff-list-legend-name span').textContent, row.querySelector('strong').textContent])), [['South', '7'], ['HQ', '4'], ['North', '2']]);
     await page.click('#manpowerBack');
     await apply({ manpowerCompany: 'Alpha', manpowerBranch: 'North', manpowerDepartment: 'Finance' });
     assert.deepEqual(await table(), [['ACCOUNT EXECUTIVE', '2']]);
+    await page.click('button[aria-label="View 2 staff records for ACCOUNT EXECUTIVE"]');
+    assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', nodes => nodes.length), 2);
+    await page.click('#manpowerBack');
     await page.click('#manpowerViewChart');
     assert.equal(await page.$eval('#manpowerChartTotal', n => n.textContent), '2');
     await page.click('#manpowerBack');
@@ -172,13 +188,31 @@ const controlledStaff = [
     assert.equal(await page.$eval('#manpowerTotalHeadcount', n => n.textContent), '13');
     await apply({ manpowerSummaryBy: 'company' });
     assert.deepEqual(await table(), [['Alpha', '6'], ['Beta', '7']]);
+    await page.click('button[aria-label="View 6 staff records for Alpha"]');
+    assert.equal(await page.$eval('#manpowerStaffTotalRecords', node => node.textContent), '6');
+    await page.click('#manpowerBack');
+    await apply({ manpowerSummaryBy: 'branch' });
+    assert.deepEqual(await table(), [['HQ', '4'], ['North', '2'], ['South', '7']]);
+    await page.click('button[aria-label="View 4 staff records for HQ"]');
+    assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', nodes => nodes.length), 4);
+    await page.click('#manpowerBack');
+    await apply({ manpowerSummaryBy: 'department' });
+    assert.deepEqual(await table(), [['Finance', '6'], ['Operations', '7']]);
+    await page.click('button[aria-label="View 6 staff records for Finance"]');
+    assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', nodes => nodes.length), 6);
+    await page.click('#manpowerBack');
     await apply({ manpowerSummaryBy: 'jobType', manpowerEffectiveDate: '2026-10-04' });
     assert.deepEqual(await table(), [['ACCOUNT EXECUTIVE', '4'], ['ADMIN MANAGER', '3']]);
     assert.equal(await page.$eval('#manpowerTotalHeadcount', n => n.textContent), '7');
+    await page.click('button[aria-label="View 3 staff records for ADMIN MANAGER"]');
+    assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', nodes => nodes.length), 3);
+    await page.click('#manpowerBack');
     await apply({ manpowerEffectiveDate: '2026-08-31' });
     assert.deepEqual(await table(), []);
     assert.equal(await page.$eval('#manpowerTotalHeadcount', n => n.textContent), '0');
     assert.ok(await page.$eval('#manpowerEmpty', n => !n.hidden));
+    assert.equal(await page.$$eval('#manpowerTable tbody button', buttons => buttons.length), 0);
+    assert.ok(await page.$eval('#manpowerStaffView', section => section.hidden));
     await page.click('#manpowerViewChart');
     assert.equal(await page.$$eval('#manpowerChartSegments circle', nodes => nodes.length), 0);
     assert.ok(await page.$eval('#manpowerChartNote', n => n.textContent.includes('No records')));
@@ -188,6 +222,9 @@ const controlledStaff = [
     }, { aggregates: controlledAggregate, staff: controlledStaff });
     await page.goto(url, { waitUntil: 'load' });
     await page.click('#manpowerTable tbody td:first-child button');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'manpowerStatisticsClose');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'manpowerStatisticsClose');
     const statistics = await page.$$eval('#manpowerStatisticsDetails tr', rows => Object.fromEntries(rows.map(row => [
       row.querySelector('th').textContent,
       row.querySelector('td').textContent
@@ -211,6 +248,40 @@ const controlledStaff = [
       'Average Performance Score': '85.00',
       'Annual Attrition %': '2.00'
     });
+    await page.$eval('#manpowerTable tbody td:first-child button', button => button.remove());
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'manpowerFilterTrigger');
+    await page.evaluate(() => { window.MANPOWER_STATISTICS_STAFF.length = 0; });
+    await page.click('#manpowerFilterTrigger');
+    await page.click('#manpowerApplyFilter');
+    await page.click('#manpowerTable tbody td:last-child button');
+    assert.ok(await page.$eval('#manpowerTableView', section => !section.hidden));
+    assert.ok(await page.$eval('#manpowerStaffView', section => section.hidden));
+    assert.match(await page.$eval('#manpowerDrilldownStatus', status => status.textContent), /unavailable|refresh/i);
+    await page.evaluateOnNewDocument(({ aggregates, staff }) => {
+      window.MANPOWER_STATISTICS_DATA = aggregates;
+      window.MANPOWER_STATISTICS_STAFF = staff;
+    }, { aggregates: missingValueAggregate, staff: missingValueStaff });
+    await page.goto(url, { waitUntil: 'load' });
+    await page.click('button[aria-label="View 1 staff records for ACCOUNT EXECUTIVE"]');
+    await page.click('#manpowerStaffList .manpower-employee-card');
+    const missingDetails = await page.$$eval('#manpowerEmployeeDetails tr', rows => Object.fromEntries(rows.map(row => [
+      row.querySelector('th').textContent,
+      row.querySelector('td').textContent
+    ])));
+    assert.equal(missingDetails.Base, '—');
+    assert.equal(missingDetails.Line, '—');
+    assert.equal(await page.$eval('#manpowerEmployeeAvatar', avatar => avatar.textContent), 'A');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'manpowerEmployeeClose');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'manpowerEmployeeClose');
+    await page.evaluate(() => document.getElementById('manpowerFilterForm').requestSubmit());
+    assert.ok(await page.$eval('#manpowerEmployeeOverlay', overlay => overlay.hidden));
+    assert.ok(await page.$eval('#manpowerTableView', section => !section.hidden));
+    for (const width of [360, 390, 420]) {
+      await page.setViewport({ width, height: 950 });
+      assert.ok(await page.$eval('main', main => main.scrollWidth <= main.clientWidth + 1));
+    }
     assert.deepEqual(errors, []);
     console.log('PASS: Manpower table, 34/282 sample, organization filters, inclusive effective dates, grouping, chart conservation, empty state, navigation, themes and mobile widths.');
   } finally { await browser.close(); }
