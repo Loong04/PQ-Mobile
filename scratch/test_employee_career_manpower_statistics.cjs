@@ -11,6 +11,37 @@ const fixture = [
   { company: 'Beta', branch: 'HQ', department: 'Administration', jobType: 'ADMIN MANAGER', headcount: 3, effectiveFrom: '2026-09-01', effectiveTo: '2026-10-04' },
   { company: 'Beta', branch: 'South', department: 'Operations', jobType: 'TECHNICIAN', headcount: 7, effectiveFrom: '2026-10-05' }
 ];
+const statisticsLabels = [
+  'Description', 'Headcount', 'Average Age', 'Average Service Years',
+  'Average Competency Points', 'Average Competency Match %', 'Average Basic Pay',
+  'Median Basic Pay', 'Minimum Basic Pay', 'Maximum Basic Pay',
+  'Average Increment %', 'Average Bonus Factor', 'Attendance %',
+  'Average Monthly OT Hours', 'Average Training Cost',
+  'Average Performance Score', 'Annual Attrition %'
+];
+const controlledAggregate = [
+  { company: 'Alpha', branch: 'HQ', department: 'Finance', jobType: 'ACCOUNT EXECUTIVE', headcount: 2, effectiveFrom: '2026-01-01' }
+];
+const controlledStaff = [
+  {
+    empNo: '000001', name: 'Aina', position: 'ACCOUNT EXECUTIVE', superior: 'FINANCE MANAGER',
+    job: 'ACCOUNT EXECUTIVE', jobType: 'ACCOUNT EXECUTIVE', company: 'Alpha', branch: 'HQ',
+    base: 'KUALA LUMPUR', division: 'CORPORATE SERVICES', department: 'Finance', section: 'ACCOUNTS',
+    costCenter: 'FINANCE', line: 'GENERAL', hireDate: '2016-10-05', birthDate: '1996-10-05',
+    competencyPoints: 6, competencyMatchPercent: 80, basicPay: 2000, incrementPercent: 2,
+    bonusFactor: 1, attendancePercent: 90, monthlyOtHours: 2, trainingCost: 200,
+    performanceScore: 80, annualAttritionPercent: 1, effectiveFrom: '2026-01-01'
+  },
+  {
+    empNo: '000002', name: 'Ben', position: 'ACCOUNT EXECUTIVE', superior: 'FINANCE MANAGER',
+    job: 'ACCOUNT EXECUTIVE', jobType: 'ACCOUNT EXECUTIVE', company: 'Alpha', branch: 'HQ',
+    base: 'KUALA LUMPUR', division: 'CORPORATE SERVICES', department: 'Finance', section: 'ACCOUNTS',
+    costCenter: 'FINANCE', line: 'GENERAL', hireDate: '2021-10-05', birthDate: '1986-10-05',
+    competencyPoints: 8, competencyMatchPercent: 90, basicPay: 4000, incrementPercent: 4,
+    bonusFactor: 2, attendancePercent: 100, monthlyOtHours: 4, trainingCost: 400,
+    performanceScore: 90, annualAttritionPercent: 3, effectiveFrom: '2026-01-01'
+  }
+];
 
 (async () => {
   const browser = await puppeteer.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--no-sandbox', '--allow-file-access-from-files'] });
@@ -31,10 +62,19 @@ const fixture = [
       await page.goto(url + '?theme=' + theme, { waitUntil: 'load' });
       assert.equal(await page.$eval('#manpowerTotalRecords', n => n.textContent), '34');
       assert.equal(await page.$eval('#manpowerTotalHeadcount', n => n.textContent), '282');
+      assert.equal(await page.$('#manpowerDateSummary'), null, 'Effective Date is not repeated in the summary card');
+      assert.equal(await page.$eval('.staff-list-action-summary', n => n.textContent.includes('Effective Date')), false);
       assert.deepEqual((await table()).slice(0, 6), [
         ['ACCOUNT EXECUTIVE', '48'], ['ACCOUNT MANAGER', '12'], ['ADMIN EXECUTIVE', '17'],
         ['ADMIN MANAGER', '10'], ['BANK TELLER OFFICER', '10'], ['BARISTA', '12']
       ]);
+      assert.equal(await page.$$eval('#manpowerTable tbody td:first-child button', buttons => buttons.length), 34);
+      assert.equal(await page.$eval('#manpowerTable tbody td:first-child button', button => button.getAttribute('aria-label')), 'View statistics for ACCOUNT EXECUTIVE');
+      await page.click('#manpowerTable tbody td:first-child button');
+      assert.ok(await page.$eval('#manpowerStatisticsOverlay', overlay => !overlay.hidden));
+      assert.equal(await page.$eval('#manpowerStatisticsDialogTitle', title => title.textContent), 'Manpower Statistics');
+      assert.deepEqual(await page.$$eval('#manpowerStatisticsDetails th', cells => cells.map(cell => cell.textContent)), statisticsLabels);
+      await page.click('#manpowerStatisticsClose');
       await page.screenshot({ path: path.join(__dirname, 'employee_career_manpower_statistics_' + theme + '.png') });
       await page.click('#manpowerViewChart');
       assert.equal(await page.$eval('#manpowerChartTotal', n => n.textContent), '282');
@@ -59,6 +99,7 @@ const fixture = [
       await page.setViewport({ width: 390, height: 950 });
       await page.click('#manpowerFilterTrigger');
       assert.equal(await page.$$eval('#manpowerFilterForm label', nodes => nodes.length), 6);
+      assert.equal(await page.$eval('#manpowerEffectiveDate', n => n.value), '2026-10-05', 'Effective Date remains available as a filter');
       await page.screenshot({ path: path.join(__dirname, 'employee_career_manpower_statistics_filter_' + theme + '.png') });
       await page.$eval('#manpowerApplyFilter', n => n.focus());
       await page.keyboard.press('Tab');
@@ -97,6 +138,35 @@ const fixture = [
     await page.click('#manpowerViewChart');
     assert.equal(await page.$$eval('#manpowerChartSegments circle', nodes => nodes.length), 0);
     assert.ok(await page.$eval('#manpowerChartNote', n => n.textContent.includes('No records')));
+    await page.evaluateOnNewDocument(({ aggregates, staff }) => {
+      window.MANPOWER_STATISTICS_DATA = aggregates;
+      window.MANPOWER_STATISTICS_STAFF = staff;
+    }, { aggregates: controlledAggregate, staff: controlledStaff });
+    await page.goto(url, { waitUntil: 'load' });
+    await page.click('#manpowerTable tbody td:first-child button');
+    const statistics = await page.$$eval('#manpowerStatisticsDetails tr', rows => Object.fromEntries(rows.map(row => [
+      row.querySelector('th').textContent,
+      row.querySelector('td').textContent
+    ])));
+    assert.deepEqual(statistics, {
+      Description: 'ACCOUNT EXECUTIVE',
+      Headcount: '2',
+      'Average Age': '35.00',
+      'Average Service Years': '7.50',
+      'Average Competency Points': '7.00',
+      'Average Competency Match %': '85.00',
+      'Average Basic Pay': '3,000.00',
+      'Median Basic Pay': '3,000.00',
+      'Minimum Basic Pay': '2,000.00',
+      'Maximum Basic Pay': '4,000.00',
+      'Average Increment %': '3.00',
+      'Average Bonus Factor': '1.50',
+      'Attendance %': '95.00',
+      'Average Monthly OT Hours': '3.00',
+      'Average Training Cost': '300.00',
+      'Average Performance Score': '85.00',
+      'Annual Attrition %': '2.00'
+    });
     assert.deepEqual(errors, []);
     console.log('PASS: Manpower table, 34/282 sample, organization filters, inclusive effective dates, grouping, chart conservation, empty state, navigation, themes and mobile widths.');
   } finally { await browser.close(); }
