@@ -14,6 +14,8 @@
     metric: 'jobType',
     showAll: false,
     tableScroll: 0,
+    selectedGroupLabel: '',
+    staffTrigger: null,
     activeOverlay: null,
     detailTrigger: null
   };
@@ -111,7 +113,13 @@
       description.setAttribute('aria-label', `View statistics for ${group.label}`);
       description.addEventListener('click', () => openGroupStatistics(group.label, description));
       descriptionCell.append(description);
-      row.append(descriptionCell, node('td', '', group.count));
+      const headcountCell = node('td');
+      const headcount = node('button', 'manpower-headcount-link', group.count);
+      headcount.type = 'button';
+      headcount.setAttribute('aria-label', `View ${group.count} staff records for ${group.label}`);
+      headcount.addEventListener('click', () => showStaffRecords(group.label, headcount));
+      headcountCell.append(headcount);
+      row.append(descriptionCell, headcountCell);
       body.append(row);
     });
     $('manpowerEmpty').hidden = groups.length !== 0;
@@ -226,14 +234,55 @@
     $('manpowerChartViewAll').querySelector('span').textContent = state.showAll ? 'Show top 5' : 'View all ' + plurals[state.metric];
     $('manpowerChartViewAll').querySelector('i').className = 'fa-solid ' + (state.showAll ? 'fa-chevron-up' : 'fa-chevron-down');
   }
+  function normalizeEmployeeId(value) {
+    return '#' + String(value || '').replace(/^#/, '');
+  }
+  function renderStaffRecords(staff) {
+    const list = $('manpowerStaffList');
+    list.replaceChildren();
+    staff.forEach(employee => {
+      const card = node('button', 'manpower-employee-card');
+      card.type = 'button';
+      card.dataset.empNo = employee.empNo;
+      card.setAttribute('aria-label', `View employee details for ${employee.name}, ${normalizeEmployeeId(employee.empNo)}`);
+      const content = node('span', 'manpower-employee-card-content');
+      const identity = node('span', 'manpower-employee-identity');
+      identity.append(
+        node('span', 'employee-name', employee.name),
+        node('span', 'employee-id', normalizeEmployeeId(employee.empNo))
+      );
+      const details = node('span', 'manpower-employee-card-details');
+      const position = node('span', 'manpower-employee-card-row');
+      position.append(node('span', '', 'Position'), node('strong', '', employee.position || '—'));
+      const department = node('span', 'manpower-employee-card-row');
+      department.append(node('span', '', 'Department'), node('strong', '', employee.department || '—'));
+      details.append(position, department);
+      content.append(identity, details);
+      const chevron = node('i', 'fa-solid fa-chevron-right');
+      chevron.setAttribute('aria-hidden', 'true');
+      card.append(content, chevron);
+      list.append(card);
+    });
+    $('manpowerStaffTotalRecords').textContent = staff.length;
+    $('manpowerStaffEmpty').hidden = staff.length !== 0;
+  }
+  function showStaffRecords(label, trigger) {
+    state.selectedGroupLabel = label;
+    state.staffTrigger = trigger;
+    renderStaffRecords(getGroupStaff(state.filters.summaryBy, label));
+    showView('staff');
+  }
   function showView(view) {
     const main = document.querySelector('main');
-    if (view === 'chart') state.tableScroll = main.scrollTop;
+    if (state.view === 'table' && view !== 'table') state.tableScroll = main.scrollTop;
     state.view = view;
     $('manpowerTableView').hidden = view !== 'table';
     $('manpowerChartView').hidden = view !== 'chart';
-    $('manpowerTitle').textContent = view === 'chart' ? 'Manpower Analysis' : 'Manpower Statistics';
-    $('manpowerBack').setAttribute('aria-label', view === 'chart' ? 'Back to Manpower Statistics' : 'Back to Employee and Career');
+    $('manpowerStaffView').hidden = view !== 'staff';
+    $('manpowerTitle').textContent = view === 'chart'
+      ? 'Manpower Analysis'
+      : view === 'staff' ? `${state.selectedGroupLabel} Staff Records` : 'Manpower Statistics';
+    $('manpowerBack').setAttribute('aria-label', view === 'table' ? 'Back to Employee and Career' : 'Back to Manpower Statistics');
     main.scrollTop = view === 'table' ? state.tableScroll : 0;
   }
   function populateFilter() {
@@ -303,10 +352,14 @@
     $('manpowerChartMetric').focus({ preventScroll: true });
   });
   $('manpowerBack').addEventListener('click', event => {
-    if (state.view !== 'chart') return;
+    if (state.view === 'table') return;
     event.preventDefault();
+    const previousView = state.view;
     showView('table');
-    $('manpowerViewChart').focus({ preventScroll: true });
+    const focusTarget = previousView === 'staff' && state.staffTrigger?.isConnected
+      ? state.staffTrigger
+      : $('manpowerViewChart');
+    focusTarget.focus({ preventScroll: true });
   });
   $('manpowerChartMetric').addEventListener('change', event => {
     state.metric = event.target.value;

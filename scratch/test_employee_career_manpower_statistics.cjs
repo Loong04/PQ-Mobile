@@ -75,6 +75,29 @@ const controlledStaff = [
       assert.equal(await page.$eval('#manpowerStatisticsDialogTitle', title => title.textContent), 'Manpower Statistics');
       assert.deepEqual(await page.$$eval('#manpowerStatisticsDetails th', cells => cells.map(cell => cell.textContent)), statisticsLabels);
       await page.click('#manpowerStatisticsClose');
+      assert.equal(await page.$$eval('#manpowerTable tbody td:last-child button', buttons => buttons.length), 34);
+      assert.equal(await page.$eval('#manpowerTable tbody td:last-child button', button => button.getAttribute('aria-label')), 'View 48 staff records for ACCOUNT EXECUTIVE');
+      const tableScroll = await page.$eval('main', main => {
+        main.scrollTop = 240;
+        return main.scrollTop;
+      });
+      await page.click('#manpowerTable tbody td:last-child button');
+      assert.ok(await page.$eval('#manpowerStaffView', section => !section.hidden));
+      assert.ok(await page.$eval('#manpowerTableView', section => section.hidden));
+      assert.ok(await page.$eval('#manpowerChartView', section => section.hidden));
+      assert.equal(await page.$eval('#manpowerTitle', title => title.textContent), 'ACCOUNT EXECUTIVE Staff Records');
+      assert.equal(await page.$eval('#manpowerStaffTotalRecords', value => value.textContent), '48');
+      assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', cards => cards.length), 48);
+      assert.ok(await page.$$eval('#manpowerStaffList .manpower-employee-card', cards => cards.every(card => {
+        const name = card.querySelector('.employee-name');
+        const id = card.querySelector('.employee-id');
+        return name && name.nextElementSibling === id && /^#\S+/.test(id.textContent)
+          && card.textContent.includes('Position') && card.textContent.includes('Department');
+      })));
+      await page.click('#manpowerBack');
+      assert.ok(await page.$eval('#manpowerTableView', section => !section.hidden));
+      assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'View 48 staff records for ACCOUNT EXECUTIVE');
+      assert.equal(await page.$eval('main', main => main.scrollTop), tableScroll);
       await page.screenshot({ path: path.join(__dirname, 'employee_career_manpower_statistics_' + theme + '.png') });
       await page.click('#manpowerViewChart');
       assert.equal(await page.$eval('#manpowerChartTotal', n => n.textContent), '282');
