@@ -38,6 +38,39 @@ const modal = '#workplaceBookingDetails';
       assert.equal(await page.$eval(day('2026-10-08') + ' .workplace-booking-count', n => n.textContent), '2', 'Calendar uses actual shared Book Resource records');
       assert.equal(await page.$eval(day('2026-10-09') + ' .workplace-booking-count', n => n.textContent), '1');
       assert.equal(await page.$(day('2026-10-10') + ' .workplace-booking-count'), null);
+      await page.click('#workplaceCalendarFilterTrigger');
+      assert.equal(await page.$eval('#workplaceCalendarFilterOverlay', node => node.hidden), false);
+      assert.deepEqual(
+        await page.$$eval('#workplaceCalendarFilterForm label', nodes => nodes.map(node => node.textContent.trim())),
+        ['Resource', 'Start Time', 'End Time', 'Show']
+      );
+      assert.deepEqual(
+        await page.$$eval('#workplaceCalendarFilterResource option', nodes => nodes.map(node => [node.value, node.textContent.trim()])),
+        [['', 'All Resources'], ['selangor-room', 'SELANGOR ROOM'], ['meeting-room', 'MEETING ROOM'], ['projector', 'PROJECTOR']]
+      );
+      assert.deepEqual(
+        await page.$$eval('#workplaceCalendarFilterShow option', nodes => nodes.map(node => [node.value, node.textContent.trim()])),
+        [['', 'All Bookings'], ['plan', 'Plan'], ['confirmed', 'Confirmed']]
+      );
+      await page.select('#workplaceCalendarFilterResource', 'projector');
+      await page.$eval('#workplaceCalendarFilterStartTime', node => { node.value = '10:30'; });
+      await page.$eval('#workplaceCalendarFilterEndTime', node => { node.value = '12:30'; });
+      await page.select('#workplaceCalendarFilterShow', 'confirmed');
+      await page.click('#workplaceCalendarApplyFilter');
+      assert.match(await page.$eval('#workplaceCalendarFilterSummary', node => node.textContent), /PROJECTOR.*10:30.*12:30.*Confirmed/);
+      assert.equal(await page.$eval(day('2026-10-08') + ' .workplace-booking-count', n => n.textContent), '1');
+      assert.equal(await page.$(day('2026-10-09') + ' .workplace-booking-count'), null);
+      await page.$eval(day('2026-10-08'), node => node.scrollIntoView({ block: 'center' }));
+      await page.click(day('2026-10-08') + ' .workplace-booking-count');
+      assert.equal(await page.$$eval(modal + ' [data-record-id]', nodes => nodes.length), 1);
+      assert.match(await page.$eval(modal, node => node.textContent), /PROJECTOR/);
+      await page.keyboard.press('Escape');
+      await page.click('#workplaceCalendarFilterTrigger');
+      await page.click('#workplaceCalendarResetFilter');
+      await page.click('#workplaceCalendarApplyFilter');
+      assert.equal(await page.$eval('#workplaceCalendarFilterSummary', node => node.textContent.trim()), 'All Resources • All Times • All Bookings');
+      assert.equal(await page.$eval(day('2026-10-08') + ' .workplace-booking-count', n => n.textContent), '2');
+      assert.equal(await page.$eval(day('2026-10-09') + ' .workplace-booking-count', n => n.textContent), '1');
       const calendarStyle = await page.$$eval('#workplaceCalendarGrid button:not(.other-month)', nodes => nodes.map(n => {
         const date = n.querySelector('.cal-date-num');
         const cellBounds = n.getBoundingClientRect();

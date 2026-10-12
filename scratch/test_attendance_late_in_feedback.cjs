@@ -143,7 +143,7 @@ async function closeModal(page, id) {
           'Other'
         ]);
         assert.deepEqual(lateInFeedback.meta.map(row => row.label), ['Original Shift', 'Date', 'Employee']);
-        assert.equal(lateInFeedback.meta[1].value, '13 Sep 2026');
+        assert.equal(lateInFeedback.meta[1].value, 'Sun 13 Sep 2026');
         assert.equal(lateInFeedback.hasClockTimes, true, 'Existing Clock Times section remains');
         assert.deepEqual(
           lateInFeedback.visibleLabels,

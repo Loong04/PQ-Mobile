@@ -109,7 +109,7 @@ async function assertOverlayFitsAtWidths(page, selector) {
         assert.equal(layout.hasVerifyControls, false, 'Pending Attendance Feedback must not expose Verify controls');
         assert.equal(layout.cards.length, 2);
         assert.equal(layout.hasAttendanceContext, false, 'Pending Attendance Feedback must not show Shift Group or Supervisor');
-        assert.deepEqual(layout.cards.map(card => card.date), ['Mon 14 SEP', 'Tue 15 SEP']);
+        assert.deepEqual(layout.cards.map(card => card.date), ['Mon 14 Sep 2026', 'Tue 15 Sep 2026']);
         assert.deepEqual(layout.cards.map(card => card.status), ['Unapproved OT', 'Missing Clock Out']);
         layout.cards.forEach((card, cardIndex) => {
           assert.equal(card.radius, '20px');

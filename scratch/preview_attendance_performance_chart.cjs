@@ -39,6 +39,7 @@ const assert = require('node:assert/strict');
             id: id.textContent,
             idBelowName: id.getBoundingClientRect().top >= name.getBoundingClientRect().bottom,
             rows: [...card.querySelectorAll('.performance-detail-row > span')].map(label => label.textContent),
+            position: card.querySelector('[data-field="position"]').textContent.trim(),
             overflow: card.scrollWidth > card.clientWidth,
             dateBadges: card.querySelectorAll('.history-date-badge').length
           };
@@ -47,6 +48,14 @@ const assert = require('node:assert/strict');
       assert.deepEqual(directory.tabs, ['All Bands', 'Good', 'Caution', 'Poor']);
       assert.equal(directory.tabDots, 0);
       assert.equal(directory.cards.length, 12);
+      assert.ok(
+        directory.cards.every(card => card.position && card.position !== '—' && card.position !== '-'),
+        'Every Attendance Performance card must display a Position instead of a placeholder'
+      );
+      assert.ok(
+        new Set(directory.cards.map(card => card.position)).size >= 8,
+        'Attendance Performance must show realistic position variety'
+      );
       for (const card of directory.cards) {
         assert.equal(card.radius, '18px');
         const rgb = { Good: '16, 185, 129', Caution: '245, 158, 11', Poor: '239, 68, 68' }[card.band];

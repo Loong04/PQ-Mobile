@@ -21,6 +21,32 @@ const puppeteer = require('puppeteer');
 
     const result = await page.evaluate(() => {
       showLeaveSection('viewTeamDashboard');
+      renderHubTeamCalendar();
+
+      const calendarTitle = document.getElementById('leaveTeamCalendarSectionTitle');
+      const calendarCard = document.getElementById('leaveTeamCalendarCard');
+      const calendarHeader = document.getElementById('leaveTeamCalendarHeader');
+      const calendarFilter = document.getElementById('leaveTeamCalendarFilter');
+      const weekdays = [...document.querySelectorAll('#leaveTeamCalendarWeekdays > span')]
+        .map(node => node.textContent.trim());
+      const calendarDays = [...document.querySelectorAll('#hubTeamCalDaysGridContainer .team-leave-calendar-day')];
+      const regularDay = calendarDays.find(node => !node.classList.contains('other-month'));
+      const leaveDay = calendarDays.find(node => node.classList.contains('has-leave'));
+      const regularStyle = regularDay ? getComputedStyle(regularDay) : null;
+      const calendarLayout = {
+        titleOutsideCard: Boolean(calendarTitle && calendarCard && calendarTitle.nextElementSibling === calendarCard),
+        headerInsideCard: Boolean(calendarHeader && calendarCard?.contains(calendarHeader)),
+        filterInsideControls: Boolean(calendarFilter && calendarHeader?.contains(calendarFilter)),
+        monthInsideHeader: Boolean(calendarHeader?.contains(document.getElementById('teamCalMonthText'))),
+        arrowCount: calendarHeader?.querySelectorAll('button[onclick^="shiftTeamCalMonth"]').length || 0,
+        weekdays,
+        dayCount: calendarDays.length,
+        leaveDayHasCount: Boolean(leaveDay?.querySelector('.team-leave-calendar-count')),
+        regularDayMinHeight: regularStyle?.minHeight || '',
+        regularDayBorderStyle: regularStyle?.borderStyle || '',
+        noHorizontalOverflow: Boolean(calendarCard && calendarCard.scrollWidth <= calendarCard.clientWidth)
+      };
+
       openTeamUpcomingLeaveSheet();
 
       const cards = [...document.querySelectorAll('.team-upcoming-leave-card')];
@@ -33,6 +59,7 @@ const puppeteer = require('puppeteer');
         calendarArrowCount: calendarNavigator
           ? calendarNavigator.querySelectorAll('button[onclick^="shiftTeamCalMonth"]').length
           : 0,
+        calendarLayout,
         cardCount: cards.length,
         cards: cards.map(card => ({
           submittedDateLabels: [...card.querySelectorAll('.leave-highlight-detail-label')]
@@ -52,6 +79,19 @@ const puppeteer = require('puppeteer');
       'Team Leave Calendar must retain its own month display');
     assert.equal(result.calendarArrowCount, 2,
       'Team Leave Calendar must retain previous and next month controls');
+    assert.deepEqual(result.calendarLayout, {
+      titleOutsideCard: true,
+      headerInsideCard: true,
+      filterInsideControls: true,
+      monthInsideHeader: true,
+      arrowCount: 2,
+      weekdays: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+      dayCount: 35,
+      leaveDayHasCount: true,
+      regularDayMinHeight: '54px',
+      regularDayBorderStyle: 'solid',
+      noHorizontalOverflow: true
+    }, 'Team Leave Calendar must match the established Book Resource Calendar structure');
     assert.ok(result.cardCount > 0, 'Upcoming Leave must render records');
     for (const card of result.cards) {
       assert.equal(card.submittedDateLabels, 0,

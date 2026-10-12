@@ -8,6 +8,13 @@
   const bookingList = document.getElementById('workplaceBookingRecords');
   const feedback = document.getElementById('workplaceBookingFeedback');
   const loadError = document.getElementById('workplaceCalendarError');
+  const filterOverlay = document.getElementById('workplaceCalendarFilterOverlay');
+  const filterForm = document.getElementById('workplaceCalendarFilterForm');
+  const filterSummary = document.getElementById('workplaceCalendarFilterSummary');
+  const filterError = document.getElementById('workplaceCalendarFilterError');
+  const filterDefaults = { resource: '', startTime: '', endTime: '', show: '' };
+  let filters = { ...filterDefaults };
+  let filterInerted = [];
   let bookings = [];
   const current = new Date();
   const today = new Date(current.getFullYear(), current.getMonth(), current.getDate(), 12);
@@ -16,6 +23,10 @@
   const isoDate = date => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
   const fullDate = date => date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
+  store.resources.forEach(resource => {
+    filterForm.elements.resource.append(new Option(resource.name, resource.id));
+  });
+
   function node(tag, className, text) {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -23,8 +34,26 @@
     return element;
   }
 
+  function filteredBookings() {
+    return bookings.filter(record =>
+      (!filters.resource || record.resource === filters.resource)
+      && (!filters.startTime || record.startTime >= filters.startTime)
+      && (!filters.endTime || record.endTime <= filters.endTime)
+      && (!filters.show || record.status === filters.show)
+    );
+  }
+
   function selectedBookings() {
-    return bookings.filter(record => record.date === isoDate(selected));
+    return filteredBookings().filter(record => record.date === isoDate(selected));
+  }
+
+  function renderFilterSummary() {
+    const resource = store.resources.find(item => item.id === filters.resource)?.name || 'All Resources';
+    const time = filters.startTime && filters.endTime
+      ? `${filters.startTime} – ${filters.endTime}`
+      : filters.startTime ? `From ${filters.startTime}` : filters.endTime ? `Until ${filters.endTime}` : 'All Times';
+    const show = filters.show === 'plan' ? 'Plan' : filters.show === 'confirmed' ? 'Confirmed' : 'All Bookings';
+    filterSummary.textContent = [resource, time, show].join(' • ');
   }
 
   function positionDetails() {
@@ -98,7 +127,8 @@
       loadError.hidden = false;
     }
     const counts = new Map();
-    bookings.forEach(record => counts.set(record.date, (counts.get(record.date) || 0) + 1));
+    filteredBookings().forEach(record => counts.set(record.date, (counts.get(record.date) || 0) + 1));
+    renderFilterSummary();
     monthTitle.textContent = month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
     grid.setAttribute('aria-label', monthTitle.textContent + ' dates');
     const firstWeekday = (month.getDay() + 6) % 7;
@@ -162,8 +192,65 @@
     render();
   }
 
+  function openFilter() {
+    Object.entries(filters).forEach(([name, value]) => { filterForm.elements[name].value = value; });
+    filterError.hidden = true;
+    filterOverlay.hidden = false;
+    filterOverlay.classList.add('is-open');
+    const phone = filterOverlay.parentElement;
+    filterInerted = [...phone.children].filter(node => node !== filterOverlay && !node.inert);
+    filterInerted.forEach(node => { node.inert = true; });
+    filterForm.elements.resource.focus({ preventScroll: true });
+  }
+
+  function closeFilter() {
+    filterOverlay.classList.remove('is-open');
+    filterOverlay.hidden = true;
+    filterInerted.forEach(node => { node.inert = false; });
+    filterInerted = [];
+    document.getElementById('workplaceCalendarFilterTrigger').focus({ preventScroll: true });
+  }
+
   document.getElementById('workplaceCalendarPrevious').addEventListener('click', () => shiftMonth(-1));
   document.getElementById('workplaceCalendarNext').addEventListener('click', () => shiftMonth(1));
+  document.getElementById('workplaceCalendarFilterTrigger').addEventListener('click', openFilter);
+  document.getElementById('workplaceCalendarCloseFilter').addEventListener('click', closeFilter);
+  document.getElementById('workplaceCalendarResetFilter').addEventListener('click', () => {
+    filterForm.reset();
+    filterError.hidden = true;
+  });
+  filterForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const next = Object.fromEntries(Object.keys(filterDefaults).map(name => [name, filterForm.elements[name].value.trim()]));
+    if (next.startTime && next.endTime && next.endTime <= next.startTime) {
+      filterError.textContent = 'End Time must be later than Start Time.';
+      filterError.hidden = false;
+      filterForm.elements.endTime.focus();
+      return;
+    }
+    filters = next;
+    render();
+    closeFilter();
+  });
+  filterOverlay.addEventListener('click', event => { if (event.target === filterOverlay) closeFilter(); });
+  filterOverlay.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeFilter();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const controls = [...filterForm.querySelectorAll('button, input, select')].filter(control => !control.disabled);
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
   grid.addEventListener('click', event => {
     const button = event.target.closest('button[data-date]');
     if (button) {

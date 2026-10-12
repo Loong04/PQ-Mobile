@@ -556,7 +556,7 @@
         </div>
 
       </div>
-      <button type="button" id="staffAttendanceUpdate" class="staff-update-button" onclick="updateStaffAttendanceVerification()" disabled>Update</button>
+      <button type="button" id="staffAttendanceUpdate" class="staff-update-button" onclick="updateStaffAttendanceVerification()" disabled hidden>Update</button>
     </div>
 
     <div class="modal-overlay popout-mode" id="detailsModal" onclick="closeDetailsModal(event)">
@@ -779,7 +779,7 @@
         otInfo: 'Approved 1.5h OT',
         branch: 'Penang Branch',
         dept: 'ACCOUNTS',
-        verified: true
+        verified: false
       },
       {
         empNo: '#004199',
@@ -891,7 +891,11 @@
     const staffSavedVerification = new Map(masterStaffDataset.map(item => [item.cleanEmpNo, item.verified]));
     let renderedStaffRecords = [];
     function syncStaffAttendanceUpdate() {
-      document.getElementById('staffAttendanceUpdate').disabled = !masterStaffDataset.some(item => item.verified !== staffSavedVerification.get(item.cleanEmpNo));
+      const updateButton = document.getElementById('staffAttendanceUpdate');
+      const hasChanges = masterStaffDataset.some(item => item.verified !== staffSavedVerification.get(item.cleanEmpNo));
+      updateButton.disabled = !hasChanges;
+      updateButton.hidden = !hasChanges;
+      updateButton.closest('#view-list')?.classList.toggle('has-pending-update', hasChanges);
     }
 
     function updateStaffAttendanceVerification() {
@@ -935,7 +939,7 @@
         const card = document.createElement('article');
         card.className = `history-card-item staff-card-item${hasException ? ' exception-theme' : ''}`;
         card.dataset.empNo = item.cleanEmpNo;
-        card.innerHTML = '<div class="attendance-record-top"><button type="button" class="staff-card-details-trigger"><span class="staff-hdr-name"></span><span class="staff-hdr-empno"></span><span class="history-time-row"></span><span class="attendance-record-reference"></span></button><div class="attendance-record-controls"><label class="staff-verify-control"><input type="checkbox" class="staff-verify-checkbox"><span class="staff-verify-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span class="staff-verify-label">Verify</span></label><span class="attendance-exception-status"></span></div></div><div class="attendance-record-summary-panel"></div><div class="staff-card-actions"><button type="button" class="btn-action-feedback">Feedback</button><button type="button" class="btn-action-follow-up">Follow Up</button></div>';
+        card.innerHTML = '<div class="attendance-record-top"><button type="button" class="staff-card-details-trigger"><span class="staff-hdr-name"></span><span class="staff-hdr-empno"></span><span class="history-time-row"></span><span class="attendance-record-reference"></span></button><div class="attendance-record-controls"><label class="staff-verify-control"><input type="checkbox" class="staff-verify-checkbox"><span class="staff-verify-box" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span class="staff-verify-label">Verify</span></label><span class="attendance-exception-status"></span></div></div><div class="attendance-record-summary-panel"></div><div class="staff-card-actions"><button type="button" class="btn-action-feedback">Feedback</button></div>';
         card.querySelector('.staff-hdr-name').textContent = item.name;
         card.querySelector('.staff-hdr-empno').textContent = `#${item.empNo.replace(/^#/, '')}`;
         card.querySelector('.history-time-row').textContent = `Shift: ${item.shift}`;
@@ -963,7 +967,6 @@
           panel.append(row);
         }
         card.querySelector('.btn-action-feedback').addEventListener('click', () => openFeedbackModal(item.cleanEmpNo));
-        card.querySelector('.btn-action-follow-up').addEventListener('click', () => openFollowUpScreen(item.cleanEmpNo));
         container.append(card);
       }
     }

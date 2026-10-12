@@ -62,69 +62,137 @@ async function inspect(browser, theme, width) {
   assert.notEqual(await page.$eval('#view-details', node => getComputedStyle(node).display), 'none');
   assert.equal(await page.$eval('#pageHeaderTitle', node => node.textContent.trim()), 'Clocking Summary Details');
   assert.equal(await page.$$('#detailsModal').then(nodes => nodes.length), 0, 'Count details must use a dedicated page instead of a pop-out');
-  assert.equal(await page.$eval('#detailsRecordCount', node => node.textContent.trim()), 'Total Records: 4');
+  assert.equal(await page.$eval('#detailsRecordCount', node => node.textContent.trim()), '4');
   assert.deepEqual(await page.$eval('.clocking-details-toolbar', toolbar => {
     const actions = toolbar.querySelector('.clocking-details-actions');
-    const [chart, pdf, excel] = actions.querySelectorAll('button');
+    const chart = toolbar.querySelector('.view-chart-btn');
+    const [pdf, excel] = actions.querySelectorAll('button');
+    const total = toolbar.querySelector('#detailsRecordCount');
+    const rows = toolbar.querySelectorAll('.attendance-report-summary-row');
     const actionBox = actions.getBoundingClientRect();
     const chartBox = chart.getBoundingClientRect();
     const pdfBox = pdf.getBoundingClientRect();
     const excelBox = excel.getBoundingClientRect();
     return {
-      labels: [chart, pdf, excel].map(button => button.textContent.trim()),
+      labels: [chart, pdf, excel].map(button => button.getAttribute('aria-label') || button.textContent.trim()),
       display: getComputedStyle(actions).display,
       toolbarRadius: getComputedStyle(toolbar).borderRadius,
       toolbarBorder: getComputedStyle(toolbar).borderTopWidth,
-      chartFullWidth: Math.abs(chartBox.width - actionBox.width) < 2,
+      firstRowLabel: rows[0].querySelector('.attendance-report-summary-label').textContent,
+      chartBesideTotal: chartBox.left > total.getBoundingClientRect().right && Math.abs(chartBox.top - rows[0].getBoundingClientRect().top) < 12,
       exportsShareRow: Math.abs(pdfBox.top - excelBox.top) < 2,
-      chartAboveExports: chartBox.bottom < pdfBox.top
+      chartAboveExports: chartBox.bottom < pdfBox.top,
+      exportsRightAligned: Math.abs(excelBox.right - rows[1].getBoundingClientRect().right) < 2,
+      secondRowText: rows[1].textContent.replace(/\s+/g, ' ').trim(),
+      exportPillsMatchChart: [pdf, excel].every(button => ['borderRadius', 'padding', 'fontSize', 'fontWeight', 'whiteSpace'].every(key => getComputedStyle(button)[key] === getComputedStyle(chart)[key]))
     };
   }), {
-    labels: ['View Chart', 'PDF', 'Excel'],
-    display: 'grid',
-    toolbarRadius: '16px',
+    labels: ['View Chart', 'View PDF', 'View Excel'],
+    display: 'flex',
+    toolbarRadius: '18px',
     toolbarBorder: '1px',
-    chartFullWidth: true,
+    firstRowLabel: 'Total Records',
+    chartBesideTotal: true,
     exportsShareRow: true,
-    chartAboveExports: true
-  }, 'Clocking details must use a spacious two-level action panel');
+    chartAboveExports: true,
+    exportsRightAligned: true,
+    secondRowText: 'View PDF View Excel',
+    exportPillsMatchChart: true
+  }, 'Clocking details use the Leave summary card with exports only in the second row');
   assert.deepEqual(await page.$$eval('#detailsListContainer .staff-clock-card', nodes => nodes.map(node => ({
     name: node.querySelector('.staff-name-text').textContent.trim(),
     id: node.querySelector('.staff-name-text').nextElementSibling.textContent.trim(),
     time: node.querySelector('.clocking-record-time').textContent.trim(),
-    type: node.querySelector('.clocking-record-type').textContent.trim(),
-    mode: node.querySelector('.clocking-record-mode').textContent.trim()
+    status: node.querySelector('.clocking-status-badge')?.textContent.trim() || '',
+    mode: node.querySelector('.clocking-record-mode').textContent.trim(),
+    radius: getComputedStyle(node).borderRadius,
+    leftBorder: getComputedStyle(node).borderLeftWidth,
+    cardPadding: getComputedStyle(node).padding,
+    headerHasPurpleFill: getComputedStyle(node.querySelector('.clocking-record-header')).backgroundImage !== 'none',
+    statusInHeader: Boolean(node.querySelector('.clocking-record-header > .clocking-status-badge')),
+    idBelowName: node.querySelector('.staff-emp-badge').getBoundingClientRect().top >= node.querySelector('.staff-name-text').getBoundingClientRect().bottom,
+    labels: [...node.querySelectorAll('.clocking-record-body > .clocking-record-field .clocking-record-label')].map(label => label.textContent.trim())
   }))), [
-    { name: 'Asmawi idris', id: '#EBB15', time: '08:18', type: 'Clock In', mode: 'Manual Input (People HR)' },
-    { name: 'Asmawi idris', id: '#EBB15', time: '19:53', type: 'Clock Out', mode: 'Manual Input (People HR)' },
-    { name: 'Natasha thean mei hoi', id: '#A0001', time: '07:58', type: 'Clock In', mode: 'Manual Input (People HR)' },
-    { name: 'Natasha thean mei hoi', id: '#A0001', time: '18:47', type: 'Clock Out', mode: 'Manual Input (People HR)' }
-  ]);
-  assert.deepEqual(await page.$$eval('#detailsListContainer .clocking-record-location-field', nodes => nodes.map(node => ({
-    employee: node.closest('.staff-clock-card').querySelector('.staff-name-text').textContent.trim(),
-    location: node.querySelector('.clocking-record-location').textContent.trim(),
-    mapButton: node.querySelector('.clocking-map-btn').textContent.trim(),
-    hasIconTile: Boolean(node.querySelector('.clocking-record-location-icon')),
-    hasFullscreenIcon: Boolean(node.querySelector('.clocking-map-btn .fa-expand')),
-    mapButtonFullWidth: Math.abs(node.querySelector('.clocking-map-btn').getBoundingClientRect().width - (node.clientWidth - 22)) < 2,
-    mapButtonHeight: getComputedStyle(node.querySelector('.clocking-map-btn')).height,
-    mapButtonHasFill: getComputedStyle(node.querySelector('.clocking-map-btn')).backgroundImage !== 'none'
-  }))), [{
+    { name: 'Asmawi idris', id: '#EBB15', time: '08:18', status: 'Clock In', mode: 'Manual Input (People HR)', radius: '18px', leftBorder: '5px', cardPadding: '16px', headerHasPurpleFill: false, statusInHeader: true, idBelowName: true, labels: ['Clock Time', 'Clock Mode'] },
+    { name: 'Asmawi idris', id: '#EBB15', time: '19:53', status: 'Clock Out', mode: 'Manual Input (People HR)', radius: '18px', leftBorder: '5px', cardPadding: '16px', headerHasPurpleFill: false, statusInHeader: true, idBelowName: true, labels: ['Clock Time', 'Clock Mode'] },
+    { name: 'Natasha thean mei hoi', id: '#A0001', time: '07:58', status: 'Clock In', mode: 'Manual Input (People HR)', radius: '18px', leftBorder: '5px', cardPadding: '16px', headerHasPurpleFill: false, statusInHeader: true, idBelowName: true, labels: ['Clock Time', 'Clock Mode', 'Location'] },
+    { name: 'Natasha thean mei hoi', id: '#A0001', time: '18:47', status: 'Clock Out', mode: 'Manual Input (People HR)', radius: '18px', leftBorder: '5px', cardPadding: '16px', headerHasPurpleFill: false, statusInHeader: true, idBelowName: true, labels: ['Clock Time', 'Clock Mode'] }
+  ], 'Clocking detail cards use the History Card hierarchy with Clock Type as the status badge');
+  assert.deepEqual(await page.$eval('#detailsListContainer .clocking-out-card', node => ({
+    border: getComputedStyle(node).borderLeftColor,
+    badge: getComputedStyle(node.querySelector('.clocking-status-badge')).color
+  })), {
+    border: 'rgb(124, 58, 237)',
+    badge: 'rgb(124, 58, 237)'
+  }, 'Clock Out uses the consistent purple status treatment');
+  assert.deepEqual(await page.$$eval('#detailsListContainer .clocking-record-location-field', nodes => nodes.map(node => {
+    const card = node.closest('.staff-clock-card');
+    const actions = card.querySelector(':scope > .clocking-card-actions');
+    const mapButton = actions?.querySelector('.clocking-map-btn');
+    const styles = mapButton ? getComputedStyle(mapButton) : null;
+    return {
+      employee: card.querySelector('.staff-name-text').textContent.trim(),
+      location: node.querySelector('.clocking-record-location').textContent.trim(),
+      mapButton: mapButton?.textContent.trim() || '',
+      hasIconTile: Boolean(node.querySelector('.clocking-record-location-icon')),
+      usesRegularFieldLayout: node.classList.contains('clocking-record-field'),
+      locationDisplay: getComputedStyle(node).display,
+      locationJustify: getComputedStyle(node).justifyContent,
+      locationGap: getComputedStyle(node).gap,
+      locationPadding: getComputedStyle(node).padding,
+      locationBorderTop: getComputedStyle(node).borderTopWidth,
+      locationValueAlign: getComputedStyle(node.querySelector('.clocking-record-location')).textAlign,
+      locationValueSize: getComputedStyle(node.querySelector('.clocking-record-location')).fontSize,
+      locationValueWeight: getComputedStyle(node.querySelector('.clocking-record-location')).fontWeight,
+      hasFullscreenIcon: Boolean(mapButton?.querySelector('.fa-expand')),
+      mapInsideDetails: Boolean(card.querySelector('.clocking-record-body .clocking-map-btn')),
+      actionIsDirectChild: actions?.parentElement === card,
+      actionRightAligned: actions ? getComputedStyle(actions).justifyContent === 'flex-end' : false,
+      actionMarginTop: actions ? getComputedStyle(actions).marginTop : '',
+      mapButtonPadding: styles?.padding || '',
+      mapButtonRadius: styles?.borderRadius || '',
+      mapButtonFontSize: styles?.fontSize || '',
+      mapButtonFontWeight: styles?.fontWeight || '',
+      mapButtonHasFill: styles?.backgroundImage !== 'none',
+      mapButtonShadow: styles?.boxShadow || ''
+    };
+  })), [{
     employee: 'Natasha thean mei hoi',
     location: 'Times Square Office, Kuala Lumpur',
     mapButton: 'View Map',
-    hasIconTile: true,
-    hasFullscreenIcon: true,
-    mapButtonFullWidth: true,
-    mapButtonHeight: '40px',
-    mapButtonHasFill: true
-  }], 'Only the located record may show the richer full-width map action');
+    hasIconTile: false,
+    usesRegularFieldLayout: true,
+    locationDisplay: 'flex',
+    locationJustify: 'space-between',
+    locationGap: '16px',
+    locationPadding: '0px',
+    locationBorderTop: '0px',
+    locationValueAlign: 'right',
+    locationValueSize: '12px',
+    locationValueWeight: '800',
+    hasFullscreenIcon: false,
+    mapInsideDetails: false,
+    actionIsDirectChild: true,
+    actionRightAligned: true,
+    actionMarginTop: '12px',
+    mapButtonPadding: '8px 16px',
+    mapButtonRadius: '20px',
+    mapButtonFontSize: '12px',
+    mapButtonFontWeight: '700',
+    mapButtonHasFill: true,
+    mapButtonShadow: 'rgba(124, 58, 237, 0.2) 0px 4px 10px 0px'
+  }], 'Only the located record shows a Leave History-style View Map action outside the inner details panel');
+  await page.$eval('#detailsListContainer .clocking-map-btn', button => button.scrollIntoView({ block: 'center' }));
   await page.click('#detailsListContainer .clocking-map-btn');
   assert.notEqual(await page.$eval('#view-map', node => getComputedStyle(node).display), 'none');
   assert.equal(await page.$eval('#pageHeaderTitle', node => node.textContent.trim()), 'Location Map');
   assert.equal(await page.$eval('#clockingMapAddress', node => node.textContent.trim()), 'Times Square Office, Kuala Lumpur');
   assert.equal(await page.$eval('#view-map', node => node.textContent.includes('Example Map')), false);
   assert.equal(await page.$eval('#clockingFullMap', node => node.querySelectorAll('iframe, a[href^="http"]').length), 0);
+  assert.deepEqual(await page.$eval('#clockingFullMap', node => ({
+    blocks: node.querySelectorAll('.clocking-map-block').length,
+    hasPin: Boolean(node.querySelector('.clocking-map-pin'))
+  })), { blocks: 4, hasPin: true }, 'View Map opens the interactive fake map surface');
   assert.equal(await page.$eval('#clockingFullMap', node => node.getBoundingClientRect().height >= document.querySelector('.main-content').clientHeight - 2), true);
   await page.click('.header-btn-icon');
   assert.notEqual(await page.$eval('#view-details', node => getComputedStyle(node).display), 'none');

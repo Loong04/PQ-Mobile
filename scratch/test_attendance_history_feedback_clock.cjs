@@ -80,7 +80,7 @@ const puppeteer = require('puppeteer');
       assert.deepEqual(formLayout.approverField, { readOnly: true, inFormField: true, hasLegacyClass: false, backgroundMatchesRemarks: true, radiusMatchesRemarks: true, paddingMatchesRemarks: true });
       assert.equal(await page.$eval('#modalFbkApproverComments', node => node.value), '[Comment by FARHAN BIN RAHMAT (EBB12)]\nokay');
       assert.equal(await page.$eval('label[for="modalFbkApproverComments"]', node => node.textContent), 'Approver Comments');
-      assert.deepEqual(await page.$$eval('#modalFbkPunchDays button', nodes => nodes.map(node => node.textContent.trim())), ['+ 30 Dec', '+ 31 Dec', '+ 1 Jan']);
+      assert.deepEqual(await page.$$eval('#modalFbkPunchDays button', nodes => nodes.map(node => node.textContent.trim())), ['+ Tue 30 Dec 2025', '+ Wed 31 Dec 2025', '+ Thu 01 Jan 2026']);
       assert.deepEqual(await page.$$eval('#modalFbkPunches input', nodes => nodes.map(node => node.value)), ['06:02', '10:00']);
       await page.$eval('#modalFbkPunches input', input => { input.value = '0630'; input.dispatchEvent(new Event('input', { bubbles: true })); });
       assert.equal(await page.$eval('#modalFbkPunches input', node => node.value), '06:30');

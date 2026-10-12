@@ -351,7 +351,7 @@ const chrome = process.env.PUPPETEER_EXECUTABLE_PATH || 'C:/Program Files/Google
       'Feedback summary shows Original Shift, Date, and the existing Employee row'
     );
     assert.ok(feedbackDetails.metaRows[0].value, 'Original Shift has a value');
-    assert.equal(feedbackDetails.metaRows[1].value, '15 Sep 2026');
+    assert.equal(feedbackDetails.metaRows[1].value, 'Tue 15 Sep 2026');
     assert.equal(feedbackDetails.metaRows[1].valueColor, feedbackDetails.metaRows[0].valueColor, 'Date uses the Original Shift text color');
     assert.ok(feedbackDetails.metaRows[1].top >= feedbackDetails.metaRows[0].bottom, 'Date row is below Original Shift');
     assert.equal(feedbackDetails.hasReasonRequiredMarker, false, 'Time Amend Reason has no required marker');

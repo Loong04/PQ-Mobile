@@ -46,7 +46,7 @@ const puppeteer = require('puppeteer');
           };
         }));
         assert.equal(cards.length, 2);
-        assert.deepEqual(cards.map(card => card.date), ['Mon 14 SEP', 'Tue 15 SEP']);
+        assert.deepEqual(cards.map(card => card.date), ['Mon 14 Sep 2026', 'Tue 15 Sep 2026']);
         cards.forEach(card => {
           assert.equal(card.radius, '20px');
           assert.ok(card.title && card.fits && !card.dateBadge);

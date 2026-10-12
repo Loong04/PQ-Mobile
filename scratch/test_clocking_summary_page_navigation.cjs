@@ -17,14 +17,15 @@ const puppeteer = require('puppeteer');
     await page.click('#summaryTableBody .attendance-report-pill');
     assert.equal(await page.$eval('#view-details', node => getComputedStyle(node).display), 'block');
     assert.equal(await page.$eval('#pageHeaderTitle', node => node.textContent.trim()), 'Clocking Summary Details');
-    assert.equal(await page.$eval('#detailsRecordCount', node => node.textContent.trim()), 'Total Records: 4');
+    assert.equal(await page.$eval('#detailsRecordCount', node => node.textContent.trim()), '4');
     assert.equal(await page.$$('#detailsModal').then(nodes => nodes.length), 0, 'Details must not use a pop-out modal');
 
     const mapAction = await page.$eval('#detailsListContainer .clocking-map-btn', button => ({
       label: button.textContent.trim(),
       hasFullscreenIcon: Boolean(button.querySelector('.fa-expand'))
     }));
-    assert.deepEqual(mapAction, { label: 'View Map', hasFullscreenIcon: true });
+    assert.deepEqual(mapAction, { label: 'View Map', hasFullscreenIcon: false });
+    await page.$eval('#detailsListContainer .clocking-map-btn', button => button.scrollIntoView({ block: 'center' }));
     await page.click('#detailsListContainer .clocking-map-btn');
 
     assert.equal(await page.$eval('#view-map', node => getComputedStyle(node).display), 'block');

@@ -123,7 +123,7 @@ async function inspectPage(browser, config, theme, width) {
           total: document.getElementById('totalCostVal').textContent.trim(),
           rows: document.querySelectorAll('#employeeCostingList tr').length,
           firstName: document.querySelector('#employeeCostingList .emp-card-name').textContent.trim(),
-          firstId: document.querySelector('#employeeCostingList .emp-card-id').textContent.trim()
+          employeeIdCount: document.querySelectorAll('#employeeCostingList .emp-card-id').length
         }),
         expectedSummary: {
           title: 'Hours Costing',
@@ -131,7 +131,7 @@ async function inspectPage(browser, config, theme, width) {
           total: 'RM 3,351.90',
           rows: 19,
           firstName: 'Lee Soon Hock',
-          firstId: '#004101'
+          employeeIdCount: 0
         }
       },
       {

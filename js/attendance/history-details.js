@@ -8,6 +8,12 @@
   const returnFocus = { ot: null, feedback: null };
   const resubmittable = status => /resubmit|resubmission/i.test(status || '');
   const text = (id, value) => { document.getElementById(id).textContent = value ?? '-'; };
+  const fullDate = value => {
+    const date = new Date(value + 'T12:00:00Z');
+    const weekday = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getUTCDay()];
+    const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][date.getUTCMonth()];
+    return `${weekday} ${String(date.getUTCDate()).padStart(2, '0')} ${month} ${date.getUTCFullYear()}`;
+  };
 
   function setEmployee(prefix, employee) {
     const [id, ...parts] = String(employee || '').split(' - ');
@@ -228,8 +234,7 @@
       top.className = 'attendance-history-clock-top';
       const date = document.createElement('time');
       date.dateTime = punch.date;
-      const [year, month, day] = punch.date.split('-').map(Number);
-      date.textContent = `${String(day).padStart(2, '0')} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month - 1]}`;
+      date.textContent = fullDate(punch.date);
       const original = document.createElement('span');
       original.textContent = punch.original;
       original.className = 'attendance-history-punch-original' + (punch.original === 'New' ? ' is-new' : '');
@@ -274,7 +279,7 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'attendance-history-day-button';
-      button.textContent = '+ ' + date.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][date.getUTCMonth()];
+      button.textContent = '+ ' + fullDate(date.toISOString().slice(0,10));
       button.style.setProperty('--day-rgb', ['239, 68, 68', '16, 185, 129', '59, 130, 246'][offset + 1]);
       button.onclick = () => {
         if (!record.editable) return;

@@ -32,8 +32,14 @@ async function screenshot(page, name) {
       assert.ok(await page.$eval('#workplaceCalendarTitle', node =>
         node.parentElement.id === 'workplaceCalendar'
         && node.nextElementSibling?.classList.contains('calendar-card')
+        && node.parentElement.querySelector(':scope > .calendar-card')
         && !node.closest('.calendar-card')
       ), 'Book Resource Calendar title must sit outside the calendar card like My Leave Calendar');
+      assert.equal(await page.$('.workplace-calendar-filter-summary'), null, 'Calendar must not have an external Current Filter card');
+      assert.ok(await page.$eval('#workplaceCalendarFilterTrigger', node =>
+        node.closest('.calendar-card')
+        && node.parentElement.classList.contains('attendance-schedule-controls')
+      ), 'Data Filter trigger must sit inside the Calendar controls');
       assert.equal(await page.$eval('#workplaceCalendarMonth', node => node.textContent), 'October 2026');
       assert.equal((await cells(page)).length, 31);
       assert.equal(await page.$eval('#workplaceCalendarGrid button:first-child', node => node.dataset.date), '2026-09-28', 'The calendar week begins on Monday');

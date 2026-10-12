@@ -46,7 +46,7 @@ const tabs = [
             };
           }));
           if (tab.key === 'clocking') {
-            assert.deepEqual(cards.map(card => card.date), ['Thu 17 SEP', 'Thu 17 SEP', 'Wed 16 SEP', 'Wed 16 SEP', 'Sun 13 SEP', 'Sun 13 SEP']);
+            assert.deepEqual(cards.map(card => card.date), ['Thu 17 Sep 2026', 'Thu 17 Sep 2026', 'Wed 16 Sep 2026', 'Wed 16 Sep 2026', 'Sun 13 Sep 2026', 'Sun 13 Sep 2026']);
             cards.forEach(card => {
               assert.deepEqual(card.labels, ['Time', 'Cost Center']);
               assert.ok(card.statusAtRight, 'Excp uses the top-right History status slot');

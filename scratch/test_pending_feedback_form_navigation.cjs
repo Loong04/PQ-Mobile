@@ -51,7 +51,7 @@ async function assertFullPageForm(page, overlaySelector) {
       document.getElementById('fbMetaShift').textContent.trim(),
       document.getElementById('fbMetaEmployeeName').textContent.trim(),
       document.getElementById('fbMetaEmployeeNo').textContent.trim()
-    ]), ['14 Sep 2026', '8.30AM–5.30PM (W01)', 'Farhan binti rahmat', '#EBB12']);
+    ]), ['Mon 14 Sep 2026', '8.30AM–5.30PM (W01)', 'Farhan binti rahmat', '#EBB12']);
     await clickAndWaitForNavigation(page, '[data-feedback-back]');
     assert.equal(new URL(page.url()).pathname.endsWith('/feedback-history.html'), true);
 

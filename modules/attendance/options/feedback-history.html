@@ -6,6 +6,7 @@
   <title>PeopleHCM - Pending Attendance Feedback</title>
   <script src="../../../js/components.js"></script>
   <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/attendance/date-display.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -54,7 +55,7 @@
         <div class="history-card-header">
           <button type="button" class="history-card-heading pending-feedback-details-trigger" aria-label="View attendance details for 14 Sep 2026" onclick="event.stopPropagation(); openAttendanceDetails(this.closest('.pending-feedback-record'), this)">
             <h3 class="history-card-title">8.30AM&ndash;5.30PM (W01)</h3>
-            <div class="history-card-ref">Mon 14 SEP</div>
+            <div class="history-card-ref">Mon 14 Sep 2026</div>
           </button>
           <div class="attendance-history-card-end">
             <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Unapproved OT</span>
@@ -79,7 +80,7 @@
         <div class="history-card-header">
           <button type="button" class="history-card-heading pending-feedback-details-trigger" aria-label="View attendance details for 15 Sep 2026" onclick="event.stopPropagation(); openAttendanceDetails(this.closest('.pending-feedback-record'), this)">
             <h3 class="history-card-title">8.30AM&ndash;5.30PM (W01)</h3>
-            <div class="history-card-ref">Tue 15 SEP</div>
+            <div class="history-card-ref">Tue 15 Sep 2026</div>
           </button>
           <div class="attendance-history-card-end">
             <span class="card-status-badge"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Missing Clock Out</span>
@@ -159,9 +160,9 @@
               <button type="button" class="pending-feedback-delete-clock" onclick="deleteSelectedClockCard()" aria-label="Delete selected clock entry"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
             </div>
             <div class="pending-feedback-day-actions" aria-label="Add clock entry">
-              <button type="button" id="fbAddPreviousDay" onclick="addClockCard('13 Sep', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>13 Sep</button>
-              <button type="button" onclick="addClockCard('14 Sep', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>14 Sep</button>
-              <button type="button" onclick="addClockCard('15 Sep', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>15 Sep</button>
+              <button type="button" id="fbAddPreviousDay" onclick="addClockCard('2026-09-13', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>Sun 13 Sep 2026</button>
+              <button type="button" onclick="addClockCard('2026-09-14', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>Mon 14 Sep 2026</button>
+              <button type="button" onclick="addClockCard('2026-09-15', '', '')"><i class="fa-solid fa-plus" aria-hidden="true"></i>Tue 15 Sep 2026</button>
             </div>
             <div id="fbClockCardsTrack" class="pending-feedback-clock-track" aria-live="polite"></div>
           </section>
@@ -355,6 +356,7 @@
       openOverlay('attendanceDetailsModalOverlay', trigger);
     }
     function createClockCard(date, original, amended) {
+      date = AttendanceDateDisplay.format(date);
       const card = document.createElement('div');
       card.className = 'pending-feedback-clock-card';
       card.innerHTML = '<span class="pending-feedback-clock-date"><span>' + date + '</span>' +
@@ -383,7 +385,7 @@
       const track = document.getElementById('fbClockCardsTrack');
       track.innerHTML = '';
       const parts = data.times.split('\u00b7').map(function (part) { return part.trim(); }).filter(Boolean);
-      const date = data.date.replace('2026', '').trim();
+      const date = AttendanceDateDisplay.format(data.date);
       track.appendChild(createClockCard(date, parts[0] || '', parts[0] || ''));
       track.appendChild(createClockCard(date, parts[1] || '', parts[1] || ''));
       selectClockCard(track.firstElementChild);

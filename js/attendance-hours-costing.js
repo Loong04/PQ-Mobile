@@ -28,10 +28,7 @@
       const name = document.createElement('div');
       name.className = 'emp-card-name';
       name.textContent = record.name;
-      const id = document.createElement('div');
-      id.className = 'emp-card-id';
-      id.textContent = '#' + record.empNo;
-      employee.append(name, id);
+      employee.append(name);
       const amount = row.insertCell();
       amount.className = 'hours-number';
       amount.textContent = moneyText(record.costVal);

@@ -165,17 +165,21 @@ function openDetailsPage(id) {
 function showClockingDetails(context, returnSection = currentActiveSection === 'chart' ? 'chart' : 'summary') {
   detailsContext = context;
   detailsReturnSection = returnSection;
-  document.getElementById('detailsRecordCount').textContent = `Total Records: ${context.records.length}`;
+  document.getElementById('detailsRecordCount').textContent = String(context.records.length);
   document.getElementById('detailsListContainer').innerHTML = context.records.map(record => {
     const isIn = record.type === 'Clock In' || record.type === 'Break In';
-    return `<article class="staff-clock-card history-card-item">
-      <div class="clocking-record-header"><div class="staff-name-text">${escapeClockingText(record.name)}</div><div class="staff-emp-badge">#${escapeClockingText(record.empNo.replace(/^#+/, ''))}</div></div>
-      <div class="clocking-record-body">
-        <div class="clocking-record-field"><div class="clocking-record-label">Clock Type</div><div class="clocking-record-type ${isIn ? 'is-in' : 'is-out'}"><i class="fa-solid ${isIn ? 'fa-right-to-bracket' : 'fa-right-from-bracket'}" aria-hidden="true"></i>${escapeClockingText(record.type)}</div></div>
-        <div class="clocking-record-field"><div class="clocking-record-label">Clock Time</div><div class="clocking-record-time">${escapeClockingText(record.time)}</div></div>
-        <div class="clocking-record-field clocking-record-mode-field"><div class="clocking-record-label">Clock Mode</div><div class="clocking-record-mode">${escapeClockingText(record.mode)}</div></div>
-        ${record.location ? `<div class="clocking-record-location-field"><div class="clocking-record-location-main"><span class="clocking-record-location-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span><div class="clocking-record-location-copy"><div class="clocking-record-label">Location</div><div class="clocking-record-location">${escapeClockingText(record.location)}</div></div></div><button type="button" class="clocking-map-btn" aria-label="View ${escapeClockingText(record.location)} map full screen"><i class="fa-solid fa-expand" aria-hidden="true"></i><span>View Map</span></button></div>` : ''}
-      </div></article>`;
+    return `<article class="staff-clock-card history-card-item ${isIn ? 'clocking-in-card' : 'clocking-out-card'}">
+      <div class="clocking-record-header history-card-header">
+        <div class="clocking-record-heading history-card-heading"><h3 class="staff-name-text">${escapeClockingText(record.name)}</h3><div class="staff-emp-badge">#${escapeClockingText(record.empNo.replace(/^#+/, ''))}</div></div>
+        <span class="clocking-status-badge clocking-record-type ${isIn ? 'is-in' : 'is-out'}"><i class="fa-solid ${isIn ? 'fa-right-to-bracket' : 'fa-right-from-bracket'}" aria-hidden="true"></i>${escapeClockingText(record.type)}</span>
+      </div>
+      <div class="clocking-record-body history-card-details">
+        <div class="clocking-record-field"><div class="clocking-record-label">Clock Time</div><strong class="clocking-record-time">${escapeClockingText(record.time)}</strong></div>
+        <div class="clocking-record-field clocking-record-mode-field"><div class="clocking-record-label">Clock Mode</div><strong class="clocking-record-mode">${escapeClockingText(record.mode)}</strong></div>
+        ${record.location ? `<div class="clocking-record-field clocking-record-location-field"><div class="clocking-record-label">Location</div><strong class="clocking-record-mode clocking-record-location">${escapeClockingText(record.location)}</strong></div>` : ''}
+      </div>
+      ${record.location ? `<div class="clocking-card-actions"><button type="button" class="clocking-map-btn" aria-label="View ${escapeClockingText(record.location)} map full screen"><span>View Map</span></button></div>` : ''}
+    </article>`;
   }).join('') || '<div class="attendance-report-empty">No clocking records match the current filter.</div>';
   document.querySelectorAll('#detailsListContainer .clocking-map-btn').forEach(button => {
     button.addEventListener('click', () => openClockingMap(button));
@@ -195,7 +199,7 @@ function openDetailsChart() {
 }
 
 function openClockingMap(button) {
-  const location = button.closest('.clocking-record-location-field').querySelector('.clocking-record-location').textContent.trim();
+  const location = button.closest('.staff-clock-card')?.querySelector('.clocking-record-location')?.textContent.trim() || '';
   document.getElementById('clockingMapAddress').textContent = location;
   showSectionView('map');
   document.querySelector('.header-btn-icon').focus();
