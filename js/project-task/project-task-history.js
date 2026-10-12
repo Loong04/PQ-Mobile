@@ -473,21 +473,35 @@
 
   function executeProjectHistoryAction(record, kind, action) {
     const detailWasOpen = activeProjectHistoryDetail?.kind === kind && activeProjectHistoryDetail.id === record.id;
-    historyActions.set(record.id, action.key);
-    if (record.id === 'TS-DRAFT-LOCAL' && (action.key === 'submit' || action.key === 'discard')) {
+    const current = getProjectHistoryRecord(kind, record.id);
+    const actionIsCurrent = current && getProjectHistoryActions(current).some(candidate => candidate.key === action.key);
+    if (!actionIsCurrent) {
+      if (detailWasOpen) closeOverlay('projectHistoryDetailOverlay', false);
+      if (kind === 'work-plan') renderWorkPlans();
+      else renderTimesheets();
+      window.showToast?.('This record is no longer available for that action');
+      return false;
+    }
+
+    if (action.key === 'discard' && detailWasOpen) closeOverlay('projectHistoryDetailOverlay', false);
+    historyActions.set(current.id, action.key);
+    if (current.id === 'TS-DRAFT-LOCAL' && (action.key === 'submit' || action.key === 'discard')) {
       if (action.key === 'submit') {
         const stored = readStored('pq_project_timesheets');
-        stored.push({ ...record, status: 'Submitted' });
+        stored.push({ ...current, status: 'Submitted' });
         localStorage.setItem('pq_project_timesheets', JSON.stringify(stored));
       }
       localStorage.removeItem('pq_project_timesheet_draft');
     }
 
-    if (action.key === 'discard' && detailWasOpen) closeOverlay('projectHistoryDetailOverlay', false);
     if (kind === 'work-plan') renderWorkPlans();
     else renderTimesheets();
-    if (action.key !== 'discard' && detailWasOpen) refreshProjectHistoryDetails();
+    if (action.key !== 'discard' && detailWasOpen) {
+      refreshProjectHistoryDetails();
+      (byId('projectHistoryDetailActions').querySelector('.history-detail-action') || byId('closeProjectHistoryDetails')).focus({ preventScroll: true });
+    }
     window.showToast?.(action.label + ' completed');
+    return true;
   }
 
   function createProjectHistoryActionButton(record, kind, action, surface) {
@@ -891,8 +905,15 @@
       else if (!byId('workPlanHistoryFilterOverlay').hidden) closeOverlay('workPlanHistoryFilterOverlay');
     });
     window.addEventListener('storage', event => {
-      if (!event.key || event.key === 'pq_project_work_plans') renderWorkPlans();
-      if (!event.key || event.key === 'pq_project_timesheets') renderTimesheets();
+      const workPlansChanged = !event.key || event.key === 'pq_project_work_plans';
+      const timesheetsChanged = !event.key || event.key === 'pq_project_timesheets' || event.key === 'pq_project_timesheet_draft';
+      if (workPlansChanged) renderWorkPlans();
+      if (timesheetsChanged) renderTimesheets();
+      if (activeProjectHistoryDetail
+        && ((activeProjectHistoryDetail.kind === 'work-plan' && workPlansChanged)
+          || (activeProjectHistoryDetail.kind === 'timesheet' && timesheetsChanged))) {
+        refreshProjectHistoryDetails();
+      }
     });
     document.documentElement.dataset.projectHistoryReady = 'true';
   }

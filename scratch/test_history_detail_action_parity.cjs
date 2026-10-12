@@ -140,6 +140,42 @@ async function runWorkplace(browser) {
   await page.$eval('#historyDetailActions [data-history-action=cancel]', node => node.click());
   await page.waitForFunction(() => document.getElementById('historyDetailsModal').getAttribute('aria-hidden') === 'true');
   assert.match(await page.$eval('#historyActionFeedback', node => node.textContent), /Unable to update/);
+
+  await page.$eval('[data-history-kind=guest-visit]', node => node.click());
+  await page.evaluate(() => {
+    const rows = JSON.parse(localStorage.getItem('peoplehcm:workplace:history:v1'));
+    rows.find(row => row.id === 'parity-guest-draft').status = 'draft';
+    localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify(rows));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'peoplehcm:workplace:history:v1' }));
+  });
+  await page.$eval('[data-record-id=parity-guest-draft] .history-card-main', node => node.click());
+  await page.evaluate(() => {
+    const rows = JSON.parse(localStorage.getItem('peoplehcm:workplace:history:v1'));
+    rows.find(row => row.id === 'parity-guest-draft').status = 'cancelled';
+    localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify(rows));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'peoplehcm:workplace:history:v1' }));
+  });
+  await page.waitForFunction(() => document.getElementById('historyDetailActions').hidden);
+  assert.match(await page.$eval('#historyDetailBody', node => node.textContent), /Cancelled/);
+  assert.equal(await page.$eval('#historyDetailsModal', node => node.getAttribute('aria-hidden')), 'false');
+  await page.keyboard.press('Escape');
+
+  await page.evaluate(() => {
+    const rows = JSON.parse(localStorage.getItem('peoplehcm:workplace:history:v1'));
+    rows.find(row => row.id === 'parity-guest-draft').status = 'draft';
+    localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify(rows));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'peoplehcm:workplace:history:v1' }));
+  });
+  await page.$eval('[data-record-id=parity-guest-draft] .history-card-main', node => node.click());
+  await page.evaluate(() => {
+    const rows = JSON.parse(localStorage.getItem('peoplehcm:workplace:history:v1'));
+    rows.find(row => row.id === 'parity-guest-draft').status = 'cancelled';
+    localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify(rows));
+  });
+  await page.$eval('#historyDetailActions [data-history-action=apply]', node => node.click());
+  await page.waitForFunction(() => document.getElementById('historyDetailsModal').getAttribute('aria-hidden') === 'true');
+  assert.equal(await page.$eval('[data-record-id=parity-guest-draft]', node => node.dataset.status), 'cancelled');
+  assert.match(await page.$eval('#historyActionFeedback', node => node.textContent), /Unable to update/);
   assert.deepEqual(errors, []);
   await page.close();
 }
@@ -402,10 +438,53 @@ async function runProject(browser) {
   await page.waitForSelector('#projectHistoryDetailOverlay.is-open');
   assert.deepEqual(await actionLabels(page, '#projectHistoryDetailActions'), ['Submit', 'Cancel']);
   await assertPurpleActions(page, '#projectHistoryDetailActions');
+  await page.evaluate(() => {
+    window.__draftRemovedAfterDetailClosed = null;
+    const originalRemoveItem = Storage.prototype.removeItem;
+    Storage.prototype.removeItem = function (key) {
+      if (key === 'pq_project_timesheet_draft') {
+        window.__draftRemovedAfterDetailClosed = document.getElementById('projectHistoryDetailOverlay').hidden;
+      }
+      return originalRemoveItem.call(this, key);
+    };
+  });
   await page.$eval('#projectHistoryDetailActions [data-history-action=discard]', node => node.click());
   await page.waitForFunction(selector => !document.querySelector(selector), {}, timesheetDraft);
   assert.equal(await page.evaluate(() => localStorage.getItem('pq_project_timesheet_draft')), null);
   assert.equal(await page.$eval('#projectHistoryDetailOverlay', node => node.hidden), true);
+  assert.equal(await page.evaluate(() => window.__draftRemovedAfterDetailClosed), true, 'Details must close before local draft storage is removed');
+
+  await page.evaluate(() => {
+    localStorage.setItem('pq_project_timesheet_draft', JSON.stringify({
+      date: '2026-10-13', remark: 'Stale local draft', status: 'Draft', activities: []
+    }));
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+  await page.$eval('#historyTab-timesheet', node => node.click());
+  await page.$eval(timesheetDraft, node => node.click());
+  await page.waitForSelector('#projectHistoryDetailOverlay.is-open');
+  await page.evaluate(() => localStorage.removeItem('pq_project_timesheet_draft'));
+  await page.$eval('#projectHistoryDetailActions [data-history-action=submit]', node => node.click());
+  await page.waitForFunction(() => document.getElementById('projectHistoryDetailOverlay').hidden);
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('pq_project_timesheets') || '[]').some(record => record.id === 'TS-DRAFT-LOCAL')), false);
+
+  await page.evaluate(() => {
+    localStorage.setItem('pq_project_timesheet_draft', JSON.stringify({
+      date: '2026-10-14', remark: 'External removal', status: 'Draft', activities: []
+    }));
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+  await page.$eval('#historyTab-timesheet', node => node.click());
+  await page.$eval(timesheetDraft, node => node.click());
+  await page.waitForSelector('#projectHistoryDetailOverlay.is-open');
+  await page.evaluate(() => {
+    localStorage.removeItem('pq_project_timesheet_draft');
+    window.dispatchEvent(new StorageEvent('storage', { key: 'pq_project_timesheet_draft' }));
+  });
+  await page.waitForFunction(() => document.getElementById('projectHistoryDetailOverlay').hidden);
+  assert.equal(await page.$(timesheetDraft), null);
 
   assert.deepEqual(errors, []);
   await page.close();

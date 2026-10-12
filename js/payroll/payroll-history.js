@@ -87,7 +87,8 @@
     render();
     if (source === 'detail' && openSameRecord) {
       renderDetail(list[index], recordKind);
-      $('historyDetailActions').querySelector('.history-detail-action:not([data-history-detail-aux])')?.focus({ preventScroll: true });
+      ($('historyDetailActions').querySelector('.history-detail-action:not([data-history-detail-aux])')
+        || $('closeHistoryDetails')).focus({ preventScroll: true });
     } else {
       const card = [...document.querySelectorAll('.history-card-item')].find(node => node.dataset.reference === recordId);
       card?.querySelector('.history-card-main')?.focus({ preventScroll: true });

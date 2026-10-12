@@ -403,6 +403,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const current = window.WorkplaceHistoryStore.list().find(record => record.id === row.id);
       if (!current) throw new Error('Workplace history record not found.');
+      if (!historyActions(current).some(action => action.key === actionKey)) {
+        throw new Error('Workplace history action is no longer available.');
+      }
       window.WorkplaceHistoryStore.setStatus(current.id, actionKey === 'apply' ? 'submitted' : 'cancelled');
       render();
       showActionFeedback(actionKey === 'apply' ? 'Request submitted.' : 'Request cancelled.');
@@ -496,7 +499,18 @@ document.addEventListener('DOMContentLoaded', () => {
       first.focus();
     }
   });
-  window.addEventListener('pageshow', render);
-  window.addEventListener('storage', render);
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) render();
+  });
+  window.addEventListener('storage', () => {
+    render();
+    if (!activeDetailRecordId || modal?.id !== 'historyDetailsModal') return;
+    const current = records.find(record => record.id === activeDetailRecordId);
+    if (!current) {
+      closeModal();
+      return;
+    }
+    renderDetails(current);
+  });
   render();
 });

@@ -9591,6 +9591,24 @@
       return labels[type] || 'Leave';
     }
 
+    const pendingHistoryActions = new Set();
+
+    function setHistoryActionPending(ref, pending) {
+      document.querySelectorAll('.history-item-card[data-ref]').forEach(card => {
+        if (card.dataset.ref !== ref) return;
+        card.querySelectorAll('button').forEach(button => { button.disabled = pending; });
+        if (pending) card.setAttribute('aria-busy', 'true');
+        else card.removeAttribute('aria-busy');
+      });
+
+      const overlay = document.getElementById('historyDetailsModalOverlay');
+      if (!overlay || overlay.dataset.ref !== ref) return;
+      const actions = document.getElementById('historyDetailsActions');
+      actions?.querySelectorAll('button').forEach(button => { button.disabled = pending; });
+      if (pending) actions?.setAttribute('aria-busy', 'true');
+      else actions?.removeAttribute('aria-busy');
+    }
+
     function buildHistoryActionsHTML(item, context = 'card') {
       if (!['submitted', 'approved', 'draft'].includes(item.status)) return '';
       const isDetail = context === 'detail';
@@ -9833,28 +9851,40 @@
     }
 
     function cancelHistoryItem(ref, newStatus = 'cancelled') {
+      if (pendingHistoryActions.has(ref)) return;
       if (newStatus === 'cancelled' && !confirm(`Are you sure you want to cancel request: ${ref}?`)) return;
+      pendingHistoryActions.add(ref);
+      setHistoryActionPending(ref, true);
       if (typeof showToast === 'function') showToast(`⏳ ${newStatus === 'submitted' ? 'Applying' : 'Cancelling'} request...`);
       setTimeout(() => {
-        let item = HISTORY_LEAVE_DATA.find(d => d.ref === ref) || 
-                   HISTORY_CREDIT_DATA.find(d => d.ref === ref) || 
-                   HISTORY_OFFTIME_DATA.find(d => d.ref === ref);
-        if (item) {
-          item.status = newStatus;
-          if (newStatus === 'submitted') {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-            item.submittedDate = `${dateStr}, ${timeStr}`;
-            if (item.approver === '-') item.approver = 'Line Manager Review';
+        try {
+          let item = HISTORY_LEAVE_DATA.find(d => d.ref === ref) ||
+                     HISTORY_CREDIT_DATA.find(d => d.ref === ref) ||
+                     HISTORY_OFFTIME_DATA.find(d => d.ref === ref);
+          if (item) {
+            item.status = newStatus;
+            if (newStatus === 'submitted') {
+              const now = new Date();
+              const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+              item.submittedDate = `${dateStr}, ${timeStr}`;
+              if (item.approver === '-') item.approver = 'Line Manager Review';
+            }
           }
+          renderHistoryCards();
+          const overlay = document.getElementById('historyDetailsModalOverlay');
+          if (overlay && overlay.dataset.ref === ref && overlay.style.display !== 'none') {
+            openHistoryDetailsModal(ref);
+            setHistoryActionPending(ref, true);
+          }
+          if (typeof showToast === 'function') showToast(`✅ Successfully ${newStatus === 'submitted' ? 'Applied' : 'Cancelled'}`);
+        } finally {
+          pendingHistoryActions.delete(ref);
+          setHistoryActionPending(ref, false);
+          const nextFocus = document.querySelector('#historyDetailsActions .history-detail-action:not(:disabled)')
+            || document.querySelector('[aria-label="Close leave details"]');
+          nextFocus?.focus({ preventScroll: true });
         }
-        renderHistoryCards();
-        const overlay = document.getElementById('historyDetailsModalOverlay');
-        if (overlay && overlay.dataset.ref === ref && overlay.style.display !== 'none') {
-          openHistoryDetailsModal(ref);
-        }
-        if (typeof showToast === 'function') showToast(`✅ Successfully ${newStatus === 'submitted' ? 'Applied' : 'Cancelled'}`);
       }, 400);
     }
 

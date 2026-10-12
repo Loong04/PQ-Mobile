@@ -113,6 +113,32 @@ const puppeteer = require('puppeteer');
       });
       await page.waitForFunction(() => HISTORY_LEAVE_DATA[0].status === 'submitted');
       assert.match(await page.$eval('#historyDetailsTableBody', node => node.textContent), /LV-2026-0041/);
+
+      await page.evaluate(() => {
+        HISTORY_LEAVE_DATA[0].status = 'draft';
+        renderHistoryCards();
+        openHistoryDetailsModal('LV-2026-0055');
+        window.__historyActionTimers = [];
+        window.__historyActionOriginalSetTimeout = window.setTimeout;
+        window.setTimeout = (callback, delay, ...args) => {
+          if (delay === 400) {
+            window.__historyActionTimers.push(() => callback(...args));
+            return 991;
+          }
+          return window.__historyActionOriginalSetTimeout(callback, delay, ...args);
+        };
+        cancelHistoryItem('LV-2026-0055', 'submitted');
+        cancelHistoryItem('LV-2026-0055', 'submitted');
+      });
+      assert.equal(await page.evaluate(() => window.__historyActionTimers.length), 1, 'Duplicate Leave actions must schedule only one mutation');
+      assert.equal(await page.$$eval(`${actions} button`, buttons => buttons.every(button => button.disabled)), true);
+      assert.equal(await page.$$eval('#myHistoryCardsList [data-ref="LV-2026-0055"] button', buttons => buttons.every(button => button.disabled)), true);
+      await page.evaluate(() => {
+        window.__historyActionTimers.shift()();
+        window.setTimeout = window.__historyActionOriginalSetTimeout;
+      });
+      assert.equal(await page.evaluate(() => HISTORY_LEAVE_DATA[0].status), 'submitted');
+      assert.equal(await page.$$eval(`${actions} button`, buttons => buttons.every(button => !button.disabled)), true);
     }
     assert.deepEqual(errors, []);
     console.log('PASS: Leave History details mirror card actions in a fixed right-aligned purple footer across both themes and three widths; Apply/Cancel update both views and cancellation can be dismissed.');
