@@ -26,6 +26,9 @@ function assertPurple(block, label) {
 const sharedCards = read('css/history-cards.css');
 assertPurple(cssBlock(sharedCards, '.history-cancel-btn'), 'Claims and Workplace history Cancel');
 
+const detailPopout = read('css/detail-popout.css');
+assertPurple(cssBlock(detailPopout, '.history-detail-action'), 'History detail actions');
+
 const payrollCards = read('css/payroll-history.css');
 assertPurple(
   cssBlock(payrollCards, '.payroll-history-phone .history-card-action-danger'),
