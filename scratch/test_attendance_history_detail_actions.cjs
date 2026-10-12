@@ -32,56 +32,34 @@ const editableDetails = [
 
         const actions = await page.$eval(`#${detail.modal} .attendance-history-form-actions`, footer => {
           const buttons = [...footer.querySelectorAll(':scope > button')];
-          const cancel = footer.querySelector('.attendance-history-action-cancel');
-          const submit = footer.querySelector('.attendance-history-action-submit');
-          const cancelStyle = getComputedStyle(cancel);
-          const submitStyle = getComputedStyle(submit);
-          const probe = document.createElement('span');
-          probe.style.cssText = 'position:fixed;pointer-events:none;color:var(--bg-card);background:var(--text-primary);border:1px solid var(--border-subtle)';
-          document.body.append(probe);
-          const probeStyle = getComputedStyle(probe);
-          const expected = {
-            surface: probeStyle.color,
-            text: probeStyle.backgroundColor,
-            border: probeStyle.borderTopColor,
-          };
-          probe.remove();
-
           return {
             labels: buttons.map(button => button.textContent.trim()),
             buttonCount: buttons.length,
-            cancel: {
-              background: cancelStyle.backgroundColor,
-              color: cancelStyle.color,
-              border: cancelStyle.borderTopColor,
-              radius: cancelStyle.borderRadius,
-              height: cancel.getBoundingClientRect().height,
-              hasIcon: Boolean(cancel.querySelector('i.fa-solid.fa-xmark')),
+            footer: {
+              justifyContent: getComputedStyle(footer).justifyContent,
+              gap: getComputedStyle(footer).gap,
             },
-            submit: {
-              background: submitStyle.backgroundImage,
-              color: submitStyle.color,
-              radius: submitStyle.borderRadius,
-              height: submit.getBoundingClientRect().height,
-              hasIcon: Boolean(submit.querySelector('i.fa-solid.fa-paper-plane')),
-            },
-            expected,
+            buttons: buttons.map(button => {
+              const style = getComputedStyle(button);
+              return {
+                background: style.backgroundImage,
+                color: style.color,
+                radius: style.borderRadius,
+                padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+              };
+            }),
           };
         });
 
         assert.deepEqual(actions.labels, ['Cancel', 'Submit']);
         assert.equal(actions.buttonCount, 2, 'History details keep their existing two-action workflow');
-        assert.equal(actions.cancel.background, actions.expected.surface, `${detail.modal} Cancel uses the neutral card surface`);
-        assert.equal(actions.cancel.color, actions.expected.text, `${detail.modal} Cancel uses the normal text color`);
-        assert.equal(actions.cancel.border, actions.expected.border, `${detail.modal} Cancel uses the subtle neutral border`);
-        assert.equal(actions.cancel.radius, '999px');
-        assert.ok(actions.cancel.height >= 44, `${detail.modal} Cancel matches the reference touch target`);
-        assert.ok(actions.cancel.hasIcon, `${detail.modal} Cancel includes the reference x icon`);
-        assert.match(actions.submit.background, /linear-gradient\(135deg, rgb\(124, 58, 237\) 0%, rgb\(109, 40, 217\) 100%\)/);
-        assert.equal(actions.submit.color, 'rgb(255, 255, 255)');
-        assert.equal(actions.submit.radius, '999px');
-        assert.ok(actions.submit.height >= 44, `${detail.modal} Submit matches the reference touch target`);
-        assert.ok(actions.submit.hasIcon, `${detail.modal} Submit includes the reference paper-plane icon`);
+        assert.deepEqual(actions.footer, { justifyContent: 'flex-end', gap: '8px' });
+        actions.buttons.forEach(button => {
+          assert.match(button.background, /linear-gradient\(135deg, rgb\(124, 58, 237\) 0%, rgb\(109, 40, 217\) 100%\)/);
+          assert.equal(button.color, 'rgb(255, 255, 255)');
+          assert.equal(button.radius, '20px');
+          assert.deepEqual(button.padding, ['8px', '16px', '8px', '16px']);
+        });
 
         await page.evaluate(modal => {
           if (modal === 'otDetailsModal') closeOtDetailsDirect();
@@ -110,17 +88,27 @@ const editableDetails = [
       await page.waitForSelector('#clockDetailsModal', { visible: true });
       const clockCancel = await page.$eval('#clockDetailsModal .attendance-history-action-cancel', button => {
         const style = getComputedStyle(button);
-        return { background: style.backgroundColor, color: style.color };
+        const footer = button.closest('footer');
+        return {
+          background: style.backgroundImage,
+          color: style.color,
+          radius: style.borderRadius,
+          padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+          justifyContent: getComputedStyle(footer).justifyContent,
+        };
       });
       assert.deepEqual(clockCancel, {
-        background: 'rgb(255, 241, 242)',
-        color: 'rgb(225, 29, 72)',
-      }, 'the unrelated Clocking detail Cancel style remains unchanged');
+        background: 'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%)',
+        color: 'rgb(255, 255, 255)',
+        radius: '20px',
+        padding: ['8px', '16px', '8px', '16px'],
+        justifyContent: 'flex-end',
+      }, 'Clocking detail Cancel uses the shared History action treatment');
       await page.evaluate(() => closeClockDetailsDirect());
     }
 
     assert.deepEqual(pageErrors, []);
-    console.log('PASS: OT Plan and Attendance Feedback detail actions match the neutral Cancel and purple Submit reference without changing other Cancel actions.');
+    console.log('PASS: Clocking, OT Plan and Attendance Feedback detail actions use the shared right-aligned purple History treatment.');
   } finally {
     await browser.close();
   }

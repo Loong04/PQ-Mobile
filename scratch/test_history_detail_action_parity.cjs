@@ -29,7 +29,8 @@ async function assertPurpleActions(page, selector) {
           color: style.color,
           fontSize: style.fontSize,
           fontWeight: style.fontWeight,
-          padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]
+          padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+          disabled: button.disabled
         };
       }),
       viewportWidth: document.documentElement.clientWidth,
@@ -44,7 +45,8 @@ async function assertPurpleActions(page, selector) {
   state.buttons.forEach(button => {
     assert.match(button.backgroundImage, /linear-gradient\(135deg, rgb\(124, 58, 237\)(?: 0%)?, rgb\(109, 40, 217\)(?: 100%)?\)/);
     assert.equal(button.borderRadius, '20px');
-    assert.match(button.boxShadow, /rgba\(124, 58, 237,/);
+    if (button.disabled) assert.equal(button.boxShadow, 'none');
+    else assert.match(button.boxShadow, /rgba\(124, 58, 237,/);
     assert.equal(button.color, 'rgb(255, 255, 255)');
     assert.equal(button.fontSize, '12px');
     assert.equal(button.fontWeight, '700');
@@ -169,6 +171,33 @@ async function runLeave(browser) {
   await page.close();
 }
 
+async function runAttendanceHistory(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 950 });
+  await page.goto(pathToFileURL(path.join(root, 'modules/attendance/options/history.html')).href + '?theme=dark', { waitUntil: 'networkidle0' });
+
+  await page.$eval('#viewClockingHistory .history-card-item', node => node.click());
+  assert.deepEqual(await actionLabels(page, '#clockDetailsModal .history-detail-actions'), ['Cancel']);
+  await assertPurpleActions(page, '#clockDetailsModal .history-detail-actions');
+  await page.evaluate(() => closeClockDetailsDirect());
+
+  await page.click('#tabOt');
+  await page.$eval('#viewOtHistory .history-card-item', node => node.click());
+  assert.deepEqual(await actionLabels(page, '#otDetailsModal .history-detail-actions'), ['Cancel', 'Submit']);
+  await assertPurpleActions(page, '#otDetailsModal .history-detail-actions');
+  await page.evaluate(() => closeOtDetailsDirect());
+
+  await page.click('#tabFeedback');
+  await page.$eval('#viewFeedbackHistory .history-card-item', node => node.click());
+  assert.deepEqual(await actionLabels(page, '#feedbackDetailsModal .history-detail-actions'), ['Cancel', 'Submit']);
+  await assertPurpleActions(page, '#feedbackDetailsModal .history-detail-actions');
+  await page.evaluate(() => closeFeedbackDetailsDirect());
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -179,7 +208,8 @@ async function main() {
     if (!requested || requested === 'style') await runStyle(browser);
     if (!requested || requested === 'workplace') await runWorkplace(browser);
     if (!requested || requested === 'leave') await runLeave(browser);
-    if (requested && !['style', 'workplace', 'leave'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'attendance-history') await runAttendanceHistory(browser);
+    if (requested && !['style', 'workplace', 'leave', 'attendance-history'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }

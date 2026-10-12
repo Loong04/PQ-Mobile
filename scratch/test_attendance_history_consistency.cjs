@@ -90,8 +90,12 @@ const tabs = [
                 assert.deepEqual(await page.$$eval('#clockDetailsModal .attendance-history-action-footer button', nodes => nodes.map(node => node.textContent.trim())), ['Cancel']);
                 assert.deepEqual(await page.$eval('#clockDetailsModal .attendance-history-action-cancel', node => {
                   const style = getComputedStyle(node);
-                  return { backgroundColor: style.backgroundColor, color: style.color, borderRadius: style.borderRadius };
-                }), { backgroundColor: 'rgb(255, 241, 242)', color: 'rgb(225, 29, 72)', borderRadius: '999px' });
+                  return { backgroundImage: style.backgroundImage, color: style.color, borderRadius: style.borderRadius };
+                }), {
+                  backgroundImage: 'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%)',
+                  color: 'rgb(255, 255, 255)',
+                  borderRadius: '20px'
+                });
                 const fields = await page.$$eval('#clockDetailsModal tr', rows => rows.map(row => [row.cells[0].textContent.trim(), row.cells[1].textContent.trim()]));
                 assert.deepEqual(fields.map(([label]) => label), ['Date', 'Time', 'ID', 'Type', 'Location', 'Clock-In Zone', 'Cost Center', 'Is Voided', 'Is Invalid']);
                 assert.equal(fields[0][1], ['17/09/2026', '17/09/2026', '16/09/2026', '16/09/2026', '13/09/2026', '13/09/2026'][index]);
