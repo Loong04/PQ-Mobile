@@ -68,8 +68,8 @@
           <div class="attendance-history-detail"><span>Exception</span><strong>Unapproved OT</strong></div>
         </div>
         <div class="history-card-actions">
-          <button type="button" class="card-action-btn btn-shift-change" onclick="event.stopPropagation(); openSharedAttendanceForm('shift', this.closest('.pending-feedback-record'))"><span>Change Shift</span></button>
-          <button type="button" class="card-action-btn btn-feedback" onclick="event.stopPropagation(); openSharedAttendanceForm('feedback', this.closest('.pending-feedback-record'))"><span>Feedback</span></button>
+          <button type="button" class="card-action-btn btn-shift-change" onclick="event.stopPropagation(); runAttendanceHistoryAction('shift', this.closest('.pending-feedback-record'))"><span>Change Shift</span></button>
+          <button type="button" class="card-action-btn btn-feedback" onclick="event.stopPropagation(); runAttendanceHistoryAction('feedback', this.closest('.pending-feedback-record'))"><span>Feedback</span></button>
         </div>
       </article>
 
@@ -93,8 +93,8 @@
           <div class="attendance-history-detail"><span>Exception</span><strong>Missing Clock Out</strong></div>
         </div>
         <div class="history-card-actions">
-          <button type="button" class="card-action-btn btn-shift-change" onclick="event.stopPropagation(); openSharedAttendanceForm('shift', this.closest('.pending-feedback-record'))"><span>Change Shift</span></button>
-          <button type="button" class="card-action-btn btn-feedback" onclick="event.stopPropagation(); openSharedAttendanceForm('feedback', this.closest('.pending-feedback-record'))"><span>Feedback</span></button>
+          <button type="button" class="card-action-btn btn-shift-change" onclick="event.stopPropagation(); runAttendanceHistoryAction('shift', this.closest('.pending-feedback-record'))"><span>Change Shift</span></button>
+          <button type="button" class="card-action-btn btn-feedback" onclick="event.stopPropagation(); runAttendanceHistoryAction('feedback', this.closest('.pending-feedback-record'))"><span>Feedback</span></button>
         </div>
       </article>
     </main>
@@ -139,6 +139,10 @@
             </tbody></table>
           </section>
         </div>
+        <footer id="attendanceDetailsActions" class="history-detail-actions">
+          <button type="button" class="history-detail-action" data-attendance-history-action="shift" onclick="runAttendanceHistoryAction('shift', activeAttendanceDetailCard)">Change Shift</button>
+          <button type="button" class="history-detail-action" data-attendance-history-action="feedback" onclick="runAttendanceHistoryAction('feedback', activeAttendanceDetailCard)">Feedback</button>
+        </footer>
       </section>
     </div>
 
@@ -253,6 +257,7 @@
   <script>
     let selectedClockCard = null;
     let pendingFeedbackToastTimer = null;
+    let activeAttendanceDetailCard = null;
 
     let activeModalTrigger = null;
     const modalFocusableSelector = 'button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
@@ -285,6 +290,7 @@
       const trigger = activeModalTrigger;
       activeModalTrigger = null;
       overlay.hidden = true;
+      if (id === 'attendanceDetailsModalOverlay') activeAttendanceDetailCard = null;
       setModalBackgroundInert(false);
       document.body.classList.remove('pending-feedback-modal-open');
       if (trigger && trigger.isConnected) requestAnimationFrame(function () { trigger.focus(); });
@@ -326,7 +332,14 @@
       target.search = new URLSearchParams(params);
       window.location.href = target.href;
     }
+    function runAttendanceHistoryAction(kind, card) {
+      if (!card) return;
+      const details = document.getElementById('attendanceDetailsModalOverlay');
+      if (details && !details.hidden) closeOverlay('attendanceDetailsModalOverlay');
+      openSharedAttendanceForm(kind, card);
+    }
     function openAttendanceDetails(card, trigger) {
+      activeAttendanceDetailCard = card;
       const data = cardData(card);
       document.getElementById('detailEmployeeNo').textContent = data.employeeNo;
       document.getElementById('detailEmployeeName').textContent = data.employeeName;

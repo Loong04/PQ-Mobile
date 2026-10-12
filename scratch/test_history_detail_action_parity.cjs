@@ -198,6 +198,54 @@ async function runAttendanceHistory(browser) {
   await page.close();
 }
 
+async function runAttendanceFeedback(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 950 });
+  await page.goto(pathToFileURL(path.join(root, 'modules/attendance/options/feedback-history.html')).href + '?theme=dark', { waitUntil: 'networkidle0' });
+  const cardSelector = '.pending-feedback-record:first-of-type';
+  assert.deepEqual(await page.$$eval(`${cardSelector} .history-card-actions button`, nodes => nodes.map(node => node.textContent.trim())), ['Change Shift', 'Feedback']);
+  await page.evaluate(() => {
+    window.__historyActionCalls = [];
+    window.openSharedAttendanceForm = function (kind, card) {
+      window.__historyActionCalls.push({
+        kind,
+        date: card.dataset.date,
+        shift: card.dataset.shift,
+        employeeName: 'Farhan binti rahmat',
+        employeeNo: 'EBB12',
+        detailsClosed: document.getElementById('attendanceDetailsModalOverlay').hidden
+      });
+    };
+  });
+
+  await page.$eval(`${cardSelector} .btn-shift-change`, node => node.click());
+  assert.equal(await page.$eval('#attendanceDetailsModalOverlay', node => node.hidden), true, 'Card action must not open details');
+  const cardCall = await page.evaluate(() => window.__historyActionCalls.at(-1));
+
+  await page.$eval(`${cardSelector} .pending-feedback-details-trigger`, node => node.click());
+  assert.deepEqual(await actionLabels(page, '#attendanceDetailsActions'), ['Change Shift', 'Feedback']);
+  await assertPurpleActions(page, '#attendanceDetailsActions');
+  await page.$eval('#attendanceDetailsActions [data-attendance-history-action=shift]', node => node.click());
+  const detailShiftCall = await page.evaluate(() => window.__historyActionCalls.at(-1));
+  assert.deepEqual(detailShiftCall, { ...cardCall, detailsClosed: true });
+
+  await page.$eval(`${cardSelector} .pending-feedback-details-trigger`, node => node.click());
+  await page.$eval('#attendanceDetailsActions [data-attendance-history-action=feedback]', node => node.click());
+  const detailFeedbackCall = await page.evaluate(() => window.__historyActionCalls.at(-1));
+  assert.deepEqual(detailFeedbackCall, {
+    kind: 'feedback',
+    date: cardCall.date,
+    shift: cardCall.shift,
+    employeeName: cardCall.employeeName,
+    employeeNo: cardCall.employeeNo,
+    detailsClosed: true
+  });
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -209,7 +257,8 @@ async function main() {
     if (!requested || requested === 'workplace') await runWorkplace(browser);
     if (!requested || requested === 'leave') await runLeave(browser);
     if (!requested || requested === 'attendance-history') await runAttendanceHistory(browser);
-    if (requested && !['style', 'workplace', 'leave', 'attendance-history'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'attendance-feedback') await runAttendanceFeedback(browser);
+    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }
