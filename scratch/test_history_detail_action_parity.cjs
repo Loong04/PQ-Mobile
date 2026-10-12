@@ -337,6 +337,78 @@ async function runPayroll(browser) {
   await page.close();
 }
 
+async function runProject(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 900 });
+  const url = pathToFileURL(path.join(root, 'modules/project-task/options/history.html')).href + '?theme=dark';
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+
+  const workPlanDraft = '#workPlanHistoryList [data-record-id="WP-2026-0039"]';
+  assert.deepEqual(
+    await page.$$eval(`${workPlanDraft} [data-history-action]`, nodes => nodes.map(node => node.textContent.trim())),
+    ['Submit', 'Cancel']
+  );
+  await page.$eval(workPlanDraft, node => node.click());
+  await page.waitForSelector('#projectHistoryDetailOverlay.is-open');
+  assert.deepEqual(await actionLabels(page, '#projectHistoryDetailActions'), ['Submit', 'Cancel']);
+  await assertPurpleActions(page, '#projectHistoryDetailActions');
+
+  await page.$eval('#projectHistoryDetailActions [data-history-action=submit]', node => node.click());
+  await page.waitForFunction(selector => document.querySelector(selector)?.dataset.status === 'submitted', {}, workPlanDraft);
+  assert.equal(await page.$eval('#projectHistoryDetailOverlay', node => node.hidden), false);
+  assert.deepEqual(await actionLabels(page, '#projectHistoryDetailActions'), ['Cancel']);
+  assert.match(await page.$eval('#projectHistoryDetailContent', node => node.textContent), /Submitted/);
+
+  await page.$eval('#projectHistoryDetailActions [data-history-action=cancel]', node => node.click());
+  await page.waitForFunction(selector => document.querySelector(selector)?.dataset.status === 'cancelled', {}, workPlanDraft);
+  assert.equal(await page.$eval('#projectHistoryDetailActions', node => node.hidden), true);
+  await page.$eval('#closeProjectHistoryDetails', node => node.click());
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+  await page.$eval(`${workPlanDraft} [data-history-action=submit]`, node => node.click());
+  assert.equal(await page.$eval('#projectHistoryDetailOverlay', node => node.hidden), true, 'Card action must not open details');
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+  await page.$eval(workPlanDraft, node => node.click());
+  await page.waitForSelector('#projectHistoryDetailOverlay.is-open');
+  await page.$eval('#projectHistoryDetailActions [data-history-action=discard]', node => node.click());
+  await page.waitForFunction(selector => !document.querySelector(selector), {}, workPlanDraft);
+  assert.equal(await page.$eval('#projectHistoryDetailOverlay', node => node.hidden), true);
+
+  await page.evaluate(() => {
+    localStorage.setItem('pq_project_timesheet_draft', JSON.stringify({
+      date: '2026-10-12',
+      remark: 'Local draft parity check',
+      status: 'Draft',
+      activities: []
+    }));
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+  await page.$eval('#historyTab-timesheet', node => node.click());
+  const timesheetDraft = '#timesheetHistoryList [data-record-id="TS-DRAFT-LOCAL"]';
+  assert.deepEqual(
+    await page.$$eval(`${timesheetDraft} [data-history-action]`, nodes => nodes.map(node => node.textContent.trim())),
+    ['Submit', 'Cancel']
+  );
+  await page.$eval(timesheetDraft, node => node.click());
+  await page.waitForSelector('#projectHistoryDetailOverlay.is-open');
+  assert.deepEqual(await actionLabels(page, '#projectHistoryDetailActions'), ['Submit', 'Cancel']);
+  await assertPurpleActions(page, '#projectHistoryDetailActions');
+  await page.$eval('#projectHistoryDetailActions [data-history-action=discard]', node => node.click());
+  await page.waitForFunction(selector => !document.querySelector(selector), {}, timesheetDraft);
+  assert.equal(await page.evaluate(() => localStorage.getItem('pq_project_timesheet_draft')), null);
+  assert.equal(await page.$eval('#projectHistoryDetailOverlay', node => node.hidden), true);
+
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -351,7 +423,8 @@ async function main() {
     if (!requested || requested === 'attendance-feedback') await runAttendanceFeedback(browser);
     if (!requested || requested === 'claims') await runClaims(browser);
     if (!requested || requested === 'payroll') await runPayroll(browser);
-    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback', 'claims', 'payroll'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'project') await runProject(browser);
+    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback', 'claims', 'payroll', 'project'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }

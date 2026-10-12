@@ -219,6 +219,7 @@
 
   const byId = id => document.getElementById(id);
   let lastFocusedElement = null;
+  let activeProjectHistoryDetail = null;
   const historyActions = new Map();
 
   function createNode(tag, className, text) {
@@ -453,45 +454,63 @@
     return top;
   }
 
-  function createCardAction(label, variant, record, kind, action = label.toLowerCase()) {
-    const button = createNode('button', 'project-history-card-action project-history-card-action-' + variant, label);
+  function getProjectHistoryActions(record) {
+    const state = statusKey(record.status);
+    if (state === 'draft') {
+      return [
+        { key: 'submit', label: 'Submit', variant: 'primary' },
+        { key: 'discard', label: 'Cancel', variant: 'danger' }
+      ];
+    }
+    if (state === 'submitted') return [{ key: 'cancel', label: 'Cancel', variant: 'danger' }];
+    return [];
+  }
+
+  function getProjectHistoryRecord(kind, id) {
+    const records = kind === 'work-plan' ? getWorkPlans() : getTimesheets();
+    return records.find(record => record.id === id) || null;
+  }
+
+  function executeProjectHistoryAction(record, kind, action) {
+    const detailWasOpen = activeProjectHistoryDetail?.kind === kind && activeProjectHistoryDetail.id === record.id;
+    historyActions.set(record.id, action.key);
+    if (record.id === 'TS-DRAFT-LOCAL' && (action.key === 'submit' || action.key === 'discard')) {
+      if (action.key === 'submit') {
+        const stored = readStored('pq_project_timesheets');
+        stored.push({ ...record, status: 'Submitted' });
+        localStorage.setItem('pq_project_timesheets', JSON.stringify(stored));
+      }
+      localStorage.removeItem('pq_project_timesheet_draft');
+    }
+
+    if (action.key === 'discard' && detailWasOpen) closeOverlay('projectHistoryDetailOverlay', false);
+    if (kind === 'work-plan') renderWorkPlans();
+    else renderTimesheets();
+    if (action.key !== 'discard' && detailWasOpen) refreshProjectHistoryDetails();
+    window.showToast?.(action.label + ' completed');
+  }
+
+  function createProjectHistoryActionButton(record, kind, action, surface) {
+    const className = surface === 'detail'
+      ? 'history-detail-action'
+      : 'project-history-card-action project-history-card-action-' + action.variant;
+    const button = createNode('button', className, action.label);
     button.type = 'button';
-    button.dataset.historyAction = action;
+    button.dataset.historyAction = action.key;
     button.addEventListener('click', event => {
       event.stopPropagation();
-      historyActions.set(record.id, action);
-      if (record.id === 'TS-DRAFT-LOCAL' && (action === 'submit' || action === 'discard')) {
-        if (action === 'submit') {
-          const stored = readStored('pq_project_timesheets');
-          stored.push({ ...record, status: 'Submitted' });
-          localStorage.setItem('pq_project_timesheets', JSON.stringify(stored));
-        }
-        localStorage.removeItem('pq_project_timesheet_draft');
-      }
-      if (kind === 'work-plan') renderWorkPlans();
-      else renderTimesheets();
-      window.showToast?.(label + ' completed');
+      executeProjectHistoryAction(record, kind, action);
     });
     return button;
   }
 
   function createCardActions(record, kind) {
-    const state = statusKey(record.status);
+    const descriptors = getProjectHistoryActions(record);
+    if (!descriptors.length) return null;
     const actions = createNode('div', 'project-history-card-actions');
-    if (state === 'draft') {
-      actions.setAttribute('aria-label', 'Draft actions');
-      actions.append(
-        createCardAction('Submit', 'primary', record, kind),
-        createCardAction('Cancel', 'danger', record, kind, 'discard')
-      );
-      return actions;
-    }
-    if (state === 'submitted') {
-      actions.setAttribute('aria-label', record.status + ' actions');
-      actions.append(createCardAction('Cancel', 'danger', record, kind));
-      return actions;
-    }
-    return null;
+    actions.setAttribute('aria-label', record.status + ' actions');
+    actions.append(...descriptors.map(action => createProjectHistoryActionButton(record, kind, action, 'card')));
+    return actions;
   }
 
   function createWorkPlanCard(record) {
@@ -721,12 +740,36 @@
     icon.className = 'fa-solid ' + iconName;
   }
 
-  function openDetails(title, iconName, content) {
+  function renderProjectDetailActions(record, kind) {
+    const footer = byId('projectHistoryDetailActions');
+    const actions = getProjectHistoryActions(record);
+    footer.replaceChildren(...actions.map(action => createProjectHistoryActionButton(record, kind, action, 'detail')));
+    footer.hidden = actions.length === 0;
+  }
+
+  function replaceProjectHistoryDetailContent(record, kind) {
+    const content = kind === 'work-plan' ? [renderWorkPlanDetails(record)] : renderTimesheetDetails(record);
+    byId('projectHistoryDetailContent').replaceChildren(...content);
+    renderProjectDetailActions(record, kind);
+  }
+
+  function refreshProjectHistoryDetails() {
+    if (!activeProjectHistoryDetail) return;
+    const record = getProjectHistoryRecord(activeProjectHistoryDetail.kind, activeProjectHistoryDetail.id);
+    if (!record) {
+      closeOverlay('projectHistoryDetailOverlay', false);
+      return;
+    }
+    replaceProjectHistoryDetailContent(record, activeProjectHistoryDetail.kind);
+  }
+
+  function openDetails(title, iconName, record, kind) {
     const overlay = byId('projectHistoryDetailOverlay');
     lastFocusedElement = document.activeElement;
+    activeProjectHistoryDetail = { kind, id: record.id };
     byId('projectHistoryDetailTitle').textContent = title;
     setDetailIcon(iconName);
-    byId('projectHistoryDetailContent').replaceChildren(...content);
+    replaceProjectHistoryDetailContent(record, kind);
     overlay.hidden = false;
     overlay.querySelector('.project-history-detail-sheet').scrollTop = 0;
     requestAnimationFrame(() => {
@@ -736,11 +779,11 @@
   }
 
   function openWorkPlanDetails(record) {
-    openDetails('Work Plan Details', 'fa-clipboard-list', [renderWorkPlanDetails(record)]);
+    openDetails('Work Plan Details', 'fa-clipboard-list', record, 'work-plan');
   }
 
   function openTimesheetDetails(record) {
-    openDetails('Timesheet Details', 'fa-clock', renderTimesheetDetails(record));
+    openDetails('Timesheet Details', 'fa-clock', record, 'timesheet');
   }
 
   function closeOverlay(id, restoreFocus) {
@@ -748,6 +791,7 @@
     if (!overlay || overlay.hidden) return;
     overlay.classList.remove('is-open');
     overlay.hidden = true;
+    if (id === 'projectHistoryDetailOverlay') activeProjectHistoryDetail = null;
     if (restoreFocus !== false && lastFocusedElement?.isConnected) lastFocusedElement.focus({ preventScroll: true });
   }
 
