@@ -1,6 +1,8 @@
 const confirmNewUserRecords = window.confirmNewUserRecords || [];
 const fields = [['gender', 'Gender'], ['nationality', 'Nationality'], ['qualification', 'Qualification'], ['mobile', 'Mobile #'], ['email', 'Email']];
 const displayValue = value => value || '\u2014';
+// Demo portraits are presentation assets; submitted identity and contact data stay intact.
+const confirmNewUserPortraits = new Map(confirmNewUserRecords.map((record, index) => [record.identity, `../../../../assets/img/new-user-portraits/user-${index}.jpg`]));
 
 function renderConfirmNewUsers(records) {
   const list = document.getElementById('confirmNewUserList');
@@ -15,8 +17,18 @@ function renderConfirmNewUsers(records) {
     const header = document.createElement('header');
     const avatar = document.createElement('span');
     avatar.className = 'confirm-new-user-avatar';
-    avatar.setAttribute('aria-hidden', 'true');
     avatar.textContent = record.name.split(/\s+/).map(part => part[0]).slice(0, 2).join('');
+    const portraitSrc = record.avatarUrl || record.photoUrl || confirmNewUserPortraits.get(record.identity);
+    if (portraitSrc) {
+      const portrait = document.createElement('img');
+      portrait.src = portraitSrc;
+      portrait.alt = record.avatarUrl || record.photoUrl ? `${record.name} portrait` : `${record.name} sample portrait`;
+      portrait.width = 144;
+      portrait.height = 144;
+      portrait.decoding = 'async';
+      portrait.addEventListener('error', () => portrait.remove(), { once: true });
+      avatar.append(portrait);
+    }
     const identity = document.createElement('div');
     identity.className = 'confirm-new-user-identity';
     const name = document.createElement('h3');

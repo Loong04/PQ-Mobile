@@ -175,7 +175,8 @@ async function inspectScenario(browser, theme, width) {
       listFits: list.scrollWidth <= list.clientWidth + 1,
       cards,
       modernCard: {
-        padding: Number.parseFloat(cardStyle.paddingTop),
+        headerBackground: getComputedStyle(card.querySelector('header')).backgroundImage,
+        headerPadding: Number.parseFloat(getComputedStyle(card.querySelector('header')).paddingTop),
         detailsBorder: Number.parseFloat(detailsStyle.borderTopWidth),
         detailsBackground: detailsStyle.backgroundColor,
         avatarSize: Math.round(avatarBox.width),
@@ -193,10 +194,12 @@ async function inspectScenario(browser, theme, width) {
   });
   assert.equal(layout.pageFits, true, `${theme}/${width}: page overflows horizontally`);
   assert.equal(layout.listFits, true, `${theme}/${width}: list overflows horizontally`);
-  assert.ok(layout.modernCard.padding >= 18, `${theme}/${width}: cards need more breathing room`);
+  assert.match(layout.modernCard.headerBackground, /rgb\(124, 58, 237\).*rgb\(76, 29, 149\)/, `${theme}/${width}: card header must match Pending Approval`);
+  assert.ok(layout.modernCard.headerPadding >= 12, `${theme}/${width}: identity header needs comfortable spacing`);
   assert.equal(layout.modernCard.detailsBorder, 0, `${theme}/${width}: metadata must not sit inside a nested bordered table`);
   assert.equal(layout.modernCard.detailsBackground, 'rgba(0, 0, 0, 0)', `${theme}/${width}: metadata should use an open transparent layout`);
-  assert.ok(layout.modernCard.avatarSize >= 48, `${theme}/${width}: avatar should anchor the identity hierarchy`);
+  assert.ok(layout.modernCard.avatarSize >= 72, `${theme}/${width}: portrait must be large enough to recognize the face`);
+  assert.ok(await page.$$eval('.confirm-new-user-avatar img', images => images.length === 13 && images.every(image => image.complete && image.naturalWidth >= 100 && image.alt && getComputedStyle(image).objectFit === 'cover')), `${theme}/${width}: all user portraits must load clearly`);
   assert.ok(layout.modernCard.nameSize >= 15, `${theme}/${width}: employee name should have stronger hierarchy`);
   assert.ok(layout.modernCard.actionRadius >= 10 && layout.modernCard.actionRadius <= 16, `${theme}/${width}: actions should use modern rounded rectangles rather than pills`);
   assert.ok(layout.modernCard.actionHeight >= 44, `${theme}/${width}: actions need a comfortable touch target`);
@@ -207,7 +210,7 @@ async function inspectScenario(browser, theme, width) {
       assert.equal(value.fits, true, `${theme}/${width}: key field ${fieldIndex + 1} has horizontal overflow in card ${index + 1}`);
       assert.equal(value.canWrap, true, `${theme}/${width}: key field ${fieldIndex + 1} must permit wrapping`);
     });
-    assert.equal(card.radius, '18px', `${theme}/${width}: card ${index + 1} must use an 18px radius`);
+    assert.equal(card.radius, '20px', `${theme}/${width}: card ${index + 1} must match Pending Approval's radius`);
     assert.equal(card.hasChevron, false, `${theme}/${width}: card ${index + 1} must not show a chevron`);
   });
 
@@ -272,7 +275,8 @@ async function inspectScenario(browser, theme, width) {
       for (const width of widths) palettes[theme].push(await inspectScenario(browser, theme, width));
     }
     widths.forEach((width, index) => {
-      for (const key of ['summary', 'name']) assert.notEqual(palettes.light[index][key], palettes.dark[index][key], `${width}px theme ${key} colors must differ between light and dark`);
+      assert.notEqual(palettes.light[index].summary, palettes.dark[index].summary, `${width}px theme summary colors must differ between light and dark`);
+      assert.equal(palettes.light[index].name, palettes.dark[index].name, `${width}px header names stay white in both themes`);
       assert.notDeepEqual(palettes.light[index].cardSurface, palettes.dark[index].cardSurface, `${width}px theme card surface background color/image must differ between light and dark`);
     });
     console.log('PASS: Confirm New User is responsive, themed, accessible, navigates from Confirm, and keeps Reject intentionally no-op.');

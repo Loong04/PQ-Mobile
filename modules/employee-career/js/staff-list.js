@@ -21,17 +21,18 @@
     { empNo: '009034', name: 'MUHAMMAD HAFIZ', birthDate: '2000-05-19', hireDate: '2025-07-01', branch: 'CENTRAL REGION BRANCH', department: 'INFORMATION TECHNOLOGY', position: 'IT SUPPORT EXECUTIVE' }
   ].map(row => {
     const organization = {
-      'HUMAN RESOURCE': { section: 'People Operations', skillGroup: 'Human Resources' },
-      'PRODUCT & DESIGN': { section: 'User Experience', skillGroup: 'Design' },
-      'FINANCE & ACCOUNTING': { section: 'Financial Reporting', skillGroup: 'Finance' },
-      'ADMINISTRATION': { section: 'Office Administration', skillGroup: 'Administration' },
-      'OPERATIONS': { section: 'Regional Operations', skillGroup: 'Operations' },
-      'SALES & MARKETING': { section: 'Sales Support', skillGroup: 'Sales' },
-      'INFORMATION TECHNOLOGY': { section: 'Technology Services', skillGroup: 'Technology' }
+      'HUMAN RESOURCE': { division: 'Corporate Services', section: 'People Operations', costCenter: 'CC-HR', skillGroup: 'Human Resources' },
+      'PRODUCT & DESIGN': { division: 'Technology', section: 'User Experience', costCenter: 'CC-DESIGN', skillGroup: 'Design' },
+      'FINANCE & ACCOUNTING': { division: 'Corporate Services', section: 'Financial Reporting', costCenter: 'CC-FINANCE', skillGroup: 'Finance' },
+      'ADMINISTRATION': { division: 'Corporate Services', section: 'Office Administration', costCenter: 'CC-ADMIN', skillGroup: 'Administration' },
+      'OPERATIONS': { division: 'Operations', section: 'Regional Operations', costCenter: 'CC-OPS', skillGroup: 'Operations' },
+      'SALES & MARKETING': { division: 'Commercial', section: 'Sales Support', costCenter: 'CC-SALES', skillGroup: 'Sales' },
+      'INFORMATION TECHNOLOGY': { division: 'Technology', section: 'Technology Services', costCenter: 'CC-IT', skillGroup: 'Technology' }
     };
-    return { ...row, ...organization[row.department], job: row.position };
+    const grade = /manager/i.test(row.position) ? 'G4' : /supervisor/i.test(row.position) ? 'G3' : 'G2';
+    return { ...row, ...organization[row.department], company: 'PEOPLE QUEST SDN BHD', grade, job: row.position, type: row.empNo === 'EBB03' ? 'Contract' : 'Permanent' };
   });
-  const staff = isAttrition ? window.EMPLOYEE_CAREER_ATTRITION_DATA : isStaffList ? window.EMPLOYEE_CAREER_STAFF_LIST_RECORDS || activeStaff : activeStaff;
+  const staff = isAttrition ? window.EMPLOYEE_CAREER_ATTRITION_DATA : isStaffList ? (window.EMPLOYEE_CAREER_STAFF_LIST_RECORDS || activeStaff).map(row => ({...row, job: row.job || row.position, type: row.type || row.employmentType || ''})) : activeStaff;
   const $ = id => document.getElementById(id);
   const today = new Date();
   const dateISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -41,32 +42,37 @@
     ? { keyword: '', start: startISO, end: dateISO, branch: '', department: '', section: '', job: '', skillGroup: '' }
     : isRetention
     ? { keyword: '', serviceYears: '0', branch: '', department: '', section: '', job: '', skillGroup: '' }
-    : { keyword: '', asAt: dateISO, category: '', branch: '', department: '', position: '' };
-  const filterDimensions = isRetention || isAttrition ? ['branch', 'department', 'section', 'job', 'skillGroup'] : ['branch', 'department', 'position'];
+    : { keyword: '', asAt: dateISO, category: '', company: '', branch: '', division: '', department: '', section: '', costCenter: '', grade: '', job: '', skillGroup: '', hireDateFrom: '', hireDateTo: '', yosFrom: '', yosTo: '', type: '' };
+  const filterDimensions = isRetention || isAttrition ? ['branch', 'department', 'section', 'job', 'skillGroup'] : ['company', 'branch', 'division', 'department', 'section', 'costCenter', 'grade', 'job', 'skillGroup', 'type'];
   const columns = [['empNo', 'Emp#'], ['name', 'Name'], ...(isAttrition ? [['reason', 'Reason']] : [...(!isRetention ? [['age', 'Age']] : []), ['yos', 'YOS']]), ['branch', 'Branch'], ['department', 'Department'], ['position', 'Position']];
   const state = { filters: { ...defaults }, rows: [], summaryRows: [], view: 'table', metric: 'branch', showAll: false, selectedMonth: null, analysisMetric: 'branch', analysisShowAll: false, chartScroll: 0, trendScroll: 0 };
   const hasResigned = row => row.exitDate ? row.exitDate <= state.filters.asAt : row.employmentStatus === 'Resigned';
   const summaryCategories = [
     { id: 'active', label: 'Active Staff', icon: 'fa-users', tone: 'green', matches: row => !hasResigned(row) },
     { id: 'probationary', label: 'Probationary', icon: 'fa-user-clock', tone: 'green', matches: row => !hasResigned(row) && (row.probationary === true || row.employmentStatus === 'Probationary') },
-    { id: 'key-level-3', label: 'Key Level 3', icon: 'fa-star', tone: 'blue', matches: row => Number(row.keyLevel) === 3 },
-    { id: 'key-level-2', label: 'Key Level 2', icon: 'fa-star', tone: 'blue', matches: row => Number(row.keyLevel) === 2 },
+    { id: 'key-level-3', label: 'Key Level 3', icon: 'fa-star', tone: 'green', matches: row => Number(row.keyLevel) === 3 },
+    { id: 'key-level-2', label: 'Key Level 2', icon: 'fa-star', tone: 'green', matches: row => Number(row.keyLevel) === 2 },
     { id: 'key-level-1', label: 'Key Level 1', icon: 'fa-star', tone: 'blue', matches: row => Number(row.keyLevel) === 1 },
     { id: 'blacklisted', label: 'Blacklisted', icon: 'fa-user-slash', tone: 'blue', matches: row => row.blacklisted === true },
-    { id: 'permit-expiring', label: 'Permit Expiring', icon: 'fa-id-card', tone: 'amber', matches: row => row.permitExpiring === true },
-    { id: 'contract-expiring', label: 'Contract Expiring', icon: 'fa-file-contract', tone: 'amber', matches: row => row.contractExpiring === true },
-    { id: 'exit-notice', label: 'Exit Notice', icon: 'fa-door-open', tone: 'rose', matches: row => !hasResigned(row) && row.exitNotice === true },
-    { id: 'resigned', label: 'Resigned', icon: 'fa-user-minus', tone: 'rose', matches: hasResigned },
+    { id: 'permit-expiring', label: 'Permit Expiring', icon: 'fa-id-card', tone: 'blue', matches: row => row.permitExpiring === true },
+    { id: 'contract-expiring', label: 'Contract Expiring', icon: 'fa-file-contract', tone: 'blue', matches: row => row.contractExpiring === true },
+    { id: 'exit-notice', label: 'Exit Notice', icon: 'fa-door-open', tone: 'purple', matches: row => !hasResigned(row) && row.exitNotice === true },
+    { id: 'resigned', label: 'Resigned', icon: 'fa-user-minus', tone: 'purple', matches: hasResigned },
     { id: 'unverified', label: 'Unverified', icon: 'fa-user-check', tone: 'purple', matches: row => row.verified === false },
     { id: 'unapproved', label: 'Unapproved', icon: 'fa-clipboard-check', tone: 'purple', matches: row => row.approved === false }
   ];
   const metrics = {
+    company: { label: 'Company', plural: 'companies', value: row => row.company },
     branch: { label: 'Branch', plural: 'branches', value: row => row.branch },
+    division: { label: 'Division', plural: 'divisions', value: row => row.division },
     department: { label: 'Department', plural: 'departments', value: row => row.department },
     position: { label: 'Position', plural: 'positions', value: row => row.position },
     section: { label: 'Section', plural: 'sections', value: row => row.section },
     job: { label: 'Job', plural: 'jobs', value: row => row.job },
     skillGroup: { label: 'Skill Group', plural: 'skill groups', value: row => row.skillGroup },
+    costCenter: { label: 'Cost Center', plural: 'cost centers', value: row => row.costCenter },
+    grade: { label: 'Grade', plural: 'grades', value: row => row.grade },
+    type: { label: 'Type', plural: 'types', value: row => row.type },
     reason: { label: 'Reason', plural: 'reasons', value: row => row.reason },
     age: { label: 'Age', plural: 'age groups', value: row => row.age < 30 ? 'Under 30' : row.age < 40 ? '30–39' : row.age < 50 ? '40–49' : row.age < 60 ? '50–59' : '60 and above' },
     yos: { label: 'Years of Service', plural: 'service groups', value: row => row.yos < 1 ? 'Less than 1 year' : row.yos < 5 ? '1–4 years' : row.yos < 10 ? '5–9 years' : row.yos < 15 ? '10–14 years' : '15 years and above' }
@@ -98,12 +104,14 @@
     state.summaryRows = staff.filter(row => row.hireDate <= asAtISO
       && (!keyword || `${row.empNo} ${row.name}`.toLowerCase().includes(keyword))
       && (!isAttrition || (row.exitDate >= state.filters.start && row.exitDate <= state.filters.end))
-      && filterDimensions.every(key => !state.filters[key] || row[key] === state.filters[key]))
+      && (!isStaffList || ((!state.filters.hireDateFrom || row.hireDate >= state.filters.hireDateFrom) && (!state.filters.hireDateTo || row.hireDate <= state.filters.hireDateTo)))
+      && filterDimensions.every(key => !state.filters[key] || String(row[key] ?? '') === state.filters[key]))
       .map(row => {
         const recordDate = isAttrition ? parseDate(row.exitDate) : asAt;
         return { ...row, age: completedYears(parseDate(row.birthDate), recordDate), yos: yearsOfService(parseDate(row.hireDate), recordDate) };
       })
-      .filter(row => !isRetention || row.yos >= Number(state.filters.serviceYears || 0));
+      .filter(row => !isRetention || row.yos >= Number(state.filters.serviceYears || 0))
+      .filter(row => !isStaffList || ((state.filters.yosFrom === '' || Number(row.yos.toFixed(2)) >= Number(state.filters.yosFrom)) && (state.filters.yosTo === '' || Number(row.yos.toFixed(2)) <= Number(state.filters.yosTo))));
     const category = isStaffList && summaryCategories.find(category => category.id === state.filters.category);
     state.rows = category ? state.summaryRows.filter(category.matches) : state.summaryRows;
     const body = $('staffListTable').tBodies[0];
@@ -134,12 +142,16 @@
     if (category) summary.push(category.label);
     if (isRetention) summary.push(`Service Years >= ${state.filters.serviceYears || 0}`);
     filterDimensions.forEach(key => { if (state.filters[key]) summary.push(state.filters[key]); });
+    if (isStaffList) {
+      if (state.filters.hireDateFrom || state.filters.hireDateTo) summary.push(`Hire Date: ${state.filters.hireDateFrom ? formatDate(state.filters.hireDateFrom) : 'Any'} – ${state.filters.hireDateTo ? formatDate(state.filters.hireDateTo) : 'Any'}`);
+      if (state.filters.yosFrom !== '' || state.filters.yosTo !== '') summary.push(`YOS: ${state.filters.yosFrom || '0'} – ${state.filters.yosTo || 'Any'}`);
+    }
     if (isAttrition) summary.push(`${formatDate(state.filters.start)} – ${formatDate(state.filters.end)}`);
     else if (!isRetention) summary.push(formatDate(asAtISO));
     $('staffListFilterSummary').textContent = summary.join(' >> ');
   }
   function renderSummary() {
-    $('staffListSummaryAsAt').textContent = 'As At ' + formatDate(state.filters.asAt);
+    $('staffListSummaryAsAt').textContent = 'As At ' + state.filters.asAt.split('-').reverse().join('/');
     const cards = $('staffListSummaryCards');
     cards.replaceChildren();
     summaryCategories.forEach(category => {
@@ -150,14 +162,15 @@
       card.dataset.staffCategory = category.id;
       card.dataset.tone = category.tone;
       card.setAttribute('aria-label', `${category.label}: ${count} staff, ${percent}%. View staff list.`);
+      const header = node('span', 'staff-list-summary-card-header');
       const icons = node('span', 'staff-list-summary-card-icon');
       const icon = node('i', 'fa-solid ' + category.icon);
-      const arrow = node('i', 'fa-solid fa-chevron-right');
-      [icon, arrow].forEach(item => item.setAttribute('aria-hidden', 'true'));
-      icons.append(icon, arrow);
+      icon.setAttribute('aria-hidden', 'true');
+      icons.append(icon);
+      header.append(icons, node('span', 'staff-list-summary-card-title', category.label));
       const values = node('span', 'staff-list-summary-card-values');
       values.append(node('strong', 'staff-list-summary-card-count', count), node('span', 'staff-list-summary-card-percent', percent + '%'));
-      card.append(icons, values, node('span', 'staff-list-summary-card-title', category.label));
+      card.append(header, values);
       card.addEventListener('click', () => selectSummaryCategory(category.id));
       cards.append(card);
     });
@@ -178,7 +191,6 @@
       showView('summary');
       $('staffListSummaryCards').querySelector('button').focus({ preventScroll: true });
     });
-    $('staffListSummaryShowAll').addEventListener('click', () => selectSummaryCategory(''));
   }
   function chartGroups(rows = state.rows, metricKey = state.metric) {
     const counts = new Map();
@@ -249,7 +261,10 @@
   }
   function openFilter() {
     populateFilter();
-    if (isAttrition) { $('staffListFilterError').hidden = true; $('staffListFilterEnd').removeAttribute('aria-invalid'); }
+    if ($('staffListFilterError')) {
+      $('staffListFilterError').hidden = true;
+      $('staffListFilterForm').querySelectorAll('[aria-invalid]').forEach(control => control.removeAttribute('aria-invalid'));
+    }
     $('staffListFilterOverlay').hidden = false;
     $('staffListFilterOverlay').classList.add('is-open');
     document.querySelector('main').inert = true;
@@ -263,7 +278,8 @@
     document.querySelector('main').inert = false;
     document.querySelector('.employee-career-header').inert = false;
     document.querySelector('phone-bottom-nav').inert = false;
-    $('staffListFilterTrigger').focus();
+    const focusTarget = state.view === 'summary' ? $('staffListSummaryCards').querySelector('button') : $('staffListFilterTrigger');
+    focusTarget?.focus();
   }
   function applyFilters(filters) {
     state.filters = filters;
@@ -271,6 +287,7 @@
     renderTable();
     renderChart();
     if (hasTrend) renderTrend();
+    if (isStaffList && state.view === 'summary') renderSummary();
     closeFilter();
   }
   function exportCsv() {
@@ -372,7 +389,7 @@
     filterDimensions.forEach(key => {
       const select = $('staffListFilter' + key[0].toUpperCase() + key.slice(1));
       select.add(new Option('All ' + metrics[key].plural[0].toUpperCase() + metrics[key].plural.slice(1), ''));
-      [...new Set(staff.map(row => row[key]))].sort().forEach(value => select.add(new Option(value, value)));
+      [...new Set(staff.map(row => row[key]).filter(value => value !== '' && value != null))].sort().forEach(value => select.add(new Option(value, value)));
     });
     $('staffListFilterTrigger').addEventListener('click', openFilter);
     $('staffListCloseFilter').addEventListener('click', closeFilter);
@@ -388,6 +405,18 @@
         $('staffListFilterEnd').setAttribute('aria-invalid', 'true');
         $('staffListFilterEnd').focus();
         return;
+      }
+      if (isStaffList) {
+        const invalidHireDate = filters.hireDateFrom && filters.hireDateTo && filters.hireDateFrom > filters.hireDateTo;
+        const invalidYos = filters.yosFrom !== '' && filters.yosTo !== '' && Number(filters.yosFrom) > Number(filters.yosTo);
+        if (invalidHireDate || invalidYos) {
+          const control = $(invalidHireDate ? 'staffListFilterHireDateTo' : 'staffListFilterYosTo');
+          $('staffListFilterError').textContent = invalidHireDate ? 'End hire date must be on or after start hire date.' : 'YOS minimum must not exceed maximum.';
+          $('staffListFilterError').hidden = false;
+          control.setAttribute('aria-invalid', 'true');
+          control.focus();
+          return;
+        }
       }
       applyFilters(filters);
     });

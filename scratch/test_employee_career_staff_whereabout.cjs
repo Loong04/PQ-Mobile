@@ -22,7 +22,17 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
       assert.deepEqual(await page.$$eval('.staff-whereabout-name', nodes => nodes.map(n => n.textContent)), ['Andrew', 'Yee seong liew', 'Ewi robert', 'Ali bin ahmad', 'Juliana binti othman']);
       assert.deepEqual(await page.$$eval('.staff-whereabout-emp-no', nodes => nodes.map(n => n.textContent)), ['#000030', '#000070', '#82828', '#A9999', '#EBB204']);
       assert.deepEqual(await page.$$eval('#staffWhereaboutFilterForm label', nodes => nodes.map(n => n.textContent)), ['Date', 'Search Keyword', 'Branch', 'Department', 'Whereabout']);
-      assert.equal(await page.$eval('#staffWhereaboutTotal', n => n.textContent), '5 records');
+      assert.equal(await page.$eval('#staffWhereaboutCurrentDate', n => n.textContent), '05 Oct 2026');
+      assert.equal(await page.$eval('.staff-whereabout-date-switcher', n => n.nextElementSibling.classList.contains('staff-whereabout-filter-summary')), true);
+      assert.equal(await page.$eval('.history-total-records-label', n => n.textContent), 'Total Records');
+      assert.equal(await page.$eval('#staffWhereaboutTotal', n => n.textContent), '5');
+      assert.equal(await page.$$eval('main h2', nodes => nodes.some(n => n.textContent === 'Staff Whereabout')), false);
+      await page.click('#staffWhereaboutPreviousDate');
+      assert.equal(await page.$eval('#staffWhereaboutCurrentDate', n => n.textContent), '04 Oct 2026');
+      assert.equal(await page.$eval('#staffWhereaboutTotal', n => n.textContent), '0');
+      assert.equal(await page.$eval('#staffWhereaboutEmpty', n => n.hidden), false);
+      await page.click('#staffWhereaboutNextDate');
+      assert.equal(await page.$eval('#staffWhereaboutTotal', n => n.textContent), '5');
       assert.deepEqual(await page.$$eval('.staff-whereabout-card:first-child .staff-whereabout-field', nodes => nodes.map(n => n.innerText.replace(/\s+/g, ' ').trim())), ['Whereabout Annual Leave', 'Time -', 'Project -', 'Task -']);
       assert.ok(await page.$$eval('.staff-whereabout-card', nodes => nodes.every(n => {
         const description = document.getElementById(n.getAttribute('aria-describedby'));
@@ -39,7 +49,8 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
         assert.deepEqual(await page.$$eval('#staffWhereaboutDetails .detail-popout-label', nodes => nodes.map(n => n.textContent)),
           ['Name', 'Branch', 'Department', 'Project', 'Task', 'State', 'Date', 'Description', 'Status', 'Remark']);
         assert.deepEqual(await page.$$eval('#staffWhereaboutDetails .detail-popout-value', nodes => nodes.map(n => n.textContent)),
-          ['Andrew#000030', '-', '-', '-', '-', '-', '5 Oct 2026', '-', '-', '-']);
+          ['Andrew', '-', '-', '-', '-', '-', '5 Oct 2026', '-', '-', '-']);
+        assert.equal(await page.$('#staffWhereaboutDetails .staff-whereabout-detail-id'), null);
         assert.ok(await page.$eval('#staffWhereaboutDetails .detail-popout-body', n => n.scrollWidth <= n.clientWidth + 1));
         assert.ok(await page.$eval('#staffWhereaboutDetails', n => {
           const overlay = n.getBoundingClientRect();
@@ -68,6 +79,7 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
         await page.click('#staffWhereaboutCloseDetails');
       }
       await page.setViewport({ width: 390, height: 950 });
+      await page.$eval('main', n => { n.scrollTop = 0; });
       await page.screenshot({ path: path.join(__dirname, `employee_career_staff_whereabout_${theme}.png`) });
       await apply({ staffWhereaboutKeyword: '#000030' });
       assert.equal(await page.$$eval('.staff-whereabout-card', nodes => nodes.length), 1);
@@ -75,6 +87,15 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
       await reset();
       await apply({ staffWhereaboutType: 'Medical Leave' });
       assert.equal(await page.$$eval('.staff-whereabout-card', nodes => nodes.length), 3);
+      await page.click('#staffWhereaboutNextDate');
+      assert.equal(await page.$eval('#staffWhereaboutCurrentDate', n => n.textContent), '06 Oct 2026');
+      await page.click('#staffWhereaboutPreviousDate');
+      assert.equal(await page.$$eval('.staff-whereabout-card', nodes => nodes.length), 3, 'Changing days preserves the Whereabout filter');
+      await apply({ staffWhereaboutDate: '2026-10-31' });
+      await page.click('#staffWhereaboutNextDate');
+      assert.equal(await page.$eval('#staffWhereaboutCurrentDate', n => n.textContent), '01 Nov 2026');
+      await page.click('#staffWhereaboutPreviousDate');
+      assert.equal(await page.$eval('#staffWhereaboutCurrentDate', n => n.textContent), '31 Oct 2026');
       await reset();
       await apply({ staffWhereaboutDate: '2026-10-06' });
       assert.ok(await page.$eval('#staffWhereaboutEmpty', n => !n.hidden));
@@ -114,9 +135,8 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
     assert.match(await fixturePage.$eval('.staff-whereabout-card', n => n.innerText), /Review/);
     await fixturePage.click('.staff-whereabout-card');
     assert.deepEqual(await fixturePage.$$eval('#staffWhereaboutDetails .detail-popout-value', nodes => nodes.map(n => n.textContent)),
-      ['Yee seong liew#000070', 'HQ', 'Operations', 'PeopleHub Rollout', 'Review', 'Selangor', '5 Oct 2026', 'On-site review\nDiscuss <handover> & next steps', 'Approved', 'Bring the project documents.']);
-    assert.ok(await fixturePage.$eval('#staffWhereaboutDetails .staff-whereabout-detail-id', n =>
-      n.getBoundingClientRect().top >= n.previousElementSibling.getBoundingClientRect().bottom));
+      ['Yee seong liew', 'HQ', 'Operations', 'PeopleHub Rollout', 'Review', 'Selangor', '5 Oct 2026', 'On-site review\nDiscuss <handover> & next steps', 'Approved', 'Bring the project documents.']);
+    assert.equal(await fixturePage.$('#staffWhereaboutDetails .staff-whereabout-detail-id'), null);
     const overlay = await fixturePage.$('#staffWhereaboutDetails');
     const overlayBounds = await overlay.boundingBox();
     await overlay.click({ offset: { x: 8, y: overlayBounds.height / 2 } });

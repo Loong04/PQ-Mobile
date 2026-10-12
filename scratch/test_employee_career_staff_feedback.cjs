@@ -24,6 +24,38 @@ const url = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/op
      assert.equal(await page.$$eval('.staff-feedback-card', nodes => nodes.length), 60, 'The preview renders all 60 records');
       assert.equal(await page.$('.staff-feedback-list-heading'), null, 'The repeated Staff Feedback heading is removed');
      assert.equal(await page.$eval('#staffFeedbackTotal', node => node.textContent), '60');
+      const totalCardStyle = await page.$eval('.staff-feedback-overview', card => {
+        const label = card.querySelector('span');
+        const value = card.querySelector('strong');
+        const cardStyle = getComputedStyle(card);
+        const labelStyle = getComputedStyle(label);
+        const valueStyle = getComputedStyle(value);
+        const bodyColor = getComputedStyle(document.body).color;
+        return {
+          label: label.textContent.trim(),
+          borderRadius: cardStyle.borderRadius,
+          padding: cardStyle.padding,
+          backgroundImage: cardStyle.backgroundImage,
+          borderColor: cardStyle.borderColor,
+          borderToken: cardStyle.getPropertyValue('--border-subtle').trim(),
+          labelColorIsNeutral: labelStyle.color === bodyColor,
+          valueColorIsNeutral: valueStyle.color === bodyColor,
+          labelSize: labelStyle.fontSize,
+          valueSize: valueStyle.fontSize
+        };
+      });
+      assert.deepEqual(totalCardStyle, {
+        label: 'Total Records',
+        borderRadius: '16px',
+        padding: '13px 16px',
+        backgroundImage: 'none',
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgb(226, 232, 240)',
+        borderToken: theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0',
+        labelColorIsNeutral: true,
+        valueColorIsNeutral: true,
+        labelSize: '12px',
+        valueSize: '20px'
+      }, 'Staff Feedback Total Records matches the shared History summary card');
       const statusIcons = await page.$$eval('.staff-feedback-card .staff-feedback-status', badges => Object.fromEntries(badges.map(badge => [badge.textContent.trim(), badge.querySelector('i')?.className || ''])));
       assert.deepEqual(statusIcons, { Pending: 'fa-solid fa-clock', 'In Progress': 'fa-solid fa-spinner', Resolved: 'fa-solid fa-circle-check' });
       for (const width of [360, 390, 450]) {

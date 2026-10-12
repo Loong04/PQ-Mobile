@@ -273,9 +273,7 @@
       department.append(node('span', '', 'Department'), node('strong', '', employee.department || '—'));
       details.append(position, department);
       content.append(identity, details);
-      const chevron = node('i', 'fa-solid fa-chevron-right');
-      chevron.setAttribute('aria-hidden', 'true');
-      card.append(content, chevron);
+      card.append(content);
       card.addEventListener('click', () => openEmployeeDetails(employee.empNo, card));
       list.append(card);
     });

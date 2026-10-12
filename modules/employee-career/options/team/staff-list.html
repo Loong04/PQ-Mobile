@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../../css/theme.css">
   <link rel="stylesheet" href="../../../../css/app.css">
+  <link rel="stylesheet" href="../../../../css/claim-forms.css">
   <link rel="stylesheet" href="../../css/employee-career.css">
   <link rel="stylesheet" href="../../css/staff-list.css">
   <link rel="stylesheet" href="../../css/staff-list-trend.css">
@@ -37,7 +38,10 @@
           <button type="button" id="staffListViewChart" class="view-chart-btn"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
         </div>
         <div class="staff-list-summary-row">
-          <div><span class="staff-list-summary-label">As At</span><strong id="staffListAsAt" class="staff-list-summary-date"></strong></div>
+          <div class="staff-list-averages">
+            <div><span class="staff-list-summary-label">Average Age</span><strong id="staffListAverageAge" class="staff-list-summary-date">39.80</strong></div>
+            <div><span class="staff-list-summary-label">Average YOS</span><strong id="staffListAverageYos" class="staff-list-summary-date">6.59</strong></div>
+          </div>
           <div class="staff-list-export-actions">
             <button type="button" id="staffListExportPdf" title="Export PDF" aria-label="Export PDF"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></button>
             <button type="button" id="staffListExportExcel" title="Export Excel" aria-label="Export Excel"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></button>
@@ -52,9 +56,11 @@
       </div>
     </section>
     <section id="staffListSummaryView" aria-label="Staff listing summary" hidden>
-      <div class="staff-list-period-card"><small>Staff Statistics</small><strong><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span id="staffListSummaryAsAt"></span></strong></div>
+      <div class="history-total-records-card staff-list-statistics-card" aria-labelledby="staffListStatisticsTitle">
+        <span id="staffListStatisticsTitle" class="history-total-records-label">Staff Statistics</span>
+        <strong id="staffListSummaryAsAt" class="history-total-records-value"></strong>
+      </div>
       <div id="staffListSummaryCards" class="staff-list-summary-grid"></div>
-      <div class="staff-list-summary-footer"><button type="button" id="staffListSummaryShowAll"><span>Show All</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div>
     </section>
     <section id="staffListChartView" aria-label="Staff analysis" hidden>
       <div class="staff-list-breakdown-card">
@@ -112,14 +118,24 @@
     <form id="staffListFilterForm" class="staff-list-filter-panel standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="staffListFilterTitle">
       <div class="standard-filter-handle" aria-hidden="true"></div>
       <header class="standard-filter-header"><h2 id="staffListFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="staffListResetFilter" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" id="staffListCloseFilter" class="standard-filter-close" aria-label="Close staff filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+      <input id="staffListFilterAsAt" type="hidden">
+      <select id="staffListFilterCategory" hidden><option value="">All Staff</option></select>
       <div class="staff-list-filter-fields">
         <div><label for="staffListFilterKeyword">Search Keyword</label><input id="staffListFilterKeyword" type="search" placeholder="Employee Number or Name" maxlength="150"></div>
-        <div><label for="staffListFilterAsAt">As At</label><input id="staffListFilterAsAt" type="date" required></div>
-        <div><label for="staffListFilterCategory">Staff Category</label><select id="staffListFilterCategory"><option value="">All Staff</option></select></div>
+        <div><label for="staffListFilterCompany">Company</label><select id="staffListFilterCompany"></select></div>
         <div><label for="staffListFilterBranch">Branch</label><select id="staffListFilterBranch"></select></div>
+        <div><label for="staffListFilterDivision">Division</label><select id="staffListFilterDivision"></select></div>
         <div><label for="staffListFilterDepartment">Department</label><select id="staffListFilterDepartment"></select></div>
-        <div><label for="staffListFilterPosition">Position</label><select id="staffListFilterPosition"></select></div>
+        <div><label for="staffListFilterSection">Section</label><select id="staffListFilterSection"></select></div>
+        <div><label for="staffListFilterCostCenter">Cost Center</label><select id="staffListFilterCostCenter"></select></div>
+        <div><label for="staffListFilterGrade">Grade</label><select id="staffListFilterGrade"></select></div>
+        <div><label for="staffListFilterJob">Job</label><select id="staffListFilterJob"></select></div>
+        <div><label for="staffListFilterSkillGroup">Skill Group</label><select id="staffListFilterSkillGroup"></select></div>
+        <div><label for="staffListFilterHireDateFrom">Hire Date</label><div class="staff-list-filter-range" data-filter-range="hire-date"><input id="staffListFilterHireDateFrom" type="date" aria-label="Hire Date start"><input id="staffListFilterHireDateTo" type="date" aria-label="Hire Date end"></div></div>
+        <div><label for="staffListFilterYosFrom">YOS</label><div class="staff-list-filter-range" data-filter-range="yos"><input id="staffListFilterYosFrom" type="number" min="0" step="0.01" placeholder="0.00" aria-label="YOS minimum"><input id="staffListFilterYosTo" type="number" min="0" step="0.01" placeholder="0.00" aria-label="YOS maximum"></div></div>
+        <div><label for="staffListFilterType">Type</label><select id="staffListFilterType"></select></div>
       </div>
+      <p id="staffListFilterError" class="staff-list-filter-error" role="alert" hidden></p>
       <footer class="standard-filter-footer"><button type="submit" id="staffListApplyFilter" class="standard-filter-apply">Apply Filter</button></footer>
     </form>
   </div>

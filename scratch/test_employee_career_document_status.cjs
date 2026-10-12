@@ -23,8 +23,7 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$eval('.employee-career-content', node => node.scrollWidth > node.clientWidth), false);
       await page.screenshot({ path: path.resolve(__dirname, `employee-career-document-status-${theme}-${width}.png`) });
       for (const status of ['submitted', 'resubmit', 'approved', 'rejected']) {
-        await page.click(`[data-document-status="${status}"]`);
-        await page.waitForFunction(() => location.pathname.endsWith('/employee-career/options/history.html'));
+        await Promise.all([page.waitForNavigation({waitUntil: 'domcontentloaded'}), page.click(`[data-document-status="${status}"]`)]);
         assert.equal(new URL(page.url()).searchParams.get('theme'), theme);
         assert.equal(await page.$eval('h1', node => node.textContent.trim()), 'History');
         await page.click('#careerHistoryBack');
@@ -36,7 +35,7 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$$eval('#employeeCareerOptions .employee-career-option', nodes => nodes.length), 6, 'Team quick options retained');
       await page.click('#employeeCareerTabIndividual');
       assert.equal(await page.$eval('#employeeCareerDocumentStatus', node => node.hidden), false);
-      assert.deepEqual(await page.$$eval('#employeeCareerOptions .employee-career-option-title', nodes => nodes.map(node => node.textContent.trim())), ['Feedback', 'Whereabout', 'My Event', 'History']);
+      assert.deepEqual(await page.$$eval('#employeeCareerOptions .employee-career-option-title', nodes => nodes.map(node => node.textContent.trim())), ['Feedback', 'Whereabout', 'History']);
       await page.goto(url.replace('scope=individual', 'scope=team'), { waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('#employeeCareerDocumentStatus', node => node.hidden), true, 'Direct Team navigation hides my status');
       assert.deepEqual(errors, []);

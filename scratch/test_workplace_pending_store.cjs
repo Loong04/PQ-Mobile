@@ -18,7 +18,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
 const validChanges = { visitDate: '2026-10-08', startTime: '09:00', endTime: '10:00', totalGuest: 0, location: 'Head Office', meal: true, otherRequests: ['floor-visit'] };
 test('Reference request seeds once with exact supplied employee and attendee details', () => {
   const { store } = openStore();
-  const [row] = store.getPending();
+  const row = store.getPending().find(item => item.kind === 'guest-visit');
   assert.equal(row.reference, 'FGV0000000000013');
   assert.equal(row.employeeName, 'Farhan binti rahmat');
   assert.equal(row.empNo, 'EBB12');
@@ -27,14 +27,66 @@ test('Reference request seeds once with exact supplied employee and attendee det
   assert.equal(row.totalGuest, 0);
   assert.equal(row.location, '');
   assert.deepEqual(plain(row.attendees), [{ empNo: '000001', name: 'Ram chhabila', department: 'ACCOUNTS', position: 'ACCOUNT EXECUTIVE' }]);
-  assert.equal(store.getPending().length, 1);
+  assert.equal(store.getPending().filter(item => item.kind === 'guest-visit').length, 1);
+});
+test('Inventory request seeds with the card facts required for team approval', () => {
+  const { store } = openStore();
+  const row = store.getPending().find(item => item.kind === 'inventory-request');
+  assert.ok(row, 'Inventory request is available in the pending queue');
+  assert.equal(row.reference, 'IRQ0000000000064');
+  assert.equal(row.employeeName, 'Farhan binti rahmat');
+  assert.equal(row.empNo, 'EBB12');
+  assert.equal(row.position, 'GROUP HR MANAGER');
+  assert.equal(row.department, 'HUMAN RESOURCE');
+  assert.equal(row.submitDate, '2026-09-08');
+  assert.equal(row.itemGroup, 'OFFICE EQUIPMENT');
+  assert.equal(row.requestItem, 'LOCKER 1000');
+  assert.equal(row.itemType, 'Asset');
+  assert.equal(row.requiredBy, '2026-09-08');
+  assert.equal(row.survey, false);
+  assert.equal(row.checklist, 'No');
+  assert.equal(row.unitOfMeasure, 'Piece');
+  assert.equal(row.reason, 'Inventory Request Reason 1');
+  assert.equal(row.quantity, 1);
+});
+test('Existing Guest Visit preview data receives the Inventory approval queue once', () => {
+  const { store, data } = openStore();
+  const guest = store.list().find(item => item.kind === 'guest-visit');
+  data.set(key, JSON.stringify([guest]));
+  assert.deepEqual(plain(store.getPending().map(item => item.kind)), ['guest-visit', 'inventory-request']);
+  assert.equal(store.list().filter(item => item.kind === 'inventory-request').length, 1);
+});
+test('Existing Inventory preview data is upgraded without losing its approval decision', () => {
+  const { store, data } = openStore();
+  const guest = store.list().find(item => item.kind === 'guest-visit');
+  const inventory = store.list().find(item => item.kind === 'inventory-request');
+  const legacy = {
+    ...inventory,
+    reference: 'INV0000000000001',
+    requestItem: 'IT Accessories',
+    quantity: 2,
+    reason: 'Replacement',
+    requiredBy: '2026-10-16',
+    status: 'approved',
+    approverComments: 'Keep this approval decision'
+  };
+  for (const field of ['position', 'department', 'itemGroup', 'itemType', 'survey', 'checklist', 'unitOfMeasure']) delete legacy[field];
+  data.set(key, JSON.stringify([guest, legacy]));
+  const upgraded = store.list().find(item => item.kind === 'inventory-request');
+  assert.equal(upgraded.reference, 'IRQ0000000000064');
+  assert.equal(upgraded.requestItem, 'LOCKER 1000');
+  assert.equal(upgraded.position, 'GROUP HR MANAGER');
+  assert.equal(upgraded.department, 'HUMAN RESOURCE');
+  assert.equal(upgraded.unitOfMeasure, 'Piece');
+  assert.equal(upgraded.status, 'approved');
+  assert.equal(upgraded.approverComments, 'Keep this approval decision');
 });
 test('Approve preserves submitted visit data and stores only the decision and approver comments', () => {
   const { store } = openStore();
-  const [row] = store.getPending();
+  const row = store.getPending().find(item => item.kind === 'guest-visit');
   store.act([row.id], 'approve', { changes: validChanges, comments: 'Approved for team visit' });
-  assert.equal(store.getPending().length, 0);
-  const saved = store.list()[0];
+  assert.equal(store.getPending().filter(item => item.kind === 'guest-visit').length, 0);
+  const saved = store.list().find(item => item.id === row.id);
   assert.equal(saved.status, 'approved');
   assert.equal(saved.reference, row.reference);
   assert.equal(saved.submitDate, row.submitDate);
@@ -43,27 +95,31 @@ test('Approve preserves submitted visit data and stores only the decision and ap
   }
   assert.equal(saved.approverComments, 'Approved for team visit');
   assert.equal(saved.audit.at(-1).action, 'approve');
-  assert.equal(store.getPending().length, 0, 'Decided requests cannot reseed');
+  assert.equal(store.getPending().filter(item => item.kind === 'guest-visit').length, 0, 'Decided requests cannot reseed');
 });
 test('Submitted requests can be approved without editing missing source fields', () => {
   const { store } = openStore();
-  store.act([store.getPending()[0].id], 'approve');
-  assert.equal(store.list()[0].status, 'approved');
-  assert.equal(store.list()[0].location, '');
+  const row = store.getPending().find(item => item.kind === 'guest-visit');
+  store.act([row.id], 'approve');
+  assert.equal(store.list().find(item => item.id === row.id).status, 'approved');
+  assert.equal(store.list().find(item => item.id === row.id).location, '');
 });
 test('Resubmit and Reject work without completing missing approval fields and persist decisions', () => {
   for (const [action, status] of [['resubmit', 'resubmit'], ['reject', 'rejected']]) {
     const { store } = openStore();
-    store.act([store.getPending()[0].id], action, { comments: '<script>review</script>' });
-    assert.equal(store.list()[0].status, status);
-    assert.equal(store.list()[0].approverComments, '<script>review</script>');
-    assert.equal(store.getPending().length, 0);
+    const row = store.getPending().find(item => item.kind === 'guest-visit');
+    store.act([row.id], action, { comments: '<script>review</script>' });
+    const saved = store.list().find(item => item.id === row.id);
+    assert.equal(saved.status, status);
+    assert.equal(saved.approverComments, '<script>review</script>');
+    assert.equal(store.getPending().filter(item => item.kind === 'guest-visit').length, 0);
   }
 });
 test('Unknown or stale requests and failed bulk writes cannot partially decide requests', () => {
   const { store, data, localStorage } = openStore();
-  const [row] = store.getPending();
-  data.set(key, JSON.stringify([row, { ...row, id: 'second', reference: 'FGV-SECOND' }]));
+  const row = store.getPending().find(item => item.kind === 'guest-visit');
+  const inventory = store.getPending().find(item => item.kind === 'inventory-request');
+  data.set(key, JSON.stringify([row, { ...row, id: 'second', reference: 'FGV-SECOND' }, inventory]));
   assert.throws(() => store.act([row.id, 'missing'], 'reject'), /request/i);
   assert.throws(() => store.act([], 'reject'), /request/i);
   assert.throws(() => store.act([row.id], 'other'), /action/i);
@@ -74,6 +130,17 @@ test('Unknown or stale requests and failed bulk writes cannot partially decide r
   assert.equal(data.get(key), before);
   localStorage.setItem = write;
   store.act([row.id, 'second'], 'reject');
-  assert.equal(store.getPending().length, 0);
+  assert.equal(store.getPending().filter(item => item.kind === 'guest-visit').length, 0);
   assert.throws(() => store.act([row.id], 'approve', { changes: validChanges }), /request/i);
+});
+test('Inventory decisions preserve the submitted request details', () => {
+  const { store } = openStore();
+  const row = store.getPending().find(item => item.kind === 'inventory-request');
+  store.act([row.id], 'approve', { comments: 'Approved replacement equipment' });
+  const saved = store.list().find(item => item.id === row.id);
+  for (const field of ['quantity', 'requestItem', 'reason', 'requiredBy', 'remarks', 'attachments']) {
+    assert.deepEqual(plain(saved[field]), plain(row[field]), `${field} remains the submitted value`);
+  }
+  assert.equal(saved.status, 'approved');
+  assert.equal(saved.approverComments, 'Approved replacement equipment');
 });

@@ -55,7 +55,7 @@ const assert = require('node:assert/strict');
         assert.equal(card.badgeRadius, '10px');
         assert.ok(card.badgeIcon);
         assert.ok(card.id.startsWith('#') && card.idBelowName);
-        assert.deepEqual(card.rows, ['Department', 'Cost Centre', 'Branch']);
+        assert.deepEqual(card.rows, ['Department', 'Cost Centre', 'Branch', 'Position']);
         assert.equal(card.overflow, false);
         assert.equal(card.dateBadges, 0);
       }

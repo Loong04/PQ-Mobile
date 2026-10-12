@@ -8,8 +8,7 @@ const root = path.resolve(__dirname, '..');
 const chrome = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const individual = [
   ['Feedback', 'feedback.html'],
-  ['Whereabout', 'whereabout.html'],
-  ['My Event', 'my-event.html']
+  ['Whereabout', 'whereabout.html']
 ];
 const team = [
   ['Confirm New User', 'confirm-new-user.html'],
@@ -21,9 +20,7 @@ const team = [
   ['Staff Attrition', 'staff-attrition.html'],
   ['Staff Retention', 'staff-retention.html'],
   ['Staff Whereabout', 'staff-whereabout.html'],
-  ['Staff Events', 'staff-events.html'],
   ['Staff Feedback', 'staff-feedback.html'],
-  ['Key Staff Nomination', 'key-staff-nomination.html'],
   ['Staff Engagement', 'staff-engagement.html']
 ];
 
@@ -60,7 +57,7 @@ async function open(page, relative, query = '') {
     assert.equal(await page.$eval('#employeeCareerTitle', node => node.textContent.trim()), 'Employee & Career');
     assert.deepEqual(
       await page.$$eval('#employeeCareerOptions .employee-career-option-title', nodes => nodes.map(node => node.textContent.trim())),
-      individual.map(item => item[0])
+      [...individual.map(item => item[0]), 'History']
     );
     assert.equal(await page.$eval('#employeeCareerTabIndividual', node => node.getAttribute('aria-selected')), 'true');
 

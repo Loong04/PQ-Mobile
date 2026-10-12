@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function fillFilter() {
     const f = filters[kind];
-    $('historyFilterTitle').textContent = 'Filter ' + labels[kind] + ' History';
+    $('historyFilterTitle').textContent = 'Filter';
     $('historyDateFrom').value = f.from;
     $('historyDateTo').value = f.to;
     $('historyStatus').value = f.status;

@@ -1273,7 +1273,10 @@
     // Confirm Submission
     function confirmSubmitRequest() {
       if (modifiedFields.size === 0) return;
-      const changes = Array.from(modifiedFields.values()).map(item => ({ label: item.label, oldVal: item.oldVal, newVal: item.newVal }));
+      const changes = Array.from(modifiedFields, ([fieldId, item]) => {
+        const section = fieldId.startsWith('qual_') ? 'qualification' : /^(fam_|family_delete_)/.test(fieldId) ? 'family' : item.element?.closest('.change-form-container')?.id.replace(/^cat-/, '') || 'personal';
+        return { fieldId, section, label: item.label, oldVal: item.oldVal, newVal: item.newVal };
+      });
       const request = { id: 'REQ-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6), submittedAt: new Date().toISOString(), status: 'Pending HR Approval', changes };
       const history = JSON.parse(localStorage.getItem('pq_change_request_history') || '[]');
       history.unshift(request);

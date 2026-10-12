@@ -17,10 +17,17 @@ const puppeteer = require('puppeteer');
       assert.deepEqual(await page.$$eval('main > [data-career-scope="team"], main > .employee-career-quick', nodes => nodes.map(node => node.id)), ['employeeCareerTeamActions', 'employeeCareerQuickOptions', 'employeeCareerHeadcountActions', 'employeeCareerStaffEvents']);
       assert.equal(await page.$eval('#employeeCareerDocumentStatus', node => node.hidden), true);
       assert.equal(await page.$eval('#employeeCareerExpiry', node => node.hidden), true);
+      assert.equal(await page.$$eval('#employeeCareerStaffEvents summary, #employeeCareerStaffEvents .employee-career-expiry-chevron', nodes => nodes.length), 0, 'Staff Events has no collapse control');
+      await page.click('#employeeCareerStaffEvents .employee-career-expiry-header');
+      assert.ok(await page.$eval('#employeeCareerStaffEvents table', node => node.getBoundingClientRect().height > 0), 'Clicking the title keeps staff events visible');
       assert.equal(await page.$$eval('#employeeCareerOptions .employee-career-option', nodes => nodes.length), 6);
       await page.click('[data-action="view-all"]');
       await page.waitForFunction(() => document.activeElement.id === 'employeeCareerCloseAll');
-      assert.equal(await page.$$eval('#employeeCareerAllOptionsGrid .employee-career-option', nodes => nodes.length), 13);
+      assert.equal(await page.$$eval('#employeeCareerAllOptionsGrid .employee-career-option', nodes => nodes.length), 11);
+      assert.equal(
+        await page.$$eval('#employeeCareerAllOptionsGrid .employee-career-option-title', nodes => nodes.some(node => node.textContent.trim() === 'Key Staff Nomination')),
+        false
+      );
       await page.keyboard.press('Escape');
 
       for (const [id, text] of [['employeeCareerActiveHeadcount', 'Active Headcount'], ['employeeCareerVacantPosition', 'Vacant Position']]) {

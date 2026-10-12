@@ -105,8 +105,33 @@ const missingValueStaff = [{
         const name = card.querySelector('.employee-name');
         const id = card.querySelector('.employee-id');
         return name && name.nextElementSibling === id && /^#\S+/.test(id.textContent)
-          && card.textContent.includes('Position') && card.textContent.includes('Department');
+          && card.textContent.includes('Position') && card.textContent.includes('Department')
+          && !card.querySelector('.fa-chevron-right');
       })));
+      const employeeCardVisuals = await page.$eval('#manpowerStaffList .manpower-employee-card', card => {
+        const cardStyle = getComputedStyle(card);
+        const detailsStyle = getComputedStyle(card.querySelector('.manpower-employee-card-details'));
+        return {
+          borderLeft: cardStyle.borderLeft,
+          borderRadius: cardStyle.borderRadius,
+          padding: cardStyle.padding,
+          hasPurpleTint: cardStyle.backgroundImage.includes('rgba(124, 58, 237, 0.06)'),
+          detailsBorder: detailsStyle.border,
+          detailsRadius: detailsStyle.borderRadius,
+          detailsPadding: detailsStyle.padding,
+          detailsHasPurpleTint: detailsStyle.backgroundColor === 'rgba(124, 58, 237, 0.05)'
+        };
+      });
+      assert.deepEqual(employeeCardVisuals, {
+        borderLeft: '5px solid rgb(124, 58, 237)',
+        borderRadius: '20px',
+        padding: '16px 18px',
+        hasPurpleTint: true,
+        detailsBorder: '1px solid rgba(124, 58, 237, 0.18)',
+        detailsRadius: '14px',
+        detailsPadding: '12px',
+        detailsHasPurpleTint: true
+      }, 'Staff records reuse the Leave History card surface and inner details treatment');
       await page.click('#manpowerStaffList .manpower-employee-card[data-emp-no="000031"]');
       assert.ok(await page.$eval('#manpowerEmployeeOverlay', overlay => !overlay.hidden));
       assert.deepEqual(await page.$$eval('#manpowerEmployeeDetails th', cells => cells.map(cell => cell.textContent)), employeeDetailLabels);

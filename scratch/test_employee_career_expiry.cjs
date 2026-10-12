@@ -44,11 +44,9 @@ const puppeteer = require('puppeteer');
       assert.equal(layout.overdueColor, layout.expiryColor, 'Overdue days and dates share warning styling');
       assert.notEqual(layout.overdueColor, layout.normalColor, 'Future membership expiry stays neutral');
 
-      await page.$eval('#employeeCareerExpiry summary', node => node.focus());
-      await page.keyboard.press('Enter');
-      assert.equal(await page.$eval('#employeeCareerExpiry', node => node.open), false);
-      await page.keyboard.press('Enter');
-      assert.equal(await page.$eval('#employeeCareerExpiry', node => node.open), true);
+      assert.equal(await page.$$eval('#employeeCareerExpiry summary, #employeeCareerExpiry .employee-career-expiry-chevron', nodes => nodes.length), 0, 'Expiry has no collapse control');
+      await page.click('#employeeCareerExpiry .employee-career-expiry-header');
+      assert.ok(await page.$eval('#employeeCareerExpiry table', node => node.getBoundingClientRect().height > 0), 'Clicking the title keeps expiry records visible');
       await page.screenshot({ path: path.resolve(__dirname, `employee-career-expiry-${theme}-${width}-overview.png`) });
       await page.$eval('.employee-career-content', node => { node.scrollTop = node.scrollHeight; });
       await page.screenshot({ path: path.resolve(__dirname, `employee-career-expiry-${theme}-${width}.png`) });
@@ -61,7 +59,7 @@ const puppeteer = require('puppeteer');
       await page.goto(`${url}?scope=team&theme=${theme}`, { waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('#employeeCareerExpiry', node => node.hidden), true, 'Direct Team navigation hides expiry records');
       assert.deepEqual(errors, []);
-      console.log(`PASS ${theme} ${width}: expiry records, readable dates, keyboard toggle and Individual scope`);
+      console.log(`PASS ${theme} ${width}: expiry records, readable dates, fixed expanded card and Individual scope`);
       await page.close();
     }
   } finally { await browser.close(); }

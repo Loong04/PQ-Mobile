@@ -60,13 +60,25 @@
       container.append(card);
     });
     $('staffWhereaboutEmpty').hidden = rows.length > 0;
-    $('staffWhereaboutTotal').textContent = `${rows.length} ${rows.length === 1 ? 'record' : 'records'}`;
+    $('staffWhereaboutTotal').textContent = String(rows.length);
+    const currentDate = $('staffWhereaboutCurrentDate');
+    currentDate.dateTime = applied.date;
+    currentDate.textContent = new Date(applied.date + 'T12:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    $('staffWhereaboutDate').value = applied.date;
     const summary = [];
     if (applied.keyword) summary.push(`Search: ${applied.keyword}`);
     if (applied.branch) summary.push(applied.branch);
     if (applied.department) summary.push(applied.department);
     if (applied.whereabout) summary.push(applied.whereabout);
     $('staffWhereaboutFilterSummary').textContent = summary.join(' · ') || 'All Employees';
+  }
+
+  function changeDate(offset) {
+    const [year, month, day] = applied.date.split('-').map(Number);
+    const nextDate = new Date(Date.UTC(year, month - 1, day + offset)).toISOString().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) return;
+    applied.date = nextDate;
+    render();
   }
 
   function validateDate() {
@@ -122,7 +134,6 @@
       const cell = element('td', 'detail-popout-value');
       if (label === 'Name') {
         cell.append(element('strong', 'staff-whereabout-detail-name', value || '-'));
-        if (row.empNo) cell.append(element('span', 'staff-whereabout-detail-id', '#' + row.empNo));
       } else cell.textContent = value || '-';
       field.append(heading, cell);
       body.append(field);
@@ -148,6 +159,8 @@
       });
     });
     $('staffWhereaboutFilterTrigger').addEventListener('click', openFilter);
+    $('staffWhereaboutPreviousDate').addEventListener('click', () => changeDate(-1));
+    $('staffWhereaboutNextDate').addEventListener('click', () => changeDate(1));
     ['staffWhereaboutCloseFilter', 'staffWhereaboutCloseDetails'].forEach(id => $(id).addEventListener('click', close));
     $('staffWhereaboutResetFilter').addEventListener('click', () => { fillFilter(defaults); apply(); });
     $('staffWhereaboutFilterForm').addEventListener('submit', event => { event.preventDefault(); apply(); });

@@ -1,16 +1,29 @@
-/* Guest Visit approvals for the local Workplace preview. */
+/* Workplace approvals for the local Team preview. */
 (() => {
   const key = 'peoplehcm:workplace:pending-approval:v1';
   const statuses = ['submitted', 'approved', 'resubmit', 'rejected', 'cancelled'];
-  const initial = () => [{
-    id: 'guest-visit-0013', reference: 'FGV0000000000013', kind: 'guest-visit',
-    employeeName: 'Farhan binti rahmat', empNo: 'EBB12', status: 'submitted',
-    submitDate: '2024-08-16', requestDate: '2024-08-16', visitDate: '2026-10-08',
-    startTime: '00:00', endTime: '00:00', totalGuest: 0, location: '', meal: false,
-    guests: [], attendees: [{ empNo: '000001', name: 'Ram chhabila', department: 'ACCOUNTS', position: 'ACCOUNT EXECUTIVE' }],
-    otherRequests: [], attachments: [], approverComments: '',
-    audit: [{ action: 'submitted', at: '2024-08-16', comments: '' }]
-  }];
+  const initial = () => [
+    {
+      id: 'guest-visit-0013', reference: 'FGV0000000000013', kind: 'guest-visit',
+      employeeName: 'Farhan binti rahmat', empNo: 'EBB12', status: 'submitted',
+      submitDate: '2024-08-16', requestDate: '2024-08-16', visitDate: '2026-10-08',
+      startTime: '00:00', endTime: '00:00', totalGuest: 0, location: '', meal: false,
+      guests: [], attendees: [{ empNo: '000001', name: 'Ram chhabila', department: 'ACCOUNTS', position: 'ACCOUNT EXECUTIVE' }],
+      otherRequests: [], attachments: [], approverComments: '',
+      audit: [{ action: 'submitted', at: '2024-08-16', comments: '' }]
+    },
+    {
+      id: 'inventory-request-0001', reference: 'IRQ0000000000064', kind: 'inventory-request',
+      employeeName: 'Farhan binti rahmat', empNo: 'EBB12', status: 'submitted',
+      position: 'GROUP HR MANAGER', department: 'HUMAN RESOURCE',
+      submitDate: '2026-09-08', requestDate: '2026-09-08', requiredBy: '2026-09-08',
+      itemGroup: 'OFFICE EQUIPMENT', requestItem: 'LOCKER 1000', itemType: 'Asset',
+      survey: false, checklist: 'No', unitOfMeasure: 'Piece',
+      quantity: 1, reason: 'Inventory Request Reason 1', remarks: '',
+      guests: [], attendees: [], otherRequests: [], attachments: [], approverComments: '',
+      audit: [{ action: 'submitted', at: '2026-09-08', comments: '' }]
+    }
+  ];
   function list() {
     const raw = localStorage.getItem(key);
     if (raw === null) {
@@ -20,12 +33,33 @@
     }
     const rows = JSON.parse(raw);
     if (!Array.isArray(rows) || rows.some(row => !row || typeof row.id !== 'string'
-      || typeof row.reference !== 'string' || typeof row.employeeName !== 'string' || typeof row.empNo !== 'string'
+      || typeof row.reference !== 'string' || !['guest-visit', 'inventory-request'].includes(row.kind)
+      || typeof row.employeeName !== 'string' || typeof row.empNo !== 'string'
       || !statuses.includes(row.status) || !Array.isArray(row.guests) || !Array.isArray(row.attendees)
       || !Array.isArray(row.otherRequests) || !Array.isArray(row.attachments) || !Array.isArray(row.audit))) {
       throw new Error('Invalid Workplace approval data.');
     }
     if (new Set(rows.map(row => row.id)).size !== rows.length) throw new Error('Duplicate Workplace approval requests.');
+    const inventorySeed = initial().find(row => row.kind === 'inventory-request');
+    const inventoryIndex = rows.findIndex(row => row.id === inventorySeed.id);
+    if (inventoryIndex < 0 && !rows.some(row => row.kind === 'inventory-request') && rows.some(row => row.id === 'guest-visit-0013')) {
+      rows.push(inventorySeed);
+      localStorage.setItem(key, JSON.stringify(rows));
+    } else if (inventoryIndex >= 0) {
+      const existing = rows[inventoryIndex];
+      const upgraded = {
+        ...existing,
+        ...inventorySeed,
+        status: existing.status,
+        attachments: existing.attachments,
+        approverComments: existing.approverComments,
+        audit: existing.audit
+      };
+      if (JSON.stringify(existing) !== JSON.stringify(upgraded)) {
+        rows[inventoryIndex] = upgraded;
+        localStorage.setItem(key, JSON.stringify(rows));
+      }
+    }
     return rows;
   }
   function act(ids, action, options = {}) {

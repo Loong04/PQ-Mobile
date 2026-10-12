@@ -3,6 +3,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const store = window.WorkplacePendingStore;
   const selected = new Set();
   const actions = [['approve', 'Approve', 'fa-check'], ['resubmit', 'Resubmit', 'fa-rotate-left'], ['reject', 'Reject', 'fa-xmark']];
+  const tabConfig = {
+    'guest-visit': {
+      kind: 'guest-visit',
+      requestName: 'Guest Visit Request',
+      detailsTitle: 'Guest Visit Request Approval',
+      emptyText: 'Guest Visit requests awaiting review will appear here.'
+    },
+    inventory: {
+      kind: 'inventory-request',
+      requestName: 'Inventory Request',
+      detailsTitle: 'Inventory Request Approval',
+      emptyText: 'Inventory requests awaiting review will appear here.'
+    }
+  };
+  const requestedTab = new URLSearchParams(window.location.search).get('tab');
+  let activeTab = tabConfig[requestedTab] ? requestedTab : 'guest-visit';
   let visible = [];
   let filter;
   let currentId;
@@ -61,6 +77,26 @@ document.addEventListener('DOMContentLoaded', () => {
     $('workplacePendingSelectedCount').textContent = selected.size;
     document.querySelector('.phone-container').classList.toggle('has-selection', selected.size > 0);
   }
+  function updateTabs() {
+    document.querySelectorAll('[data-workplace-tab]').forEach(tab => {
+      const active = tab.dataset.workplaceTab === activeTab;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    $('workplacePendingQueue').setAttribute('aria-labelledby', 'workplacePendingTab-' + activeTab);
+  }
+  function setActiveTab(tab, focus = false) {
+    if (!tabConfig[tab] || tab === activeTab) return;
+    activeTab = tab;
+    selected.clear();
+    const url = new URL(window.location.href);
+    if (tab === 'guest-visit') url.searchParams.delete('tab');
+    else url.searchParams.set('tab', tab);
+    window.history.replaceState({}, '', url);
+    render();
+    if (focus) document.querySelector(`[data-workplace-tab="${tab}"]`).focus();
+  }
   function renderCard(item) {
     const card = node('article', 'approval-request-card');
     card.dataset.itemId = item.id;
@@ -89,7 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
     statusRow.append(status, submitted);
     const reference = node('p', 'workplace-approval-reference', 'Ref: ' + item.reference);
     const facts = node('div', 'payroll-approval-facts');
-    facts.append(fieldGrid([['Visit Date', date(item.visitDate)], ['Visit Time', `${item.startTime} – ${item.endTime}`], ['Total Guest', String(item.totalGuest)]]));
+    const rows = item.kind === 'inventory-request'
+      ? [['Quantity', String(item.quantity)], ['Request Item', item.requestItem], ['Reason', item.reason]]
+      : [['Visit Date', date(item.visitDate)], ['Visit Time', `${item.startTime} – ${item.endTime}`], ['Total Guest', String(item.totalGuest)]];
+    facts.append(fieldGrid(rows));
     review.append(statusRow, reference, facts);
     review.addEventListener('click', () => openDetails(item.id, review));
     review.addEventListener('keydown', event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); openDetails(item.id, review); } });
@@ -99,13 +138,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function render() {
     try {
-      visible = store.getPending().filter(item => filter.matches({ keyword: `${item.employeeName} ${item.empNo} ${item.reference} Guest Visit Request`, startDate: item.submitDate, endDate: item.submitDate, submittedAt: item.submitDate }));
+      const config = tabConfig[activeTab];
+      const pending = store.getPending().filter(item => item.kind === config.kind);
+      visible = pending.filter(item => filter.matches({
+        keyword: `${item.employeeName} ${item.empNo} ${item.reference} ${config.requestName} ${item.requestItem || ''} ${item.reason || ''}`,
+        startDate: item.submitDate,
+        endDate: item.submitDate,
+        submittedAt: item.submitDate
+      }));
       const ids = new Set(visible.map(row => row.id));
       [...selected].forEach(id => { if (!ids.has(id)) selected.delete(id); });
       $('workplacePendingQueue').replaceChildren(...visible.map(renderCard));
       $('workplacePendingCount').textContent = visible.length;
       $('workplacePendingEmpty').hidden = visible.length > 0;
-      $('workplacePendingEmptyText').textContent = store.getPending().length ? 'Try another filter.' : 'Guest Visit requests awaiting review will appear here.';
+      $('workplacePendingEmptyText').textContent = pending.length ? 'Try another filter.' : config.emptyText;
       $('workplacePendingSelectAll').disabled = visible.length === 0;
       message('workplacePendingError', '');
     } catch {
@@ -117,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
       $('workplacePendingSelectAll').disabled = true;
       message('workplacePendingError', 'Unable to load pending approvals. Please try again.');
     }
+    updateTabs();
     updateSelection();
   }
   function closeSheet(restore = true) {
@@ -161,35 +208,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const item = store.getPending().find(row => row.id === id);
     if (!item) return;
     currentId = id;
+    const config = item.kind === 'inventory-request' ? tabConfig.inventory : tabConfig['guest-visit'];
+    $('workplaceApprovalDetailsTitle').textContent = config.detailsTitle;
     const general = $('approvalPanel-general');
-    sectionTitle(general, 'General');
-    table(general, [
-      ['Document Reference', node('span', 'workplace-approval-document-ref', item.reference)], ['Document Status', 'Submitted'],
-      ['Submit Date', date(item.submitDate)], ['Visit Date', date(item.visitDate)],
-      ['Visit Time', `${item.startTime} – ${item.endTime}`], ['Total Guest', item.totalGuest],
-      ['Location', item.location], ['Meal?', item.meal ? 'Yes' : 'No']
-    ]);
-    if (item.attachments.length) table(general, [['Attachment', item.attachments.join(', ')]]);
+    const guests = $('approvalPanel-guest');
+    const attendees = $('approvalPanel-attendee');
+    const other = $('approvalPanel-other');
+    general.hidden = false;
+    if (item.kind === 'inventory-request') {
+      [guests, attendees, other].forEach(section => {
+        section.hidden = true;
+        section.replaceChildren();
+      });
+      sectionTitle(general, 'Request Details');
+      table(general, [
+        ['Document Reference #', node('span', 'workplace-approval-document-ref', item.reference)],
+        ['Employee #', '#' + item.empNo.replace(/^#+/, '')],
+        ['Name', item.employeeName],
+        ['Position', item.position],
+        ['Department', item.department],
+        ['Document Status', 'Submitted'],
+        ['Submit Date', date(item.submitDate)],
+        ['Item Group', item.itemGroup],
+        ['Item', item.requestItem],
+        ['Item Type', item.itemType],
+        ['Required By', date(item.requiredBy)],
+        ['Survey', item.survey ? 'Yes' : 'No'],
+        ['Checklist', item.checklist],
+        ['Unit of Measure', item.unitOfMeasure],
+        ['Reason', item.reason],
+        ['Quantity', item.quantity],
+        ['Remarks', item.remarks],
+        ['Attachment', item.attachments.length ? item.attachments.join(', ') : 'None']
+      ]);
+    } else {
+      [guests, attendees, other].forEach(section => { section.hidden = false; });
+      sectionTitle(general, 'General');
+      table(general, [
+        ['Document Reference', node('span', 'workplace-approval-document-ref', item.reference)], ['Document Status', 'Submitted'],
+        ['Submit Date', date(item.submitDate)], ['Visit Date', date(item.visitDate)],
+        ['Visit Time', `${item.startTime} – ${item.endTime}`], ['Total Guest', item.totalGuest],
+        ['Location', item.location], ['Meal?', item.meal ? 'Yes' : 'No']
+      ]);
+      sectionTitle(guests, 'Guest');
+      item.guests.forEach(guest => table(guests, [['Company', guest.company], ['Relation', guest.relation], ['Name', guest.name], ['Position', guest.position]]));
+      sectionTitle(attendees, 'Attendee');
+      item.attendees.forEach(attendee => {
+        table(attendees, [['Employee', identity(attendee.name, attendee.empNo)], ['Department', attendee.department], ['Position', attendee.position]]);
+      });
+      sectionTitle(other, 'Other');
+      const requests = [['Floor Visit', 'floor-visit'], ['Sitting Arrangement', 'sitting-arrangement'], ['Multiple Rooms', 'multiple-rooms']].map(([text, value]) => [text, item.otherRequests.includes(value) ? 'Yes' : 'No']);
+      requests.push(['None', item.otherRequests.length === 0 ? 'Yes' : 'No']);
+      table(other, requests);
+    }
+    if (item.kind !== 'inventory-request' && item.attachments.length) table(general, [['Attachment', item.attachments.join(', ')]]);
+    const inventoryComment = item.kind === 'inventory-request';
     const commentLabel = node('label', 'workplace-approval-comment-label', 'Approver Action Comments');
     commentLabel.htmlFor = 'approvalComments';
-    const comments = node('textarea', 'payroll-approval-comments');
+    const comments = node(inventoryComment ? 'input' : 'textarea', inventoryComment ? 'payroll-approval-comments workplace-approval-comment-input' : 'payroll-approval-comments');
+    if (inventoryComment) {
+      comments.type = 'text';
+      comments.placeholder = 'Add approver action comments (optional)...';
+    }
     comments.id = 'approvalComments';
     comments.maxLength = 2000;
     comments.value = item.approverComments;
     $('workplaceApprovalComments').replaceChildren(commentLabel, comments);
-    const guests = $('approvalPanel-guest');
-    sectionTitle(guests, 'Guest');
-    item.guests.forEach(guest => table(guests, [['Company', guest.company], ['Relation', guest.relation], ['Name', guest.name], ['Position', guest.position]]));
-    const attendees = $('approvalPanel-attendee');
-    sectionTitle(attendees, 'Attendee');
-    item.attendees.forEach(attendee => {
-      table(attendees, [['Employee', identity(attendee.name, attendee.empNo)], ['Department', attendee.department], ['Position', attendee.position]]);
-    });
-    const other = $('approvalPanel-other');
-    sectionTitle(other, 'Other');
-    const requests = [['Floor Visit', 'floor-visit'], ['Sitting Arrangement', 'sitting-arrangement'], ['Multiple Rooms', 'multiple-rooms']].map(([text, value]) => [text, item.otherRequests.includes(value) ? 'Yes' : 'No']);
-    requests.push(['None', item.otherRequests.length === 0 ? 'Yes' : 'No']);
-    table(other, requests);
     $('workplaceApprovalDetailActions').replaceChildren(...actionButtons(true).children);
     message('workplaceApprovalDetailFeedback', '');
     openSheet('workplaceApprovalDetails', trigger);
@@ -202,7 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const request = node('section', 'payroll-approval-workflow-request');
     const employee = identity(item.employeeName, item.empNo);
     employee.classList.add('payroll-approval-workflow-person');
-    request.append(node('p', 'workplace-approval-reference', item.reference), employee, fieldGrid([['Request', 'Guest Visit Request'], ['Submit Date', date(item.submitDate)]]));
+    const config = item.kind === 'inventory-request' ? tabConfig.inventory : tabConfig['guest-visit'];
+    request.append(node('p', 'workplace-approval-reference', item.reference), employee, fieldGrid([['Request', config.requestName], ['Submit Date', date(item.submitDate)]]));
     const steps = node('section', 'payroll-approval-workflow-step is-active');
     steps.append(node('h3', '', 'Approval Steps'), node('p', 'workplace-approval-notice', 'Submitted'), node('strong', '', 'Awaiting Approval'));
     const audit = node('section', 'payroll-approval-workflow-audit');
@@ -236,6 +321,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   filter = window.PendingApprovalFilter.create('workplacePendingFilter', { summaryId: 'workplacePendingFilterSummary', onApply: render });
+  const tabs = [...document.querySelectorAll('[data-workplace-tab]')];
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => setActiveTab(tab.dataset.workplaceTab));
+    tab.addEventListener('keydown', event => {
+      let nextIndex;
+      if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      setActiveTab(tabs[nextIndex].dataset.workplaceTab, true);
+    });
+  });
   $('workplacePendingFilterTrigger').addEventListener('click', filter.open);
   $('workplacePendingSelectAll').addEventListener('change', event => { visible.forEach(row => { if (event.target.checked) selected.add(row.id); else selected.delete(row.id); }); render(); });
   $('workplacePendingBulk').querySelector('[data-approval-bulk]').append(...actionButtons().children);
