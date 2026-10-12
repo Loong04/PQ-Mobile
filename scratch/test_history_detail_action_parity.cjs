@@ -1,10 +1,12 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const puppeteer = require('puppeteer');
 
 const root = path.resolve(__dirname, '..');
 const requested = (process.argv.find(arg => arg.startsWith('--only=')) || '').split('=')[1] || '';
+const screenshotsRequested = process.argv.includes('--screenshots');
 
 async function actionLabels(page, selector) {
   return page.$$eval(`${selector} .history-detail-action:not([data-history-detail-aux])`, nodes => nodes.map(node => node.textContent.trim()));
@@ -409,6 +411,167 @@ async function runProject(browser) {
   await page.close();
 }
 
+async function runNoActions(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 900 });
+
+  await page.goto(pathToFileURL(path.join(root, 'modules/employee-career/options/history.html')).href + '?category=feedback&theme=dark', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('[data-record-id="feedback-1"]');
+  assert.equal(await page.$$eval('[data-record-id="feedback-1"] :is(.history-card-actions, [data-history-action], .history-detail-action)', nodes => nodes.length), 0);
+  await page.$eval('[data-record-id="feedback-1"]', node => node.click());
+  await page.waitForSelector('#historyDetailsModal[aria-hidden="false"]');
+  assert.equal(await page.$('#historyDetailsModal .history-detail-actions'), null);
+  assert.equal(await page.$$eval('#historyDetailsModal .history-detail-action', nodes => nodes.length), 0);
+
+  await page.goto(pathToFileURL(path.join(root, 'leave.html')).href + '?theme=dark', { waitUntil: 'networkidle0' });
+  await page.evaluate(() => {
+    showLeaveSection('viewMyLeaveHistory');
+    switchHistoryTab('offtime');
+  });
+  const timeOffCard = '#myHistoryCardsList [data-ref="OT-2026-0008"]';
+  await page.waitForSelector(timeOffCard);
+  assert.equal(await page.$$eval(`${timeOffCard} button`, nodes => nodes.length), 0);
+  await page.$eval(timeOffCard, node => node.click());
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('historyDetailsModalOverlay')).display === 'flex');
+  assert.equal(await page.$eval('#historyDetailsActions', node => node.hidden), true);
+  assert.equal(await page.$$eval('#historyDetailsActions .history-detail-action', nodes => nodes.length), 0);
+
+  await page.goto(pathToFileURL(path.join(root, 'modules/attendance/options/history.html')).href + '?theme=dark', { waitUntil: 'networkidle0' });
+  const clockingCard = '#viewClockingHistory .history-card-item:first-of-type';
+  assert.equal(
+    await page.$$eval(`${clockingCard} :is(.history-card-actions, button, [data-history-action], [data-attendance-history-action])`, nodes => nodes.length),
+    0
+  );
+  await page.$eval(clockingCard, node => node.click());
+  assert.deepEqual(await actionLabels(page, '#clockDetailsModal .history-detail-actions'), ['Cancel']);
+  assert.equal(
+    await page.$$eval('#clockDetailsModal [data-history-action], #clockDetailsModal [data-attendance-history-action]', nodes => nodes.length),
+    0,
+    'Action-free Clocking records keep only their existing detail dismiss control'
+  );
+
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
+async function captureVisualEvidence(browser) {
+  const outputDir = path.join(root, 'scratch', 'history-detail-action-parity');
+  fs.mkdirSync(outputDir, { recursive: true });
+  const cases = [
+    {
+      name: 'workplace-letter',
+      url: 'modules/admin/options/history.html',
+      actionSelector: '#historyDetailActions',
+      open: async page => {
+        await page.evaluate(() => {
+          localStorage.setItem('peoplehcm:workplace:history:v1', JSON.stringify([{
+            id: 'visual-letter-approved', kind: 'letter-request', title: 'Employment Letter', date: '2026-10-11', status: 'approved', createdAt: '2026-10-12T02:00:00.000Z',
+            fields: [['Reference #', 'DRQ-VISUAL-1'], ['Request Date', '2026-10-11'], ['Type', 'Employment Letter'], ['Status', 'Approved']]
+          }]));
+          localStorage.setItem('peoplehcm:workplace:history:samples:v1', '1');
+          localStorage.setItem('peoplehcm:workplace:history:cancelled-to-submitted:v1', '1');
+        });
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await page.$eval('[data-history-kind=letter-request]', node => node.click());
+        await page.$eval('[data-record-id=visual-letter-approved] .history-card-main', node => node.click());
+        await page.waitForSelector('#historyDetailsModal[aria-hidden="false"]');
+      }
+    },
+    {
+      name: 'leave-draft',
+      url: 'leave.html',
+      actionSelector: '#historyDetailsActions',
+      open: async page => {
+        await page.evaluate(() => {
+          showLeaveSection('viewMyLeaveHistory');
+          switchHistoryTab('leave');
+          const ref = document.querySelector('#myHistoryCardsList [data-status=draft]').dataset.ref;
+          openHistoryDetailsModal(ref);
+        });
+        await page.waitForFunction(() => getComputedStyle(document.getElementById('historyDetailsModalOverlay')).display === 'flex');
+      }
+    },
+    {
+      name: 'attendance-feedback',
+      url: 'modules/attendance/options/feedback-history.html',
+      actionSelector: '#attendanceDetailsActions',
+      open: async page => {
+        await page.$eval('.pending-feedback-record:first-of-type .pending-feedback-details-trigger', node => node.click());
+        await page.waitForFunction(() => !document.getElementById('attendanceDetailsModalOverlay').hidden);
+      }
+    },
+    {
+      name: 'payroll-draft',
+      url: 'modules/payroll/options/history.html',
+      actionSelector: '#historyDetailActions',
+      open: async page => {
+        await page.waitForSelector('[data-history-kind=deduction]');
+        await page.$eval('[data-history-kind=deduction]', node => node.click());
+        await page.waitForSelector('[data-reference=PDR000000000004]');
+        await page.$eval('[data-reference=PDR000000000004] .history-card-main', node => node.click());
+        await page.waitForSelector('#historyDetailsModal[aria-hidden="false"]');
+      }
+    },
+    {
+      name: 'claims-draft',
+      url: 'modules/claims/options/history.html',
+      actionSelector: '#claimDetailsModalContainer .history-detail-actions',
+      open: async page => {
+        await page.evaluate(() => switchClaimTab('benefit'));
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await page.$$eval('#claimHistoryListContainer .history-card-item', nodes => nodes.find(node => node.dataset.status === 'draft').click());
+        await page.waitForFunction(() => document.getElementById('detailsModalOverlay').classList.contains('active'));
+      }
+    },
+    {
+      name: 'project-draft',
+      url: 'modules/project-task/options/history.html',
+      actionSelector: '#projectHistoryDetailActions',
+      open: async page => {
+        await page.waitForFunction(() => document.documentElement.dataset.projectHistoryReady === 'true');
+        await page.$eval('#workPlanHistoryList [data-record-id="WP-2026-0039"]', node => node.click());
+        await page.waitForSelector('#projectHistoryDetailOverlay.is-open');
+      }
+    }
+  ];
+
+  for (const theme of ['light', 'dark']) {
+    for (const width of [360, 420]) {
+      for (const visualCase of cases) {
+        const page = await browser.newPage();
+        const errors = [];
+        page.on('pageerror', error => errors.push(error.message));
+        await page.setViewport({ width, height: 900 });
+        const url = pathToFileURL(path.join(root, visualCase.url)).href + '?theme=' + theme;
+        await page.goto(url, { waitUntil: 'domcontentloaded' });
+        await visualCase.open(page);
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 180)));
+        assert.deepEqual(errors, [], `${visualCase.name} ${theme} ${width}px page errors`);
+        await assertPurpleActions(page, visualCase.actionSelector);
+        const footerLayout = await page.$eval(visualCase.actionSelector, footer => {
+          const rect = footer.getBoundingClientRect();
+          const visibleButtons = [...footer.querySelectorAll('.history-detail-action')]
+            .filter(button => button.getClientRects().length);
+          return {
+            hidden: footer.hidden,
+            buttonCount: visibleButtons.length,
+            left: rect.left,
+            right: rect.right,
+            viewportWidth: document.documentElement.clientWidth
+          };
+        });
+        assert.equal(footerLayout.hidden, false, `${visualCase.name} footer must be visible`);
+        assert.ok(footerLayout.buttonCount > 0, `${visualCase.name} footer must not be empty`);
+        assert.ok(footerLayout.left >= -1 && footerLayout.right <= footerLayout.viewportWidth + 1, `${visualCase.name} footer must not clip at ${width}px`);
+        await page.screenshot({ path: path.join(outputDir, `${visualCase.name}-${theme}-${width}.png`) });
+        await page.close();
+      }
+    }
+  }
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -424,7 +587,9 @@ async function main() {
     if (!requested || requested === 'claims') await runClaims(browser);
     if (!requested || requested === 'payroll') await runPayroll(browser);
     if (!requested || requested === 'project') await runProject(browser);
-    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback', 'claims', 'payroll', 'project'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'no-actions') await runNoActions(browser);
+    if (screenshotsRequested) await captureVisualEvidence(browser);
+    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback', 'claims', 'payroll', 'project', 'no-actions'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }

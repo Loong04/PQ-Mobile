@@ -57,7 +57,7 @@ const cardCancelSources = [
   ['modules/claims/options/history.html', /history-cancel-btn[^>]*>[\s\S]*?Cancel/i],
   ['modules/admin/js/workplace-history-ui.js', /history-cancel-btn[\s\S]{0,200}Cancel/i],
   ['js/payroll/payroll-history.js', /history-card-action-danger[^>]*>[\s\S]*?Cancel/i],
-  ['js/project-task/project-task-history.js', /createCardAction\('Cancel',\s*'danger'/i],
+  ['js/project-task/project-task-history.js', /getProjectHistoryActions[\s\S]{0,700}\{ key: 'discard', label: 'Cancel', variant: 'danger' \}/i],
   ['leave.html', /cancelHistoryItem\('\$\{item\.ref\}',\s*'cancelled'\)[\s\S]{0,400}Cancel/i]
 ];
 
