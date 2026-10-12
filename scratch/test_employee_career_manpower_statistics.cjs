@@ -19,6 +19,10 @@ const statisticsLabels = [
   'Average Monthly OT Hours', 'Average Training Cost',
   'Average Performance Score', 'Annual Attrition %'
 ];
+const employeeDetailLabels = [
+  'Employee #', 'Name', 'Position', 'Superior', 'Job', 'Company', 'Branch',
+  'Base', 'Division', 'Department', 'Section', 'Cost Center', 'Line', 'Service Years'
+];
 const controlledAggregate = [
   { company: 'Alpha', branch: 'HQ', department: 'Finance', jobType: 'ACCOUNT EXECUTIVE', headcount: 2, effectiveFrom: '2026-01-01' }
 ];
@@ -94,6 +98,23 @@ const controlledStaff = [
         return name && name.nextElementSibling === id && /^#\S+/.test(id.textContent)
           && card.textContent.includes('Position') && card.textContent.includes('Department');
       })));
+      await page.click('#manpowerStaffList .manpower-employee-card[data-emp-no="000031"]');
+      assert.ok(await page.$eval('#manpowerEmployeeOverlay', overlay => !overlay.hidden));
+      assert.deepEqual(await page.$$eval('#manpowerEmployeeDetails th', cells => cells.map(cell => cell.textContent)), employeeDetailLabels);
+      const employeeDetails = await page.$$eval('#manpowerEmployeeDetails tr', rows => Object.fromEntries(rows.map(row => [
+        row.querySelector('th').textContent,
+        row.querySelector('td').textContent
+      ])));
+      assert.equal(employeeDetails['Employee #'], '#000031');
+      assert.equal(employeeDetails.Name, 'Navin');
+      assert.equal(employeeDetails.Position, 'ACCOUNT EXECUTIVE');
+      assert.equal(employeeDetails.Job, 'ACCOUNT EXECUTIVE');
+      assert.match(employeeDetails['Service Years'], /^\d+\.\d{2}$/);
+      assert.equal(await page.$eval('#manpowerEmployeeAvatar', avatar => avatar.textContent), 'N');
+      assert.equal(await page.$('#manpowerEmployeeOverlay img'), null);
+      await page.keyboard.press('Escape');
+      assert.ok(await page.$eval('#manpowerEmployeeOverlay', overlay => overlay.hidden));
+      assert.equal(await page.evaluate(() => document.activeElement?.dataset.empNo), '000031');
       await page.click('#manpowerBack');
       assert.ok(await page.$eval('#manpowerTableView', section => !section.hidden));
       assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'View 48 staff records for ACCOUNT EXECUTIVE');

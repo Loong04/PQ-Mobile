@@ -261,6 +261,7 @@
       const chevron = node('i', 'fa-solid fa-chevron-right');
       chevron.setAttribute('aria-hidden', 'true');
       card.append(content, chevron);
+      card.addEventListener('click', () => openEmployeeDetails(employee.empNo, card));
       list.append(card);
     });
     $('manpowerStaffTotalRecords').textContent = staff.length;
@@ -271,6 +272,72 @@
     state.staffTrigger = trigger;
     renderStaffRecords(getGroupStaff(state.filters.summaryBy, label));
     showView('staff');
+  }
+  function employeeInitials(name) {
+    return String(name || '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part[0].toUpperCase())
+      .join('') || '?';
+  }
+  function openEmployeeDetails(empNo, trigger) {
+    const employee = getGroupStaff(state.filters.summaryBy, state.selectedGroupLabel)
+      .find(record => String(record.empNo) === String(empNo));
+    if (!employee) return;
+    const value = entry => entry === undefined || entry === null || entry === '' ? '—' : String(entry);
+    const details = [
+      ['Employee #', normalizeEmployeeId(employee.empNo)],
+      ['Name', value(employee.name)],
+      ['Position', value(employee.position)],
+      ['Superior', value(employee.superior)],
+      ['Job', value(employee.job)],
+      ['Company', value(employee.company)],
+      ['Branch', value(employee.branch)],
+      ['Base', value(employee.base)],
+      ['Division', value(employee.division)],
+      ['Department', value(employee.department)],
+      ['Section', value(employee.section)],
+      ['Cost Center', value(employee.costCenter)],
+      ['Line', value(employee.line)],
+      ['Service Years', formatNumber(yearsBetween(employee.hireDate, state.filters.effectiveDate))]
+    ];
+    const body = $('manpowerEmployeeDetails').tBodies[0];
+    body.replaceChildren();
+    details.forEach(([field, detail]) => {
+      const row = node('tr');
+      const heading = node('th', '', field);
+      heading.scope = 'row';
+      row.append(heading, node('td', '', detail));
+      body.append(row);
+    });
+    const portrait = $('manpowerEmployeePortrait');
+    portrait.replaceChildren();
+    if (employee.photo) {
+      const image = node('img');
+      image.src = employee.photo;
+      image.alt = `${employee.name} portrait`;
+      image.addEventListener('error', () => {
+        portrait.replaceChildren(node('span', 'manpower-employee-avatar', employeeInitials(employee.name)));
+        portrait.firstElementChild.id = 'manpowerEmployeeAvatar';
+        portrait.firstElementChild.setAttribute('aria-hidden', 'true');
+      }, { once: true });
+      portrait.append(image);
+    } else {
+      const avatar = node('span', 'manpower-employee-avatar', employeeInitials(employee.name));
+      avatar.id = 'manpowerEmployeeAvatar';
+      avatar.setAttribute('aria-hidden', 'true');
+      portrait.append(avatar);
+    }
+    const overlay = $('manpowerEmployeeOverlay');
+    state.activeOverlay = overlay;
+    state.detailTrigger = trigger;
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('is-open');
+    setPageInert(true);
+    $('manpowerEmployeeClose').focus({ preventScroll: true });
   }
   function showView(view) {
     const main = document.querySelector('main');
@@ -346,6 +413,11 @@
     if (event.target === event.currentTarget) closeDetailOverlay();
   });
   $('manpowerStatisticsOverlay').addEventListener('keydown', event => trapOverlayFocus(event, $('manpowerStatisticsOverlay')));
+  $('manpowerEmployeeClose').addEventListener('click', () => closeDetailOverlay());
+  $('manpowerEmployeeOverlay').addEventListener('click', event => {
+    if (event.target === event.currentTarget) closeDetailOverlay();
+  });
+  $('manpowerEmployeeOverlay').addEventListener('keydown', event => trapOverlayFocus(event, $('manpowerEmployeeOverlay')));
   $('manpowerViewChart').addEventListener('click', () => {
     renderChart();
     showView('chart');
