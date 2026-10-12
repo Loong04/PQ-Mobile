@@ -27,6 +27,7 @@
   let kind = new URLSearchParams(location.search).get('category') === 'deduction' ? 'deduction' : 'tax';
   let currentModal = null, opener = null;
   let attachmentUrls = [];
+  let activeDetail = null;
   const typeKey = record => kind === 'tax' ? (record.rebateCode || record.rebateItem) : record.deductionType;
   const typeLabel = record => kind === 'tax' ? [record.rebateCode, record.rebateItem].filter(Boolean).join(' - ') : record.deductionType;
   const reference = record => record.localDraft ? 'Saved draft' : (record.reference ?? record.id);
@@ -35,26 +36,63 @@
   const deductionDate = record => record.deductionDate || record.stopDate || '';
   const recordDate = record => record.submitDate || record.savedDate || record.transactionDate || '';
   const row = (label, value, markup = false) => `<tr><th scope="row">${escape(label)}</th><td>${markup ? value : escape(value === '' || value == null ? '—' : value)}</td></tr>`;
-  const cardActions = record => {
+  const getHistoryActions = record => {
     if (record.status === 'draft') {
-      return `<div class="history-card-actions" aria-label="Draft actions"><button type="button" class="history-card-action history-card-action-primary" data-history-action="submit">Submit</button><button type="button" class="history-card-action history-card-action-danger" data-history-action="discard">Cancel</button></div>`;
+      return [
+        { key: 'submit', label: 'Submit', className: 'history-card-action-primary' },
+        { key: 'discard', label: 'Cancel', className: 'history-card-action-danger' }
+      ];
     }
     if (record.status === 'submitted') {
-      return `<div class="history-card-actions" aria-label="Submitted actions"><button type="button" class="history-card-action history-card-action-danger" data-history-action="cancel">Cancel</button></div>`;
+      return [{ key: 'cancel', label: 'Cancel', className: 'history-card-action-danger' }];
     }
-    return '';
+    return [];
+  };
+  const renderCardActions = record => {
+    const actions = getHistoryActions(record);
+    if (!actions.length) return '';
+    return `<div class="history-card-actions" aria-label="${record.status === 'draft' ? 'Draft' : 'Submitted'} actions">${actions.map(action => `<button type="button" class="history-card-action ${action.className}" data-history-action="${action.key}">${action.label}</button>`).join('')}</div>`;
   };
 
   function selectCardAction(event) {
     event.stopPropagation();
     const action = event.currentTarget.dataset.historyAction;
-    const referenceId = event.currentTarget.closest('.history-card-item')?.dataset.reference;
-    const index = records[kind].findIndex(record => record.id === referenceId);
-    if (index < 0) return;
-    if (action === 'discard') records[kind].splice(index, 1);
-    else records[kind][index].status = action === 'submit' ? 'submitted' : 'cancelled';
+    const card = event.currentTarget.closest('.history-card-item');
+    executeHistoryAction(card?.dataset.kind || kind, card?.dataset.reference, action, 'card');
+  }
+
+  function releaseAttachmentUrls() {
+    attachmentUrls.forEach(url => URL.revokeObjectURL(url));
+    attachmentUrls = [];
+  }
+
+  function executeHistoryAction(recordKind, recordId, action, source = 'card') {
+    const list = records[recordKind] || [];
+    const index = list.findIndex(record => record.id === recordId);
+    if (index < 0) {
+      if (source === 'detail' && currentModal?.id === 'historyDetailsModal') closeModal();
+      render();
+      window.showToast?.('Request is no longer available');
+      return;
+    }
+    const openSameRecord = activeDetail?.kind === recordKind && activeDetail?.id === recordId;
+    if (action === 'discard') {
+      if (openSameRecord && currentModal?.id === 'historyDetailsModal') closeModal();
+      list.splice(index, 1);
+      render();
+      window.showToast?.('Draft discarded');
+      return;
+    }
+    list[index].status = action === 'submit' ? 'submitted' : 'cancelled';
     render();
-    window.showToast?.(action === 'discard' ? 'Draft discarded' : action === 'submit' ? 'Request submitted' : 'Request cancelled');
+    if (source === 'detail' && openSameRecord) {
+      renderDetail(list[index], recordKind);
+      $('historyDetailActions').querySelector('.history-detail-action:not([data-history-detail-aux])')?.focus({ preventScroll: true });
+    } else {
+      const card = [...document.querySelectorAll('.history-card-item')].find(node => node.dataset.reference === recordId);
+      card?.querySelector('.history-card-main')?.focus({ preventScroll: true });
+    }
+    window.showToast?.(action === 'submit' ? 'Request submitted' : 'Request cancelled');
   }
 
   function showModal(modal, button) {
@@ -68,13 +106,14 @@
 
   function closeModal() {
     if (!currentModal) return;
+    const closingDetails = currentModal.id === 'historyDetailsModal';
     currentModal.classList.remove('is-open');
     currentModal.setAttribute('aria-hidden', 'true');
     currentModal = null;
+    if (closingDetails) activeDetail = null;
     document.querySelectorAll('.payroll-history-phone > [inert]').forEach(node => { node.inert = false; });
     opener?.focus();
-    attachmentUrls.forEach(url => URL.revokeObjectURL(url));
-    attachmentUrls = [];
+    releaseAttachmentUrls();
   }
 
   function render() {
@@ -116,13 +155,14 @@
       card.className = 'history-card-item';
       card.dataset.reference = record.id;
       card.dataset.status = record.status;
+      card.dataset.kind = kind;
       const fields = kind === 'tax'
         ? [['Transaction Date', date(record.transactionDate)], ['Amount', money(record.amount)], ['Process (Period/Cycle)', [record.period, record.cycle].filter(Boolean).join(' / ') || '—']]
         : [['Period', deductionPeriod(record)], ['Submit Date', date(record.submitDate || record.savedDate)], ['Cycle', deductionCycle(record)], ['Amount', money(record.amount)]];
       const referenceLine = kind === 'tax'
         ? `<div class="history-card-ref">${record.localDraft ? 'Saved draft' : `Ref: ${escape(reference(record))}`}</div>`
         : '';
-      card.innerHTML = `<div class="history-card-main" role="button" tabindex="0" aria-haspopup="dialog" aria-label="View ${escape(typeLabel(record))} details"><div class="history-card-header"><div class="history-card-heading"><div class="history-card-title-row"><h3 class="history-card-title">${escape(typeLabel(record))}</h3></div>${referenceLine}</div><span class="status-pill ${escape(record.status)}"><i class="fa-solid ${statusIcons[record.status] || 'fa-circle'}" aria-hidden="true"></i>${escape(statuses[record.status] || record.status)}</span></div><div class="history-card-details">${fields.map(([label, value]) => `<div class="history-card-row"><span>${escape(label)}</span><strong class="${label === 'Amount' ? 'history-card-amount' : ''}">${escape(value || '—')}</strong></div>`).join('')}</div>${record.localDraft ? `<p class="history-draft-note">Saved on this device · ${escape(date(record.savedDate))}</p>` : ''}</div>${cardActions(record)}`;
+      card.innerHTML = `<div class="history-card-main" role="button" tabindex="0" aria-haspopup="dialog" aria-label="View ${escape(typeLabel(record))} details"><div class="history-card-header"><div class="history-card-heading"><div class="history-card-title-row"><h3 class="history-card-title">${escape(typeLabel(record))}</h3></div>${referenceLine}</div><span class="status-pill ${escape(record.status)}"><i class="fa-solid ${statusIcons[record.status] || 'fa-circle'}" aria-hidden="true"></i>${escape(statuses[record.status] || record.status)}</span></div><div class="history-card-details">${fields.map(([label, value]) => `<div class="history-card-row"><span>${escape(label)}</span><strong class="${label === 'Amount' ? 'history-card-amount' : ''}">${escape(value || '—')}</strong></div>`).join('')}</div>${record.localDraft ? `<p class="history-draft-note">Saved on this device · ${escape(date(record.savedDate))}</p>` : ''}</div>${renderCardActions(record)}`;
       const main = card.querySelector('.history-card-main');
       main.addEventListener('click', () => openDetails(record));
       main.addEventListener('keydown', event => {
@@ -136,7 +176,34 @@
     $('payrollHistoryList').setAttribute('aria-busy', 'false');
   }
 
-  function openDetails(record) {
+  function renderDetailActions(record, recordKind) {
+    const footer = $('historyDetailActions');
+    footer.replaceChildren();
+    getHistoryActions(record).forEach(action => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'history-detail-action';
+      button.dataset.historyAction = action.key;
+      button.textContent = action.label;
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        executeHistoryAction(recordKind, record.id, action.key, 'detail');
+      });
+      footer.append(button);
+    });
+    if (record.localDraft) {
+      const edit = document.createElement('a');
+      edit.className = 'history-detail-action';
+      edit.dataset.historyDetailAux = '';
+      edit.href = categories[recordKind].file;
+      edit.innerHTML = 'Continue editing <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+      footer.append(edit);
+    }
+    footer.hidden = !footer.childElementCount;
+  }
+
+  function renderDetail(record, recordKind) {
+    releaseAttachmentUrls();
     const employeeName = `<span class="history-employee-name">${escape(record.employeeName || '—')}</span>`;
     const employeeId = `<span class="history-employee-id">${record.empNo ? `#${escape(String(record.empNo).replace(/^#/, ''))}` : '—'}</span>`;
     const attachments = (record.attachments || []).map(attachment => {
@@ -155,7 +222,7 @@
       row('Status', statuses[record.status]),
       row('Submit Date', date(record.submitDate || record.savedDate))
     ];
-    if (kind === 'tax') {
+    if (recordKind === 'tax') {
       body.push(
         row('Rebate Item', record.rebateItem),
         row('Transaction Date', date(record.transactionDate)),
@@ -181,9 +248,15 @@
         row('Attachments', attachments, true)
       );
     }
-    $('historyDetailTitle').textContent = categories[kind].detail;
-    $('historyDetailBody').innerHTML = `<table class="history-detail-table"><tbody>${body.join('')}</tbody></table>${record.localDraft ? `<a class="history-edit-draft" href="${categories[kind].file}">Continue editing <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>` : ''}`;
+    $('historyDetailTitle').textContent = categories[recordKind].detail;
+    $('historyDetailBody').innerHTML = `<table class="history-detail-table"><tbody>${body.join('')}</tbody></table>`;
     $('historyDetailBody').scrollTop = 0;
+    renderDetailActions(record, recordKind);
+  }
+
+  function openDetails(record) {
+    activeDetail = { kind, id: record.id };
+    renderDetail(record, kind);
     showModal($('historyDetailsModal'), $('closeHistoryDetails'));
   }
 

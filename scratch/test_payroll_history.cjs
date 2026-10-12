@@ -79,6 +79,7 @@ async function run() {
       assert.ok(detail.includes(expected), `Details must preserve ${expected}`);
     }
     const taxRows = await page.$$eval('#historyDetailBody tr', rows => Object.fromEntries(rows.map(row => [row.querySelector('th').textContent.trim(), row.querySelector('td').textContent.replace(/\s+/g, ' ').trim()])));
+    assert.deepEqual(await page.$$eval('#historyDetailActions [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Cancel']);
     assert.equal(taxRows['Emp #'], '#EBB12');
     assert.equal(taxRows.Name, 'Farhan binti rahmat');
     assert.equal(taxRows['Rebate Item'], 'BASIC SUPPORTING EQUIPMENT');
@@ -148,6 +149,7 @@ async function run() {
     assert.equal(submitPresentation.background, 'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%)', 'Submit must use the exact Claim History purple');
     assert.ok(submitPresentation.boxShadow.includes('rgba(124, 58, 237, 0.4)') && submitPresentation.color === 'rgb(255, 255, 255)', 'Submit must use the Claim History purple glow');
     await page.click('[data-reference="PDR000000000004"] .history-card-main');
+    assert.deepEqual(await page.$$eval('#historyDetailActions [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Submit', 'Cancel']);
     const deductionRows = await page.$$eval('#historyDetailBody tr', rows => Object.fromEntries(rows.map(row => [row.querySelector('th').textContent.trim(), row.querySelector('td').textContent.replace(/\s+/g, ' ').trim()])));
     assert.deepEqual(Object.keys(deductionRows), ['Reference #', 'Emp #', 'Name', 'Status', 'Submit Date', 'Request Type', 'Deduction Type', 'Period', 'Cycle', 'Deduction Date', 'Account No', 'Amount', 'Attachments']);
     assert.equal(deductionRows['Reference #'], 'PDR000000000004');
@@ -196,6 +198,8 @@ async function run() {
     assert.deepEqual(draftActions, ['Submit', 'Cancel'], 'Draft history cards must expose Submit and Cancel actions');
     await page.click('[data-reference="EBB01:deduction"] .history-card-main');
     const savedDetail = await page.$eval('#historyDetailBody', node => node.textContent);
+    assert.deepEqual(await page.$$eval('#historyDetailActions [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Submit', 'Cancel']);
+    assert.equal(await page.$eval('#historyDetailActions [data-history-detail-aux]', node => node.textContent.trim()), 'Continue editing');
     for (const expected of ['Sarah Jenkins', '#EBB01', 'Stop Deduction', '202610', '1 Oct 2026', 'MONTH END', '001235', 'deduction.txt']) assert.ok(savedDetail.includes(expected));
     assert.equal(savedDetail.includes('Please stop the housing loan deduction.'), false, 'Deduction details must only show fields supplied by the history schema');
     assert.equal(await page.$eval('.history-attachment', async link => (await fetch(link.href)).text()), 'Payroll deduction attachment', 'Saved attachments must retain their actual file contents');

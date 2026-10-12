@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const requested = (process.argv.find(arg => arg.startsWith('--only=')) || '').split('=')[1] || '';
 
 async function actionLabels(page, selector) {
-  return page.$$eval(`${selector} .history-detail-action`, nodes => nodes.map(node => node.textContent.trim()));
+  return page.$$eval(`${selector} .history-detail-action:not([data-history-detail-aux])`, nodes => nodes.map(node => node.textContent.trim()));
 }
 
 async function assertPurpleActions(page, selector) {
@@ -299,6 +299,44 @@ async function runClaims(browser) {
   await page.close();
 }
 
+async function runPayroll(browser) {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewport({ width: 390, height: 844 });
+  const url = pathToFileURL(path.join(root, 'modules/payroll/options/history.html')).href;
+  await page.goto(url + '?theme=dark', { waitUntil: 'networkidle0' });
+  await page.waitForSelector('[data-reference=RBT000000000039]');
+  assert.deepEqual(await page.$$eval('[data-reference=RBT000000000039] [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Cancel']);
+  await page.$eval('[data-reference=RBT000000000039] .history-card-main', node => node.click());
+  assert.deepEqual(await actionLabels(page, '#historyDetailActions'), ['Cancel']);
+  await assertPurpleActions(page, '#historyDetailActions');
+  await page.$eval('#historyDetailActions [data-history-action=cancel]', node => node.click());
+  await page.waitForFunction(() => document.querySelector('[data-reference=RBT000000000039]')?.dataset.status === 'cancelled');
+  assert.equal(await page.$eval('#historyDetailsModal', node => node.getAttribute('aria-hidden')), 'false');
+  assert.equal(await page.$eval('#historyDetailActions', node => node.hidden), true);
+  await page.keyboard.press('Escape');
+
+  await page.$eval('[data-history-kind=deduction]', node => node.click());
+  await page.waitForSelector('[data-reference=PDR000000000004]');
+  assert.deepEqual(await page.$$eval('[data-reference=PDR000000000004] [data-history-action]', nodes => nodes.map(node => node.textContent.trim())), ['Submit', 'Cancel']);
+  await page.$eval('[data-reference=PDR000000000004] .history-card-main', node => node.click());
+  assert.deepEqual(await actionLabels(page, '#historyDetailActions'), ['Submit', 'Cancel']);
+  await page.$eval('#historyDetailActions [data-history-action=submit]', node => node.click());
+  await page.waitForFunction(() => document.querySelector('[data-reference=PDR000000000004]')?.dataset.status === 'submitted');
+  assert.deepEqual(await actionLabels(page, '#historyDetailActions'), ['Cancel']);
+  assert.match(await page.$eval('#historyDetailBody', node => node.textContent), /Submitted/);
+
+  await page.reload({ waitUntil: 'networkidle0' });
+  await page.waitForSelector('[data-reference=PDR000000000004]');
+  await page.$eval('[data-reference=PDR000000000004] .history-card-main', node => node.click());
+  await page.$eval('#historyDetailActions [data-history-action=discard]', node => node.click());
+  await page.waitForFunction(() => !document.querySelector('[data-reference=PDR000000000004]'));
+  assert.equal(await page.$eval('#historyDetailsModal', node => node.getAttribute('aria-hidden')), 'true');
+  assert.deepEqual(errors, []);
+  await page.close();
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -312,7 +350,8 @@ async function main() {
     if (!requested || requested === 'attendance-history') await runAttendanceHistory(browser);
     if (!requested || requested === 'attendance-feedback') await runAttendanceFeedback(browser);
     if (!requested || requested === 'claims') await runClaims(browser);
-    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback', 'claims'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
+    if (!requested || requested === 'payroll') await runPayroll(browser);
+    if (requested && !['style', 'workplace', 'leave', 'attendance-history', 'attendance-feedback', 'claims', 'payroll'].includes(requested)) throw new Error(`Parity case not implemented yet: ${requested}`);
   } finally {
     await browser.close();
   }
