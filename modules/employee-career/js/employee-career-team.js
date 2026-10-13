@@ -99,7 +99,12 @@
       url.searchParams.set('theme', document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
       location.href = url.href;
     });
-    $('employeeCareerVacantPosition').addEventListener('click', () => showToast('Vacant Position is coming soon.'));
+    $('employeeCareerVacantPositionTotal').textContent = String(window.EMPLOYEE_CAREER_VACANT_POSITION?.total || 0);
+    $('employeeCareerVacantPosition').addEventListener('click', () => {
+      const url = new URL('options/team/vacant-position.html', location.href);
+      url.searchParams.set('theme', document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+      location.href = url.href;
+    });
     const pending = (window.EMPLOYEE_CAREER_PENDING_DATA || []).filter(item => !item.status || item.status === 'pending').length;
     $('employeeCareerPendingCount').textContent = String(pending);
     $('employeeCareerTeamTaskCount').textContent = `${pending} ${pending === 1 ? 'Task' : 'Tasks'}`;

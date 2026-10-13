@@ -22,6 +22,6 @@ window.EMPLOYEE_CAREER_OPTIONS = {
     { id: 'vacancy-summary', title: 'Vacancy Summary', icon: 'fa-briefcase', tone: 'amber', href: 'options/team/vacancy-summary.html' },
     { id: 'organization-statistics', title: 'Organization Statistics', icon: 'fa-chart-pie', tone: 'cyan', href: 'options/team/organization-statistics.html' },
     { id: 'org-chart', title: 'Org Chart', icon: 'fa-sitemap', tone: 'blue', href: 'options/team/org-chart.html' },
-    { id: 'team-history', title: 'History', icon: 'fa-clock-rotate-left', tone: 'amber' }
+    { id: 'team-history', title: 'History', icon: 'fa-clock-rotate-left', tone: 'amber', href: 'options/team/history.html' }
   ]
 };

@@ -84,11 +84,11 @@ async function open(page, relative, query = '') {
     assert.deepEqual(
       await page.$eval('#employeeCareerAllOptionsGrid [data-option-id="team-history"]', node => ({
         tagName: node.tagName,
-        disabled: node.disabled,
+        disabled: node.disabled || false,
         href: node.getAttribute('href')
       })),
-      { tagName: 'BUTTON', disabled: true, href: null },
-      'Team History is a future option and must not open the existing Individual History page'
+      { tagName: 'A', disabled: false, href: 'options/team/history.html?theme=light' },
+      'Team History opens its dedicated Team History page'
     );
     await page.keyboard.down('Shift');
     await page.keyboard.press('Tab');

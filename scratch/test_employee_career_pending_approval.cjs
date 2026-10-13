@@ -226,6 +226,7 @@ const url = file => pathToFileURL(path.resolve(__dirname, '..', file)).href;
         { title: 'Deleted Family Member', rows: [['No deleted family members']] },
         { title: 'Existing Family Member', rows: [['ABU KARUDDIN BIN MAHMUD', 'HUSBAND'], ['a', 'DAUGHTER']] }
       ]);
+      await page.screenshot({ path: path.resolve(__dirname, `employee-career-pending-family-${theme}-${width}.png`) });
       assert.equal(await page.$eval('#careerPendingComments', n => n.getAttribute('aria-label')), 'Approver Remarks');
       assert.equal(await page.$eval('#careerPendingComments', n => n.getClientRects().length > 0), true, 'Approver Remarks appear in the final Family tab');
       assert.deepEqual(await page.$$eval('#careerPendingDetailsActions [data-career-approval-action]', n => n.map(x => x.textContent.trim())), ['Approve', 'Backup', 'Resubmit', 'Reject']);

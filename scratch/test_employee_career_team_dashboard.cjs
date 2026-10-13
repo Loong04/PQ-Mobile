@@ -23,7 +23,7 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$$eval('#employeeCareerOptions .employee-career-option', nodes => nodes.length), 6);
       await page.click('[data-action="view-all"]');
       await page.waitForFunction(() => document.activeElement.id === 'employeeCareerCloseAll');
-      assert.equal(await page.$$eval('#employeeCareerAllOptionsGrid .employee-career-option', nodes => nodes.length), 11);
+      assert.equal(await page.$$eval('#employeeCareerAllOptionsGrid .employee-career-option', nodes => nodes.length), 17);
       assert.equal(
         await page.$$eval('#employeeCareerAllOptionsGrid .employee-career-option-title', nodes => nodes.some(node => node.textContent.trim() === 'Key Staff Nomination')),
         false
@@ -37,10 +37,12 @@ const puppeteer = require('puppeteer');
       assert.equal(new URL(page.url()).searchParams.get('theme'), theme, 'Active Headcount preserves the selected theme');
       await page.goBack({ waitUntil: 'domcontentloaded' });
 
-      const beforeVacant = page.url();
+      const vacantNavigation = page.waitForNavigation({ waitUntil: 'domcontentloaded' });
       await page.click('#employeeCareerVacantPosition');
-      assert.equal(page.url(), beforeVacant, 'Vacant Position displays a toast without navigation');
-      assert.ok(await page.$eval('#appToast', node => node.classList.contains('show') && node.textContent.includes('Vacant Position')));
+      await vacantNavigation;
+      assert.ok(page.url().includes('/vacant-position.html'), 'Vacant Position opens its chart page');
+      assert.equal(new URL(page.url()).searchParams.get('theme'), theme);
+      await page.goBack({ waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('#employeeCareerActiveHeadcountTotal', node => node.textContent.trim()), '281');
       assert.deepEqual(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.map(node => [node.cells[0].textContent.trim(), Number(node.cells[1].textContent)])), [
         ['Active', 281], ['Birthday', 44], ['Confirmation Due', 3], ['Retirement Due', 1], ['Medical Check', 6], ['Confirmation Past Due', 237], ['Retirement Past Due', 80], ['Contract Expiry Past Due', 29]
@@ -48,7 +50,7 @@ const puppeteer = require('puppeteer');
       assert.ok(await page.$$eval('[data-career-event-chart]', nodes => nodes.every(node => node.querySelector('.fa-chart-pie') && node.textContent.trim() === 'View Chart' && getComputedStyle(node).whiteSpace === 'nowrap')));
       assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth));
       assert.ok(await page.$$eval('#employeeCareerStaffEventRows td', nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)), 'Event names, counts and buttons must fit');
-      await page.waitForFunction(() => getComputedStyle(document.querySelector('#employeeCareerAllOptions')).visibility === 'hidden' && getComputedStyle(document.querySelector('#appToast')).opacity === '0');
+      await page.waitForFunction(() => getComputedStyle(document.querySelector('#employeeCareerAllOptions')).visibility === 'hidden');
       await page.screenshot({ path: path.resolve(__dirname, `employee-career-team-dashboard-${theme}-${width}-overview.png`) });
       await page.$eval('main', node => { node.scrollTop = node.scrollHeight; });
       await page.screenshot({ path: path.resolve(__dirname, `employee-career-team-dashboard-${theme}-${width}-events.png`) });

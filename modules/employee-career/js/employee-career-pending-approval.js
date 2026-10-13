@@ -153,10 +153,12 @@
       const remarksRow = [...body.querySelectorAll('.cv-history-request-summary .cv-history-detail-row')]
         .find(row => row.querySelector('dt')?.textContent.trim() === 'Approver Remarks');
       remarksRow?.remove();
-      const remarks = node('section', 'career-pending-remarks');
+      const remarks = node('section', 'career-pending-remarks approval-comments-card');
       const label = node('label', '', 'Approver Remarks');
       label.htmlFor = 'careerPendingComments';
-      remarks.append(label, node('p', '', 'Optional notes will be kept with your approval decision.'), remarksControl(item));
+      const comments = remarksControl(item);
+      comments.placeholder = 'Add approver action comments (optional)...';
+      remarks.append(label, comments);
       body.querySelector('#cv-panel-family').append(remarks);
     } else {
       const table = node('table', 'payroll-approval-table');
