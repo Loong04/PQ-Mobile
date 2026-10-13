@@ -1,6 +1,6 @@
 (() => {
   const $ = id => document.getElementById(id);
-  const actions = [['approve', 'Approve', 'fa-check'], ['backup', 'Backup', 'fa-shield-halved'], ['resubmit', 'Resubmit', 'fa-rotate-left'], ['reject', 'Reject', 'fa-xmark']];
+  const actions = [['approve', 'Approve'], ['backup', 'Backup'], ['resubmit', 'Resubmit'], ['reject', 'Reject']];
   const records = (window.EMPLOYEE_CAREER_PENDING_DATA || []).map(item => ({ ...item, status: item.status || 'pending' }));
   const approvers = window.EMPLOYEE_CAREER_BACKUP_APPROVERS || [];
   const selected = new Set();
@@ -20,6 +20,7 @@
   const icon = name => { const element = node('i', 'fa-solid ' + name); element.setAttribute('aria-hidden', 'true'); return element; };
   const date = value => { const iso = window.PendingApprovalFilter.toISO(value); return iso ? iso.split('-').reverse().join('/') : (value || '—'); };
   const current = () => records.find(item => item.id === currentId);
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
   function identity(name, empNo, position) {
     const element = node('div', 'payroll-employee-copy');
     element.append(node('strong', 'employee-name', name || 'Employee'));
@@ -34,11 +35,12 @@
   }
   function actionButtons() {
     const grid = node('div', 'pending-action-grid');
-    actions.forEach(([action, label, symbol]) => {
+    grid.dataset.actionCount = String(actions.length);
+    actions.forEach(([action, label]) => {
       const button = node('button', 'action-btn-' + action);
       button.type = 'button';
       button.dataset.careerApprovalAction = action;
-      button.append(icon(symbol), node('span', '', label));
+      button.append(node('span', '', label));
       grid.append(button);
     });
     return grid;
@@ -72,17 +74,12 @@
     review.tabIndex = 0;
     review.setAttribute('role', 'button');
     review.setAttribute('aria-label', `View ${item.type || 'request'} details for ${item.employeeName}`);
-    const status = node('div', 'payroll-approval-status-row');
-    const badge = node('span', 'payroll-approval-status');
-    badge.append(icon('fa-hourglass-half'), node('span', '', 'Pending Approval'));
-    status.append(badge, node('span', 'payroll-approval-date', date(item.submitDate)));
     const fields = node('div', 'payroll-approval-field-grid');
-    [['Type', item.type], ['Reference', item.reference || item.id], ...(item.summary || [])].forEach(([label, value]) => fields.append(field(label, value)));
-    review.append(status, fields);
+    [['Submitted Date', date(item.submitDate)], ['Reference #', item.reference || item.id]].forEach(([label, value]) => fields.append(field(label, value)));
+    review.append(fields);
     review.addEventListener('click', () => openDetails(item.id, review));
     review.addEventListener('keydown', event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); openDetails(item.id, review); } });
     body.append(review);
-    if (item.backupApprover) body.append(node('div', 'career-pending-backup-assignment', `Backup Approver: ${item.backupApprover.name}`));
     body.append(actionButtons());
     card.append(header, body);
     return card;
@@ -131,44 +128,64 @@
     sheet.classList.add('active');
     sheet.querySelector('button').focus({ preventScroll: true });
   }
+  function remarksControl(item) {
+    const comments = node('textarea', 'payroll-approval-comments');
+    comments.id = 'careerPendingComments';
+    comments.setAttribute('aria-label', 'Approver Remarks');
+    comments.placeholder = 'Add remarks for this decision';
+    comments.value = item.approverRemarks || '';
+    return comments;
+  }
   function openDetails(id, trigger) {
     currentId = id;
     const item = current();
     if (!item) return;
     $('careerPendingDetailsTitle').textContent = item.approvalTitle || `${item.type || 'Request'} Approval`;
-    const tbody = $('careerPendingDetailsTable').tBodies[0];
-    tbody.replaceChildren();
-    const comments = node('textarea', 'payroll-approval-comments');
-    comments.id = 'careerPendingComments';
-    comments.setAttribute('aria-label', 'Approver Comments');
-    comments.value = item.approverComments || '';
-    comments.addEventListener('input', () => { item.approverComments = comments.value; });
-    const rows = [['Document Reference', item.reference || item.id], ['Document Status', 'Pending Approval'], ['Employee', identity(item.employeeName, item.empNo, item.position)], ['Type', item.type], ['Submit Date', date(item.submitDate)], ...(item.details || [])];
-    if (item.backupApprover) rows.push(['Backup Approver', identity(item.backupApprover.name, item.backupApprover.empNo, item.backupApprover.role)]);
-    if (item.attachments?.length) {
-      const files = node('div', 'payroll-approval-files');
-      item.attachments.forEach(file => {
-        const entry = node('div', 'payroll-approval-file');
-        entry.append(icon('fa-paperclip'));
-        let label = node('span', '', file.name);
-        if (file.url) { const url = new URL(file.url, location.href); if (['https:', 'http:', 'file:'].includes(url.protocol)) { label = node('a', '', file.name); label.href = url.href; label.target = '_blank'; label.rel = 'noopener'; } }
-        entry.append(label);
-        files.append(entry);
+    const body = $('careerPendingDetails').querySelector('.payroll-approval-details-body');
+    body.replaceChildren();
+    if (item.profile && window.EmployeeCareerCVHistoryDetails) {
+      body.innerHTML = window.EmployeeCareerCVHistoryDetails.render(
+        item,
+        escape(item.documentStatus || 'Submitted'),
+        date(item.submitDate),
+        {qualificationLayout: 'cards'}
+      );
+      const remarksRow = [...body.querySelectorAll('.cv-history-request-summary .cv-history-detail-row')]
+        .find(row => row.querySelector('dt')?.textContent.trim() === 'Approver Remarks');
+      remarksRow?.remove();
+      const remarks = node('section', 'career-pending-remarks');
+      const label = node('label', '', 'Approver Remarks');
+      label.htmlFor = 'careerPendingComments';
+      remarks.append(label, node('p', '', 'Optional notes will be kept with your approval decision.'), remarksControl(item));
+      body.querySelector('#cv-panel-family').append(remarks);
+    } else {
+      const table = node('table', 'payroll-approval-table');
+      table.id = 'careerPendingDetailsTable';
+      const tbody = node('tbody');
+      const rows = [
+        ['Document Reference', item.reference || item.id],
+        ['Document Status', item.documentStatus || 'Submitted'],
+        ['Employee', identity(item.employeeName, item.empNo, item.position)],
+        ['Type', item.type],
+        ['Submit Date', date(item.submitDate)],
+        ...(item.details || []),
+        ['Approver Remarks', remarksControl(item)]
+      ];
+      rows.forEach(([label, value]) => {
+        const row = node('tr');
+        const heading = node('th', '', label);
+        heading.scope = 'row';
+        const cell = node('td');
+        cell.append(value instanceof HTMLElement ? value : document.createTextNode(value == null || value === '' ? '—' : String(value)));
+        row.append(heading, cell);
+        tbody.append(row);
       });
-      rows.push(['Attachments', files]);
+      table.append(tbody);
+      body.append(table);
     }
-    rows.push(['Approver Comments', comments]);
-    rows.forEach(([label, value]) => {
-      const row = node('tr');
-      const heading = node('th', '', label);
-      heading.scope = 'row';
-      const cell = node('td');
-      cell.append(value instanceof HTMLElement ? value : document.createTextNode(value == null || value === '' ? '—' : String(value)));
-      row.append(heading, cell);
-      tbody.append(row);
-    });
     $('careerPendingDetailsActions').replaceChildren(actionButtons());
-    $('careerPendingDetails').querySelector('.payroll-approval-details-body').scrollTop = 0;
+    body.scrollTop = 0;
+    body.querySelector('.cv-history-detail-scroll')?.scrollTo(0, 0);
     openSheet('careerPendingDetails', trigger);
   }
   function openWorkflow() {
@@ -216,7 +233,9 @@
   }
   function init() {
     const types = [...new Set([...(window.EMPLOYEE_CAREER_PENDING_CATEGORIES || []), ...records.map(item => item.type).filter(Boolean)])];
-    ['', ...types].forEach((type, index) => {
+    const tabs = [types.find(Boolean) || 'CV Change Request'];
+    category = tabs[0];
+    tabs.forEach((type, index) => {
       const tab = node('button', 'filter-pill', type || 'All Requests');
       tab.type = 'button'; tab.id = 'careerPendingTab-' + index; tab.dataset.careerPendingTab = type;
       tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', 'careerPendingPanel');
@@ -241,15 +260,52 @@
     $('careerPendingBack').addEventListener('click', () => { const url = new URL($('careerPendingBack').href); url.searchParams.set('theme', document.documentElement.dataset.theme); $('careerPendingBack').href = url.href; });
     document.addEventListener('click', event => {
       if (event.target.closest('[data-close-career-sheet]') || event.target === sheet) { closeSheet(); return; }
+      const qualificationCard = event.target.closest('[data-qualification-card-toggle]');
+      if (qualificationCard && window.EmployeeCareerCVHistoryDetails) {
+        window.EmployeeCareerCVHistoryDetails.toggleQualificationCard($('careerPendingDetails').querySelector('.payroll-approval-details-body'), qualificationCard.dataset.qualificationCardToggle);
+        return;
+      }
+      const qualificationTab = event.target.closest('[data-qualification-tab]');
+      if (qualificationTab && window.EmployeeCareerCVHistoryDetails) {
+        window.EmployeeCareerCVHistoryDetails.selectQualificationTab($('careerPendingDetails').querySelector('.payroll-approval-details-body'), qualificationTab.dataset.qualificationTab, true);
+        return;
+      }
+      const cvTab = event.target.closest('[data-cv-tab]');
+      if (cvTab && window.EmployeeCareerCVHistoryDetails) {
+        window.EmployeeCareerCVHistoryDetails.selectTab($('careerPendingDetails').querySelector('.payroll-approval-details-body'), cvTab.dataset.cvTab);
+        return;
+      }
       const backup = event.target.closest('[data-career-backup-index]');
-      if (backup && current()) { const person = approvers[Number(backup.dataset.careerBackupIndex)]; current().backupApprover = { ...person }; closeSheet(); render(); showToast(`Backup Approver updated to ${person.name}.`); return; }
+      if (backup && current()) {
+        const person = approvers[Number(backup.dataset.careerBackupIndex)];
+        if (!person) return;
+        current().backupApprover = { ...person };
+        closeSheet();
+        render();
+        showToast(`Backup Approver updated to ${person.name}.`);
+        return;
+      }
       const button = event.target.closest('[data-career-approval-action]');
-      if (button) { currentId = button.closest('[data-career-request-id]')?.dataset.careerRequestId || currentId; if (button.dataset.careerApprovalAction === 'backup') openBackup(); else decide(button.dataset.careerApprovalAction, [currentId]); }
+      if (button) {
+        currentId = button.closest('[data-career-request-id]')?.dataset.careerRequestId || currentId;
+        if (button.dataset.careerApprovalAction === 'backup') {
+          openBackup();
+          return;
+        }
+        const comments = button.closest('#careerPendingDetails') ? $('careerPendingComments') : null;
+        if (comments && current()) current().approverRemarks = comments.value;
+        decide(button.dataset.careerApprovalAction, [currentId]);
+      }
       const bulk = event.target.closest('[data-career-bulk-action]');
       if (bulk) decide(bulk.dataset.careerBulkAction, [...selected]);
     });
     document.addEventListener('keydown', event => {
       if (!sheet) return;
+      if (event.target.closest('[data-qualification-tab]') && window.EmployeeCareerCVHistoryDetails) {
+        window.EmployeeCareerCVHistoryDetails.qualificationKeydown(event, $('careerPendingDetails').querySelector('.payroll-approval-details-body'));
+      } else if (event.target.closest('[data-cv-tab]') && window.EmployeeCareerCVHistoryDetails) {
+        window.EmployeeCareerCVHistoryDetails.keydown(event, $('careerPendingDetails').querySelector('.payroll-approval-details-body'));
+      }
       if (event.key === 'Escape') { event.preventDefault(); closeSheet(); }
       if (event.key === 'Tab' && sheet) {
         const controls = [...sheet.querySelectorAll('button, input, textarea, a')].filter(element => !element.disabled && element.getClientRects().length);

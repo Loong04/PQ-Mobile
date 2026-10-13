@@ -39,7 +39,7 @@ const ref = number => 'ECR' + String(number).padStart(16, '0');
       assert.deepEqual(await page.$$eval('.history-card-item', nodes => nodes.map(node => node.dataset.recordId)), [ref(100)]);
       await page.click('.history-card-item');
       assert.deepEqual(await page.$$eval('[data-cv-tab]', nodes => nodes.map(node => node.textContent)), ['Personal', 'Qualification', 'Payroll', 'Contacts', 'Family']);
-      assert.equal(await page.$eval('.cv-history-detail-tabs', node => getComputedStyle(node).display), 'grid', 'CV sections use a visible mobile grid');
+      assert.equal(await page.$eval('.cv-history-detail-tabs', node => getComputedStyle(node).display), 'flex', 'CV sections use a horizontal tab bar');
       const expected = {
         personal: ['redo', ref(100), 'SITI NURHALIZA BTE RAHMAN', '22 Apr 1960', '17 Jul 1984', 'A212222048', '25 Mar 2015'],
         qualification: ['Description', 'Other Institute Name', 'CGPA', '0.00', 'Certificate #', 'Year From', 'Year To', 'Highest', 'No', 'Notes'],
@@ -51,11 +51,15 @@ const ref = number => 'ECR' + String(number).padStart(16, '0');
         await page.setViewport({ width, height: 950 });
         assert.ok(await page.$$eval('[data-cv-tab]', nodes => nodes.every(node => {
           const bounds = node.getBoundingClientRect();
-          const panel = node.closest('.history-detail-panel').getBoundingClientRect();
-          return bounds.height >= 44 && bounds.left >= panel.left && bounds.right <= panel.right && bounds.bottom <= panel.bottom;
-        })), 'All five sections have visible touch targets at ' + width);
+          return bounds.height >= 44;
+        })), 'All five sections retain touch targets at ' + width);
         for (const [tab, values] of Object.entries(expected)) {
           await page.click('[data-cv-tab="' + tab + '"]');
+          assert.ok(await page.$eval('[data-cv-tab="' + tab + '"]', node => {
+            const bounds = node.getBoundingClientRect();
+            const bar = node.closest('.cv-history-detail-tabs').getBoundingClientRect();
+            return bounds.left >= bar.left - 1 && bounds.right <= bar.right + 1;
+          }), 'Selected section scrolls into view at ' + width);
           const text = await page.$eval('#cv-panel-' + tab, node => node.textContent);
           for (const value of values) assert.ok(text.includes(value), tab + ': ' + value);
           assert.equal(await page.$eval('#cv-panel-' + tab, node => node.hidden), false);

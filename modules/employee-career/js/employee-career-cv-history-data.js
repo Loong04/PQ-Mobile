@@ -11,12 +11,19 @@ window.EMPLOYEE_CAREER_CV_HISTORY_DATA = window.EMPLOYEE_CAREER_CV_HISTORY_DATA 
       'Driving License': 'Class D', 'Driving License Expiry': '18 Jul 2023',
       'Key Level': 'Management'
     },
-    qualification: {
+    qualification: [{
+      id: 'preview-degree',
       'Qualification': "Bachelor's Degree", 'Description': 'Bachelor of Business Administration',
       'Major': 'Human Resource Management', 'Institute': 'Universiti Malaya',
       'Other Institute Name': '', 'CGPA': '3.62', 'Certificate #': 'DEMO-QUAL-001',
       'Year From': 2003, 'Year To': 2006, 'Highest': 'Yes', 'Notes': 'Graduated with honours.'
-    },
+    }, {
+      id: 'preview-diploma',
+      'Qualification': 'Diploma', 'Description': 'Diploma in Business Studies',
+      'Major': 'Business Administration', 'Institute': 'Kolej Universiti Contoh',
+      'Other Institute Name': '', 'CGPA': '3.45', 'Certificate #': 'DEMO-QUAL-002',
+      'Year From': 2001, 'Year To': 2003, 'Highest': 'No', 'Notes': 'Completed before the degree programme.'
+    }],
     payroll: {
       'EPF #': 'DEMO-EPF-001', 'Socso #': 'DEMO-SOCSO-001', 'Tax #': 'DEMO-TAX-001',
       'Tabung Haji #': '', 'ASB #': '', 'Spouse EPF #': 'DEMO-EPF-002',

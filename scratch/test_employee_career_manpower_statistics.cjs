@@ -104,36 +104,113 @@ const missingValueStaff = [{
       assert.equal(await page.$eval('#manpowerStaffTotalRecords', value => value.textContent), '48');
       assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', cards => cards.length), 48);
       assert.ok(await page.$$eval('#manpowerStaffList .manpower-employee-card', cards => cards.every(card => {
-        const name = card.querySelector('.employee-name');
-        const id = card.querySelector('.employee-id');
-        return name && name.nextElementSibling === id && /^#\S+/.test(id.textContent)
-          && card.textContent.includes('Position') && card.textContent.includes('Department')
+        const header = card.querySelector('.manpower-employee-identity');
+        const details = card.querySelector('.manpower-employee-card-details');
+        const name = header?.querySelector('.employee-name');
+        const id = header?.querySelector('.employee-id');
+        return header && details
+          && name && name.nextElementSibling === id && /^#\S+/.test(id.textContent)
+          && details.textContent.includes('Position') && details.textContent.includes('Department')
           && !card.querySelector('.fa-chevron-right');
-      })));
+      })), 'Every staff card separates its purple identity header from the Position and Department body');
       const employeeCardVisuals = await page.$eval('#manpowerStaffList .manpower-employee-card', card => {
+        const header = card.querySelector('.manpower-employee-identity');
+        const name = header.querySelector('.employee-name');
+        const id = header.querySelector('.employee-id');
+        const details = card.querySelector('.manpower-employee-card-details');
         const cardStyle = getComputedStyle(card);
-        const detailsStyle = getComputedStyle(card.querySelector('.manpower-employee-card-details'));
+        const headerStyle = getComputedStyle(header);
+        const nameStyle = getComputedStyle(name);
+        const idStyle = getComputedStyle(id);
+        const detailsStyle = getComputedStyle(details);
+        const cardRect = card.getBoundingClientRect();
+        const headerRect = header.getBoundingClientRect();
+        const detailsRect = details.getBoundingClientRect();
+        const detailRows = [...details.querySelectorAll('.manpower-employee-card-row')];
+        const rowRects = detailRows.map(row => row.getBoundingClientRect());
+        const rowStyles = detailRows.map(row => getComputedStyle(row));
+        const headerBackground = headerStyle.backgroundImage + ' ' + headerStyle.backgroundColor;
         return {
-          borderLeft: cardStyle.borderLeft,
+          noLeftAccent: cardStyle.borderLeftWidth === cardStyle.borderRightWidth
+            && cardStyle.borderLeftStyle === cardStyle.borderRightStyle
+            && cardStyle.borderLeftColor === cardStyle.borderRightColor,
+          borderLeftWidth: cardStyle.borderLeftWidth,
           borderRadius: cardStyle.borderRadius,
           padding: cardStyle.padding,
-          hasPurpleTint: cardStyle.backgroundImage.includes('rgba(124, 58, 237, 0.06)'),
-          detailsBorder: detailsStyle.border,
-          detailsRadius: detailsStyle.borderRadius,
+          overflow: cardStyle.overflow,
+          noOuterTint: cardStyle.backgroundImage === 'none',
+          headerIsPurple: headerBackground.includes('rgb(109, 40, 217)')
+            && headerBackground.includes('rgb(124, 58, 237)'),
+          headerMatchesCardEdges: Math.abs(headerRect.left - cardRect.left) <= 2
+            && Math.abs(headerRect.right - cardRect.right) <= 2,
+          bodyFollowsHeader: detailsRect.top >= headerRect.bottom,
+          nameIsWhite: nameStyle.color === 'rgb(255, 255, 255)',
+          idIsTranslucentWhite: idStyle.color.startsWith('rgba(255, 255, 255,')
+            || (idStyle.color === 'rgb(255, 255, 255)' && Number(idStyle.opacity) < 1),
+          detailsUseTwoColumns: rowRects.length === 2
+            && Math.abs(rowRects[0].top - rowRects[1].top) <= 1
+            && rowRects[0].right < rowRects[1].left,
+          detailsBorder: detailsStyle.borderWidth,
+          detailsBackground: detailsStyle.backgroundColor,
           detailsPadding: detailsStyle.padding,
-          detailsHasPurpleTint: detailsStyle.backgroundColor === 'rgba(124, 58, 237, 0.05)'
+          detailsMargin: detailsStyle.margin,
+          rowBorders: rowStyles.map(style => style.border),
+          rowRadii: rowStyles.map(style => style.borderRadius),
+          rowPadding: rowStyles.map(style => style.padding),
+          rowBackgrounds: rowStyles.map(style => style.backgroundColor),
+          rowDirections: rowStyles.map(style => style.flexDirection),
+          valuesAlignLeft: detailRows.every(row => getComputedStyle(row.querySelector('strong')).textAlign === 'left')
         };
       });
       assert.deepEqual(employeeCardVisuals, {
-        borderLeft: '5px solid rgb(124, 58, 237)',
-        borderRadius: '20px',
-        padding: '16px 18px',
-        hasPurpleTint: true,
-        detailsBorder: '1px solid rgba(124, 58, 237, 0.18)',
-        detailsRadius: '14px',
-        detailsPadding: '12px',
-        detailsHasPurpleTint: true
-      }, 'Staff records reuse the Leave History card surface and inner details treatment');
+        noLeftAccent: true,
+        borderLeftWidth: '1px',
+        borderRadius: '18px',
+        padding: '0px',
+        overflow: 'hidden',
+        noOuterTint: true,
+        headerIsPurple: true,
+        headerMatchesCardEdges: true,
+        bodyFollowsHeader: true,
+        nameIsWhite: true,
+        idIsTranslucentWhite: true,
+        detailsUseTwoColumns: true,
+        detailsBorder: '0px',
+        detailsBackground: 'rgba(0, 0, 0, 0)',
+        detailsPadding: '12px 14px 14px',
+        detailsMargin: '0px',
+        rowBorders: Array(2).fill(theme === 'dark'
+          ? '1px solid rgba(255, 255, 255, 0.08)'
+          : '1px solid rgb(226, 232, 240)'),
+        rowRadii: Array(2).fill('12px'),
+        rowPadding: Array(2).fill('10px 11px'),
+        rowBackgrounds: Array(2).fill(theme === 'dark' ? 'rgba(30, 27, 65, 0.85)' : 'rgb(248, 250, 252)'),
+        rowDirections: Array(2).fill('column'),
+        valuesAlignLeft: true
+      }, 'Staff records place Position and Department in two individually bordered fields');
+      for (const width of [360, 390, 420]) {
+        await page.setViewport({ width, height: 950 });
+        const staffCardLayout = await page.$eval('#manpowerStaffList', list => {
+          const listRect = list.getBoundingClientRect();
+          const cards = [...list.querySelectorAll('.manpower-employee-card')];
+          const main = document.querySelector('main');
+          return {
+            mainFits: main.scrollWidth <= main.clientWidth + 1,
+            cardsFit: cards.every(card => {
+              const cardRect = card.getBoundingClientRect();
+              const header = card.querySelector('.manpower-employee-identity');
+              const details = card.querySelector('.manpower-employee-card-details');
+              return card.scrollWidth <= card.clientWidth + 1
+                && header.scrollWidth <= header.clientWidth + 1
+                && details.scrollWidth <= details.clientWidth + 1
+                && cardRect.left >= listRect.left - 1
+                && cardRect.right <= listRect.right + 1;
+            })
+          };
+        });
+        assert.deepEqual(staffCardLayout, { mainFits: true, cardsFit: true }, width + 'px staff cards do not overflow horizontally');
+      }
+      await page.setViewport({ width: 390, height: 950 });
       await page.click('#manpowerStaffList .manpower-employee-card[data-emp-no="000031"]');
       assert.ok(await page.$eval('#manpowerEmployeeOverlay', overlay => !overlay.hidden));
       assert.deepEqual(await page.$$eval('#manpowerEmployeeDetails th', cells => cells.map(cell => cell.textContent)), employeeDetailLabels);

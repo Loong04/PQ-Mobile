@@ -64,23 +64,16 @@ async function inspectScenario(browser, theme, width) {
   assert.equal(await page.$eval('meta[name="viewport"]', node => /maximum-scale|user-scalable/i.test(node.content)), false, `${theme}/${width}: viewport must allow browser zoom`);
   assert.equal(await page.$eval('html', node => node.dataset.theme), theme);
   assert.equal(await page.$eval('.employee-career-heading h1', node => node.textContent.trim()), 'New User Details');
-  assert.equal(await page.$$eval('.new-user-stepper-item', nodes => nodes.length), 2, `${theme}/${width}: exactly two tabs are required`);
-  assert.deepEqual(await page.$$eval('.new-user-stepper-item', nodes => nodes.map(node => ({
-    label: node.querySelector('.new-user-stepper-label').textContent.trim(),
-    number: node.querySelector('.new-user-stepper-circle').textContent.trim(),
-    role: node.getAttribute('role'),
-    selected: node.getAttribute('aria-selected'),
-    controls: node.getAttribute('aria-controls')
+  assert.deepEqual(await page.$$eval('.new-user-form-card', cards => cards.map(card => ({
+    title: card.querySelector('h2').textContent.trim(),
+    visible: card.getBoundingClientRect().height > 0 && !card.closest('[hidden]')
   }))), [
-    { label: 'Basic Information', number: '1', role: 'tab', selected: 'true', controls: 'newUserBasicPanel' },
-    { label: 'Contact', number: '2', role: 'tab', selected: 'false', controls: 'newUserContactPanel' }
-  ]);
-  assert.equal(await page.$eval('.new-user-stepper-track', node => node.getAttribute('role')), 'tablist');
-  assert.deepEqual(await page.$$eval('.new-user-step-panel', nodes => nodes.map(node => ({ role: node.getAttribute('role'), labelledBy: node.getAttribute('aria-labelledby') }))), [
-    { role: 'tabpanel', labelledBy: 'newUserStep1' },
-    { role: 'tabpanel', labelledBy: 'newUserStep2' }
-  ]);
-  assert.deepEqual(await page.$$eval('.new-user-stepper-item', nodes => nodes.map(node => node.classList.contains('active'))), [true, false]);
+    { title: 'Basic Information', visible: true },
+    { title: 'Contact', visible: true },
+    { title: 'Emergency Contact', visible: true },
+    { title: 'Employment & Payroll', visible: true }
+  ], `${theme}/${width}: all four sections must appear together in the requested order`);
+  assert.equal(await page.$('.new-user-stepper-card, #newUserNext, #newUserPrevious'), null, 'single-page form needs no step navigation');
   const sectionAccents = await page.$$eval('.new-user-form-card > h2', headings => headings.map(heading => {
     const accent = getComputedStyle(heading, '::before');
     return { content: accent.content, background: accent.backgroundColor, width: Number.parseFloat(accent.width) };
@@ -91,24 +84,16 @@ async function inspectScenario(browser, theme, width) {
     assert.equal(accent.background, 'rgb(124, 58, 237)');
     assert.ok(accent.width >= 3 && accent.width <= 5);
   });
-  assert.equal(await page.$eval('[data-step-panel="1"]', node => node.hidden), false);
-  assert.equal(await page.$eval('[data-step-panel="2"]', node => node.hidden), true);
   assert.deepEqual(await valuesFor(page, expectedBasic), expectedBasic);
+  assert.deepEqual(await valuesFor(page, expectedContact), expectedContact);
   await verifyAttachmentControl(page);
-
-  await page.focus('#newUserStep1');
-  await page.keyboard.press('ArrowRight');
-  assert.deepEqual(await page.evaluate(() => ({ active: document.querySelector('.new-user-stepper-item.active')?.id, focused: document.activeElement?.id })), { active: 'newUserStep2', focused: 'newUserStep2' });
-  await page.keyboard.press('ArrowLeft');
-  assert.deepEqual(await page.evaluate(() => ({ active: document.querySelector('.new-user-stepper-item.active')?.id, focused: document.activeElement?.id })), { active: 'newUserStep1', focused: 'newUserStep1' });
 
   const layout = await page.evaluate(() => ({
     pageFits: document.documentElement.scrollWidth <= window.innerWidth,
     contentFits: document.querySelector('.new-user-details-form').scrollWidth <= document.querySelector('.new-user-details-form').clientWidth + 1,
-    stepperFits: document.querySelector('.new-user-stepper-card').getBoundingClientRect().right <= window.innerWidth + 1,
-    fields: [...document.querySelectorAll('[data-step-panel="1"] .new-user-details-control')].map(control => {
+    fields: [...document.querySelectorAll('#newUserDetailsForm .new-user-details-control')].map(control => {
       const box = control.getBoundingClientRect();
-      return box.left >= -1 && box.right <= window.innerWidth + 1;
+      return box.width > 0 && box.left >= -1 && box.right <= window.innerWidth + 1;
     }),
     palette: {
       card: getComputedStyle(document.querySelector('.new-user-form-card')).backgroundColor,
@@ -118,72 +103,35 @@ async function inspectScenario(browser, theme, width) {
   }));
   assert.equal(layout.pageFits, true, `${theme}/${width}: page must not overflow`);
   assert.equal(layout.contentFits, true, `${theme}/${width}: form must not overflow`);
-  assert.equal(layout.stepperFits, true, `${theme}/${width}: stepper must fit the viewport`);
   assert.equal(layout.fields.every(Boolean), true, `${theme}/${width}: every field must stay inside the viewport`);
 
-  const nextButton = await page.$eval('#newUserNext', button => {
-    const box = button.getBoundingClientRect();
-    return {
-      text: button.textContent.trim(),
-      hasArrow: Boolean(button.querySelector('.fa-arrow-right')),
-      width: box.width,
-      height: box.height,
-      radius: Number.parseFloat(getComputedStyle(button).borderRadius)
-    };
-  });
-  assert.equal(nextButton.text, 'Next');
-  assert.equal(nextButton.hasArrow, true, 'Next button must include a right arrow');
-  assert.ok(nextButton.width <= 140, 'Next button must stay compact');
-  assert.ok(nextButton.radius >= nextButton.height / 2, 'Next button must use a pill shape');
-
-  await page.click('#newUserNext');
-  assert.deepEqual(await page.$$eval('.new-user-stepper-item', nodes => nodes.map(node => ({ active: node.classList.contains('active'), completed: node.classList.contains('completed') }))), [
-    { active: false, completed: true },
-    { active: true, completed: false }
-  ]);
-  assert.equal(await page.$eval('[data-step-panel="1"]', node => node.hidden), true);
-  assert.equal(await page.$eval('[data-step-panel="2"]', node => node.hidden), false);
-  assert.deepEqual(await valuesFor(page, expectedContact), expectedContact);
-  const contactFits = await page.$eval('[data-step-panel="2"]', panel => [...panel.querySelectorAll('.new-user-details-control')].every(control => {
-    const box = control.getBoundingClientRect();
-    return box.width > 0 && box.left >= -1 && box.right <= window.innerWidth + 1;
-  }));
-  assert.equal(contactFits, true, `${theme}/${width}: visible Contact controls must fit the viewport`);
-  assert.equal(await page.$eval('#newUserStepperFill', node => node.style.width), '50%');
-  assert.deepEqual(await page.$$eval('.new-user-stepper-item', nodes => nodes.map(node => node.getAttribute('aria-selected'))), ['false', 'true']);
   assert.equal(await page.$eval('#newUserSubmit', node => node.tagName), 'A');
   assert.equal(new URL(await page.$eval('#newUserSubmit', node => node.href)).searchParams.get('scope'), 'team');
   assert.ok(await page.$('#newUserCancel[href*="confirm-new-user.html"]'));
   assert.equal(await page.$('#employeeCareerToast'), null, 'Submit must not use a success toast');
-  assert.deepEqual(await page.$$eval('#newUserPrevious, #newUserCancel, #newUserSubmit', buttons => buttons.map(button => ({
+  assert.deepEqual(await page.$$eval('#newUserCancel, #newUserSubmit', buttons => buttons.map(button => ({
     id: button.id,
     text: button.textContent.trim(),
     icon: button.querySelector('i')?.className || '',
     pill: Number.parseFloat(getComputedStyle(button).borderRadius) >= button.getBoundingClientRect().height / 2
   }))), [
-    { id: 'newUserPrevious', text: 'Back', icon: 'fa-solid fa-arrow-left', pill: true },
     { id: 'newUserCancel', text: 'Cancel', icon: 'fa-solid fa-xmark', pill: true },
     { id: 'newUserSubmit', text: 'Submit', icon: 'fa-solid fa-paper-plane', pill: true }
   ]);
   const secondaryButtons = await page.evaluate(() => {
-    const styles = ['newUserPrevious', 'newUserCancel'].map(id => {
+    const styles = ['newUserCancel'].map(id => {
       const style = getComputedStyle(document.getElementById(id));
       return { background: style.backgroundColor, border: style.borderColor, color: style.color, shadow: style.boxShadow };
     });
     const reference = getComputedStyle(document.querySelector('.new-user-form-card'));
     return { styles, reference: { background: reference.backgroundColor, border: reference.borderColor, color: getComputedStyle(document.querySelector('.new-user-profile-name')).color } };
   });
-  assert.deepEqual(secondaryButtons.styles[0], secondaryButtons.styles[1], 'Back and Cancel must share one visual style');
   assert.equal(secondaryButtons.styles[0].background, secondaryButtons.reference.background);
   assert.equal(secondaryButtons.styles[0].border, secondaryButtons.reference.border);
   assert.equal(secondaryButtons.styles[0].color, secondaryButtons.reference.color);
   assert.notEqual(secondaryButtons.styles[0].shadow, 'none', 'secondary buttons need the subtle pill shadow');
   assert.deepEqual(await page.$$eval('[required]', nodes => nodes.map(node => node.id).sort()), ['newUserAddress1', 'newUserAddress2', 'newUserAddress3', 'newUserBasicPay', 'newUserBranch', 'newUserCompany', 'newUserDepartment', 'newUserEmergencyAddress1', 'newUserEmergencyAddress2', 'newUserEmergencyAddress3', 'newUserEmergencyPostCode', 'newUserHireDate', 'newUserJobPosition', 'newUserJobType', 'newUserName', 'newUserPostCode', 'newUserReportingGroup', 'newUserShiftGroup', 'newUserSupervisor'].sort());
 
-  await page.click('#newUserPrevious');
-  assert.equal(await page.$eval('[data-step-panel="1"]', node => node.hidden), false);
-  await page.click('.new-user-stepper-item[data-step="2"]');
-  assert.equal(await page.$eval('[data-step-panel="2"]', node => node.hidden), false);
   assert.equal(await page.$eval('.new-user-profile-name', node => node.textContent.trim()), 'TAN SIOW WEI');
   assert.equal(await page.$eval('.new-user-profile-id', node => node.textContent.trim()), '858542719340');
 
@@ -233,7 +181,7 @@ async function verifyEdgeCases(browser) {
       for (const key of ['card', 'control', 'text']) assert.notEqual(palettes.light[index][key], palettes.dark[index][key], `${width}px ${key} must differ between light and dark themes`);
     });
     await verifyEdgeCases(browser);
-    console.log('PASS: Confirm New User details uses a responsive two-step Basic Information and Contact flow.');
+    console.log('PASS: Confirm New User details displays Basic Information, Contact, Emergency Contact, and Employment & Payroll on one responsive page with unchanged values and navigation.');
   } finally {
     await browser.close();
   }

@@ -117,21 +117,36 @@
 
   function card(row) {
     const item = node(applicantPage ? 'article' : 'a', `history-card-item recruitment-card ${applicantPage ? 'applicant-card' : 'vacancy-card'}`);
-    const strip = node('div', 'recruitment-card-strip');
-    strip.append(node('h2', '', applicantPage ? row.name : row.job));
-    const details = node('dl', 'recruitment-card-details');
     if (applicantPage) {
+      const status = row.applicantStatus.toLowerCase().replace(/\s+/g, '-');
+      const statusIcons = { new: 'fa-user-plus', shortlisted: 'fa-list-check', hired: 'fa-check', rejected: 'fa-xmark' };
+      const header = node('header', 'history-card-header applicant-card-header');
+      const heading = node('div', 'history-card-heading');
+      const titleRow = node('div', 'history-card-title-row');
+      const badge = node('span', `status-pill applicant-status-badge ${status}`);
+      const badgeIcon = node('i', `fa-solid ${statusIcons[status] || 'fa-circle'}`);
+      const details = node('dl', 'history-card-details recruitment-card-details applicant-card-details');
+      item.dataset.status = status;
+      titleRow.append(node('h2', 'history-card-title', row.name));
+      heading.append(titleRow);
+      badgeIcon.setAttribute('aria-hidden', 'true');
+      badge.append(badgeIcon, node('span', '', row.applicantStatus));
+      header.append(heading, badge);
       const pay = row.expectedPay.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      details.append(field('Age', String(row.age)), field('Gender', row.gender), field('Years of Experience', row.experience.toFixed(2)), field('Expected Pay (RM)', pay), field('Applicant Status', row.applicantStatus, true, row.applicantStatus));
+      details.append(field('Age', String(row.age)), field('Gender', row.gender), field('Years of Experience', row.experience.toFixed(2)), field('Expected Pay (RM)', pay));
+      item.append(header, details);
     } else {
+      const strip = node('div', 'recruitment-card-strip');
+      const details = node('dl', 'recruitment-card-details');
+      strip.append(node('h2', '', row.job));
       item.href = applicantUrl(row.id);
       item.dataset.vacancyId = row.id;
       item.setAttribute('aria-label', `View applicants for ${row.job}, ${row.department}, created ${date(row.createdOn)}`);
       const offered = row.applicants.filter(person => ['Offered', 'Accepted'].includes(person.applicationStatus)).length;
       const accepted = row.applicants.filter(person => person.applicationStatus === 'Accepted').length;
       details.append(field('Company', row.company, true), field('Department', row.department), field('Created On', date(row.createdOn)), field('Total Vacancies', String(row.vacancies)), field('Total Application', String(row.applicants.length)), field('Total Offered', String(offered)), field('Total Accepted', String(accepted)));
+      item.append(strip, details);
     }
-    item.append(strip, details);
     return item;
   }
 

@@ -77,28 +77,21 @@
     const list = $('activeHeadcountSummaryList');
     list.replaceChildren();
     report.statuses.forEach(status => {
-      const button = node('button', 'history-card-item active-headcount-summary-card');
-      button.type = 'button';
-      button.dataset.status = 'draft';
-      button.dataset.headcountStatusSummary = status.id;
-      button.setAttribute('aria-label', `View ${status.count} ${status.label} active staff records`);
-      button.style.setProperty('--active-status-color', status.color);
-
-      const heading = node('span', 'active-headcount-summary-heading');
-      const identity = node('span', 'active-headcount-summary-copy');
-      identity.append(
-        node('strong', 'active-headcount-status-label', status.label),
-        node('small', '', 'Active staff status')
-      );
-      const count = node('span', 'active-headcount-summary-count');
-      count.append(
-        node('strong', 'active-headcount-status-count', String(status.count)),
-        node('small', '', 'Staff')
-      );
-      heading.append(identity, count);
-      button.append(heading);
-      button.addEventListener('click', () => showStaff(status, button));
-      list.append(button);
+      const row = node('tr', 'active-headcount-summary-row');
+      row.tabIndex = 0;
+      row.dataset.headcountStatusSummary = status.id;
+      row.setAttribute('aria-label', `View ${status.count} ${status.label} active staff records`);
+      const label = node('th', 'active-headcount-status-label', status.label);
+      label.scope = 'row';
+      row.append(label, node('td', 'active-headcount-status-count', String(status.count)));
+      row.addEventListener('click', () => showStaff(status, row));
+      row.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          showStaff(status, row);
+        }
+      });
+      list.append(row);
     });
   }
 

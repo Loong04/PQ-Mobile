@@ -49,13 +49,24 @@ const pageUrl = theme => pathToFileURL(path.join(root, 'modules/employee-career/
 
       await page.click('#orgChartFilterTrigger');
       assert.deepEqual(await page.$$eval('#orgChartFilterForm label', nodes => nodes.map(node => node.textContent.trim())), ['Search Keyword', 'Organization Unit', 'Maximum Level', 'Skip Vacant?']);
-      await page.type('#orgChartFilterKeyword', 'Kavitha');
+      assert.deepEqual(await page.$eval('#orgChartFilterKeyword', control => ({
+        tag: control.tagName,
+        value: control.value,
+        placeholder: control.options?.[0].textContent.trim()
+      })), { tag: 'SELECT', value: '', placeholder: 'Select Employee' });
+      assert.deepEqual(await page.$$eval('#orgChartFilterKeyword option', options => options.slice(1).map(option => option.textContent.trim())), [
+        'Ahmad Razak', 'Alex Wong', 'Danial Ariff', 'Kavitha A/P Gopal', 'Lee Jia Ling', 'Marcus Chen', 'Nur Aina', 'Nurul Aishah', 'Siti Nurhaliza', 'Tan Wei Lun'
+      ], 'Dropdown lists employees alphabetically and excludes vacant positions');
+      await page.select('#orgChartFilterKeyword', 'EBB19');
       await page.click('#orgChartApplyFilter');
       assert.deepEqual(await page.$$eval('#orgChartTree .org-chart-name', nodes => nodes.map(node => node.textContent.trim())), ['Alex Wong', 'Siti Nurhaliza', 'Kavitha A/P Gopal']);
       assert.equal(await page.$eval('#orgChartVisibleCount', node => node.textContent.trim()), '3');
+      assert.equal(await page.$eval('#orgChartFilterSummary', node => node.textContent.trim()), 'Employee: Kavitha A/P Gopal');
 
       await page.click('#orgChartFilterTrigger');
+      assert.equal(await page.$eval('#orgChartFilterKeyword', node => node.value), 'EBB19', 'Reopening retains selected employee');
       await page.click('#orgChartResetFilter');
+      assert.equal(await page.$eval('#orgChartFilterKeyword', node => node.value), '', 'Reset restores Select Employee');
       await page.click('#orgChartApplyFilter');
       assert.equal(await page.$$eval('#orgChartTree .org-chart-node', nodes => nodes.length), 11);
 
@@ -79,7 +90,8 @@ const pageUrl = theme => pathToFileURL(path.join(root, 'modules/employee-career/
 
       await page.click('#orgChartFilterTrigger');
       await page.click('#orgChartResetFilter');
-      await page.type('#orgChartFilterKeyword', 'No Such Employee');
+      await page.select('#orgChartFilterKeyword', 'EBB25');
+      await page.select('#orgChartFilterUnit', 'Human Resource');
       await page.click('#orgChartApplyFilter');
       assert.equal(await page.$eval('#orgChartEmpty', node => node.hidden), false);
 

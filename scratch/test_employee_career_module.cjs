@@ -79,7 +79,16 @@ async function open(page, relative, query = '') {
     assert.equal(await page.$eval('.employee-career-content', node => node.inert), true, 'Background content is inert while View All is open');
     assert.deepEqual(
       await page.$$eval('#employeeCareerAllOptionsGrid .employee-career-option-title', nodes => nodes.map(node => node.textContent.trim())),
-      team.map(item => item[0])
+      [...team.map(item => item[0]), 'History']
+    );
+    assert.deepEqual(
+      await page.$eval('#employeeCareerAllOptionsGrid [data-option-id="team-history"]', node => ({
+        tagName: node.tagName,
+        disabled: node.disabled,
+        href: node.getAttribute('href')
+      })),
+      { tagName: 'BUTTON', disabled: true, href: null },
+      'Team History is a future option and must not open the existing Individual History page'
     );
     await page.keyboard.down('Shift');
     await page.keyboard.press('Tab');

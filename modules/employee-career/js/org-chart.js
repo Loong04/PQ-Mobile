@@ -21,9 +21,7 @@
   function matches(node, filters) {
     if (filters.skipVacant === 'yes' && node.status === 'vacant') return false;
     const unitMatches = !filters.unit || node.unit === filters.unit;
-    const keyword = filters.keyword.trim().toLowerCase();
-    const haystack = [node.name, node.empNo, node.position, node.unit].filter(Boolean).join(' ').toLowerCase();
-    return unitMatches && (!keyword || haystack.includes(keyword));
+    return unitMatches && (!filters.keyword || node.empNo === filters.keyword);
   }
 
   function prune(node, level = 1) {
@@ -70,7 +68,10 @@
 
   function filterSummary() {
     const parts = [];
-    if (state.filters.keyword) parts.push(`Keyword: ${state.filters.keyword}`);
+    if (state.filters.keyword) {
+      const employee = flatten(source).find(node => node.empNo === state.filters.keyword);
+      if (employee) parts.push(`Employee: ${employee.name}`);
+    }
     if (state.filters.unit) parts.push(state.filters.unit);
     if (state.filters.maximumLevel) parts.push(`Max ${state.filters.maximumLevel} levels`);
     if (state.filters.skipVacant === 'yes') parts.push('Vacant roles hidden');
@@ -112,6 +113,17 @@
       const option = element('option', '', unit);
       option.value = unit;
       $('orgChartFilterUnit').append(option);
+    }
+  }
+
+  function populateEmployees() {
+    const employees = flatten(source)
+      .filter(node => node.empNo && node.status !== 'vacant')
+      .sort((a, b) => a.name.localeCompare(b.name));
+    for (const employee of employees) {
+      const option = element('option', '', employee.name);
+      option.value = employee.empNo;
+      $('orgChartFilterKeyword').append(option);
     }
   }
 
@@ -157,6 +169,7 @@
 
   function init() {
     if (!source || !$('orgChartTree')) return;
+    populateEmployees();
     populateUnits();
     setControls(defaults);
     setSpacing();

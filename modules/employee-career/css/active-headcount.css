@@ -38,27 +38,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
   width: max-content;
-  min-height: 36px;
-  margin: 0 0 12px auto;
-  padding: 8px 18px;
-  border: 0;
-  border-radius: 20px;
-  background: linear-gradient(135deg, var(--active-headcount-purple), var(--active-headcount-purple-dark));
-  color: #fff;
+  margin: 0;
+  padding: 7px 14px;
+  border: 1.5px solid var(--purple-border);
+  border-radius: 14px;
+  background: var(--purple-subtle);
+  color: var(--purple-primary);
   font: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 800;
   line-height: 1.2;
   white-space: nowrap;
-  box-shadow: 0 6px 16px rgba(124, 58, 237, .24);
   cursor: pointer;
-  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  transition: transform .18s ease, filter .18s ease;
 }
 
 .active-headcount-details-button:hover {
   filter: brightness(1.06);
-  box-shadow: 0 8px 20px rgba(124, 58, 237, .3);
 }
 
 .active-headcount-details-button:active { transform: scale(.97); }
@@ -72,6 +71,17 @@
   min-width: 0;
   margin-bottom: 14px;
 }
+
+.active-headcount-chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.active-headcount-chart-heading > div { min-width: 0; }
+
+.active-headcount-chart-heading h2 { overflow-wrap: anywhere; }
 
 .active-headcount-page .staff-list-donut svg {
   filter: drop-shadow(0 6px 20px rgba(124, 58, 237, .15));
@@ -112,7 +122,6 @@
   text-align: right;
 }
 
-.active-headcount-summary-list,
 .active-headcount-staff-list {
   display: grid;
   gap: 12px;
@@ -120,7 +129,6 @@
   width: 100%;
 }
 
-.active-headcount-summary-card.history-card-item,
 .active-headcount-employee-card.history-card-item {
   appearance: none;
   width: 100%;
@@ -134,63 +142,72 @@
   text-align: left;
 }
 
-.active-headcount-summary-card.history-card-item:hover,
 .active-headcount-employee-card.history-card-item:hover {
   border-color: var(--purple-border);
   border-left-color: var(--active-headcount-purple);
   box-shadow: var(--shadow-card);
 }
 
-.active-headcount-summary-card.history-card-item:focus-visible,
 .active-headcount-employee-card.history-card-item:focus-visible {
   outline: 3px solid rgba(124, 58, 237, .28);
   outline-offset: 2px;
 }
 
-.active-headcount-summary-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+.active-headcount-summary-table-wrap {
   min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  background: var(--bg-card);
 }
 
-.active-headcount-summary-copy,
-.active-headcount-summary-count {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.active-headcount-summary-copy { flex: 1; }
-
-.active-headcount-summary-copy .active-headcount-status-label {
+.active-headcount-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
   color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.35;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.active-headcount-summary-table :is(th, td) {
+  padding: 16px 18px;
+  text-align: left;
   overflow-wrap: anywhere;
 }
 
-.active-headcount-summary-copy small,
-.active-headcount-summary-count small {
+.active-headcount-summary-table thead {
+  background: var(--purple-subtle);
   color: var(--text-muted);
-  font-size: 10.5px;
-  font-weight: 650;
-  line-height: 1.35;
+  font-size: 11.5px;
 }
 
-.active-headcount-summary-count {
-  flex: 0 0 auto;
-  justify-items: end;
+.active-headcount-summary-table :is(th, td):last-child {
+  width: 90px;
   text-align: right;
 }
 
-.active-headcount-summary-count .active-headcount-status-count {
+.active-headcount-summary-row { cursor: pointer; }
+
+.active-headcount-summary-row > * {
+  border-top: 1px solid var(--border-subtle);
+  font-weight: 700;
+}
+
+.active-headcount-summary-row .active-headcount-status-count {
   color: var(--purple-text);
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1;
+  font-weight: 800;
+}
+
+.active-headcount-summary-row:hover,
+.active-headcount-summary-row:active {
+  background: var(--purple-subtle);
+}
+
+.active-headcount-summary-row:focus-visible {
+  outline: 2px solid var(--purple-text);
+  outline-offset: -2px;
+  background: var(--purple-subtle);
 }
 
 .active-headcount-employee-card.history-card-item {
@@ -260,7 +277,6 @@
   overflow-wrap: anywhere;
 }
 
-.active-headcount-summary-card .fa-chevron-right,
 .active-headcount-employee-card .fa-chevron-right {
   display: none;
 }
@@ -321,7 +337,6 @@
   word-break: normal;
 }
 
-html[data-theme="dark"] .active-headcount-summary-card.history-card-item,
 html[data-theme="dark"] .active-headcount-employee-card.history-card-item {
   background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, .11) 100%);
 }
@@ -341,12 +356,9 @@ html[data-theme="dark"] .active-headcount-employee-details.history-card-details 
     padding-inline: 14px;
   }
 
-  .active-headcount-summary-card.history-card-item,
   .active-headcount-employee-card.history-card-item {
     padding: 14px;
   }
-
-  .active-headcount-summary-heading { gap: 10px; }
 
   .active-headcount-employee-row {
     grid-template-columns: minmax(68px, .62fr) minmax(0, 1.38fr);
@@ -368,7 +380,6 @@ html[data-theme="dark"] .active-headcount-employee-details.history-card-details 
 
 @media (prefers-reduced-motion: reduce) {
   .active-headcount-details-button,
-  .active-headcount-summary-card.history-card-item,
   .active-headcount-employee-card.history-card-item {
     transition: none;
   }

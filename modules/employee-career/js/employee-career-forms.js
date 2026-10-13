@@ -72,10 +72,11 @@
     });
   }
 
-  function initAttachments(form, fileIds, listId) {
+  function initAttachments(form, fileIds, listId, initialFiles = []) {
     const list = document.getElementById(listId);
     if (!form || !list) return;
-    let files = [];
+    let files = [...initialFiles];
+    if (files.length) renderAttachments(list, files);
 
     form.querySelectorAll('[data-file-picker]').forEach(button => {
       button.addEventListener('click', () => document.getElementById(button.dataset.filePicker)?.click());
@@ -95,6 +96,7 @@
       files.splice(Number(button.dataset.removeFile), 1);
       renderAttachments(list, files);
     });
+    return () => files;
   }
 
   function bindSubmit(form, message) {
@@ -123,8 +125,49 @@
   function initFeedback() {
     const form = document.getElementById('feedbackForm');
     if (!form) return;
-    initAttachments(form, ['feedbackFiles', 'feedbackCamera'], 'feedbackAttachments');
-    bindSubmit(form, 'Feedback submitted successfully');
+    const editId = params.get('edit');
+    const record = editId ? window.EmployeeCareerFeedbackStore?.all().find(row => row.id === editId) : null;
+    const attachments = initAttachments(form, ['feedbackFiles', 'feedbackCamera'], 'feedbackAttachments', record?.attachments || []);
+    if (!editId) { bindSubmit(form, 'Feedback submitted successfully'); return; }
+    document.querySelector('h1').textContent = 'Edit Feedback';
+    const submit = document.getElementById('feedbackSubmit');
+    submit.querySelector('span').textContent = 'Save';
+    submit.querySelector('i').className = 'fa-solid fa-floppy-disk';
+    function syncHistoryLinks() {
+      const activeTheme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      document.querySelectorAll('[data-option-back]').forEach(link => { link.href = `../history.html?category=feedback&theme=${activeTheme}`; });
+    }
+    syncHistoryLinks();
+    new MutationObserver(syncHistoryLinks).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    if (!record) {
+      submit.disabled = true;
+      showToast('Feedback record not found');
+      return;
+    }
+    const fields = {
+      feedbackType: 'type', feedbackCategory: 'category', feedbackTitle: 'title',
+      feedbackDate1: 'feedbackDate1', feedbackDate2: 'feedbackDate2',
+      feedbackReference1: 'reference1', feedbackReference2: 'reference2',
+      feedbackBody: 'note', feedbackRemarks: 'remarks'
+    };
+    Object.entries(fields).forEach(([id, property]) => {
+      const field = document.getElementById(id);
+      const value = record[property] || '';
+      if (field.tagName === 'SELECT' && value && ![...field.options].some(option => option.value === value)) field.add(new Option(value, value));
+      field.value = value;
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const changes = Object.fromEntries(Object.entries(fields).map(([id, property]) => [property, document.getElementById(id).value.trim()]));
+      changes.attachments = attachments().map(file => file instanceof File ? { name: file.name, size: file.size, type: file.type } : file);
+      try {
+        window.EmployeeCareerFeedbackStore.update(editId, changes);
+        window.location.href = document.querySelector('.form-cancel-btn').href;
+      } catch {
+        showToast('Unable to save feedback. Please try again.');
+      }
+    });
   }
 
   function initWhereabout() {

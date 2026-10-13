@@ -85,11 +85,20 @@ async function assertNoHorizontalOverflow(page, context) {
         'The donut renders one segment per status'
       );
       await assertNoHorizontalOverflow(page, `${theme} ${width}px chart`);
+      assert.equal(await page.$eval('#activeHeadcountDetails', button => button.textContent.trim()), 'View Details');
+      assert.ok(await page.$('#activeHeadcountDetails .fa-list-ul'), 'View Details includes its list icon');
+      assert.equal(await page.$eval('#activeHeadcountDetails', button => getComputedStyle(button).backgroundImage), 'none', 'View Details uses the Highlight action button surface');
+      await page.screenshot({ path: path.resolve(__dirname, `active-headcount-view-details-${theme}-${width}.png`) });
 
       await page.click('#activeHeadcountDetails');
       assert.equal(await page.$eval('#activeHeadcountChartView', node => node.hidden), true);
       assert.equal(await page.$eval('#activeHeadcountSummaryView', node => node.hidden), false);
       assert.equal(await page.$eval('#activeHeadcountSummaryTotalRecords', node => node.textContent.trim()), '8');
+      assert.deepEqual(
+        await page.$$eval('#activeHeadcountSummaryView table thead th', cells => cells.map(cell => cell.textContent.trim())),
+        ['Status', 'Count'],
+        'Status summary is a table with Status and Count columns'
+      );
       assert.deepEqual(
         await page.$$eval('[data-headcount-status-summary]', rows => rows.map(row => [
           row.dataset.headcountStatusSummary,
@@ -100,8 +109,9 @@ async function assertNoHorizontalOverflow(page, context) {
         'Details shows all eight status summaries'
       );
       await assertNoHorizontalOverflow(page, `${theme} ${width}px status summary`);
+      await page.screenshot({ path: path.resolve(__dirname, `active-headcount-status-table-${theme}-${width}.png`) });
 
-      await page.click('[data-headcount-status-summary="confirmed"]');
+      await page.click('[data-headcount-status-summary="confirmed"] td');
       assert.equal(await page.$eval('#activeHeadcountSummaryView', node => node.hidden), true);
       assert.equal(await page.$eval('#activeHeadcountStaffView', node => node.hidden), false);
       assert.equal(await page.$eval('#activeHeadcountStaffTotalRecords', node => node.textContent.trim()), '18');
@@ -161,6 +171,12 @@ async function assertNoHorizontalOverflow(page, context) {
       await page.click('#activeHeadcountBack');
       assert.equal(await page.$eval('#activeHeadcountSummaryView', node => node.hidden), false);
       assert.equal(await page.evaluate(() => document.activeElement?.dataset.headcountStatusSummary), 'confirmed');
+      await page.keyboard.press('Enter');
+      assert.equal(await page.$eval('#activeHeadcountStaffTotalRecords', node => node.textContent.trim()), '18', 'Enter opens the focused status row');
+      await page.click('#activeHeadcountBack');
+      await page.keyboard.press('Space');
+      assert.equal(await page.$eval('#activeHeadcountStaffView', node => node.hidden), false, 'Space opens the focused status row');
+      await page.click('#activeHeadcountBack');
       await page.click('#activeHeadcountBack');
       assert.equal(await page.$eval('#activeHeadcountChartView', node => node.hidden), false);
       assert.equal(await page.evaluate(() => document.activeElement?.id), 'activeHeadcountDetails');

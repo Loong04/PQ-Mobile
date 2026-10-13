@@ -1,6 +1,9 @@
 (() => {
   const source = window.PERFORMANCE_GOAL_PLAN;
   const $ = id => document.getElementById(id);
+  const RETURN_TOKEN_PARAM = 'goalReturnToken';
+  const SNAPSHOT_KEY_PREFIX = 'peoplehcm:performance:goal-plan:snapshot:';
+  const RESULT_KEY_PREFIX = 'peoplehcm:performance:goal-plan:result:';
   const state = {
     status: source.status,
     goals: source.goals.map(goal => ({ ...goal })),
@@ -29,10 +32,64 @@
     return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
   };
   const selectedGoal = () => state.goals.find(goal => goal.id === state.selectedId);
+  const currentTheme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+  const readSession = key => {
+    try { return window.sessionStorage.getItem(key); } catch { return null; }
+  };
+  const writeSession = (key, value) => {
+    try {
+      window.sessionStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const removeSession = key => {
+    try { window.sessionStorage.removeItem(key); } catch {}
+  };
+  const parseJson = value => {
+    try { return value ? JSON.parse(value) : null; } catch { return null; }
+  };
 
   function syncBack() {
-    const theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-    $('goalPlanBack').href = `../index.html?scope=individual&theme=${theme}`;
+    $('goalPlanBack').href = `../index.html?scope=individual&theme=${currentTheme()}`;
+  }
+
+  function beginAddGoal() {
+    const token = `goal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    writeSession(`${SNAPSHOT_KEY_PREFIX}${token}`, JSON.stringify({
+      token,
+      status: state.status,
+      goals: state.goals
+    }));
+    const params = new URLSearchParams({ theme: currentTheme(), [RETURN_TOKEN_PARAM]: token });
+    window.location.assign(`performance-goal.html?${params.toString()}`);
+  }
+
+  function consumeGoalReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get(RETURN_TOKEN_PARAM);
+    if (!token) return false;
+    const snapshotKey = `${SNAPSHOT_KEY_PREFIX}${token}`;
+    const resultKey = `${RESULT_KEY_PREFIX}${token}`;
+    const snapshot = parseJson(readSession(snapshotKey));
+    const result = parseJson(readSession(resultKey));
+    removeSession(snapshotKey);
+    removeSession(resultKey);
+
+    if (snapshot?.token === token && Array.isArray(snapshot.goals)) {
+      state.goals = snapshot.goals.map(goal => ({ ...goal }));
+      state.status = snapshot.status || 'Draft';
+    }
+
+    let returnedGoal = result?.token === token ? result.goal : null;
+    if (!returnedGoal && params.has('goalPayload')) returnedGoal = parseJson(params.get('goalPayload'));
+    if (returnedGoal && typeof returnedGoal === 'object' && returnedGoal.id && returnedGoal.title) {
+      state.goals.push({ ...returnedGoal });
+      state.status = 'Draft';
+      return true;
+    }
+    return false;
   }
 
   function showToast(message) {
@@ -92,17 +149,7 @@
     const card = node('article', 'goal-plan-card');
     card.dataset.goalId = goal.id;
     const header = node('header', 'goal-plan-card-header');
-    const menu = node('button', 'goal-plan-card-menu');
-    menu.type = 'button';
-    menu.setAttribute('aria-label', `Options for ${goal.title}`);
-    menu.setAttribute('aria-haspopup', 'dialog');
-    menu.append(icon('fa-ellipsis-vertical'));
-    menu.addEventListener('click', () => {
-      state.selectedId = goal.id;
-      $('goalActionsTitle').textContent = goal.title;
-      openOverlay($('goalActionsOverlay'), $('goalActionEdit'));
-    });
-    header.append(node('span', 'goal-plan-card-type', goal.type), menu);
+    header.append(node('strong', 'goal-plan-card-title', goal.title));
 
     const body = node('button', 'goal-plan-card-body');
     body.type = 'button';
@@ -112,9 +159,26 @@
     target.append(node('small', '', 'Target'), node('span', '', goal.targetDescription || 'No target provided'));
     const metrics = node('span', 'goal-plan-card-metrics');
     metrics.append(metric('Weightage', `${formatNumber(goal.weightage)}%`), metric('Deadline', formatDate(goal.deadline)));
-    body.append(node('strong', 'goal-plan-card-title', goal.title), target, metrics);
+    body.append(target, metrics);
     body.addEventListener('click', () => openDetails(goal));
-    card.append(header, body);
+
+    const actions = node('div', 'goal-plan-card-actions');
+    const update = node('button', 'goal-plan-card-update');
+    update.type = 'button';
+    update.append(icon('fa-pen'), node('span', '', 'Update'));
+    update.addEventListener('click', () => {
+      state.selectedId = goal.id;
+      openForm(goal);
+    });
+    const remove = node('button', 'goal-plan-card-delete');
+    remove.type = 'button';
+    remove.append(icon('fa-trash'), node('span', '', 'Delete'));
+    remove.addEventListener('click', () => {
+      state.selectedId = goal.id;
+      openDelete();
+    });
+    actions.append(update, remove);
+    card.append(header, body, actions);
     return card;
   }
 
@@ -126,10 +190,7 @@
     $('goalPlanCards').replaceChildren(...state.goals.map(renderCard));
     $('goalPlanTotalGoals').textContent = String(state.goals.length);
     $('goalPlanTotalWeightage').textContent = `${formatNumber(totalWeightage())}%`;
-    $('goalPlanListCount').textContent = `${state.goals.length} ${state.goals.length === 1 ? 'Goal' : 'Goals'}`;
     $('goalPlanEmpty').hidden = state.goals.length > 0;
-    $('goalPlanStatus').textContent = state.status;
-    $('goalPlanStatus').classList.toggle('is-submitted', state.status === 'Submitted');
   }
 
   function detailRow(label, value) {
@@ -234,18 +295,12 @@
     showToast('Goal Plan submitted successfully.');
   }
 
-  $('goalPlanAdd').addEventListener('click', () => openForm(null));
+  $('goalPlanAdd').addEventListener('click', beginAddGoal);
   $('goalDetailsClose').addEventListener('click', closeOverlay);
-  $('goalActionsClose').addEventListener('click', closeOverlay);
   $('goalFormClose').addEventListener('click', closeOverlay);
   $('goalFormCancel').addEventListener('click', closeOverlay);
   $('goalDeleteCancel').addEventListener('click', closeOverlay);
 
-  $('goalActionEdit').addEventListener('click', () => {
-    const goal = selectedGoal();
-    if (goal) openForm(goal);
-  });
-  $('goalActionDelete').addEventListener('click', openDelete);
   $('goalDeleteConfirm').addEventListener('click', () => {
     const goal = selectedGoal();
     if (!goal) return;
@@ -288,9 +343,8 @@
     showToast('Goal Plan draft saved.');
   });
   $('goalPlanSubmit').addEventListener('click', submitPlan);
-  $('goalPlanInfo').addEventListener('click', () => showToast('Create goals with a total weightage of 100.00% before submitting.'));
 
-  [$('goalDetailsOverlay'), $('goalActionsOverlay'), $('goalDeleteOverlay')].forEach(overlay => {
+  [$('goalDetailsOverlay'), $('goalDeleteOverlay')].forEach(overlay => {
     overlay.addEventListener('click', event => { if (event.target === overlay) closeOverlay(); });
   });
   $('goalFormOverlay').addEventListener('click', event => {
@@ -319,8 +373,10 @@
   new MutationObserver(syncBack).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   document.addEventListener('DOMContentLoaded', () => {
     source.goalTypes.forEach(type => $('goalTypeInput').append(new Option(type, type)));
+    const addedGoal = consumeGoalReturn();
     renderEmployee();
     syncBack();
     render();
+    if (addedGoal) showToast('Goal added.');
   });
 })();

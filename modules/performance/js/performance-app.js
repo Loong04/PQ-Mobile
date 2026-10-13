@@ -6,6 +6,7 @@
   function syncBackLink() {
     document.getElementById('performanceBack').href = `../../app${theme()}.html`;
     document.querySelector('[data-option-id="goal-plan"]').href = `options/goal-plan.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="goal-progress"]').href = `options/goal-progress.html?theme=${theme()}`;
     document.querySelector('[data-option-id="work-incident"]').href = `options/work-incident.html?theme=${theme()}`;
   }
 

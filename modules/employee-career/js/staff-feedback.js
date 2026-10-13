@@ -21,8 +21,9 @@
     const dateText = date.toISOString().slice(0, 10);
     const status = statuses[index % statuses.length];
     return {
-      ...examples[index % examples.length], empNo, name, date: dateText, status,
+      ...examples[index % examples.length], id: 'staff-feedback-' + (index + 1), empNo, name, date: dateText, status,
       feedbackDate1: dateText, feedbackDate2: '', feedbackNote: examples[index % examples.length].feedback,
+      reference1: 'FB-' + String(index + 1).padStart(4, '0'),
       feedbackRemarks: index % 6 === 0 ? 'For consideration at the next team discussion.' : '',
       submitDate: dateText,
       reviewerComment: status === 'Resolved' ? 'Reviewed with the team. Follow-up has been completed.' : status === 'In Progress' ? 'The relevant team is reviewing this feedback.' : '',
@@ -33,7 +34,14 @@
       attachments: index === 0 ? [{ name: 'Flexible-hours-note.txt', url: '../../assets/staff-feedback-sample-note.txt' }] : []
     };
   });
-  const records = window.EMPLOYEE_CAREER_STAFF_FEEDBACK_RECORDS || sampleRecords;
+  const sourceRecords = window.EMPLOYEE_CAREER_STAFF_FEEDBACK_RECORDS || sampleRecords;
+  const reviewStorageKey = 'pq_staff_feedback_reviews';
+  const selectionStorageKey = 'pq_staff_feedback_review_selection';
+  const listStorageKey = 'pq_staff_feedback_list_return';
+  function stored(key, fallback) {
+    try { return JSON.parse(sessionStorage.getItem(key)) ?? fallback; }
+    catch { return fallback; }
+  }
   const $ = id => document.getElementById(id);
   const filterIds = { keyword: 'staffFeedbackKeyword', startDate: 'staffFeedbackStartDate', endDate: 'staffFeedbackEndDate', type: 'staffFeedbackType', category: 'staffFeedbackCategory', status: 'staffFeedbackStatus' };
   const defaults = { keyword: '', startDate: '', endDate: '', type: '', category: '', status: '' };
@@ -42,6 +50,7 @@
   let currentView = 'list';
   let listScroll = 0;
   let activeOverlay = null;
+  let activeReviewRecord = null;
   let returnFocus = null;
   let inerted = [];
   const element = (tag, className, text) => {
@@ -53,6 +62,13 @@
   const formatDate = value => value ? new Date(value + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
   const employeeNumber = row => '#' + String(row.empNo).replace(/^#/, '');
   const statusLabel = status => status === 'Pending' ? 'Pending' : 'Responded';
+  const recordKey = row => String(row.id || [row.empNo, row.date, row.title].join('|'));
+  const savedReviews = stored(reviewStorageKey, []);
+  const reviewEdits = Array.isArray(savedReviews) ? savedReviews : [];
+  const records = sourceRecords.map(record => {
+    const edit = reviewEdits.find(item => item?.key === recordKey(record));
+    return { ...record, ...(edit ? { reward: edit.reward, rating: edit.rating, reviewerComment: edit.reviewerComment, status: edit.status } : {}) };
+  });
   const historyStatus = status => statusLabel(status) === 'Pending' ? 'submitted' : 'draft';
   const statusIcon = status => statusLabel(status) === 'Pending' ? 'fa-clock' : 'fa-reply';
   const statusBadge = status => {
@@ -75,12 +91,13 @@
     );
     const cards = visibleRows.map(row => {
       const card = element('article', 'history-card-item staff-feedback-card');
-      card.tabIndex = 0;
-      card.setAttribute('role', 'button');
-      card.setAttribute('aria-haspopup', 'dialog');
-      card.setAttribute('aria-controls', 'staffFeedbackDetailsOverlay');
-      card.setAttribute('aria-label', `View feedback details for ${row.name}: ${row.title}`);
       card.dataset.status = historyStatus(row.status);
+      const detailsTrigger = element('div', 'staff-feedback-details-trigger');
+      detailsTrigger.tabIndex = 0;
+      detailsTrigger.setAttribute('role', 'button');
+      detailsTrigger.setAttribute('aria-haspopup', 'dialog');
+      detailsTrigger.setAttribute('aria-controls', 'staffFeedbackDetailsOverlay');
+      detailsTrigger.setAttribute('aria-label', `View feedback details for ${row.name}: ${row.title}`);
       const header = element('header', 'history-card-header staff-feedback-card-header');
       const identity = element('div', 'history-card-heading');
       identity.append(element('h3', 'history-card-title history-time-row staff-feedback-name', row.name), element('span', 'staff-feedback-emp-no', employeeNumber(row)));
@@ -93,10 +110,23 @@
         field.append(element('dt', '', label), element('dd', '', value || '-'));
         body.append(field);
       });
-      card.append(header, body);
-      const show = () => { card.focus({ preventScroll: true }); showDetails(row); };
-      card.addEventListener('click', show);
-      card.addEventListener('keydown', event => {
+      const actions = element('footer', 'staff-feedback-card-actions');
+      const reviewButton = element('button', 'staff-feedback-review-button');
+      reviewButton.type = 'button';
+      reviewButton.dataset.reviewKey = recordKey(row);
+      reviewButton.setAttribute('aria-label', `Review feedback from ${row.name}: ${row.title}`);
+      reviewButton.append(element('span', '', 'Review'));
+      reviewButton.addEventListener('click', event => {
+        event.stopPropagation();
+        showReview(row);
+      });
+      reviewButton.addEventListener('keydown', event => event.stopPropagation());
+      actions.append(reviewButton);
+      detailsTrigger.append(header, body);
+      card.append(detailsTrigger, actions);
+      const show = () => { detailsTrigger.focus({ preventScroll: true }); showDetails(row); };
+      detailsTrigger.addEventListener('click', show);
+      detailsTrigger.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); show(); }
       });
       return card;
@@ -170,6 +200,82 @@
     openOverlay('staffFeedbackDetailsOverlay', 'staffFeedbackCloseDetails');
   }
 
+  function clearReviewError() {
+    $('staffFeedbackReviewError').hidden = true;
+    $('staffFeedbackReviewError').textContent = '';
+    ['staffFeedbackReward', 'staffFeedbackRating', 'staffFeedbackComments'].forEach(id => $(id).removeAttribute('aria-invalid'));
+  }
+
+  function showReview(record) {
+    sessionStorage.setItem(selectionStorageKey, JSON.stringify({ key: recordKey(record), record }));
+    sessionStorage.setItem(listStorageKey, JSON.stringify({ filters: applied, scroll: document.querySelector('main').scrollTop, key: recordKey(record) }));
+    const query = new URLSearchParams({ record: recordKey(record), theme: document.documentElement.dataset.theme || 'dark' });
+    window.location.href = `staff-feedback-review.html?${query}`;
+  }
+
+  function initReviewPage() {
+    const requestedKey = new URLSearchParams(location.search).get('record');
+    const selection = stored(selectionStorageKey, null);
+    const record = selection?.key === requestedKey ? selection.record : records.find(row => recordKey(row) === requestedKey);
+    const syncLinks = () => {
+      const href = `staff-feedback.html?theme=${document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'}`;
+      $('staffFeedbackReviewBack').href = href;
+      $('staffFeedbackCancelReview').href = href;
+    };
+    syncLinks();
+    if (!record) { window.location.replace($('staffFeedbackReviewBack').href); return; }
+    activeReviewRecord = record;
+    const values = {
+      staffFeedbackReviewEmployeeId: employeeNumber(record),
+      staffFeedbackReviewName: record.name || '—',
+      staffFeedbackReviewType: record.type || '—',
+      staffFeedbackReviewCategory: record.category || '—',
+      staffFeedbackReviewFeedbackTitle: record.title || '—',
+      staffFeedbackReviewDate1: formatDate(record.feedbackDate1 ?? record.date),
+      staffFeedbackReviewDate2: formatDate(record.feedbackDate2),
+      staffFeedbackReviewReference1: record.reference1 || '—'
+    };
+    Object.entries(values).forEach(([id, value]) => { $(id).value = value; });
+    $('staffFeedbackReward').value = record.reward || '';
+    $('staffFeedbackRating').value = record.rating == null ? '' : String(record.rating);
+    $('staffFeedbackComments').value = record.reviewerComment || '';
+    clearReviewError();
+    $('staffFeedbackReviewForm').addEventListener('submit', event => { event.preventDefault(); saveReview(); });
+    ['staffFeedbackReward', 'staffFeedbackRating', 'staffFeedbackComments'].forEach(id => {
+      $(id).addEventListener(id === 'staffFeedbackComments' ? 'input' : 'change', clearReviewError);
+    });
+    new MutationObserver(syncLinks).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    $('staffFeedbackReviewTitle').focus({ preventScroll: true });
+  }
+
+  function showReviewError(control, message) {
+    const error = $('staffFeedbackReviewError');
+    error.textContent = message;
+    error.hidden = false;
+    control.setAttribute('aria-invalid', 'true');
+    control.focus();
+    control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
+  function saveReview() {
+    if (!activeReviewRecord) return;
+    const reward = $('staffFeedbackReward');
+    const rating = $('staffFeedbackRating');
+    const comments = $('staffFeedbackComments');
+    clearReviewError();
+    if (!reward.value) return showReviewError(reward, 'Reward is required.');
+    if (!rating.value) return showReviewError(rating, 'Rating is required.');
+    if (!comments.value.trim()) return showReviewError(comments, 'Comments are required.');
+
+    const savedKey = recordKey(activeReviewRecord);
+    const edits = reviewEdits.filter(item => item?.key !== savedKey);
+    edits.push({ key: savedKey, reward: reward.value, rating: Number(rating.value), reviewerComment: comments.value.trim(), status: 'Resolved' });
+    try { sessionStorage.setItem(reviewStorageKey, JSON.stringify(edits)); }
+    catch { showReviewError(comments, 'Unable to submit review. Please try again.'); return; }
+    sessionStorage.removeItem(selectionStorageKey);
+    window.location.href = $('staffFeedbackReviewBack').href;
+  }
+
   function renderChart() {
     const metric = $('staffFeedbackChartMetric').value;
     const metricCopy = {
@@ -185,11 +291,14 @@
     });
     const palette = ['#a78bfa', '#f59e0b', '#34d399', '#60a5fa', '#f472b6'];
     const statusColors = { Pending: '#f59e0b', Responded: '#7c3aed' };
+    const orderedCounts = metric === 'status'
+      ? [...counts].sort(([left], [right]) => ['Pending', 'Responded'].indexOf(left) - ['Pending', 'Responded'].indexOf(right))
+      : [...counts];
     let currentOffset = 0;
     const circumference = 439.82;
     const legend = [];
     const chartSegments = [];
-    counts.forEach((count, label) => {
+    orderedCounts.forEach(([label, count]) => {
       const color = metric === 'status' ? statusColors[label] || palette[legend.length % palette.length] : palette[legend.length % palette.length];
       const percentage = count / visibleRows.length * 100;
       const dashLength = percentage / 100 * circumference;
@@ -209,7 +318,7 @@
     $('staffFeedbackChartTitle').textContent = metricCopy.title;
     $('staffFeedbackChartColumn').textContent = metricCopy.column;
     $('staffFeedbackDonutCircles').replaceChildren(...chartSegments);
-    $('staffFeedbackDonutSvg').setAttribute('aria-label', `${visibleRows.length} feedback records. ${[...counts].map(([label, count]) => `${label}: ${count}`).join('. ')}`);
+    $('staffFeedbackDonutSvg').setAttribute('aria-label', `${visibleRows.length} feedback records. ${orderedCounts.map(([label, count]) => `${label}: ${count}`).join('. ')}`);
     $('staffFeedbackChartTotal').textContent = visibleRows.length;
     $('staffFeedbackChartLegend').replaceChildren(...legend);
     $('staffFeedbackChartEmpty').hidden = visibleRows.length > 0;
@@ -275,6 +384,7 @@
   }
 
   function init() {
+    if ($('staffFeedbackReviewForm')) { initReviewPage(); return; }
     $('staffFeedbackFilterTrigger').addEventListener('click', () => { fillFilter(applied); openOverlay('staffFeedbackFilterOverlay', 'staffFeedbackKeyword'); });
     $('staffFeedbackCloseFilter').addEventListener('click', closeOverlay);
     $('staffFeedbackResetFilter').addEventListener('click', () => { fillFilter(defaults); applyFilter(); });
@@ -301,14 +411,24 @@
       if (!activeOverlay) return;
       if (event.key === 'Escape') { event.preventDefault(); closeOverlay(); }
       else if (event.key === 'Tab') {
-        const controls = [...activeOverlay.querySelectorAll('button, input, select, a[href]')].filter(node => !node.disabled && node.getClientRects().length);
+        const controls = [...activeOverlay.querySelectorAll('button, input, select, textarea, a[href]')].filter(node => !node.disabled && node.getClientRects().length);
         const first = controls[0];
         const last = controls[controls.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
     });
+    const listState = stored(listStorageKey, null);
+    if (listState?.filters) applied = Object.fromEntries(Object.keys(defaults).map(key => [key, typeof listState.filters[key] === 'string' ? listState.filters[key] : '']));
     render();
+    if (listState) {
+      sessionStorage.removeItem(listStorageKey);
+      requestAnimationFrame(() => {
+        document.querySelector('main').scrollTop = Number(listState.scroll) || 0;
+        const target = [...document.querySelectorAll('.staff-feedback-review-button')].find(button => button.dataset.reviewKey === listState.key) || $('staffFeedbackFilterTrigger');
+        target.focus({ preventScroll: true });
+      });
+    }
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();

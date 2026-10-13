@@ -98,44 +98,7 @@ function renderAttachments(attachments) {
   });
 }
 
-function showStep(step) {
-  const activeStep = step === 2 ? 2 : 1;
-  document.querySelectorAll('.new-user-step-panel').forEach(panel => {
-    panel.hidden = Number(panel.dataset.stepPanel) !== activeStep;
-  });
-  document.querySelectorAll('.new-user-stepper-item').forEach(item => {
-    const itemStep = Number(item.dataset.step);
-    item.classList.toggle('active', itemStep === activeStep);
-    item.classList.toggle('completed', itemStep < activeStep);
-    item.setAttribute('aria-selected', String(itemStep === activeStep));
-    item.tabIndex = itemStep === activeStep ? 0 : -1;
-    if (itemStep === activeStep) item.setAttribute('aria-current', 'step');
-    else item.removeAttribute('aria-current');
-  });
-  document.getElementById('newUserStepperFill').style.width = activeStep === 2 ? '50%' : '0%';
-  const content = document.querySelector('.employee-career-content');
-  if (content) content.scrollTop = 0;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   if (!profile) return;
   populateProfile();
-  showStep(1);
-  const stepItems = [...document.querySelectorAll('.new-user-stepper-item')];
-  stepItems.forEach((item, index) => {
-    item.addEventListener('click', () => showStep(Number(item.dataset.step)));
-    item.addEventListener('keydown', event => {
-      let targetIndex = index;
-      if (event.key === 'ArrowRight') targetIndex = (index + 1) % stepItems.length;
-      else if (event.key === 'ArrowLeft') targetIndex = (index - 1 + stepItems.length) % stepItems.length;
-      else if (event.key === 'Home') targetIndex = 0;
-      else if (event.key === 'End') targetIndex = stepItems.length - 1;
-      else return;
-      event.preventDefault();
-      showStep(Number(stepItems[targetIndex].dataset.step));
-      stepItems[targetIndex].focus();
-    });
-  });
-  document.getElementById('newUserNext').addEventListener('click', () => showStep(2));
-  document.getElementById('newUserPrevious').addEventListener('click', () => showStep(1));
 });

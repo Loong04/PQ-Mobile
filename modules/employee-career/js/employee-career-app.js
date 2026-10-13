@@ -5,7 +5,10 @@
   let inertedElements = [];
   let sheetFocusTimer = null;
   const theme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-  const cardMarkup = item => `<a class="employee-career-option" href="${item.href}?theme=${theme()}" role="listitem" data-option-id="${item.id}"><span class="employee-career-option-icon ${item.tone}" aria-hidden="true"><i class="fa-solid ${item.icon}"></i></span><span class="employee-career-option-title">${item.title}</span></a>`;
+  const cardContents = item => `<span class="employee-career-option-icon ${item.tone}" aria-hidden="true"><i class="fa-solid ${item.icon}"></i></span><span class="employee-career-option-title">${item.title}</span>`;
+  const cardMarkup = item => item.href
+    ? `<a class="employee-career-option" href="${item.href}?theme=${theme()}" role="listitem" data-option-id="${item.id}">${cardContents(item)}</a>`
+    : `<button type="button" class="employee-career-option" role="listitem" data-option-id="${item.id}" disabled>${cardContents(item)}</button>`;
   const viewAllMarkup = () => `<button type="button" class="employee-career-option" data-action="view-all" role="listitem"><span class="employee-career-option-icon view-all" aria-hidden="true"><i class="fa-solid fa-grip"></i></span><span class="employee-career-option-title">View All</span></button>`;
 
   function render() {

@@ -25,7 +25,7 @@ const requests = [
       page.on('pageerror', error => errors.push(error.message));
       await page.setViewport({ width: 390, height: 950 });
       await page.goto(historyUrl + '?theme=' + theme, { waitUntil: 'load' });
-      assert.deepEqual(await page.$$eval('[data-history-kind]', nodes => nodes.map(node => node.textContent.trim())), ['Feedback', 'Whereabout', 'CV Change Request']);
+      assert.deepEqual(await page.$$eval('[data-history-kind]', nodes => nodes.map(node => node.textContent.trim())), ['Feedback', 'Whereabout', 'Career Plan', 'CV Change Request']);
       await page.evaluate(() => localStorage.removeItem('pq_change_request_history'));
       await page.goto(historyUrl + '?category=cv-change-request&theme=' + theme, { waitUntil: 'load' });
       assert.equal(await page.$eval('[data-history-kind="cv-change-request"]', node => node.getAttribute('aria-pressed')), 'true');

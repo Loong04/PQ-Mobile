@@ -11,6 +11,35 @@ const puppeteer = require('puppeteer');
     page.on('pageerror', error => errors.push(error.message));
     const base = pathToFileURL(path.resolve(__dirname, '../modules/employee-career/options/team/vacancy-summary.html')).href;
     const count = () => page.$eval('#recruitmentTotal', element => Number(element.textContent));
+    const badgeContrasts = () => page.$$eval('.applicant-status-badge', badges => {
+      const channels = value => (value.match(/[\d.]+/g) || []).map(Number);
+      const luminance = rgb => {
+        const linear = rgb.map(channel => {
+          const value = channel / 255;
+          return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+        });
+        return .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
+      };
+      const swatch = document.createElement('span');
+      swatch.style.backgroundColor = 'var(--bg-card)';
+      document.body.append(swatch);
+      const base = channels(getComputedStyle(swatch).backgroundColor);
+      swatch.remove();
+      return badges.map(badge => {
+        const style = getComputedStyle(badge);
+        const foreground = channels(style.color);
+        const [red, green, blue, alpha = 1] = channels(style.backgroundColor);
+        const background = [
+          red * alpha + base[0] * (1 - alpha),
+          green * alpha + base[1] * (1 - alpha),
+          blue * alpha + base[2] * (1 - alpha)
+        ];
+        const foregroundLuminance = luminance(foreground);
+        const backgroundLuminance = luminance(background);
+        const contrast = (Math.max(foregroundLuminance, backgroundLuminance) + .05) / (Math.min(foregroundLuminance, backgroundLuminance) + .05);
+        return { status: badge.closest('.applicant-card').dataset.status, contrast: Number(contrast.toFixed(2)) };
+      });
+    });
     const filter = async values => {
       await page.click('#recruitmentFilterTrigger');
       await page.evaluate(values => {
@@ -122,6 +151,48 @@ const puppeteer = require('puppeteer');
       assert.ok(page.url().includes('vacancy=vac-account-01'), 'The selected vacancy is carried to the listing');
       assert.equal(await page.$eval('h1', element => element.textContent), 'Applicant Listing');
       assert.equal(await count(), 3, 'Only the selected vacancy applicants are shown');
+      assert.deepEqual(
+        await page.$eval('.applicant-card', card => {
+          const details = card.querySelector('.history-card-details');
+          const firstField = card.querySelector('.recruitment-card-field');
+          return {
+            tagName: card.tagName,
+            status: card.dataset.status,
+            name: card.querySelector('.history-card-title')?.textContent.trim() || null,
+            badge: card.querySelector('.history-card-header > .applicant-status-badge')?.textContent.trim() || null,
+            hasLegacyStrip: Boolean(card.querySelector('.recruitment-card-strip')),
+            detailLabels: [...card.querySelectorAll('.recruitment-card-field dt')].map(node => node.textContent.trim()),
+            hasHistoryDetails: Boolean(details),
+            cardRadius: getComputedStyle(card).borderRadius,
+            statusBorderWidth: getComputedStyle(card).borderLeftWidth,
+            detailColumns: details ? getComputedStyle(details).gridTemplateColumns.trim().split(/\s+/).length : 0,
+            fieldBorderWidth: firstField ? getComputedStyle(firstField).borderTopWidth : null,
+            valuesStayOnOneLine: [...card.querySelectorAll('.recruitment-card-field dd')].every(value => {
+              const lineHeight = Number.parseFloat(getComputedStyle(value).lineHeight);
+              return value.getBoundingClientRect().height <= lineHeight * 1.1;
+            })
+          };
+        }),
+        {
+          tagName: 'ARTICLE',
+          status: 'shortlisted',
+          name: 'ALFRED TEE',
+          badge: 'Shortlisted',
+          hasLegacyStrip: false,
+          detailLabels: ['Age', 'Gender', 'Years of Experience', 'Expected Pay (RM)'],
+          hasHistoryDetails: true,
+          cardRadius: '18px',
+          statusBorderWidth: '5px',
+          detailColumns: 1,
+          fieldBorderWidth: '0px',
+          valuesStayOnOneLine: true
+        },
+        'Applicant status cards use the History Card hierarchy without duplicating status in the detail rows'
+      );
+      if (theme === 'light') {
+        const contrasts = await badgeContrasts();
+        assert.ok(contrasts.every(result => result.contrast >= 4.5), `Light-mode applicant badges meet 4.5:1 contrast: ${JSON.stringify(contrasts)}`);
+      }
       await page.click('#recruitmentFilterTrigger');
       assert.deepEqual(await page.$$eval('#recruitmentFilterForm label', elements => elements.map(element => element.textContent)), ['Name', 'Start Date', 'End Date', 'Applicant Status', 'Application Status', 'Qualification Level', 'Qualification Major', 'Industry', 'Min Experience Years', 'Max Expected Pay']);
       await page.click('#recruitmentClose');
@@ -171,9 +242,24 @@ const puppeteer = require('puppeteer');
     await page.click('[data-set-theme="dark"]');
     await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('#recruitmentBack')]);
     assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark', 'Theme switched in the listing follows the Back link');
-    await page.goto(base.replace('vacancy-summary.html', 'applicant-listing.html') + '?vacancy=vac-account-02', { waitUntil: 'domcontentloaded' });
+    await page.goto(base.replace('vacancy-summary.html', 'applicant-listing.html') + '?vacancy=vac-account-02&theme=light', { waitUntil: 'domcontentloaded' });
     assert.equal(await count(), 4, 'A second vacancy has its own applicants');
     assert.doesNotMatch(await page.$eval('#recruitmentCards', element => element.textContent), /ALFRED TEE/);
+    assert.deepEqual(
+      await page.$$eval('.applicant-card', cards => cards.map(card => ({
+        status: card.dataset.status,
+        badge: card.querySelector('.applicant-status-badge')?.textContent.trim() || null
+      }))),
+      [
+        { status: 'new', badge: 'New' },
+        { status: 'shortlisted', badge: 'Shortlisted' },
+        { status: 'new', badge: 'New' },
+        { status: 'rejected', badge: 'Rejected' }
+      ],
+      'Every applicant status is exposed through the card accent and header badge'
+    );
+    const remainingContrasts = await badgeContrasts();
+    assert.ok(remainingContrasts.every(result => result.contrast >= 4.5), `New, Shortlisted and Rejected badges meet 4.5:1 contrast: ${JSON.stringify(remainingContrasts)}`);
     await page.goto(base.replace('vacancy-summary.html', 'applicant-listing.html') + '?vacancy=vac-hr-01', { waitUntil: 'domcontentloaded' });
     assert.equal(await count(), 0, 'A vacancy without applicants shows an empty listing');
     await page.goto(base.replace('vacancy-summary.html', 'applicant-listing.html') + '?vacancy=unknown', { waitUntil: 'domcontentloaded' });
