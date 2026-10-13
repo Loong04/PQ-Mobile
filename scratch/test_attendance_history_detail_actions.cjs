@@ -69,7 +69,13 @@ const editableDetails = [
       }
 
       await page.click('#tabFeedback');
-      await page.$$eval('#viewFeedbackHistory .history-card-item', cards => cards[1].click());
+      await page.$$eval('#viewFeedbackHistory .history-submit-btn', buttons => buttons[1].click());
+      await page.waitForSelector('#feedbackDetailsModal.is-open', { visible: true });
+      assert.equal(await page.$eval('#modalFbkDocStatus', node => node.textContent), 'To Resubmit');
+      assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', button => button.disabled), false);
+      await page.click('#feedbackDetailsModal [data-history-submit]');
+      await page.waitForSelector('#feedbackDetailsModal', { hidden: true });
+      await page.evaluate(() => openFeedbackDetailsModal('READONLY-FBK', 'Approved', 'EBB12 - Employee', 'Branch', 'Department', '14 Sep 2026', 'Shift', 'EBB12 - Submitter', '14/09/2026', 'Approved'));
       await page.waitForSelector('#feedbackDetailsModal.is-open', { visible: true });
       const disabledSubmit = await page.$eval('#feedbackDetailsModal [data-history-submit]', button => {
         const style = getComputedStyle(button);

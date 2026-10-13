@@ -28,23 +28,142 @@
 .career-history-employee-id { display: block; font: 700 11.5px monospace, sans-serif; color: var(--text-muted); opacity: .8; margin: 4px 0; }
 #feedbackHistoryFields, #cvHistoryFields { display: grid; gap: 16px; }
 #cvHistoryFields[hidden] { display: none; }
-.cv-history-card-employee { display: block; margin-top: 8px; }
-.cv-history-card-employee .history-employee-name { font-size: 12px; }
+.cv-history-card-employee { display: block; }
+.cv-history-card-employee .history-employee-name { font-size: inherit; }
 .cv-history-card-employee .history-employee-id { margin: 3px 0 4px; }
-.cv-history-detail-tabs { position: sticky; top: 0; z-index: 1; display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding: 0 0 8px; background: var(--detail-surface, var(--bg-card)); scrollbar-width: thin; }
-.cv-history-detail-tab { flex: 0 0 auto; padding: 8px 11px; min-height: 34px; border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-muted); background: var(--bg-input); font: 700 11.5px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; cursor: pointer; }
-.cv-history-detail-tab.active { border-color: transparent; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; }
+.cv-history-navigation { flex: 0 0 auto; padding: 4px 18px 16px; background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); }
+.cv-history-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; color: var(--text-muted); font-size: 10.5px; font-weight: 700; line-height: 1.5; }
+.cv-history-section-heading > :first-child { text-transform: uppercase; letter-spacing: .7px; }
+.cv-history-section-heading > :last-child { font-weight: 500; }
+.cv-history-detail-tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; }
+.cv-history-detail-tab { grid-column: span 2; min-width: 0; min-height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px 5px; border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-secondary); background: var(--bg-input); font: 700 11.5px/1.4 'Plus Jakarta Sans', sans-serif; cursor: pointer; touch-action: manipulation; }
+.cv-history-detail-tab:nth-last-child(-n + 2) { grid-column: span 3; }
+.cv-history-detail-tab i { font-size: 16px; color: var(--purple-text); }
+.cv-history-detail-tab.active { border-color: #7c3aed; background: #7c3aed; color: #fff; }
+.cv-history-detail-tab.active i { color: #fff; }
+.cv-history-detail-tab:active { opacity: .8; }
 .cv-history-detail-panel[hidden] { display: none; }
 .cv-history-metadata { margin-bottom: 14px; }
 .cv-history-field-value { white-space: pre-line; }
 .cv-history-field-changed .cv-history-field-value { color: #fbbf24; }
 [data-theme="light"] .cv-history-field-changed .cv-history-field-value { color: #b45309; }
 .cv-history-previous-value { display: block; margin-top: 5px; color: var(--text-muted); font-size: 10.5px; font-weight: 500; }
-.cv-history-family-section + .cv-history-family-section { margin-top: 18px; }
+#historyDetailBody .cv-history-family-section + .cv-history-family-section { margin-top: 18px !important; }
 .cv-history-family-section h3 { margin: 0 0 10px; font-size: 12px; font-weight: 800; color: var(--text-primary); }
 .cv-history-family-table th { width: 50%; }
+#historyDetailBody .cv-history-family-table thead th { background: #7c3aed !important; color: #fff !important; font-weight: 800 !important; border-color: rgba(255, 255, 255, .2) !important; }
 .cv-history-empty-members { color: var(--text-muted); font-weight: 500; }
-.career-history-phone .history-card-item[data-status="cancelled"] { border-left-color: #ef4444; }
+/* CV details have a mobile sheet and pinned section navigation. Other History details keep their shared presentation. */
+#historyDetailsModal.cv-history-mobile-sheet {
+  align-items: flex-end !important;
+  padding: 0 !important;
+  --detail-surface: var(--bg-card);
+}
+#historyDetailsModal.cv-history-mobile-sheet .history-detail-panel {
+  max-width: none !important;
+  height: 94% !important;
+  max-height: calc(100% - 16px) !important;
+  border-radius: 26px 26px 0 0 !important;
+  border-bottom: 0 !important;
+  background: var(--bg-card) !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet .history-detail-header {
+  position: relative;
+  flex: 0 0 auto !important;
+  grid-template-columns: minmax(0, 1fr) 44px !important;
+  min-height: 88px !important;
+  height: auto !important;
+  padding: 28px 18px 12px !important;
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet .history-detail-header::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: calc(50% - 18px);
+  width: 36px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border-card);
+}
+#historyDetailsModal.cv-history-mobile-sheet #historyDetailTitle {
+  color: var(--text-primary) !important;
+  font-size: 17px !important;
+  line-height: 1.4 !important;
+  letter-spacing: -.3px !important;
+  text-transform: none !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet #closeHistoryDetails {
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  background: var(--bg-input) !important;
+  color: var(--text-muted) !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet #closeHistoryDetails > .fa-xmark { color: var(--text-muted) !important; font-size: 17px !important; }
+#historyDetailsModal.cv-history-mobile-sheet #historyDetailBody {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: var(--bg-card) !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-detail-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 18px 18px max(22px, env(safe-area-inset-bottom)) !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+#historyDetailsModal.cv-history-mobile-sheet :is(.cv-history-panel-title, .cv-history-request-summary h3) {
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-request-summary { margin-bottom: 24px !important; }
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-fields { margin: 0 !important; }
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-detail-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 4px !important;
+  padding: 12px 0 !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-detail-row > :is(dt, dd) {
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  overflow-wrap: anywhere;
+}
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-detail-row > dt {
+  color: var(--text-muted) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-detail-row > dd {
+  color: var(--text-primary) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.6 !important;
+}
+#historyDetailsModal.cv-history-mobile-sheet .history-employee-name { font-size: 13px; }
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-previous-value { font-size: 11.5px; line-height: 1.5; }
+#historyDetailsModal.cv-history-mobile-sheet .cv-history-family-table :is(th, td) { padding: 12px 10px !important; font-size: 12px !important; line-height: 1.6 !important; }
+.career-history-phone .history-card-item:is([data-status="cancelled"], [data-status="rejected"]) { border-left-color: #ef4444; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(239, 68, 68, .06) 100%); }
+.career-history-phone .history-card-item:is([data-status="cancelled"], [data-status="rejected"]) .history-card-details { border-color: rgba(239, 68, 68, .18); background: rgba(239, 68, 68, .05); }
 .career-history-phone .status-pill.cancelled { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); color: #f87171; }
 [data-theme="light"] .career-history-phone .status-pill.cancelled { color: #b91c1c; }
 @media (prefers-reduced-motion: reduce) { .career-history-phone .history-card-item { transition: none; } }

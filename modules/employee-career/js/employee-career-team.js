@@ -2,7 +2,7 @@
   const $ = id => document.getElementById(id);
   const source = window.EMPLOYEE_CAREER_STAFF_EVENTS || [];
   const events = [
-    ['active', 'Active', 282], ['birthday', 'Birthday', 44], ['confirmation', 'Confirmation Due', 3],
+    ['active', 'Active', 281], ['birthday', 'Birthday', 44], ['confirmation', 'Confirmation Due', 3],
     ['retirement-due', 'Retirement Due', 1], ['medical', 'Medical Check', 6],
     ['confirmation-past', 'Confirmation Past Due', 237], ['retirement', 'Retirement Past Due', 80], ['contract', 'Contract Expiry Past Due', 29]
   ].map(([id, title, total]) => ({ id, title, total, records: source.find(item => item.id === id)?.records || [] }));
@@ -94,7 +94,11 @@
     if (!$('employeeCareerStaffEvents')) return;
     events.forEach(item => { const option = element('option', '', item.title); option.value = item.id; $('employeeCareerEventFilter').append(option); });
     $('employeeCareerEventFilter').addEventListener('change', renderEvents);
-    $('employeeCareerActiveHeadcount').addEventListener('click', () => showToast('Active Headcount is coming soon.'));
+    $('employeeCareerActiveHeadcount').addEventListener('click', () => {
+      const url = new URL('../employee-career/options/team/active-headcount.html', location.href);
+      url.searchParams.set('theme', document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+      location.href = url.href;
+    });
     $('employeeCareerVacantPosition').addEventListener('click', () => showToast('Vacant Position is coming soon.'));
     const pending = (window.EMPLOYEE_CAREER_PENDING_DATA || []).filter(item => !item.status || item.status === 'pending').length;
     $('employeeCareerPendingCount').textContent = String(pending);

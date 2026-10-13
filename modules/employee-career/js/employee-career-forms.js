@@ -148,6 +148,44 @@
     bindSubmit(form, 'Whereabout saved successfully');
   }
 
+  function initCareerPlan() {
+    const form = document.getElementById('careerPlanForm');
+    if (!form) return;
+    const path = document.getElementById('careerPlanPath');
+    const nextPosition = document.getElementById('careerPlanNextPosition');
+    const positions = {
+      '': [],
+      leadership: [
+        ['team-lead', 'Team Lead'],
+        ['department-manager', 'Department Manager'],
+        ['head-of-department', 'Head of Department']
+      ],
+      specialist: [
+        ['senior-specialist', 'Senior Specialist'],
+        ['principal-specialist', 'Principal Specialist'],
+        ['subject-matter-expert', 'Subject Matter Expert']
+      ],
+      'cross-functional': [
+        ['project-manager', 'Project Manager'],
+        ['business-partner', 'Business Partner'],
+        ['product-owner', 'Product Owner']
+      ]
+    };
+
+    function renderNextPositions() {
+      nextPosition.innerHTML = '<option value="">Select Next Position</option>' + (positions[path.value] || [])
+        .map(([value, label]) => `<option value="${value}">${label}</option>`)
+        .join('');
+      nextPosition.disabled = !path.value;
+    }
+
+    path.addEventListener('change', renderNextPositions);
+    renderNextPositions();
+    initAttachments(form, ['careerPlanFiles', 'careerPlanCamera'], 'careerPlanAttachments');
+    document.getElementById('careerPlanSave')?.addEventListener('click', () => showToast('Career plan saved'));
+    bindSubmit(form, 'Career plan submitted successfully');
+  }
+
   function initConfirmStaff() {
     const form = document.getElementById('confirmStaffForm');
     if (!form) return;
@@ -193,6 +231,22 @@
     });
   }
 
+  function initStaffEngagement() {
+    const form = document.getElementById('staffEngagementForm');
+    if (!form) return;
+    bindEmployee('engagementEmployee', { engagementName: 'name', engagementPosition: 'position' });
+    const select = document.getElementById('engagementEmployee');
+    const id = document.getElementById('engagementEmployeeId');
+    select.addEventListener('change', () => {
+      id.textContent = employees[select.value] ? '#' + select.value : '';
+      id.hidden = !id.textContent;
+    });
+    const today = new Date();
+    document.getElementById('engagementInterviewDate').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    initAttachments(form, ['engagementFiles', 'engagementCamera'], 'engagementAttachments');
+    bindSubmit(form, 'Staff engagement ready for submission');
+  }
+
   function init() {
     setBackTheme();
     document.querySelectorAll('.employee-career-form-page select.employee-career-control').forEach(select => {
@@ -203,10 +257,12 @@
     });
     initFeedback();
     initWhereabout();
+    initCareerPlan();
     initConfirmStaff();
     initStaffExit();
     initStaffRequest();
     initKeyStaffNomination();
+    initStaffEngagement();
   }
 
   window.EmployeeCareerForms = { showToast };

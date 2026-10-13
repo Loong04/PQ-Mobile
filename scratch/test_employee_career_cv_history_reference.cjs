@@ -39,6 +39,7 @@ const ref = number => 'ECR' + String(number).padStart(16, '0');
       assert.deepEqual(await page.$$eval('.history-card-item', nodes => nodes.map(node => node.dataset.recordId)), [ref(100)]);
       await page.click('.history-card-item');
       assert.deepEqual(await page.$$eval('[data-cv-tab]', nodes => nodes.map(node => node.textContent)), ['Personal', 'Qualification', 'Payroll', 'Contacts', 'Family']);
+      assert.equal(await page.$eval('.cv-history-detail-tabs', node => getComputedStyle(node).display), 'grid', 'CV sections use a visible mobile grid');
       const expected = {
         personal: ['redo', ref(100), 'SITI NURHALIZA BTE RAHMAN', '22 Apr 1960', '17 Jul 1984', 'A212222048', '25 Mar 2015'],
         qualification: ['Description', 'Other Institute Name', 'CGPA', '0.00', 'Certificate #', 'Year From', 'Year To', 'Highest', 'No', 'Notes'],
@@ -46,16 +47,35 @@ const ref = number => 'ECR' + String(number).padStart(16, '0');
         contacts: ['th.yew@peoplequest.com.my', '012-3512223', '02-79560000', '10, JALAN UPTOWN 2', '#05-33- JALAN 2228', 'DAMANSARA KOTA', '40860', 'Damansara', 'SELANGOR', 'MALAYSIA', '04-6677778', 'RAZALI', 'AS CORRESPONDENCE ADDRESS', 'FATHER'],
         family: ['Deleted Family Member', 'Existing Family Member', 'Name', 'Relation', 'TAI KIM CHUAN', 'BROTHER', 'ABU KADIR BIN MAHMUD', 'HUSBAND']
       };
-      for (const width of [360, 390, 450]) {
+      for (const width of [320, 360, 390, 450]) {
         await page.setViewport({ width, height: 950 });
+        assert.ok(await page.$$eval('[data-cv-tab]', nodes => nodes.every(node => {
+          const bounds = node.getBoundingClientRect();
+          const panel = node.closest('.history-detail-panel').getBoundingClientRect();
+          return bounds.height >= 44 && bounds.left >= panel.left && bounds.right <= panel.right && bounds.bottom <= panel.bottom;
+        })), 'All five sections have visible touch targets at ' + width);
         for (const [tab, values] of Object.entries(expected)) {
           await page.click('[data-cv-tab="' + tab + '"]');
           const text = await page.$eval('#cv-panel-' + tab, node => node.textContent);
           for (const value of values) assert.ok(text.includes(value), tab + ': ' + value);
           assert.equal(await page.$eval('#cv-panel-' + tab, node => node.hidden), false);
           assert.ok(await page.$eval('#historyDetailBody', node => node.scrollWidth <= node.clientWidth + 1), tab + ' fits ' + width);
+          if (tab === 'family' && width === 390) await page.screenshot({ path: 'scratch/employee-career-cv-history-family-' + theme + '.png' });
         }
       }
+      await page.setViewport({ width: 360, height: 640 });
+      await page.click('[data-cv-tab="contacts"]');
+      const tabTop = await page.$eval('.cv-history-detail-tabs', node => node.getBoundingClientRect().top);
+      await page.$eval('.cv-history-detail-scroll', node => { node.scrollTop = node.scrollHeight; });
+      assert.equal(await page.$eval('.cv-history-detail-tabs', node => node.getBoundingClientRect().top), tabTop, 'Section navigation stays visible while details scroll');
+      assert.ok(await page.$eval('.cv-history-detail-scroll', node => node.scrollTop > 0), 'Long mobile details scroll independently');
+      assert.ok(await page.$eval('#closeHistoryDetails', node => node.getBoundingClientRect().height >= 44), 'Close has a mobile touch target');
+      assert.ok(await page.$eval('#historyDetailsModal .history-detail-panel', node => {
+        const bounds = node.getBoundingClientRect();
+        return bounds.bottom <= window.innerHeight && bounds.top >= 0;
+      }), 'The sheet fits a short phone viewport');
+      await page.click('[data-cv-tab="family"]');
+      await page.focus('[data-cv-tab="family"]');
       await page.keyboard.press('Home');
       assert.equal(await page.$eval('[data-cv-tab="personal"]', node => node.getAttribute('aria-selected')), 'true');
       await page.keyboard.press('Tab');
@@ -87,6 +107,6 @@ const ref = number => 'ECR' + String(number).padStart(16, '0');
       assert.deepEqual(errors, []);
       await page.close();
     }
-    console.log('PASS: CV tab inside History without a duplicate option, screenshot records, five detail sections, date/status filters, validation/reset, back navigation, both themes and mobile widths.');
+    console.log('PASS: CV tab inside History, five visible mobile sections, pinned navigation, short phone layout, screenshot records, date/status filters, keyboard access, back navigation and both themes.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

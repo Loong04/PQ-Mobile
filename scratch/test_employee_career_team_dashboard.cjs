@@ -30,14 +30,20 @@ const puppeteer = require('puppeteer');
       );
       await page.keyboard.press('Escape');
 
-      for (const [id, text] of [['employeeCareerActiveHeadcount', 'Active Headcount'], ['employeeCareerVacantPosition', 'Vacant Position']]) {
-        const before = page.url();
-        await page.click(`#${id}`);
-        assert.equal(page.url(), before, `${text} displays a toast without navigation`);
-        assert.ok(await page.$eval('#appToast', (node, text) => node.classList.contains('show') && node.textContent.includes(text), text));
-      }
+      const activeNavigation = page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 1500 }).catch(() => null);
+      await page.click('#employeeCareerActiveHeadcount');
+      await activeNavigation;
+      assert.ok(page.url().replace(/\\/g, '/').includes('/modules/employee-career/options/team/active-headcount.html'), 'Active Headcount opens its chart page');
+      assert.equal(new URL(page.url()).searchParams.get('theme'), theme, 'Active Headcount preserves the selected theme');
+      await page.goBack({ waitUntil: 'domcontentloaded' });
+
+      const beforeVacant = page.url();
+      await page.click('#employeeCareerVacantPosition');
+      assert.equal(page.url(), beforeVacant, 'Vacant Position displays a toast without navigation');
+      assert.ok(await page.$eval('#appToast', node => node.classList.contains('show') && node.textContent.includes('Vacant Position')));
+      assert.equal(await page.$eval('#employeeCareerActiveHeadcountTotal', node => node.textContent.trim()), '281');
       assert.deepEqual(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.map(node => [node.cells[0].textContent.trim(), Number(node.cells[1].textContent)])), [
-        ['Active', 282], ['Birthday', 44], ['Confirmation Due', 3], ['Retirement Due', 1], ['Medical Check', 6], ['Confirmation Past Due', 237], ['Retirement Past Due', 80], ['Contract Expiry Past Due', 29]
+        ['Active', 281], ['Birthday', 44], ['Confirmation Due', 3], ['Retirement Due', 1], ['Medical Check', 6], ['Confirmation Past Due', 237], ['Retirement Past Due', 80], ['Contract Expiry Past Due', 29]
       ]);
       assert.ok(await page.$$eval('[data-career-event-chart]', nodes => nodes.every(node => node.querySelector('.fa-chart-pie') && node.textContent.trim() === 'View Chart' && getComputedStyle(node).whiteSpace === 'nowrap')));
       assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth));

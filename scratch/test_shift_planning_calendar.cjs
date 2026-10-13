@@ -60,8 +60,90 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     })), { size: '14.5px', weight: '900' });
     assert.equal(await page.$eval('.grid-cal-stat-staff', node => getComputedStyle(node).fontSize), '9.5px');
 
+    const summaryLayout = await page.$eval('#calSummaryCard', card => {
+      const metrics = [...card.querySelectorAll('.cal-summary-stat')];
+      const stats = card.querySelector('.cal-summary-stats');
+      const title = card.querySelector('.cal-summary-title');
+      const statsStyle = stats ? getComputedStyle(stats) : null;
+      return {
+        display: statsStyle?.display || 'missing',
+        columnCount: statsStyle ? statsStyle.gridTemplateColumns.split(' ').filter(Boolean).length : 0,
+        titleColor: title ? getComputedStyle(title).color : '',
+        metrics: metrics.map((metric, index) => {
+          const value = metric.querySelector('.cal-summary-stat-val');
+          const label = metric.querySelector('.cal-summary-stat-label');
+          const metricStyle = getComputedStyle(metric);
+          const valueStyle = value ? getComputedStyle(value) : null;
+          const labelStyle = label ? getComputedStyle(label) : null;
+          return {
+            element: metric.tagName,
+            label: label?.textContent.trim() || '',
+            value: value?.textContent.trim() || '',
+            valueFirst: metric.firstElementChild === value,
+            valueBackground: valueStyle?.backgroundColor || '',
+            valueBorderWidth: valueStyle?.borderWidth || '',
+            valueColor: valueStyle?.color || '',
+            labelColor: labelStyle?.color || '',
+            dividerWidth: index === 0 ? '0px' : metricStyle.borderLeftWidth
+          };
+        })
+      };
+    });
+    assert.equal(summaryLayout.display, 'grid', 'Selected-day summary must use the compact reference grid');
+    assert.equal(summaryLayout.columnCount, 4);
+    assert.deepEqual(summaryLayout.metrics.map(metric => metric.element), ['BUTTON', 'BUTTON', 'BUTTON', 'BUTTON']);
+    assert.deepEqual(summaryLayout.metrics.map(metric => metric.label), ['Working', 'No Work', 'OT Plan', 'On Leave']);
+    assert.deepEqual(summaryLayout.metrics.map(metric => metric.value), ['269.00', '13', '73 / 127.00', '5.00']);
+    assert.equal(summaryLayout.metrics.every(metric => metric.valueFirst), true, 'Values must sit above their labels');
+    assert.equal(summaryLayout.metrics.every(metric => metric.valueBackground === 'rgba(0, 0, 0, 0)' && metric.valueBorderWidth === '0px'), true, 'Values must not use pill backgrounds');
+    assert.equal(summaryLayout.metrics.slice(1).every(metric => metric.dividerWidth === '1px'), true, 'Metrics must use the reference vertical separators');
+    assert.equal(summaryLayout.titleColor, 'rgb(15, 23, 42)', 'Selected date must keep the normal title color');
+    assert.equal(summaryLayout.metrics.every(metric => metric.valueColor === 'rgb(124, 58, 237)'), true, 'Every summary value must use the system purple');
+    assert.equal(summaryLayout.metrics.every(metric => metric.labelColor === 'rgb(124, 58, 237)'), true, 'Every summary label must use the system purple');
+
     await page.click('#shiftCalendarInfoTrigger');
     assert.equal(await page.$eval('#shiftCalendarInfoModal', node => getComputedStyle(node).display), 'flex');
+    assert.deepEqual(
+      await page.$$eval('#shiftCalendarInfoModal .shift-calendar-info-row', rows => rows.map(row => ({
+        sample: row.querySelector('.shift-calendar-info-sample').textContent.trim(),
+        label: row.querySelector('strong').textContent.trim(),
+        description: row.querySelector('.shift-calendar-info-copy span').textContent.trim()
+      }))),
+      [
+        { sample: '287', label: 'Staff', description: 'Number of staff scheduled for the date.' },
+        { sample: '2,192h', label: 'Scheduled Hours', description: 'Total scheduled work hours for the date.' },
+        { sample: '15', label: 'Selected Date', description: 'The purple date opens the shift summary below.' }
+      ],
+      'Info must explain the values for the currently selected date'
+    );
+    await page.evaluate(() => closeModal('shiftCalendarInfoModal'));
+    await new Promise(resolve => setTimeout(resolve, 320));
+
+    await page.$$eval('#gridCalDays .grid-cal-cell', nodes => nodes.find(node => node.querySelector('.grid-cal-date')?.textContent.trim() === '5').click());
+    await page.click('#shiftCalendarInfoTrigger');
+    assert.deepEqual(
+      await page.$$eval('#shiftCalendarInfoModal .shift-calendar-info-sample', nodes => nodes.map(node => node.textContent.trim())),
+      ['78', '132h', '5'],
+      'Info must show the selected weekend staff count, hours and date'
+    );
+    assert.deepEqual(
+      await page.$eval('#gridCalDays .grid-cal-cell.selected', cell => [
+        cell.querySelector('.grid-cal-stat-staff').textContent.trim(),
+        cell.querySelector('.grid-cal-stat-hours').textContent.trim(),
+        cell.querySelector('.grid-cal-date').textContent.trim()
+      ]),
+      ['78', '132h', '5']
+    );
+    await page.evaluate(() => closeModal('shiftCalendarInfoModal'));
+    await new Promise(resolve => setTimeout(resolve, 320));
+
+    await page.$$eval('#gridCalDays .grid-cal-cell', nodes => nodes.find(node => node.querySelector('.grid-cal-date')?.textContent.trim() === '17').click());
+    await page.click('#shiftCalendarInfoTrigger');
+    assert.deepEqual(
+      await page.$$eval('#shiftCalendarInfoModal .shift-calendar-info-sample', nodes => nodes.map(node => node.textContent.trim())),
+      ['287', '8h', '17'],
+      'Info must refresh for another selected date instead of retaining the previous values'
+    );
     await page.evaluate(() => closeModal('shiftCalendarInfoModal'));
     await new Promise(resolve => setTimeout(resolve, 320));
 

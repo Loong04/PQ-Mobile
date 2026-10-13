@@ -8,7 +8,8 @@ const root = path.resolve(__dirname, '..');
 const chrome = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const individual = [
   ['Feedback', 'feedback.html'],
-  ['Whereabout', 'whereabout.html']
+  ['Whereabout', 'whereabout.html'],
+  ['Career Plan', 'career-plan.html']
 ];
 const team = [
   ['Confirm New User', 'confirm-new-user.html'],
@@ -21,7 +22,12 @@ const team = [
   ['Staff Retention', 'staff-retention.html'],
   ['Staff Whereabout', 'staff-whereabout.html'],
   ['Staff Feedback', 'staff-feedback.html'],
-  ['Staff Engagement', 'staff-engagement.html']
+  ['Staff Engagement', 'staff-engagement.html'],
+  ['IR Highlight', 'ir-highlight.html'],
+  ['Staff Career Plan', 'staff-career-plan.html'],
+  ['Vacancy Summary', 'vacancy-summary.html'],
+  ['Organization Statistics', 'organization-statistics.html'],
+  ['Org Chart', 'org-chart.html']
 ];
 
 function fileUrl(relative, query = '') {
@@ -86,6 +92,41 @@ async function open(page, relative, query = '') {
     await open(page, 'modules/employee-career/index.html', '?scope=invalid&theme=dark');
     assert.equal(await page.$eval('#employeeCareerTabIndividual', node => node.getAttribute('aria-selected')), 'true');
 
+    if (process.argv.includes('--team-options')) {
+      for (const width of [360, 420]) {
+        await page.setViewport({ width, height: 844, deviceScaleFactor: 1 });
+        for (const theme of ['light', 'dark']) {
+          for (const [title, filename] of team.slice(-5)) {
+            await open(page, 'modules/employee-career/index.html', `?scope=team&theme=${theme}`);
+            await page.click('[data-action="view-all"]');
+            await page.waitForFunction(() => document.activeElement?.id === 'employeeCareerCloseAll');
+            const link = `#employeeCareerAllOptionsGrid a[href*="/${filename}"]`;
+            assert.equal(await page.$eval(`${link} .employee-career-option-title`, node => node.textContent.trim()), title);
+            await Promise.all([
+              page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+              page.click(link)
+            ]);
+            assert.ok(page.url().includes(`/${filename}`));
+            assert.equal(await page.$eval('h1', node => node.textContent.trim()), title);
+            assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme);
+            assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 1), `${title}: no overflow at ${width}px in ${theme}`);
+            await Promise.all([
+              page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+              page.click('[data-option-back]')
+            ]);
+            assert.ok(page.url().includes('/employee-career/index.html'));
+            assert.equal(await page.$eval('#employeeCareerTabTeam', node => node.getAttribute('aria-selected')), 'true');
+            assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme);
+          }
+          await page.click('[data-action="view-all"]');
+          assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 1), `Team options: no overflow at ${width}px in ${theme}`);
+        }
+      }
+      assert.deepEqual(pageErrors, [], 'Team options have no JavaScript errors');
+      console.log('PASS: Five new Team options open and return correctly at 360px and 420px in light and dark themes.');
+      return;
+    }
+
     for (const [scope, options] of [['individual', individual], ['team', team]]) {
       for (const [title, filename] of options) {
         const relative = `modules/employee-career/options/${scope}/${filename}`;
@@ -131,7 +172,7 @@ async function open(page, relative, query = '') {
       ['', 'site-survey', 'client-briefing', 'progress-review']
     );
     await page.click('#whereaboutSubmit');
-    assert.equal(await page.$eval('#employeeCareerToast', node => node.textContent.trim()), 'Whereabout submitted successfully');
+    assert.equal(await page.$eval('#employeeCareerToast', node => node.textContent.trim()), 'Whereabout saved successfully');
 
     const teamForms = [
       {

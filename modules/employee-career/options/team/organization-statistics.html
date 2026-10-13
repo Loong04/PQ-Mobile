@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Organization Statistics</title>
+  <script>(()=>{const q=new URLSearchParams(location.search).get('theme');document.documentElement.dataset.theme=q==='light'?'light':'dark';})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../../css/theme.css">
+  <link rel="stylesheet" href="../../../../css/app.css">
+  <link rel="stylesheet" href="../../../../css/attendance-highlight-report.css">
+  <link rel="stylesheet" href="../../css/employee-career.css">
+  <link rel="stylesheet" href="../../css/staff-list.css">
+  <link rel="stylesheet" href="../../css/organization-statistics.css">
+  <script src="../../../../js/components.js"></script>
+  <script src="../../../../js/app.js" defer></script>
+  <script src="../../js/employee-career-option.js" defer></script>
+  <script src="../../js/organization-statistics-data.js" defer></script>
+  <script src="../../js/organization-statistics.js" defer></script>
+</head>
+<body class="employee-career-option-page org-statistics-page">
+  <preview-top-bar active-page="v2"></preview-top-bar>
+  <div class="phone-container">
+    <header class="employee-career-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="employee-career-header-row">
+        <a id="orgStatisticsBack" class="employee-career-back" data-option-back href="../../index.html?scope=team" aria-label="Back to Employee and Career"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <div class="employee-career-heading"><h1 id="orgStatisticsTitle">Organization Statistics</h1></div>
+        <span class="employee-career-header-spacer" aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content employee-career-content">
+      <section id="orgStatisticsListView" aria-label="Organization statistics">
+        <div class="staff-list-filter-summary filter-summary-bar">
+          <div><small>Current Filter</small><strong id="orgStatisticsFilterSummary"></strong></div>
+          <button type="button" id="orgStatisticsFilterTrigger" aria-label="Open organization statistics filter" aria-haspopup="dialog" aria-controls="orgStatisticsFilterDialog"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+        </div>
+        <div class="history-total-records-card org-statistics-summary" aria-live="polite"><div><span class="history-total-records-label">Total Records</span><strong id="orgStatisticsTotalRecords" class="history-total-records-value">0</strong></div><button type="button" id="orgStatisticsViewChart" class="view-chart-btn"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button></div>
+        <div id="orgStatisticsCards" class="org-statistics-cards"></div>
+        <p id="orgStatisticsEmpty" class="org-statistics-empty" hidden>No records found. Adjust your filters to see organization statistics.</p>
+      </section>
+      <section id="orgStatisticsChartView" class="attendance-report-chart" aria-label="Organization statistics analysis" hidden>
+        <section class="attendance-report-breakdown"><label for="orgStatisticsChartMetric">BREAKDOWN BY</label><select id="orgStatisticsChartMetric"><option value="unit">Organization Unit</option><option value="company">Company</option><option value="period">Period</option></select></section>
+      <section class="attendance-report-chart-card">
+        <div class="org-statistics-chart-heading"><div><h3 id="orgStatisticsChartTitle"></h3><p id="orgStatisticsChartSubtitle"></p></div><button type="button" id="orgStatisticsViewTrend" class="org-statistics-view-trend"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>View Trend</span></button></div>
+        <div class="attendance-report-donut"><svg id="orgStatisticsChartDonut" viewBox="0 0 180 180" aria-label="Organization statistics breakdown"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="orgStatisticsChartSegments"></g></svg><div class="attendance-report-donut-center"><strong id="orgStatisticsChartTotal">0.00</strong><small id="orgStatisticsChartBadge"></small></div></div>
+        <p id="orgStatisticsChartNote" class="attendance-report-note"></p>
+      </section>
+      <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="orgStatisticsChartColumn">Organization Unit</span><span>Value</span><span>% Total</span></div><div id="orgStatisticsChartLegend"></div></section>
+      </section>
+      <section id="orgStatisticsTrendView" aria-label="Organization statistics trend" hidden>
+        <section class="org-statistics-period-card"><small>SELECTED PERIOD</small><p><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span id="orgStatisticsTrendRange"></span></p></section>
+        <button type="button" id="orgStatisticsTrendTotalCard" class="org-statistics-trend-total"><span><b>Total Value</b><small id="orgStatisticsTrendMeasure"></small></span><strong id="orgStatisticsTrendTotal">0.00</strong></button>
+        <section class="org-statistics-monthly-card"><h2>Monthly breakdown</h2><p>Click a month to view its organization breakdown.</p><div class="org-statistics-bars-head"><span>MONTH</span><span>VALUE</span></div><div id="orgStatisticsTrendBars" class="org-statistics-bars"></div></section>
+      </section>
+      <section id="orgStatisticsAnalysisView" class="attendance-report-chart" aria-label="Selected period analysis" hidden>
+        <section class="attendance-report-breakdown"><label for="orgStatisticsAnalysisMetric">BREAKDOWN BY</label><select id="orgStatisticsAnalysisMetric"><option value="unit">Organization Unit</option><option value="company">Company</option><option value="period">Period</option></select></section>
+      <section class="attendance-report-chart-card">
+        <div class="org-statistics-chart-heading"><div><h3 id="orgStatisticsAnalysisTitle"></h3><p id="orgStatisticsAnalysisSubtitle"></p></div></div>
+        <div class="attendance-report-donut"><svg id="orgStatisticsAnalysisDonut" viewBox="0 0 180 180" aria-label="Organization statistics breakdown"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="orgStatisticsAnalysisSegments"></g></svg><div class="attendance-report-donut-center"><strong id="orgStatisticsAnalysisTotal">0.00</strong><small id="orgStatisticsAnalysisBadge"></small></div></div>
+        <p id="orgStatisticsAnalysisNote" class="attendance-report-note"></p>
+      </section>
+      <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="orgStatisticsAnalysisColumn">Organization Unit</span><span>Value</span><span>% Total</span></div><div id="orgStatisticsAnalysisLegend"></div></section>
+      </section>
+      <section id="orgStatisticsDetailView" aria-label="Selected organization records" hidden>
+        <section class="org-statistics-period-card"><small>SELECTED GROUP</small><p id="orgStatisticsDetailPeriod"></p></section>
+        <div class="history-total-records-card" role="status"><span class="history-total-records-label">Total Records</span><strong id="orgStatisticsDetailTotalRecords" class="history-total-records-value">0</strong></div>
+        <div id="orgStatisticsDetailCards" class="org-statistics-cards"></div>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer><notification-sheet></notification-sheet><favourite-sheet></favourite-sheet>
+    <div id="orgStatisticsFilterDialog" class="staff-list-filter-overlay standard-filter-sheet" hidden>
+      <form id="orgStatisticsFilterForm" class="staff-list-filter-panel standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="orgStatisticsFilterTitle" novalidate>
+        <div class="standard-filter-handle" aria-hidden="true"></div>
+        <header class="standard-filter-header"><h2 id="orgStatisticsFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="orgStatisticsResetFilter" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" id="orgStatisticsCloseFilter" class="standard-filter-close" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="staff-list-filter-fields org-statistics-filter-fields">
+          <div><label for="orgStatisticsKeyword">Search Keyword</label><input id="orgStatisticsKeyword" name="keyword" type="search" placeholder="Organization unit or company" maxlength="150"></div>
+          <div><label for="orgStatisticsCompany">Company</label><select id="orgStatisticsCompany" name="company"></select></div>
+          <div><label for="orgStatisticsOrgUnitType">Org Unit Type</label><select id="orgStatisticsOrgUnitType" name="orgUnitType"></select></div>
+          <fieldset><legend>Start Period</legend><div class="org-statistics-period-inputs"><select id="orgStatisticsStartYear" name="startYear" aria-label="Start period year" required></select><select id="orgStatisticsStartMonth" name="startMonth" aria-label="Start period month" required></select></div></fieldset>
+          <fieldset><legend>End Period</legend><div class="org-statistics-period-inputs"><select id="orgStatisticsEndYear" name="endYear" aria-label="End period year" required></select><select id="orgStatisticsEndMonth" name="endMonth" aria-label="End period month" required></select></div></fieldset>
+          <div><label for="orgStatisticsSummaryType">Summary Type</label><select id="orgStatisticsSummaryType" name="summaryType"><option value="month">Month</option><option value="quarter">Quarter</option><option value="year">Year</option></select></div>
+          <div><label for="orgStatisticsMeasureType">Measure Type</label><select id="orgStatisticsMeasureType" name="measureType"><option value="mcDays">MC Days</option><option value="overtimeHours">Overtime Hours</option><option value="lateHours">Late Hours</option><option value="absentDays">Absent Days</option><option value="absentOvertime">Absent for Overtime</option><option value="absentTraining">Absent for Training</option></select></div>
+        </div>
+        <p id="orgStatisticsFilterError" class="org-statistics-filter-error" role="alert" hidden>Start Period must be on or before End Period.</p>
+        <footer class="standard-filter-footer"><button type="submit" id="orgStatisticsApplyFilter" class="standard-filter-apply">Apply Filter</button></footer>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

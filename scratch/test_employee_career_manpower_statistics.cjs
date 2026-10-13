@@ -32,6 +32,7 @@ const controlledStaff = [
     job: 'ACCOUNT EXECUTIVE', jobType: 'ACCOUNT EXECUTIVE', company: 'Alpha', branch: 'HQ',
     base: 'KUALA LUMPUR', division: 'CORPORATE SERVICES', department: 'Finance', section: 'ACCOUNTS',
     costCenter: 'FINANCE', line: 'GENERAL', hireDate: '2016-10-05', birthDate: '1996-10-05',
+    category: 'Executive', gender: 'Female', grade: 'G2', skillGroup: 'Finance', talentGroup: 'High Potential',
     competencyPoints: 6, competencyMatchPercent: 80, basicPay: 2000, incrementPercent: 2,
     bonusFactor: 1, attendancePercent: 90, monthlyOtHours: 2, trainingCost: 200,
     performanceScore: 80, annualAttritionPercent: 1, effectiveFrom: '2026-01-01'
@@ -41,6 +42,7 @@ const controlledStaff = [
     job: 'ACCOUNT EXECUTIVE', jobType: 'ACCOUNT EXECUTIVE', company: 'Alpha', branch: 'HQ',
     base: 'KUALA LUMPUR', division: 'CORPORATE SERVICES', department: 'Finance', section: 'ACCOUNTS',
     costCenter: 'FINANCE', line: 'GENERAL', hireDate: '2021-10-05', birthDate: '1986-10-05',
+    category: 'Executive', gender: 'Male', grade: 'G3', skillGroup: 'Finance', talentGroup: 'Core Talent',
     competencyPoints: 8, competencyMatchPercent: 90, basicPay: 4000, incrementPercent: 4,
     bonusFactor: 2, attendancePercent: 100, monthlyOtHours: 4, trainingCost: 400,
     performanceScore: 90, annualAttritionPercent: 3, effectiveFrom: '2026-01-01'
@@ -155,6 +157,14 @@ const missingValueStaff = [{
       assert.equal(await page.$eval('main', main => main.scrollTop), tableScroll);
       await page.screenshot({ path: path.join(__dirname, 'employee_career_manpower_statistics_' + theme + '.png') });
       await page.click('#manpowerViewChart');
+      assert.deepEqual(await page.$$eval('#manpowerChartMetric option', options => options.map(option => option.textContent)), ['Category', 'Gender', 'Grade', 'Job Type', 'Skill Group', 'Talent Group']);
+      for (const metric of ['category', 'gender', 'grade', 'jobType', 'skillGroup', 'talentGroup']) {
+        await page.select('#manpowerChartMetric', metric);
+        assert.equal(await page.$eval('#manpowerChartTotal', n => n.textContent), '282', metric + ' conserves the total headcount');
+        assert.equal(await page.$$eval('#manpowerChartLegend [data-count]', nodes => nodes.reduce((total, n) => total + Number(n.dataset.count), 0)), 282);
+        assert.ok(await page.$$eval('#manpowerChartLegend .staff-list-legend-name span', nodes => nodes.length > 1 && nodes.every(node => node.textContent !== '—')), metric + ' has populated categories');
+      }
+      await page.select('#manpowerChartMetric', 'jobType');
       assert.equal(await page.$eval('#manpowerChartTotal', n => n.textContent), '282');
       assert.equal(await page.$$eval('#manpowerChartLegend [data-count]', nodes => nodes.reduce((total, n) => total + Number(n.dataset.count), 0)), 282);
       assert.equal(await page.$$eval('#manpowerChartLegend .staff-list-legend-row', nodes => nodes.length), 6);
@@ -197,8 +207,8 @@ const missingValueStaff = [{
     assert.equal(await page.$$eval('#manpowerStaffList .manpower-employee-card', nodes => nodes.length), 6);
     await page.click('#manpowerBack');
     await page.click('#manpowerViewChart');
-    await page.select('#manpowerChartMetric', 'branch');
-    assert.deepEqual(await page.$$eval('#manpowerChartLegend .staff-list-legend-row', rows => rows.map(row => [row.querySelector('.staff-list-legend-name span').textContent, row.querySelector('strong').textContent])), [['South', '7'], ['HQ', '4'], ['North', '2']]);
+    await page.select('#manpowerChartMetric', 'jobType');
+    assert.deepEqual(await page.$$eval('#manpowerChartLegend .staff-list-legend-row', rows => rows.map(row => [row.querySelector('.staff-list-legend-name span').textContent, row.querySelector('strong').textContent])), [['TECHNICIAN', '7'], ['ACCOUNT EXECUTIVE', '6']]);
     await page.click('#manpowerBack');
     await apply({ manpowerCompany: 'Alpha', manpowerBranch: 'North', manpowerDepartment: 'Finance' });
     assert.deepEqual(await table(), [['ACCOUNT EXECUTIVE', '2']]);
@@ -207,6 +217,10 @@ const missingValueStaff = [{
     await page.click('#manpowerBack');
     await page.click('#manpowerViewChart');
     assert.equal(await page.$eval('#manpowerChartTotal', n => n.textContent), '2');
+    for (const metric of ['category', 'gender', 'grade', 'skillGroup', 'talentGroup']) {
+      await page.select('#manpowerChartMetric', metric);
+      assert.equal(await page.$eval('#manpowerChartTotal', node => node.textContent), '2', metric + ' retains the active organization filter');
+    }
     await page.click('#manpowerBack');
     await page.click('#manpowerFilterTrigger');
     await page.click('#manpowerResetFilter');
@@ -246,6 +260,20 @@ const missingValueStaff = [{
       window.MANPOWER_STATISTICS_STAFF = staff;
     }, { aggregates: controlledAggregate, staff: controlledStaff });
     await page.goto(url, { waitUntil: 'load' });
+    await page.click('#manpowerViewChart');
+    for (const [metric, expected] of [
+      ['category', [['Executive', '2']]],
+      ['gender', [['Female', '1'], ['Male', '1']]],
+      ['grade', [['G2', '1'], ['G3', '1']]],
+      ['jobType', [['ACCOUNT EXECUTIVE', '2']]],
+      ['skillGroup', [['Finance', '2']]],
+      ['talentGroup', [['Core Talent', '1'], ['High Potential', '1']]]
+    ]) {
+      await page.select('#manpowerChartMetric', metric);
+      assert.deepEqual(await page.$$eval('#manpowerChartLegend .staff-list-legend-row', rows => rows.map(row => [row.querySelector('.staff-list-legend-name span').textContent, row.querySelector('strong').textContent])), expected, metric + ' counts the filtered employees');
+      assert.equal(await page.$eval('#manpowerChartTotal', node => node.textContent), '2');
+    }
+    await page.click('#manpowerBack');
     await page.click('#manpowerTable tbody td:first-child button');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'manpowerStatisticsClose');
     await page.keyboard.press('Tab');

@@ -5,6 +5,25 @@ const puppeteer = require('puppeteer');
 
 const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/options/shift-plan.html')).href;
 
+async function readDetailInfoCard(page, viewSelector) {
+  return page.$eval(`${viewSelector} .shift-detail-info-card`, card => ({
+    iconCount: card.querySelectorAll('i').length,
+    rows: [...card.querySelectorAll('.shift-detail-info-row')].map(row => {
+      const label = row.querySelector('.shift-detail-info-label');
+      const value = row.querySelector('.shift-detail-info-value');
+      const rowStyle = getComputedStyle(row);
+      return {
+        label: label?.textContent.trim() || '',
+        value: value?.textContent.trim() || '',
+        display: rowStyle.display,
+        columnCount: rowStyle.gridTemplateColumns.split(' ').filter(Boolean).length,
+        labelColor: label ? getComputedStyle(label).color : '',
+        valueAlign: value ? getComputedStyle(value).textAlign : ''
+      };
+    })
+  }));
+}
+
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
@@ -39,6 +58,13 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     assert.equal(await page.$eval('#wsDetailHeadcount', node => node.textContent.trim()), '268');
     assert.equal(await page.$eval('#wsDetailScheduledHours', node => node.textContent.trim()), '2,144.00');
     assert.equal(await page.$eval('#wsDetailWorkHours', node => node.textContent.trim()), '0.00');
+    const workDetailInfo = await readDetailInfoCard(page, '#view-work-shift-detail');
+    assert.equal(workDetailInfo.iconCount, 0, 'Work Shift detail information must not show a date icon');
+    assert.deepEqual(workDetailInfo.rows.map(row => row.label), ['Date:', 'Shift:', 'Total Headcount:', 'Total Scheduled Hours:', 'Total Work Hours:']);
+    assert.match(workDetailInfo.rows[0].value, /^17 Sep.* 2026$/);
+    assert.deepEqual(workDetailInfo.rows.slice(1).map(row => row.value), ['8.30:17.30W', '268', '2,144.00', '0.00']);
+    assert.equal(workDetailInfo.rows.every(row => row.display === 'grid' && row.columnCount === 2 && row.valueAlign === 'right'), true, 'Work Shift detail labels and values must share aligned columns');
+    assert.equal(workDetailInfo.rows.every(row => row.labelColor === 'rgb(100, 116, 139)'), true, 'Work Shift Date must use the same label color as every other field');
     assert.equal(await page.$eval('#wsEmployeeCardsContainer .employee-purple-card:first-child .employee-card-name', node => node.textContent.trim()), 'Aqilah Antasha');
     assert.equal(await page.$eval('#wsEmployeeCardsContainer .employee-purple-card:first-child .employee-card-name + .employee-card-id', node => node.textContent.trim()), '#000008');
     assert.equal(await page.$eval('#wsEmployeeCardsContainer .employee-purple-card:first-child', node => getComputedStyle(node).flexDirection), 'column');
@@ -82,6 +108,13 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     assert.equal(await page.$eval('#nwEmployeeCardsContainer .employee-purple-card:first-child .employee-card-name', node => node.textContent.trim()), 'TEST');
     assert.equal(await page.$eval('#nwEmployeeCardsContainer .employee-purple-card:first-child .employee-card-name + .employee-card-id', node => node.textContent.trim()), '#00012345');
     assert.equal(await page.$('#nwEmployeeCardsContainer .employee-purple-card .fa-chevron-right'), null);
+    const noWorkDetailInfo = await readDetailInfoCard(page, '#view-no-work-detail');
+    assert.equal(noWorkDetailInfo.iconCount, 0, 'No Work detail information must not show a date icon');
+    assert.deepEqual(noWorkDetailInfo.rows.map(row => row.label), ['Date:', 'Shift:', 'Total Headcount:']);
+    assert.match(noWorkDetailInfo.rows[0].value, /^17 Sep.* 2026$/);
+    assert.deepEqual(noWorkDetailInfo.rows.slice(1).map(row => row.value), ['Rest / Off Day', '13']);
+    assert.equal(noWorkDetailInfo.rows.every(row => row.display === 'grid' && row.columnCount === 2 && row.valueAlign === 'right'), true, 'No Work detail labels and values must share aligned columns');
+    assert.equal(noWorkDetailInfo.rows.every(row => row.labelColor === 'rgb(100, 116, 139)'), true, 'No Work Date must use the same label color as every other field');
     assert.deepEqual(errors, []);
     console.log('PASS: Calendar Work Shift and No Work drill-downs use consistent purple cards and required data.');
   } finally {

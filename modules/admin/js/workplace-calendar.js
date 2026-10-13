@@ -97,11 +97,14 @@
         details.append(row);
       }
       const actions = node('div', 'history-card-actions');
-      const action = node('button', 'history-submit-btn', planned ? 'Confirm' : 'Delete');
-      action.type = 'button';
-      action.dataset.bookingAction = planned ? 'confirm' : 'delete';
-      action.setAttribute('aria-label', `${planned ? 'Confirm' : 'Delete'} ${store.resources.find(resource => resource.id === record.resource).name}, ${record.startTime} – ${record.endTime}`);
-      actions.append(action);
+      const availableActions = planned ? [['confirm', 'Confirm'], ['delete', 'Delete']] : [['delete', 'Delete']];
+      for (const [actionName, label] of availableActions) {
+        const action = node('button', 'history-submit-btn', label);
+        action.type = 'button';
+        action.dataset.bookingAction = actionName;
+        action.setAttribute('aria-label', `${label} ${store.resources.find(resource => resource.id === record.resource).name}, ${record.startTime} – ${record.endTime}`);
+        actions.append(action);
+      }
       card.append(header, details, actions);
       bookingList.append(card);
     }

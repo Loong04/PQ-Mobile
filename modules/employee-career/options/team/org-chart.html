@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Org Chart</title>
+  <script>(()=>{const q=new URLSearchParams(location.search).get('theme');document.documentElement.dataset.theme=q==='light'?'light':'dark';})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../../css/theme.css">
+  <link rel="stylesheet" href="../../../../css/app.css">
+  <link rel="stylesheet" href="../../css/employee-career.css">
+  <link rel="stylesheet" href="../../css/org-chart.css">
+  <script src="../../../../js/components.js"></script>
+  <script src="../../../../js/app.js" defer></script>
+  <script src="../../js/employee-career-option.js" defer></script>
+  <script src="../../js/org-chart-data.js" defer></script>
+  <script src="../../js/org-chart.js" defer></script>
+</head>
+<body class="employee-career-option-page org-chart-page">
+  <preview-top-bar active-page="v2"></preview-top-bar>
+  <div class="phone-container">
+    <header class="employee-career-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="employee-career-header-row">
+        <a class="employee-career-back" data-option-back href="../../index.html?scope=team" aria-label="Back to Employee and Career"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <div class="employee-career-heading"><h1 id="orgChartTitle">Org Chart</h1></div>
+        <span class="employee-career-header-spacer" aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content employee-career-content">
+      <section class="org-chart-summary filter-summary-bar" aria-label="Current organization chart filter">
+        <div class="org-chart-summary-copy"><small>Current Filter</small><strong id="orgChartFilterSummary">All organization units and levels</strong></div>
+        <button type="button" id="orgChartFilterTrigger" class="org-chart-filter-trigger" aria-label="Open organization chart filter" aria-haspopup="dialog" aria-controls="orgChartFilterOverlay"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+      </section>
+
+      <section id="orgChartSpacingControls" class="org-chart-spacing-controls" aria-label="Organization chart spacing controls">
+        <div class="org-chart-spacing-control">
+          <span class="org-chart-spacing-label">Mrg. X</span>
+          <div class="org-chart-stepper">
+            <button type="button" id="orgChartMarginXDecrease" aria-label="Decrease horizontal margin"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
+            <output id="orgChartMarginXValue" aria-live="polite">26</output>
+            <button type="button" id="orgChartMarginXIncrease" aria-label="Increase horizontal margin"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <div class="org-chart-spacing-control">
+          <span class="org-chart-spacing-label">Mrg. Y</span>
+          <div class="org-chart-stepper">
+            <button type="button" id="orgChartMarginYDecrease" aria-label="Decrease vertical margin"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
+            <output id="orgChartMarginYValue" aria-live="polite">14</output>
+            <button type="button" id="orgChartMarginYIncrease" aria-label="Increase vertical margin"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </section>
+
+      <div class="org-chart-meta"><span>Visible positions</span><strong id="orgChartVisibleCount">0</strong></div>
+      <ul id="orgChartTree" class="org-chart-tree" aria-label="Organization hierarchy"></ul>
+      <section id="orgChartEmpty" class="org-chart-empty" hidden>
+        <i class="fa-solid fa-sitemap" aria-hidden="true"></i>
+        <h2>No Organization Positions Found</h2>
+        <p>Adjust your filters to view another part of the organization.</p>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer>
+    <notification-sheet></notification-sheet>
+    <favourite-sheet></favourite-sheet>
+
+    <div id="orgChartFilterOverlay" class="org-chart-filter-overlay standard-filter-sheet" hidden>
+      <form id="orgChartFilterForm" class="standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="orgChartFilterTitle">
+        <div class="standard-filter-handle" aria-hidden="true"></div>
+        <header class="standard-filter-header">
+          <h2 id="orgChartFilterTitle">Filter</h2>
+          <div class="standard-filter-header-actions">
+            <button type="button" id="orgChartResetFilter" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button>
+            <button type="button" id="orgChartCloseFilter" class="standard-filter-close" aria-label="Close organization chart filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+        </header>
+        <div class="org-chart-filter-fields">
+          <div><label for="orgChartFilterKeyword">Search Keyword</label><input id="orgChartFilterKeyword" type="search" maxlength="150" placeholder="Employee Number, Name or Position"></div>
+          <div><label for="orgChartFilterUnit">Organization Unit</label><select id="orgChartFilterUnit"><option value="">All Organization Units</option></select></div>
+          <div><label for="orgChartFilterLevel">Maximum Level</label><select id="orgChartFilterLevel"><option value="">All Levels</option><option value="1">1 Level</option><option value="2">2 Levels</option><option value="3">3 Levels</option></select></div>
+          <div><label for="orgChartFilterSkipVacant">Skip Vacant?</label><select id="orgChartFilterSkipVacant"><option value="no">No</option><option value="yes">Yes</option></select></div>
+        </div>
+        <footer class="org-chart-filter-footer standard-filter-footer"><button type="submit" id="orgChartApplyFilter" class="standard-filter-apply">Search</button></footer>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

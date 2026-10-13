@@ -1,6 +1,42 @@
 // Readable records from the supplied CV history screenshots, used by the UI preview.
 window.EMPLOYEE_CAREER_CV_HISTORY_DATA = window.EMPLOYEE_CAREER_CV_HISTORY_DATA || (() => {
   const changed = value => ({value, changed: true});
+  // Fictional preview data for history records whose original screenshots had no profile details.
+  const exampleProfile = {
+    personal: {
+      'Name': 'Farhan binti rahmat', 'Birth Date': '18 Jul 1984',
+      'Personal Email': changed('farhan.rahmat@example.com'),
+      'Marital Status': 'Married', 'Marriage Date': '12 Jun 2010',
+      'Passport #': 'DEMO-PASSPORT-01', 'Passport Expiry': '18 Jul 2024',
+      'Driving License': 'Class D', 'Driving License Expiry': '18 Jul 2023',
+      'Key Level': 'Management'
+    },
+    qualification: {
+      'Qualification': "Bachelor's Degree", 'Description': 'Bachelor of Business Administration',
+      'Major': 'Human Resource Management', 'Institute': 'Universiti Malaya',
+      'Other Institute Name': '', 'CGPA': '3.62', 'Certificate #': 'DEMO-QUAL-001',
+      'Year From': 2003, 'Year To': 2006, 'Highest': 'Yes', 'Notes': 'Graduated with honours.'
+    },
+    payroll: {
+      'EPF #': 'DEMO-EPF-001', 'Socso #': 'DEMO-SOCSO-001', 'Tax #': 'DEMO-TAX-001',
+      'Tabung Haji #': '', 'ASB #': '', 'Spouse EPF #': 'DEMO-EPF-002',
+      'Spouse Tax #': 'DEMO-TAX-002', 'Bank': 'CIMB', 'Account #': 'DEMO-ACCOUNT-001',
+      'Handicap?': 'No', 'Spouse Handicap?': 'No', 'Spouse Working?': 'Yes'
+    },
+    contacts: {
+      'Company Email': 'farhan.rahmat@peoplehcm.example', 'Phone #': '03-0000 0101',
+      'Mobile #': changed('012-000 0101'), 'Address': '12, Jalan Contoh\nTaman Contoh',
+      'Postal Code': '47300', 'City': 'Petaling Jaya', 'State': 'SELANGOR', 'Country': 'MALAYSIA',
+      'Emergency Contact #': '012-000 0102', 'Contact Name': 'Ahmad Rahmat',
+      'Contact Address': '12, Jalan Contoh\nTaman Contoh', 'Contact Postal Code': '47300',
+      'Contact City': 'Petaling Jaya', 'Contact State': 'SELANGOR', 'Contact Country': 'MALAYSIA',
+      'Remarks': 'Husband — emergency contact'
+    },
+    family: {
+      deleted: [],
+      existing: [{name: 'Ahmad Rahmat', relation: 'HUSBAND'}, {name: 'Nur Aina', relation: 'DAUGHTER'}]
+    }
+  };
   const approvedProfile = {
     personal: {
       'Name': changed('SITI NURHALIZA BTE RAHMAN'),
@@ -55,6 +91,12 @@ window.EMPLOYEE_CAREER_CV_HISTORY_DATA = window.EMPLOYEE_CAREER_CV_HISTORY_DATA 
     title: 'CV Change Request', name: 'Farhan binti rahmat', empNo: 'EBB12',
     submittedAt, status, changes: [],
     approverRemarks: number === 100 ? 'redo' : '',
-    profile: number === 100 ? approvedProfile : {}
+    profile: number === 100 ? approvedProfile : {
+      ...exampleProfile,
+      personal: {
+        ...exampleProfile.personal,
+        'Age': Number(submittedAt.slice(0, 4)) - 1984 - (submittedAt.slice(5) < '07-18' ? 1 : 0)
+      }
+    }
   }));
 })();

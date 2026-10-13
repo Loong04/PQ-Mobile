@@ -35,7 +35,7 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$$eval('#employeeCareerOptions .employee-career-option', nodes => nodes.length), 6, 'Team quick options retained');
       await page.click('#employeeCareerTabIndividual');
       assert.equal(await page.$eval('#employeeCareerDocumentStatus', node => node.hidden), false);
-      assert.deepEqual(await page.$$eval('#employeeCareerOptions .employee-career-option-title', nodes => nodes.map(node => node.textContent.trim())), ['Feedback', 'Whereabout', 'History']);
+      assert.deepEqual(await page.$$eval('#employeeCareerOptions .employee-career-option-title', nodes => nodes.map(node => node.textContent.trim())), ['Feedback', 'Whereabout', 'Career Plan', 'History']);
       await page.goto(url.replace('scope=individual', 'scope=team'), { waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('#employeeCareerDocumentStatus', node => node.hidden), true, 'Direct Team navigation hides my status');
       assert.deepEqual(errors, []);

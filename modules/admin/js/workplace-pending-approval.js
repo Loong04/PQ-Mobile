@@ -262,14 +262,11 @@ document.addEventListener('DOMContentLoaded', () => {
       table(other, requests);
     }
     if (item.kind !== 'inventory-request' && item.attachments.length) table(general, [['Attachment', item.attachments.join(', ')]]);
-    const inventoryComment = item.kind === 'inventory-request';
     const commentLabel = node('label', 'workplace-approval-comment-label', 'Approver Action Comments');
     commentLabel.htmlFor = 'approvalComments';
-    const comments = node(inventoryComment ? 'input' : 'textarea', inventoryComment ? 'payroll-approval-comments workplace-approval-comment-input' : 'payroll-approval-comments');
-    if (inventoryComment) {
-      comments.type = 'text';
-      comments.placeholder = 'Add approver action comments (optional)...';
-    }
+    const comments = node('input', 'payroll-approval-comments workplace-approval-comment-input');
+    comments.type = 'text';
+    comments.placeholder = 'Add approver action comments (optional)...';
     comments.id = 'approvalComments';
     comments.maxLength = 2000;
     comments.value = item.approverComments;

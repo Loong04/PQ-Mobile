@@ -1,11 +1,11 @@
 (() => {
   const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
   const sections = {
-    personal: {title: 'Personal', fields: ['Name', 'Birth Date', 'Age', 'Personal Email', 'Marital Status', 'Marriage Date', 'Passport #', 'Passport Expiry', 'Driving License', 'Driving License Expiry', 'Key Level']},
-    qualification: {title: 'Qualification', fields: ['Qualification', 'Description', 'Major', 'Institute', 'Other Institute Name', 'CGPA', 'Certificate #', 'Year From', 'Year To', 'Highest', 'Notes']},
-    payroll: {title: 'Payroll', fields: ['EPF #', 'Socso #', 'Tax #', 'Tabung Haji #', 'ASB #', 'Spouse EPF #', 'Spouse Tax #', 'Bank', 'Account #', 'Handicap?', 'Spouse Handicap?', 'Spouse Working?']},
-    contacts: {title: 'Contacts', fields: ['Company Email', 'Phone #', 'Mobile #', 'Address', 'Postal Code', 'City', 'State', 'Country', 'Emergency Contact #', 'Contact Name', 'Contact Address', 'Contact Postal Code', 'Contact City', 'Contact State', 'Contact Country', 'Remarks']},
-    family: {title: 'Family', fields: []}
+    personal: {title: 'Personal', icon: 'fa-user', fields: ['Name', 'Birth Date', 'Age', 'Personal Email', 'Marital Status', 'Marriage Date', 'Passport #', 'Passport Expiry', 'Driving License', 'Driving License Expiry', 'Key Level']},
+    qualification: {title: 'Qualification', icon: 'fa-graduation-cap', fields: ['Qualification', 'Description', 'Major', 'Institute', 'Other Institute Name', 'CGPA', 'Certificate #', 'Year From', 'Year To', 'Highest', 'Notes']},
+    payroll: {title: 'Payroll', icon: 'fa-wallet', fields: ['EPF #', 'Socso #', 'Tax #', 'Tabung Haji #', 'ASB #', 'Spouse EPF #', 'Spouse Tax #', 'Bank', 'Account #', 'Handicap?', 'Spouse Handicap?', 'Spouse Working?']},
+    contacts: {title: 'Contacts', icon: 'fa-address-book', fields: ['Company Email', 'Phone #', 'Mobile #', 'Address', 'Postal Code', 'City', 'State', 'Country', 'Emergency Contact #', 'Contact Name', 'Contact Address', 'Contact Postal Code', 'Contact City', 'Contact State', 'Contact Country', 'Remarks']},
+    family: {title: 'Family', icon: 'fa-user-group', fields: []}
   };
   const normalize = value => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const aliases = {
@@ -31,6 +31,7 @@
   }
   const display = value => value === '' || value == null ? '\u2014' : escape(value);
   const employee = row => `<span class="cv-history-detail-employee"><span class="history-employee-name">${display(row.name || row.employeeName)}</span>${row.empNo ? `<span class="history-employee-id">#${escape(String(row.empNo).replace(/^#/, ''))}</span>` : ''}</span>`;
+  const detailRow = (label, content, attributes = '') => `<div class="cv-history-detail-row"><dt>${escape(label)}</dt><dd${attributes}>${content}</dd></div>`;
 
   function fieldRows(row, section) {
     const snapshot = row.profile?.[section] || {};
@@ -46,7 +47,7 @@
       const structured = field !== null && typeof field === 'object';
       const value = structured ? field.value : field;
       const changed = structured && field.changed;
-      return `<tr><th scope="row">${escape(label)}</th><td data-cv-field="${escape(label)}"${changed ? ' class="cv-history-field-changed"' : ''}><span class="cv-history-field-value">${display(value)}</span>${structured && Object.hasOwn(field, 'previous') ? `<span class="cv-history-previous-value">Previous: ${display(field.previous)}</span>` : ''}</td></tr>`;
+      return detailRow(label, `<span class="cv-history-field-value">${display(value)}</span>${structured && Object.hasOwn(field, 'previous') ? `<span class="cv-history-previous-value">Previous: ${display(field.previous)}</span>` : ''}`, ` data-cv-field="${escape(label)}"${changed ? ' class="cv-history-field-changed"' : ''}`);
     }).join('');
   }
 
@@ -56,8 +57,12 @@
   }
 
   function render(row, statusMarkup, submittedDate) {
-    const tabs = Object.entries(sections).map(([key, section]) => `<button type="button" class="cv-history-detail-tab${key === 'personal' ? ' active' : ''}" id="cv-tab-${key}" role="tab" aria-selected="${key === 'personal'}" aria-controls="cv-panel-${key}" tabindex="${key === 'personal' ? '0' : '-1'}" data-cv-tab="${key}">${section.title}</button>`).join('');
-    const metadata = `<table class="history-detail-table cv-history-metadata"><tbody><tr><th scope="row">Approver Remarks</th><td>${display(row.approverRemarks)}</td></tr><tr><th scope="row">Document Reference</th><td>${display(row.reference || row.id)}</td></tr><tr><th scope="row">Document Status</th><td>${statusMarkup}</td></tr><tr><th scope="row">Employee</th><td>${employee(row)}</td></tr><tr><th scope="row">Submitted Date</th><td>${submittedDate}</td></tr></tbody></table>`;
+    const tabs = Object.entries(sections).map(([key, section]) => `<button type="button" class="cv-history-detail-tab${key === 'personal' ? ' active' : ''}" id="cv-tab-${key}" role="tab" aria-selected="${key === 'personal'}" aria-controls="cv-panel-${key}" tabindex="${key === 'personal' ? '0' : '-1'}" data-cv-tab="${key}"><i class="fa-solid ${section.icon}" aria-hidden="true"></i><span>${section.title}</span></button>`).join('');
+    const metadata = `<section class="cv-history-request-summary"><h3>Request overview</h3><dl class="cv-history-metadata cv-history-fields">${[
+      ['Employee', employee(row)], ['Document Status', statusMarkup],
+      ['Submitted Date', submittedDate], ['Document Reference', display(row.reference || row.id)],
+      ['Approver Remarks', display(row.approverRemarks)]
+    ].map(([label, value]) => detailRow(label, value)).join('')}</dl></section>`;
     const panels = Object.keys(sections).map(key => {
       let content;
       if (key === 'family') {
@@ -67,11 +72,11 @@
         const deletedNames = new Set(deleted.map(member => member.name));
         const existing = (family.existing || []).filter(member => !deletedNames.has(member.name));
         const requested = fieldRows(row, 'family');
-        content = familyTable('Deleted Family Member', deleted, 'No deleted family members') + familyTable('Existing Family Member', existing, 'No family members recorded') + (requested ? `<section class="cv-history-family-section"><h3>Requested Family Changes</h3><table class="history-detail-table"><tbody>${requested}</tbody></table></section>` : '');
-      } else content = (key === 'personal' ? metadata : '') + `<table class="history-detail-table cv-history-fields"><tbody>${fieldRows(row, key)}</tbody></table>`;
+        content = familyTable('Deleted Family Member', deleted, 'No deleted family members') + familyTable('Existing Family Member', existing, 'No family members recorded') + (requested ? `<section class="cv-history-family-section"><h3>Requested Family Changes</h3><dl class="cv-history-fields">${requested}</dl></section>` : '');
+      } else content = (key === 'personal' ? metadata : '') + `<h3 class="cv-history-panel-title">${sections[key].title} details</h3><dl class="cv-history-fields">${fieldRows(row, key)}</dl>`;
       return `<section class="cv-history-detail-panel" id="cv-panel-${key}" role="tabpanel" aria-labelledby="cv-tab-${key}"${key === 'personal' ? '' : ' hidden'}>${content}</section>`;
     }).join('');
-    return `<div class="cv-history-detail-tabs" role="tablist" aria-label="CV details">${tabs}</div>${panels}`;
+    return `<div class="cv-history-navigation"><div class="cv-history-section-heading"><span>Profile sections</span><span>${Object.keys(sections).length} sections</span></div><div class="cv-history-detail-tabs" role="tablist" aria-label="CV details">${tabs}</div></div><div class="cv-history-detail-scroll">${panels}</div>`;
   }
 
   function selectTab(body, key, focus = false) {
@@ -84,18 +89,22 @@
       body.querySelector('#cv-panel-' + tab.dataset.cvTab).hidden = !active;
       if (active) {
         if (focus) tab.focus({preventScroll: true});
-        tab.scrollIntoView({block: 'nearest', inline: 'nearest'});
       }
     });
     body.scrollTop = 0;
+    const scroller = body.querySelector('.cv-history-detail-scroll');
+    if (scroller) scroller.scrollTop = 0;
   }
 
   function keydown(event, body) {
     const tab = event.target.closest('[data-cv-tab]');
-    if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    if (!tab || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
     const keys = Object.keys(sections);
     const index = keys.indexOf(tab.dataset.cvTab);
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? keys.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + keys.length) % keys.length;
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? keys.length - 1
+      : event.key === 'ArrowDown' ? Math.min(index + 3, keys.length - 1)
+      : event.key === 'ArrowUp' ? Math.max(index - 3, 0)
+      : (index + (event.key === 'ArrowRight' ? 1 : -1) + keys.length) % keys.length;
     event.preventDefault();
     selectTab(body, keys[next], true);
   }

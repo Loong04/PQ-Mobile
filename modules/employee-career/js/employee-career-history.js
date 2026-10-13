@@ -76,15 +76,17 @@
     $('historyRecordCount').textContent = String(rows.length);
     $('historyEmptyState').hidden = rows.length > 0;
     $('careerHistoryList').innerHTML = rows.map(row => {
-      const title = kind === 'feedback' ? row.title : kind === 'whereabout' ? row.description : row.title || row.changes.filter(change => change && change.label).map(change => change.label).join(', ') || 'CV Change Request';
+      const title = kind === 'feedback' ? row.title : row.description;
       const details = kind === 'feedback'
         ? summaryRow('Feedback Date',date(row.feedbackDate1)) + summaryRow('Submit Date',date(row.submitDate)) + summaryRow('Type',row.type) + summaryRow('Category',row.category)
         : kind === 'whereabout' ? summaryRow('Date',date(row.date)) + summaryRow('Time',`${row.startTime} - ${row.endTime}`) + summaryRow('Task',row.task)
         : summaryRow('Submitted Date',date(recordDate(row)));
-      const reference = kind === 'cv-change-request' ? row.id : row.reference;
-      const employee = kind === 'cv-change-request' && (row.name || row.employeeName) ? `<span class="cv-history-card-employee"><span class="history-employee-name">${escape(row.name || row.employeeName)}</span>${row.empNo ? `<span class="history-employee-id">#${escape(String(row.empNo).replace(/^#/, ''))}</span>` : ''}</span>` : '';
+      const reference = kind === 'cv-change-request' ? '' : row.reference;
+      const heading = kind === 'cv-change-request'
+        ? `<span class="history-card-title-row"><span class="cv-history-card-employee history-card-title"><span class="history-employee-name">${escape(row.name || row.employeeName || '\u2014')}</span>${row.empNo ? `<span class="history-employee-id">#${escape(String(row.empNo).replace(/^#+/, ''))}</span>` : ''}</span></span>`
+        : `<span class="history-card-title-row"><span class="history-card-title">${escape(title)}</span></span>`;
       return `<button type="button" class="history-card-item" data-status="${kind === 'cv-change-request' ? escape(cvStatusKey(row)) : kind === 'whereabout' ? 'approved' : 'submitted'}" data-record-id="${escape(row.id)}" aria-haspopup="dialog" aria-controls="historyDetailsModal">
-        <span class="history-card-header"><span class="history-card-heading"><span class="history-card-title-row"><span class="history-card-title">${escape(title)}</span></span>${employee}${reference ? `<span class="history-card-ref">Ref: ${escape(reference)}</span>` : ''}</span>${kind === 'cv-change-request' ? cvStatus(row) : kind === 'whereabout' ? whereaboutStatus : status}</span>
+        <span class="history-card-header"><span class="history-card-heading">${heading}${reference ? `<span class="history-card-ref">Ref: ${escape(reference)}</span>` : ''}</span>${kind === 'cv-change-request' ? cvStatus(row) : kind === 'whereabout' ? whereaboutStatus : status}</span>
         <span class="history-card-details career-history-card-rows">${details}</span>
       </button>`;
     }).join('');
@@ -144,6 +146,7 @@
 
   function renderDetails() {
     const row = activeRecord;
+    $('historyDetailsModal').classList.toggle('cv-history-mobile-sheet', kind === 'cv-change-request');
     $('historyDetailTitle').textContent = kind === 'feedback' ? 'Feedback Detail' : kind === 'whereabout' ? 'Whereabout History Details' : 'CV Change Request Details';
     if (kind === 'cv-change-request') {
       $('historyDetailBody').innerHTML = window.EmployeeCareerCVHistoryDetails.render(row, cvStatus(row), date(recordDate(row)));

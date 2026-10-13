@@ -61,16 +61,26 @@ const tabs = [
             assert.deepEqual(cards.map(card => card.badge), ['Normal', 'Normal', 'Overtime (2.17 Hrs)', 'Normal', 'Early Out (15 mins)', 'Late In (12 mins)']);
           }
           if (tab.key === 'ot') {
+            assert.deepEqual(await page.$$eval('#viewOtHistory .history-submit-btn', nodes => nodes.map(node => node.textContent.trim())), ['Submit', 'Submit', 'Submit']);
             cards.forEach(card => assert.deepEqual(card.labels, ['Date', 'Plan Hours', 'Actual Hours', 'Submitted On']));
             assert.ok(cards[2].details.some(detail => detail.includes('Actual Hours') && detail.includes('4.00')));
           }
-          if (tab.key === 'feedback') cards.forEach(card => assert.deepEqual(card.labels, ['Date', 'Submitted On']));
+          if (tab.key === 'feedback') {
+            cards.forEach(card => assert.deepEqual(card.labels, ['Date', 'Submitted On']));
+            assert.deepEqual(await page.$$eval('#viewFeedbackHistory .history-submit-btn', nodes => nodes.map(node => ({ text: node.textContent.trim(), disabled: node.disabled }))), [{ text: 'Submit', disabled: false }, { text: 'Submit', disabled: false }]);
+            assert.equal(cards[1].badge, 'To Resubmit');
+          }
           const overflow = await page.$eval('.main-content', node => node.scrollWidth - node.clientWidth);
           assert.ok(overflow <= 1, `${theme} ${width}px ${tab.key}: no content overflow`);
           // Open all records at 390px and each detail template at the other widths.
           {
             for (let index = 0; index < (width === 390 ? tab.refs.length : 1); index++) {
-              await page.$$eval('#' + tab.view + ' .history-card-item', (nodes, index) => nodes[index].click(), index);
+              if (tab.key === 'ot' || tab.key === 'feedback') {
+                await page.$$eval('#' + tab.view + ' .history-submit-btn', (nodes, index) => nodes[index].focus(), index);
+                await page.keyboard.press(width === 390 ? 'Enter' : 'Space');
+              } else {
+                await page.$$eval('#' + tab.view + ' .history-card-item', (nodes, index) => nodes[index].click(), index);
+              }
               await page.waitForSelector('#' + tab.modal, { visible: true });
               await page.waitForFunction(id => document.getElementById(id).style.opacity === '1', {}, tab.modal);
               await page.evaluate(async id => {
@@ -105,9 +115,9 @@ const tabs = [
               }
               if (tab.key === 'ot') {
                 const summaryLabels = await page.$$eval('#otDetailsModal .attendance-history-form-summary-list dt', nodes => nodes.map(node => node.textContent.trim()));
-                const fieldLabels = await page.$$eval('#otDetailsModal .attendance-history-form-field > label:first-child', nodes => nodes.map(node => node.textContent.trim()));
+                const fieldLabels = await page.$$eval('#otDetailsModal .attendance-history-form-field > label:first-child, #otDetailsModal .attendance-history-credit-field > label:first-child', nodes => nodes.map(node => node.textContent.trim()));
                 assert.deepEqual(summaryLabels, ['Document Reference', 'Plan Status', 'Employee', 'Supervisor', 'Submit Date', 'Shift', 'Clocking Times']);
-                assert.deepEqual(fieldLabels, ['OT Date', 'Start Time', 'End Time', 'Break Hours', 'Plan Hours', 'OT Type', 'OT Reason', 'Task', 'Allow Leave Credit', 'Need Transport', 'Remarks', 'Approver Comments']);
+                assert.deepEqual(fieldLabels, ['OT Date', 'Start Time', 'End Time', 'Break Hours', 'Plan Hours', 'OT Type', 'OT Reason', 'Task', 'Convert to Leave Credit', 'Need Transport', 'Remarks', 'Approver Comments']);
                 assert.equal(await page.$eval('#otPlanFormTitle', node => node.textContent.trim()), 'OT Plan Details');
                 assert.equal(await page.$eval('#otDetailsModal [data-ot-form-cancel]', node => node.textContent.trim()), 'Cancel');
                 assert.deepEqual(await page.$$eval('#otDetailsModal .attendance-history-form-actions button', nodes => nodes.map(node => node.textContent.trim())), ['Cancel', 'Submit']);
@@ -130,7 +140,7 @@ const tabs = [
                 assert.equal(await page.$eval('#modalFbkCamera', node => node.getAttribute('capture')), 'environment');
                 assert.deepEqual(await page.$$eval('#feedbackDetailsModal .attendance-history-form-actions button', nodes => nodes.map(node => node.textContent.trim())), ['Cancel', 'Submit']);
                 assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', node => node.hidden), false);
-                assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', node => node.disabled), index === 1);
+                assert.equal(await page.$eval('#feedbackDetailsModal [data-history-submit]', node => node.disabled), false);
                 const punches = await page.$$eval('#modalFbkPunches [data-punch-row]', nodes => nodes.map(node => node.textContent.replace(/\s+/g, ' ').trim()));
                 if (index === 0) {
                   assert.ok(punches.some(text => text.includes('07:02') && text.includes('06:02')));
@@ -191,7 +201,7 @@ const tabs = [
       await page.$$eval('#viewFeedbackHistory .history-card-item', nodes => nodes[1].click());
       assert.equal(await page.$eval('#modalFbkRemarks', node => node.value), '');
       assert.equal(await page.$$eval('#modalFbkPunches [data-punch-row]', nodes => nodes.length), 0);
-      assert.ok(await page.$eval('#modalFbkAmendedShift', node => node.disabled));
+      assert.equal(await page.$eval('#modalFbkAmendedShift', node => node.disabled), false);
       await page.evaluate(() => closeFeedbackDetailsDirect());
       await page.waitForSelector('#feedbackDetailsModal', { hidden: true });
       await page.$$eval('#viewFeedbackHistory .history-card-item', nodes => nodes[0].click());

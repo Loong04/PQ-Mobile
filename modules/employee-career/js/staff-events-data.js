@@ -1,7 +1,7 @@
 // Reference totals and the complete employee rows visible in the supplied screenshots.
 // Unknown rows are not generated to fill the source totals.
 window.EMPLOYEE_CAREER_STAFF_EVENTS = [
-  { id: 'active', title: 'Active', total: 282, icon: 'fa-users', description: 'Active employees', records: [
+  { id: 'active', title: 'Active', total: 281, icon: 'fa-users', description: 'Active employees', records: [
     ['EBB22', 'Fisha bte aidit'], ['EBB23', 'Hatta bin roslan'], ['EBB17', 'Chan shu leng'], ['EBB19', 'Goh siew teng'], ['EBB16', 'Justine ee su may'], ['EBB29', 'Sivasangaran krishnan'], ['EBB76', 'Paul simon'], ['EBB32', 'Hew chin hong'], ['EBB06', 'Wang chiin chin'], ['EBB25', 'Chin shi jil'], ['EBB26', 'Carlos']
   ] },
   { id: 'retirement', title: 'Retirement Past Due', total: 80, icon: 'fa-user-clock', description: 'Staff retirement review', records: [

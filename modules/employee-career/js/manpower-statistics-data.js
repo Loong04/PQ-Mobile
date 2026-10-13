@@ -65,6 +65,14 @@
   ];
   const givenNames = ['Aina', 'Amir', 'Chloe', 'Daniel', 'Farah', 'Hafiz', 'Izzati', 'Jason', 'Kavitha', 'Leon', 'Mei', 'Nadia'];
   const familyNames = ['Abdullah', 'Chan', 'Devi', 'Goh', 'Hassan', 'Ibrahim', 'Kaur', 'Lee', 'Lim', 'Rahman', 'Tan', 'Wong'];
+  const skillGroups = {
+    'FINANCE & ACCOUNTING': 'Finance', 'ADMINISTRATION': 'Administration',
+    'OPERATIONS': 'Operations', 'PRODUCT & DESIGN': 'Design',
+    'CUSTOMER SERVICE': 'Customer Service', 'HUMAN RESOURCE': 'Human Resources',
+    'INFORMATION TECHNOLOGY': 'Technology', 'SALES & MARKETING': 'Sales',
+    'PROCUREMENT': 'Procurement', 'PROJECT MANAGEMENT': 'Project Management'
+  };
+  const talentGroups = ['Core Talent', 'High Potential', 'Key Talent'];
   const round = value => Number(value.toFixed(2));
 
   function makeEmployee(row, aggregateIndex, employeeIndex) {
@@ -77,6 +85,8 @@
     const month = String((seed % 12) + 1).padStart(2, '0');
     const day = String((seed % 27) + 1).padStart(2, '0');
     const metric = (minimum, maximum, multiplier) => round(minimum + ((seed * multiplier) % 101) / 100 * (maximum - minimum));
+    const isManager = row.jobType.includes('MANAGER');
+    const isExecutive = /EXECUTIVE|ANALYST|ENGINEER|OFFICER/.test(row.jobType);
 
     return {
       empNo: reference ? reference[0] : generatedNumber,
@@ -85,6 +95,11 @@
       superior: row.jobType.includes('MANAGER') ? 'GROUP GENERAL MANAGER' : `${row.department} MANAGER`,
       job: row.jobType,
       jobType: row.jobType,
+      category: row.category || (isManager ? 'Management' : isExecutive ? 'Executive' : 'Non-Executive'),
+      gender: row.gender || (seed % 2 ? 'Female' : 'Male'),
+      grade: row.grade || (isManager ? 'G4' : /ENGINEER|TECHNICIAN/.test(row.jobType) ? 'G3' : isExecutive ? 'G2' : 'G1'),
+      skillGroup: row.skillGroup || skillGroups[row.department] || row.department,
+      talentGroup: row.talentGroup || talentGroups[seed % talentGroups.length],
       company: row.company,
       branch: row.branch,
       base: row.branch === 'HEADQUARTERS (HQ)' ? 'KUALA LUMPUR' : row.branch,

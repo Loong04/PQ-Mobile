@@ -68,15 +68,15 @@ const puppeteer = require('puppeteer');
       assert.deepEqual(formLayout.actions, ['Cancel', 'Submit']);
       assert.deepEqual(formLayout.actionStyles[0], {
         text: 'Cancel',
-        backgroundColor: theme === 'light' ? 'rgb(255, 255, 255)' : 'rgba(22, 21, 46, 0.65)',
-        backgroundImage: 'none',
-        color: theme === 'light' ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)',
-        borderRadius: '999px',
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backgroundImage: 'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(109, 40, 217) 100%)',
+        color: 'rgb(255, 255, 255)',
+        borderRadius: '20px',
         disabled: false
       });
       assert.equal(formLayout.actionStyles[1].text, 'Submit');
       assert.match(formLayout.actionStyles[1].backgroundImage, /linear-gradient/);
-      assert.deepEqual({ color: formLayout.actionStyles[1].color, borderRadius: formLayout.actionStyles[1].borderRadius, disabled: formLayout.actionStyles[1].disabled }, { color: 'rgb(255, 255, 255)', borderRadius: '999px', disabled: false });
+      assert.deepEqual({ color: formLayout.actionStyles[1].color, borderRadius: formLayout.actionStyles[1].borderRadius, disabled: formLayout.actionStyles[1].disabled }, { color: 'rgb(255, 255, 255)', borderRadius: '20px', disabled: false });
       assert.deepEqual(formLayout.approverField, { readOnly: true, inFormField: true, hasLegacyClass: false, backgroundMatchesRemarks: true, radiusMatchesRemarks: true, paddingMatchesRemarks: true });
       assert.equal(await page.$eval('#modalFbkApproverComments', node => node.value), '[Comment by FARHAN BIN RAHMAT (EBB12)]\nokay');
       assert.equal(await page.$eval('label[for="modalFbkApproverComments"]', node => node.textContent), 'Approver Comments');

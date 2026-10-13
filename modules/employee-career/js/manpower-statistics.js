@@ -3,8 +3,9 @@
   const staffRecords = window.MANPOWER_STATISTICS_STAFF || [];
   const $ = id => document.getElementById(id);
   const defaults = { company: '', branch: '', department: '', summaryBy: 'jobType', summaryType: 'headcount', effectiveDate: '2026-10-05' };
-  const labels = { jobType: 'Job Type', company: 'Company', branch: 'Branch', department: 'Department' };
-  const plurals = { jobType: 'job types', company: 'companies', branch: 'branches', department: 'departments' };
+  const labels = { category: 'Category', gender: 'Gender', grade: 'Grade', jobType: 'Job Type', skillGroup: 'Skill Group', talentGroup: 'Talent Group', company: 'Company', branch: 'Branch', department: 'Department' };
+  const plurals = { category: 'categories', gender: 'genders', grade: 'grades', jobType: 'job types', skillGroup: 'skill groups', talentGroup: 'talent groups', company: 'companies', branch: 'branches', department: 'departments' };
+  const employeeBreakdowns = new Set(['category', 'gender', 'grade', 'skillGroup', 'talentGroup']);
   const colors = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#6366f1', '#14b8a6', '#f97316'];
   const state = {
     filters: { ...defaults },
@@ -104,9 +105,11 @@
   }
   function groupRows(metric) {
     const grouped = new Map();
-    state.rows.forEach(row => {
+    const useEmployees = employeeBreakdowns.has(metric);
+    const source = useEmployees ? state.filteredStaff : state.rows;
+    source.forEach(row => {
       const label = groupLabel(row, metric);
-      grouped.set(label, (grouped.get(label) || 0) + row.headcount);
+      grouped.set(label, (grouped.get(label) || 0) + (useEmployees ? 1 : row.headcount));
     });
     return [...grouped].map(([label, count]) => ({ label, count }));
   }
@@ -390,7 +393,7 @@
     closeDetailOverlay(false);
     showView('table');
     state.filters = filters;
-    state.metric = filters.summaryBy;
+    state.metric = [...$('manpowerChartMetric').options].some(option => option.value === filters.summaryBy) ? filters.summaryBy : 'jobType';
     state.showAll = false;
     $('manpowerChartMetric').value = state.metric;
     state.tableScroll = 0;

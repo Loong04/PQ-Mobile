@@ -5,6 +5,25 @@ const puppeteer = require('puppeteer');
 
 const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/options/shift-plan.html')).href;
 
+async function readDetailInfoCard(page, viewSelector) {
+  return page.$eval(`${viewSelector} .shift-detail-info-card`, card => ({
+    iconCount: card.querySelectorAll('i').length,
+    rows: [...card.querySelectorAll('.shift-detail-info-row')].map(row => {
+      const label = row.querySelector('.shift-detail-info-label');
+      const value = row.querySelector('.shift-detail-info-value');
+      const rowStyle = getComputedStyle(row);
+      return {
+        label: label?.textContent.trim() || '',
+        value: value?.textContent.trim() || '',
+        display: rowStyle.display,
+        columnCount: rowStyle.gridTemplateColumns.split(' ').filter(Boolean).length,
+        labelColor: label ? getComputedStyle(label).color : '',
+        valueAlign: value ? getComputedStyle(value).textAlign : ''
+      };
+    })
+  }));
+}
+
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
@@ -52,6 +71,14 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
       ['ACCOUNT EXECUTIVE', '1.00']
     );
     assert.equal(await page.$('#otEmployeeCardsContainer .employee-purple-card .fa-chevron-right'), null);
+    const otDetailInfo = await readDetailInfoCard(page, '#view-ot-plan-detail');
+    assert.equal(otDetailInfo.iconCount, 0, 'OT Plan detail information must not show a date icon');
+    assert.deepEqual(otDetailInfo.rows.map(row => row.label), ['Date:', 'Shift:', 'OT Type:', 'Total Headcount:', 'Total Hours:']);
+    assert.match(otDetailInfo.rows[0].value, /^03 Sep.* 2026$/);
+    assert.deepEqual(otDetailInfo.rows.slice(1).map(row => row.value), ['8.30:17.30W', 'OT 1.5 BEFORE WORK', '26', '26.00']);
+    assert.equal(otDetailInfo.rows.every(row => row.display === 'grid' && row.columnCount === 2 && row.valueAlign === 'right'), true, 'OT Plan detail labels and values must share aligned columns');
+    assert.equal(otDetailInfo.rows.every(row => row.labelColor === 'rgb(100, 116, 139)'), true, 'OT Plan Date must use the same label color as every other field');
+    assert.equal(await page.$eval('#otDetailOtType', node => getComputedStyle(node).color), 'rgb(124, 58, 237)', 'OT Type must keep its existing purple emphasis');
 
     await page.evaluate(() => switchView('view-leave-summary'));
     assert.match(await page.$eval('#view-leave-summary .summary-date-display', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 03 Sep.* 2026$/);
@@ -80,6 +107,13 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
       ['BFT & COM.EXECUTIVE', 'MEDICAL LEAVE', '1.00']
     );
     assert.equal(await page.$('#lvEmployeeCardsContainer .employee-purple-card .fa-chevron-right'), null);
+    const leaveDetailInfo = await readDetailInfoCard(page, '#view-leave-detail');
+    assert.equal(leaveDetailInfo.iconCount, 0, 'Leave detail information must not show a date icon');
+    assert.deepEqual(leaveDetailInfo.rows.map(row => row.label), ['Date:', 'Shift:', 'Total Headcount:']);
+    assert.match(leaveDetailInfo.rows[0].value, /^03 Sep.* 2026$/);
+    assert.deepEqual(leaveDetailInfo.rows.slice(1).map(row => row.value), ['8.30:17.30W', '3']);
+    assert.equal(leaveDetailInfo.rows.every(row => row.display === 'grid' && row.columnCount === 2 && row.valueAlign === 'right'), true, 'Leave detail labels and values must share aligned columns');
+    assert.equal(leaveDetailInfo.rows.every(row => row.labelColor === 'rgb(100, 116, 139)'), true, 'Leave Date must use the same label color as every other field');
 
     assert.deepEqual(errors, []);
     console.log('PASS: OT Plan and Leave drill-downs use consistent purple cards and supplied data.');

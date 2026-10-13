@@ -81,11 +81,22 @@ async function inspectScenario(browser, theme, width) {
   assert.equal(await page.$eval('.confirm-new-user-summary-label', node => node.textContent.trim()), 'Total records');
   assert.equal(await page.$eval('#confirmNewUserTotal', node => node.textContent.trim()), '13');
   assert.equal(await page.$eval('#confirmNewUserTotal', node => node.getAttribute('aria-label')), null, `${theme}/${width}: visible total must remain available to assistive technology`);
-  const totalMetrics = await page.$eval('.confirm-new-user-summary', summary => ({
-    height: summary.getBoundingClientRect().height,
-    fontSize: Number.parseFloat(getComputedStyle(summary.querySelector('#confirmNewUserTotal')).fontSize)
-  }));
-  assert.ok(totalMetrics.height <= 64, `${theme}/${width}: total summary should stay compact`);
+  const totalMetrics = await page.$eval('.confirm-new-user-summary', summary => {
+    const label = summary.querySelector('.confirm-new-user-summary-label').getBoundingClientRect();
+    const total = summary.querySelector('#confirmNewUserTotal');
+    const box = total.getBoundingClientRect();
+    return {
+      height: summary.getBoundingClientRect().height,
+      fontSize: Number.parseFloat(getComputedStyle(total).fontSize),
+      belowLabel: box.top >= label.bottom,
+      aligned: Math.abs(box.left - label.left) < 1,
+      color: getComputedStyle(total).color,
+      primaryColor: getComputedStyle(summary).getPropertyValue('--text-primary').trim()
+    };
+  });
+  assert.equal(totalMetrics.belowLabel && totalMetrics.aligned, true, `${theme}/${width}: total must appear directly below its label`);
+  assert.equal(totalMetrics.color, await page.evaluate(color => { const probe = document.createElement('span'); probe.style.color = color; document.body.append(probe); const value = getComputedStyle(probe).color; probe.remove(); return value; }, totalMetrics.primaryColor), `${theme}/${width}: total uses the original text color`);
+  assert.ok(totalMetrics.height <= 80, `${theme}/${width}: stacked total summary should stay compact`);
   assert.ok(totalMetrics.fontSize <= 18, `${theme}/${width}: total number should not be oversized`);
   assert.equal(await page.$$eval('.confirm-new-user-card', nodes => nodes.length), 13);
   assert.deepEqual(await page.$$eval('.confirm-new-user-card .confirm-new-user-name', nodes => nodes.slice(0, 5).map(node => node.textContent.trim())), expectedNames);

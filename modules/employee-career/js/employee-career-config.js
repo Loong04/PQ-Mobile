@@ -2,6 +2,7 @@ window.EMPLOYEE_CAREER_OPTIONS = {
   individual: [
     { id: 'feedback', title: 'Feedback', icon: 'fa-message', tone: 'rose', href: 'options/individual/feedback.html' },
     { id: 'whereabout', title: 'Whereabout', icon: 'fa-location-dot', tone: 'cyan', href: 'options/individual/whereabout.html' },
+    { id: 'career-plan', title: 'Career Plan', icon: 'fa-route', tone: 'violet', href: 'options/individual/career-plan.html' },
     { id: 'history', title: 'History', icon: 'fa-clock-rotate-left', tone: 'amber', href: 'options/history.html' }
   ],
   team: [
@@ -15,6 +16,11 @@ window.EMPLOYEE_CAREER_OPTIONS = {
     { id: 'staff-retention', title: 'Staff Retention', icon: 'fa-people-group', tone: 'emerald', href: 'options/team/staff-retention.html' },
     { id: 'staff-whereabout', title: 'Staff Whereabout', icon: 'fa-map-location-dot', tone: 'cyan', href: 'options/team/staff-whereabout.html' },
     { id: 'staff-feedback', title: 'Staff Feedback', icon: 'fa-comments', tone: 'rose', href: 'options/team/staff-feedback.html' },
-    { id: 'staff-engagement', title: 'Staff Engagement', icon: 'fa-people-arrows-left-right', tone: 'violet', href: 'options/team/staff-engagement.html' }
+    { id: 'staff-engagement', title: 'Staff Engagement', icon: 'fa-people-arrows-left-right', tone: 'violet', href: 'options/team/staff-engagement.html' },
+    { id: 'ir-highlight', title: 'IR Highlight', icon: 'fa-scale-balanced', tone: 'rose', href: 'options/team/ir-highlight.html' },
+    { id: 'staff-career-plan', title: 'Staff Career Plan', icon: 'fa-route', tone: 'violet', href: 'options/team/staff-career-plan.html' },
+    { id: 'vacancy-summary', title: 'Vacancy Summary', icon: 'fa-briefcase', tone: 'amber', href: 'options/team/vacancy-summary.html' },
+    { id: 'organization-statistics', title: 'Organization Statistics', icon: 'fa-chart-pie', tone: 'cyan', href: 'options/team/organization-statistics.html' },
+    { id: 'org-chart', title: 'Org Chart', icon: 'fa-sitemap', tone: 'blue', href: 'options/team/org-chart.html' }
   ]
 };
