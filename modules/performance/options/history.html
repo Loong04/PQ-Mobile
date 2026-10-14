@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Staff Incident History</title>
+  <script>(() => { document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') === 'light' ? 'light' : 'dark'; })();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/claim-forms.css">
+  <link rel="stylesheet" href="../../../css/detail-popout.css">
+  <link rel="stylesheet" href="../css/performance.css">
+  <link rel="stylesheet" href="../css/performance-history.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../js/work-incident-data.js" defer></script>
+  <script src="../js/incident-highlight-data.js" defer></script>
+  <script src="../js/staff-incident-preview-store.js" defer></script>
+  <script src="../js/performance-history.js" defer></script>
+</head>
+<body class="performance-page incident-history-page">
+  <preview-top-bar active-page="performance"></preview-top-bar>
+  <div class="phone-container">
+    <header class="performance-header"><phone-status-bar time="9:41"></phone-status-bar><div class="performance-header-row"><a id="incidentHistoryBack" class="performance-back" href="../index.html?scope=team" aria-label="Back to Performance"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a><h1>History</h1><span class="performance-header-spacer" aria-hidden="true"></span></div></header>
+    <main class="main-content incident-history-content">
+      <button id="incidentHistoryFilterTrigger" class="claim-filter-bar" type="button" aria-haspopup="dialog" aria-controls="incidentHistoryFilterModal"><span class="claim-filter-copy"><span class="claim-eyebrow">Current Filter</span><span class="claim-filter-value"><i class="fa-solid fa-filter" aria-hidden="true"></i><span id="incidentHistoryFilterSummary">All Staff Incident Records</span></span></span><span class="claim-icon-button" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span></button>
+      <div class="incident-history-summary record-summary-card">
+        <div class="incident-history-summary-counts">
+          <div class="record-summary-metric"><span class="record-summary-label">Total Records</span><strong id="incidentHistoryCount" class="record-summary-value" aria-live="polite">0</strong></div>
+        </div>
+        <label class="incident-history-update-control" for="incidentHistoryUpdate"><input id="incidentHistoryUpdate" type="checkbox" aria-controls="incidentHistoryList"><span>Update</span></label>
+      </div>
+      <div id="incidentHistoryList" class="incident-history-list"></div>
+      <div id="incidentHistoryEmpty" class="incident-history-empty" hidden><i class="fa-regular fa-folder-open" aria-hidden="true"></i><h3>No records found</h3><p>Try another filter.</p></div>
+      <p id="incidentHistoryStatus" class="incident-history-status" role="status" aria-live="polite"></p>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <div id="incidentHistoryDetailsModal" class="claim-filter-sheet detail-popout-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="incidentHistoryDetailsTitle">
+      <section class="detail-popout-panel">
+        <header class="detail-popout-header"><h2 id="incidentHistoryDetailsTitle" class="detail-popout-title">Staff Incident Details</h2><button id="incidentHistoryDetailsClose" class="detail-popout-close" type="button" data-close-modal aria-label="Close Staff Incident details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="detail-popout-body" tabindex="0" role="region" aria-label="Staff Incident information"><table class="detail-popout-table" aria-label="Staff Incident details"><tbody id="incidentHistoryDetailsRows"></tbody></table></div>
+      </section>
+    </div>
+    <div id="incidentHistoryFilterModal" class="claim-filter-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="incidentHistoryFilterTitle">
+      <form id="incidentHistoryFilterForm" class="claim-filter-panel" novalidate>
+        <div class="claim-filter-handle" aria-hidden="true"></div>
+        <div class="claim-filter-header"><h2 id="incidentHistoryFilterTitle" class="claim-filter-title">Filter</h2><div class="claim-filter-header-actions"><button id="incidentHistoryResetFilter" class="claim-filter-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button class="claim-filter-close" type="button" data-close-modal aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></div>
+        <div class="claim-filter-fields">
+          <div><label for="incidentHistoryKeyword" class="claim-filter-label">Search Keyword</label><input id="incidentHistoryKeyword" class="claim-control" type="search" placeholder="Search employee or incident" maxlength="200"></div>
+          <div><label for="incidentHistoryType" class="claim-filter-label">Incident Type</label><div class="claim-filter-select-wrap"><select id="incidentHistoryType" class="claim-filter-select"><option value="">All Incident Types</option></select><i class="fa-solid fa-chevron-down claim-filter-chevron" aria-hidden="true"></i></div></div>
+          <div class="incident-history-date-fields"><div><label for="incidentHistoryStart" class="claim-filter-label">Start Date</label><input id="incidentHistoryStart" class="claim-control" type="date"></div><div><label for="incidentHistoryEnd" class="claim-filter-label">End Date</label><input id="incidentHistoryEnd" class="claim-control" type="date"></div></div>
+          <div class="incident-history-switch-row"><label for="incidentHistoryClosed">Is Closed?</label><span class="incident-history-switch"><input id="incidentHistoryClosed" type="checkbox" role="switch"><span class="incident-history-switch-track" aria-hidden="true"></span></span></div>
+          <p id="incidentHistoryFilterError" class="incident-history-error" role="alert" hidden></p>
+        </div>
+        <button id="incidentHistoryApplyFilter" class="claim-filter-apply" type="submit">Apply Filter</button>
+      </form>
+    </div>
+    <div id="incidentHistoryDeleteModal" class="claim-filter-sheet incident-history-confirm" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="incidentHistoryDeleteTitle" aria-describedby="incidentHistoryDeleteMessage">
+      <div class="claim-filter-panel"><h2 id="incidentHistoryDeleteTitle" class="claim-filter-title">Delete Staff Incident</h2><p id="incidentHistoryDeleteMessage"></p><p id="incidentHistoryDeleteError" class="incident-history-error" role="alert" hidden></p><div class="incident-history-modal-actions"><button id="incidentHistoryDeleteCancel" class="incident-history-cancel" type="button" data-close-modal>Cancel</button><button id="incidentHistoryDeleteConfirm" class="incident-history-button" type="button">Delete</button></div></div>
+    </div>
+  </div>
+</body>
+</html>

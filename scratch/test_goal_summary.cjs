@@ -1,0 +1,68 @@
+const assert=require('node:assert/strict');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+const puppeteer=require('puppeteer');
+const url=(file,theme)=>pathToFileURL(path.resolve(__dirname,'../modules/performance/'+file)).href+'?scope=team&theme='+theme;
+(async()=>{
+  const browser=await puppeteer.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--allow-file-access-from-files','--no-sandbox']});
+  try{
+    for(const theme of ['light','dark'])for(const width of [360,420]){
+      const page=await browser.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
+      await page.setRequestInterception(true);page.on('request',request=>/^https?:/.test(request.url())?request.abort():request.continue());await page.setViewport({width,height:844});
+      await page.goto(url('index.html',theme),{waitUntil:'load'});assert.equal(await page.$eval('[data-option-id="goal-summary"]',node=>node.tagName),'A');
+      await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('[data-option-id="goal-summary"]')]);assert.ok(page.url().includes('/options/goal-summary.html'));
+      assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),theme);
+      const count=()=>page.$eval('#goalSummaryTotalRecords',node=>node.textContent.trim());
+      const rows=()=>page.$$eval('#goalSummaryTable tbody tr',nodes=>nodes.map(node=>[...node.cells].map(cell=>cell.textContent.trim())));
+      assert.equal(await count(),'10');
+      assert.deepEqual(await page.$$eval('#goalSummaryTable thead th',nodes=>nodes.map(node=>node.textContent.trim())),['Goal Type','Count','Achieve%']);
+      assert.deepEqual(await rows(),[['Financial','2','90.00%'],['Customer','2','70.00%'],['Process','2','70.00%'],['Learning & Growth','1','75.00%'],['People','3','90.00%']]);
+      assert.deepEqual(await page.$eval('#goalSummaryTable thead th',node=>({bg:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color})),{bg:'rgb(124, 58, 237)',color:'rgb(255, 255, 255)'});
+      assert.deepEqual(await page.$eval('#goalSummaryViewChart',node=>({text:node.textContent.trim(),icon:!!node.querySelector('.fa-chart-pie'),nowrap:getComputedStyle(node).whiteSpace})),{text:'View Chart',icon:true,nowrap:'nowrap'});
+      const original=await page.evaluate(()=>JSON.stringify(window.PERFORMANCE_GOAL_SUMMARY_DATA));
+      await page.screenshot({path:path.join(__dirname,`goal-summary-table-${theme}-${width}.png`)});
+      await page.click('#goalSummaryFilterTrigger');
+      assert.deepEqual(await page.$$eval('#goalSummaryFilterForm label',nodes=>nodes.map(node=>node.textContent.trim())),['Search Keyword','Company','Branch','Department','Job','Period','Evaluation Type','Achieved%']);
+      await page.screenshot({path:path.join(__dirname,`goal-summary-filter-${theme}-${width}.png`)});await page.keyboard.press('Escape');
+      const fields={keyword:'goalSummaryKeyword',company:'goalSummaryCompany',branch:'goalSummaryBranch',department:'goalSummaryDepartment',job:'goalSummaryJob',period:'goalSummaryPeriod',evaluationType:'goalSummaryEvaluationType',achievedMin:'goalSummaryAchievedMin',achievedMax:'goalSummaryAchievedMax'};
+      const apply=async values=>{await page.click('#goalSummaryFilterTrigger');await page.evaluate(({values,fields})=>{for(const[key,id]of Object.entries(fields))document.getElementById(id).value=values[key]??'';},{values,fields});await page.click('#goalSummaryApplyFilter');};
+      await apply({keyword:'#EBB12'});assert.equal(await count(),'2');assert.deepEqual(await rows(),[['People','2','85.00%']]);
+      await apply({keyword:'SATISFACTION'});assert.equal(await count(),'1');
+      await apply({company:'PeopleHCM Services'});assert.equal(await count(),'3');
+      await apply({branch:'Penang'});assert.equal(await count(),'3');
+      await apply({department:'Product'});assert.equal(await count(),'3');
+      await apply({job:'Product Designer'});assert.equal(await count(),'3');
+      await apply({period:'2025'});assert.equal(await count(),'1');assert.deepEqual(await rows(),[['Customer','1','80.00%']]);
+      await apply({evaluationType:'Mid-Year Review'});assert.equal(await count(),'3');
+      await apply({achievedMin:'100',achievedMax:'100'});assert.equal(await count(),'2');
+      await apply({keyword:'Nur',company:'PeopleHCM Services',branch:'Penang',department:'Finance',job:'Finance Analyst',period:'2026',evaluationType:'Annual Review',achievedMin:'80',achievedMax:'80'});assert.equal(await count(),'1');assert.deepEqual(await rows(),[['Financial','1','80.00%']]);
+      await page.click('#goalSummaryViewChart');assert.equal(await page.$eval('#goalSummaryChartTotal',node=>node.textContent.trim()),'1');assert.equal(await page.$$eval('#goalSummaryChartLegend [data-count]',nodes=>nodes.reduce((sum,node)=>sum+Number(node.dataset.count),0)),1);
+      await page.select('#goalSummaryChartMetric','branch');assert.equal(await page.$eval('#goalSummaryChartLegend [data-category]',node=>node.dataset.category),'Penang');
+      await page.click('#goalSummaryBack');assert.equal(await count(),'1');
+      await apply({achievedMin:'95',achievedMax:'20'});assert.equal(await page.$eval('#goalSummaryFilterError',node=>node.hidden),false);assert.equal(await count(),'1');
+      await page.click('#goalSummaryResetFilter');await page.click('#goalSummaryCloseFilter');assert.equal(await count(),'10');
+      await apply({achievedMax:'101'});assert.equal(await page.$eval('#goalSummaryFilterError',node=>node.hidden),false);await page.keyboard.press('Escape');
+      await page.click('#goalSummaryFilterTrigger');await page.type('#goalSummaryKeyword','unapplied');await page.keyboard.press('Escape');assert.equal(await count(),'10');
+      await apply({keyword:'no matches'});assert.equal(await count(),'0');assert.match(await page.$eval('#goalSummaryTable tbody',node=>node.textContent),/No goals/);
+      await page.click('#goalSummaryViewChart');assert.equal(await page.$$eval('#goalSummaryChartSegments circle',nodes=>nodes.length),0);assert.equal(await page.$eval('#goalSummaryChartTotal',node=>node.textContent.trim()),'0');await page.keyboard.press('Escape');
+      await page.click('#goalSummaryFilterTrigger');await page.click('#goalSummaryResetFilter');await page.click('#goalSummaryCloseFilter');
+      await page.click('#goalSummaryViewChart');await page.select('#goalSummaryChartMetric','goalType');
+      assert.equal(await page.$eval('#goalSummaryTitle',node=>node.textContent.trim()),'Goal Summary Analysis');assert.equal(await page.$eval('#goalSummaryChartTotal',node=>node.textContent.trim()),'10');
+      assert.deepEqual(await page.$$eval('#goalSummaryChartLegend [data-category]',nodes=>nodes.map(node=>[node.dataset.category,node.dataset.count,node.dataset.achieved]).sort()),[['Customer','2','70.00%'],['Financial','2','90.00%'],['Learning & Growth','1','75.00%'],['People','3','90.00%'],['Process','2','70.00%']]);
+      await page.screenshot({path:path.join(__dirname,`goal-summary-chart-${theme}-${width}.png`)});await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(()=>JSON.stringify(window.PERFORMANCE_GOAL_SUMMARY_DATA)),original);
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.ok(await page.$eval('main',node=>node.scrollWidth<=node.clientWidth+1));assert.ok(await page.$eval('#goalSummaryTable',node=>node.scrollWidth<=node.closest('main').clientWidth+1));
+      await page.click('#goalSummaryFilterTrigger');await page.setViewport({width,height:568});await page.$eval('#goalSummaryFilterForm .performance-highlight-filter-fields',node=>{node.scrollTop=node.scrollHeight;});
+      assert.ok(await page.$eval('#goalSummaryApplyFilter',node=>{const rect=node.getBoundingClientRect();return rect.top>=0&&rect.bottom<=innerHeight+1;}));await page.keyboard.press('Escape');
+      await page.click(`[data-set-theme="${theme==='light'?'dark':'light'}"]`);assert.ok(await page.$eval('#goalSummaryBack',node=>node.href.includes('theme='+document.documentElement.dataset.theme)));
+      await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('#goalSummaryBack')]);assert.equal(await page.$eval('#performanceTeamPanel',node=>node.hidden),false);
+      assert.deepEqual(errors,[]);await page.close();console.log(`PASS: Goal Summary grouping, all filters and Highlight-style chart; ${theme} ${width}px`);
+    }
+    const page=await browser.newPage();await page.setRequestInterception(true);page.on('request',request=>/^https?:/.test(request.url())?request.abort():request.continue());
+    await page.evaluateOnNewDocument(()=>{const fixture=[{id:'ZERO',goalType:'People',achievedPercent:0},{id:'MISSING',goalType:'People',achievedPercent:null},{id:'HIGH',goalType:'Financial',achievedPercent:100}];Object.defineProperty(window,'PERFORMANCE_GOAL_SUMMARY_DATA',{get:()=>fixture,set:()=>{},configurable:true});});
+    await page.goto(url('options/goal-summary.html','light'),{waitUntil:'load'});assert.equal(await page.$eval('#goalSummaryTotalRecords',node=>node.textContent.trim()),'3');
+    assert.ok(await page.$$eval('#goalSummaryTable tbody tr',nodes=>nodes.some(node=>node.cells[0].textContent==='People'&&node.cells[1].textContent==='2'&&node.cells[2].textContent==='0.00%')),'Zero achievement is retained; missing achievement is excluded from average');
+    await page.click('#goalSummaryFilterTrigger');await page.$eval('#goalSummaryAchievedMin',node=>{node.value='0';});await page.$eval('#goalSummaryAchievedMax',node=>{node.value='0';});await page.click('#goalSummaryApplyFilter');assert.equal(await page.$eval('#goalSummaryTotalRecords',node=>node.textContent.trim()),'1','Explicit zero range excludes unavailable achievement');
+    await page.close();console.log('PASS: Zero and unavailable goal achievement values.');
+  }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

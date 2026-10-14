@@ -446,12 +446,20 @@
       font-weight: 700;
       color: var(--text-primary);
       align-items: center;
-      cursor: default;
-      transition: background 0.15s ease;
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
     }
     .summary-table-row:last-child { border-bottom: none; }
     .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
     .summary-table-row:active { transform: scale(0.995); background: rgba(124, 58, 237, 0.08); }
+    .summary-table-row.is-chart-selected {
+      background: rgba(124, 58, 237, 0.14);
+      box-shadow: inset 4px 0 0 #7c3aed;
+    }
+    .summary-table-row:focus-visible {
+      outline: 2px solid #7c3aed;
+      outline-offset: -2px;
+    }
     .headcount-detail-trigger { min-width: 52px; padding: 6px 8px; border: 0; border-radius: 9px; background: var(--purple-subtle); color: var(--purple-primary); font-size: 12.5px; font-weight: 900; cursor: pointer; }
     .headcount-detail-trigger:active { transform: scale(0.96); }
     .headcount-detail-trigger:focus-visible { outline: 2px solid var(--purple-primary); outline-offset: 2px; }
@@ -462,6 +470,35 @@
     .headcount-employee-table td { padding: 8px 10px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary); font-weight: 600; overflow-wrap: anywhere; }
     .headcount-employee-table tbody tr:nth-child(even) td { background: var(--bg-input); }
     .headcount-employee-table th:first-child, .headcount-employee-table td:first-child { width: 38%; font-family: monospace, sans-serif; }
+
+    #summaryChartOffCircle,
+    #summaryChartW02Circle {
+      transition: stroke-dasharray 0.58s cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 0.58s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+    }
+    #summaryChartCard.is-refreshing {
+      animation: summaryChartSurfaceRefresh 0.65s ease;
+    }
+    #summaryChartCard.is-refreshing .summary-chart-visual {
+      animation: summaryChartDonutRefresh 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #summaryChartCard.is-refreshing #summaryChartTitle,
+    #summaryChartCard.is-refreshing #summaryChartTotal,
+    #summaryChartCard.is-refreshing #summaryChartCenterLabel {
+      animation: summaryChartTextRefresh 0.48s ease;
+    }
+    @keyframes summaryChartSurfaceRefresh {
+      0% { background: rgba(124, 58, 237, 0.2); border-color: rgba(124, 58, 237, 0.5); }
+      100% { background: var(--bg-card); border-color: var(--border-subtle); }
+    }
+    @keyframes summaryChartDonutRefresh {
+      0% { transform: scale(0.82) rotate(-12deg); opacity: 0.4; }
+      65% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    @keyframes summaryChartTextRefresh {
+      0% { transform: translateY(6px) scale(0.88); opacity: 0.25; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
     
     .summary-table-footer {
       display: grid;
@@ -580,6 +617,57 @@
       background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(167, 139, 250, 0.05) 100%);
       border-color: rgba(167, 139, 250, 0.25);
     }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) > .shift-top-header + div {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: stretch !important;
+      gap: 0;
+      padding: 12px 14px !important;
+      border-radius: 18px !important;
+      background: var(--record-summary-background) !important;
+      box-shadow: none !important;
+    }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) > .shift-top-header + div > div:first-child {
+      display: block !important;
+      width: 100%;
+    }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) > .shift-top-header + div > div:first-child > div:has(> i) {
+      display: none !important;
+    }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) .summary-date-display {
+      display: grid !important;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center !important;
+      gap: 6px !important;
+      width: 100%;
+    }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) .summary-date-display > span:first-child {
+      color: var(--text-muted) !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      text-transform: none !important;
+    }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) [data-record-summary-count] {
+      display: grid !important;
+      grid-template-columns: auto minmax(0, 1fr) !important;
+      align-items: center !important;
+      justify-content: initial !important;
+      gap: 6px !important;
+      width: 100%;
+      margin-top: 10px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-top: 1px solid var(--border-subtle) !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) [data-record-summary-count] .record-summary-label {
+      font-size: 11px !important;
+    }
+    :is(#view-work-shift-summary, #view-no-work-summary, #view-ot-plan-summary, #view-leave-summary) [data-record-summary-count] .record-summary-value {
+      font-size: 12.5px !important;
+    }
     .history-card-item.calendar-purple-card,
     [data-theme="dark"] .history-card-item.calendar-purple-card,
     html[data-theme="dark"] .history-card-item.calendar-purple-card {
@@ -601,6 +689,7 @@
       background: var(--purple-primary);
       color: #ffffff;
     }
+    .calendar-purple-card-header > i { font-size: 12px; opacity: .8; }
     .calendar-purple-card-title { font-size: 13.5px; font-weight: 800; line-height: 1.25; }
     .calendar-purple-card-body {
       display: grid;
@@ -644,6 +733,11 @@
       padding: 12px 14px 14px;
     }
     .employee-purple-body.single-column { grid-template-columns: minmax(0, 1fr); }
+    .shift-detail-info-card {
+      border-radius: 18px !important;
+      background: var(--record-summary-background) !important;
+      box-shadow: none !important;
+    }
     .shift-detail-info-date { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle); }
     .shift-detail-info-rows { display: grid; gap: 4px; }
     .shift-detail-info-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: baseline; column-gap: 12px; font-size: 12px; }
@@ -1055,14 +1149,14 @@
         <!-- 1. INLINE DONUT CHART -->
         <div class="history-card-item" id="summaryChartCard" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: default; flex-direction: column; align-items: stretch; gap: 16px;">
           <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Headcount by Shift</div>
+            <div id="summaryChartTitle" style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Headcount by Shift</div>
             <button type="button" id="summaryChartInfoButton" onclick="openChartModal()" aria-label="View chart information" title="View chart information" style="width: 34px; height: 34px; border-radius: 12px; border: 1px solid rgba(124, 58, 237, 0.28); background: rgba(124, 58, 237, 0.12); color: var(--purple-primary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
               <i class="fa-solid fa-circle-info"></i>
             </button>
           </div>
 
           <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
-            <div style="position: relative; width: 150px; height: 150px;">
+            <div class="summary-chart-visual" style="position: relative; width: 150px; height: 150px; transform-origin: center;">
               <svg width="150" height="150" viewBox="0 0 160 160" style="transform: rotate(-90deg);">
                 <circle cx="80" cy="80" r="58" fill="transparent" stroke="var(--border-subtle)" stroke-width="22" opacity="0.3"></circle>
                 <circle id="summaryChartOffCircle" cx="80" cy="80" r="58" fill="transparent" stroke="#06b6d4" stroke-width="22" stroke-dasharray="347.8 364.4" stroke-dashoffset="0"></circle>
@@ -1070,7 +1164,7 @@
               </svg>
               <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                 <div id="summaryChartTotal" style="font-size: 20px; font-weight: 900; color: var(--text-primary);">287</div>
-                <div style="font-size: 9.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total Staff</div>
+                <div id="summaryChartCenterLabel" style="font-size: 9.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total Staff</div>
               </div>
             </div>
 
@@ -1332,6 +1426,7 @@
         <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', 'OT 1.5 BEFORE WORK', 26, '26.00')" class="history-card-item calendar-purple-card">
           <div class="calendar-purple-card-header">
             <div class="calendar-purple-card-title">8.30:17.30W</div>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </div>
           <div class="calendar-purple-card-body">
             <div class="calendar-purple-detail full-width">
@@ -1352,6 +1447,7 @@
         <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', '1.5 OT', 55, '94.00')" class="history-card-item calendar-purple-card">
           <div class="calendar-purple-card-header">
             <div class="calendar-purple-card-title">8.30:17.30W</div>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </div>
           <div class="calendar-purple-card-body">
             <div class="calendar-purple-detail full-width">
@@ -2066,8 +2162,11 @@
       { id: '000100', name: 'Loh Siew Hong', shiftType: 'W02', department: 'Finance', branch: 'HQ', section: 'Accounts', costCenter: 'Management' }
     ];
     let visibleSummaryRows = [];
+    let selectedSummaryJobTitle = 'all';
+    let summaryChartRefreshTimer;
+    let summaryChartTotalAnimationFrame;
 
-    function renderShiftSummary() {
+    function renderShiftSummary({ animateChart = false } = {}) {
       const shiftType = document.getElementById('summaryFilterShiftType')?.value || 'all';
       const department = document.getElementById('summaryFilterDepartment')?.value || 'all';
       const branch = document.getElementById('summaryFilterBranch')?.value || 'all';
@@ -2080,9 +2179,15 @@
         (section === 'all' || row.section === section) &&
         (costCenter === 'all' || row.costCenter === costCenter)
       );
-      const total = filteredRows.reduce((sum, row) => sum + row.headcount, 0);
-      const offTotal = filteredRows.filter(row => row.shiftType === 'OFF').reduce((sum, row) => sum + row.headcount, 0);
-      const w02Total = filteredRows.filter(row => row.shiftType === 'W02').reduce((sum, row) => sum + row.headcount, 0);
+      if (selectedSummaryJobTitle !== 'all' && !filteredRows.some(row => row.jobTitle === selectedSummaryJobTitle)) {
+        selectedSummaryJobTitle = 'all';
+      }
+      const chartRows = selectedSummaryJobTitle === 'all'
+        ? filteredRows
+        : filteredRows.filter(row => row.jobTitle === selectedSummaryJobTitle);
+      const total = chartRows.reduce((sum, row) => sum + row.headcount, 0);
+      const offTotal = chartRows.filter(row => row.shiftType === 'OFF').reduce((sum, row) => sum + row.headcount, 0);
+      const w02Total = chartRows.filter(row => row.shiftType === 'W02').reduce((sum, row) => sum + row.headcount, 0);
       const offPercent = total ? (offTotal / total) * 100 : 0;
       const w02Percent = total ? (w02Total / total) * 100 : 0;
       const circumference = 364.4;
@@ -2093,11 +2198,17 @@
       const rowsContainer = document.getElementById('summaryTableRowsContainer');
       if (rowsContainer) {
         rowsContainer.innerHTML = filteredRows.length ? filteredRows.map((row, rowIndex) => `
-          <div class="summary-table-row">
+          <div class="summary-table-row${selectedSummaryJobTitle === row.jobTitle ? ' is-chart-selected' : ''}"
+               role="button"
+               tabindex="0"
+               aria-pressed="${selectedSummaryJobTitle === row.jobTitle}"
+               aria-label="Refresh chart for ${row.jobTitle}"
+               onclick="selectSummaryJobTitle('${row.jobTitle}')"
+               onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectSummaryJobTitle('${row.jobTitle}'); }">
             <div><span class="table-shift-badge ${row.shiftType === 'OFF' ? 'cyan' : 'rose'}">${row.shift}</span></div>
             <div style="font-weight: 800; font-size: 12.5px;">${row.jobTitle}</div>
             <div style="text-align: right;">
-              <button type="button" class="headcount-detail-trigger" onclick="openHeadcountDetail(${rowIndex})" aria-label="View ${row.jobTitle} headcount details">${row.headcount.toFixed(2)}</button>
+              <button type="button" class="headcount-detail-trigger" onclick="event.stopPropagation(); openHeadcountDetail(${rowIndex})" aria-label="View ${row.jobTitle} headcount details">${row.headcount.toFixed(2)}</button>
             </div>
           </div>
         `).join('') : `
@@ -2107,7 +2218,11 @@
         `;
       }
 
-      if (document.getElementById('summaryChartTotal')) document.getElementById('summaryChartTotal').textContent = total;
+      const chartTitle = document.getElementById('summaryChartTitle');
+      const chartCenterLabel = document.getElementById('summaryChartCenterLabel');
+      if (chartTitle) chartTitle.textContent = selectedSummaryJobTitle === 'all' ? 'Headcount by Shift' : `${selectedSummaryJobTitle} by Shift`;
+      if (chartCenterLabel) chartCenterLabel.textContent = selectedSummaryJobTitle === 'all' ? 'Total Staff' : 'Selected Staff';
+      updateSummaryChartTotal(total, animateChart);
       if (document.getElementById('summaryLegendOff')) document.getElementById('summaryLegendOff').textContent = `${offPercent.toFixed(1)}% (${offTotal} Staff)`;
       if (document.getElementById('summaryLegendW02')) document.getElementById('summaryLegendW02').textContent = `${w02Percent.toFixed(1)}% (${w02Total} Staff)`;
       if (document.getElementById('chartInfoOffCount')) document.getElementById('chartInfoOffCount').textContent = `${offTotal} Staff`;
@@ -2116,14 +2231,69 @@
       if (document.getElementById('chartInfoW02Percent')) document.getElementById('chartInfoW02Percent').textContent = `${w02Percent.toFixed(1)}%`;
       const offCircle = document.getElementById('summaryChartOffCircle');
       const w02Circle = document.getElementById('summaryChartW02Circle');
-      if (offCircle) {
-        offCircle.setAttribute('stroke-dasharray', `${offArc.toFixed(1)} ${circumference}`);
-        offCircle.setAttribute('stroke-dashoffset', '0');
+      const drawChart = () => {
+        if (offCircle) {
+          offCircle.setAttribute('stroke-dasharray', `${offArc.toFixed(1)} ${circumference}`);
+          offCircle.setAttribute('stroke-dashoffset', '0');
+          offCircle.style.opacity = offTotal > 0 ? '1' : '0';
+        }
+        if (w02Circle) {
+          w02Circle.setAttribute('stroke-dasharray', `${w02Arc.toFixed(1)} ${circumference}`);
+          w02Circle.setAttribute('stroke-dashoffset', `-${offArc.toFixed(1)}`);
+          w02Circle.style.opacity = w02Total > 0 ? '1' : '0';
+        }
+      };
+      const chartCard = document.getElementById('summaryChartCard');
+      if (animateChart && chartCard) {
+        chartCard.classList.remove('is-refreshing');
+        chartCard.dataset.refreshCount = `${Number(chartCard.dataset.refreshCount || 0) + 1}`;
+        [offCircle, w02Circle].forEach(circle => {
+          if (!circle) return;
+          circle.style.transition = 'none';
+          circle.setAttribute('stroke-dasharray', `0 ${circumference}`);
+          circle.setAttribute('stroke-dashoffset', '0');
+          circle.style.opacity = '0.2';
+        });
+        void chartCard.offsetWidth;
+        chartCard.classList.add('is-refreshing');
+        [offCircle, w02Circle].forEach(circle => {
+          if (circle) circle.style.transition = '';
+        });
+        requestAnimationFrame(() => requestAnimationFrame(drawChart));
+        clearTimeout(summaryChartRefreshTimer);
+        summaryChartRefreshTimer = setTimeout(() => chartCard.classList.remove('is-refreshing'), 650);
+      } else {
+        drawChart();
       }
-      if (w02Circle) {
-        w02Circle.setAttribute('stroke-dasharray', `${w02Arc.toFixed(1)} ${circumference}`);
-        w02Circle.setAttribute('stroke-dashoffset', `-${offArc.toFixed(1)}`);
+    }
+
+    function updateSummaryChartTotal(targetTotal, animate) {
+      const totalElement = document.getElementById('summaryChartTotal');
+      if (!totalElement) return;
+      cancelAnimationFrame(summaryChartTotalAnimationFrame);
+      if (!animate) {
+        totalElement.textContent = targetTotal;
+        return;
       }
+      const startTotal = Number(totalElement.textContent) || 0;
+      const startedAt = performance.now();
+      const duration = 520;
+      const updateFrame = now => {
+        const progress = Math.min((now - startedAt) / duration, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        totalElement.textContent = Math.round(startTotal + ((targetTotal - startTotal) * easedProgress));
+        if (progress < 1) summaryChartTotalAnimationFrame = requestAnimationFrame(updateFrame);
+      };
+      summaryChartTotalAnimationFrame = requestAnimationFrame(updateFrame);
+    }
+
+    function selectSummaryJobTitle(jobTitle) {
+      selectedSummaryJobTitle = selectedSummaryJobTitle === jobTitle ? 'all' : jobTitle;
+      renderShiftSummary({ animateChart: true });
+      document.getElementById('summaryChartCard')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
     }
 
     // Initialization on DOM Load

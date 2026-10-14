@@ -8,6 +8,11 @@
     document.querySelector('[data-option-id="goal-plan"]').href = `options/goal-plan.html?theme=${theme()}`;
     document.querySelector('[data-option-id="goal-progress"]').href = `options/goal-progress.html?theme=${theme()}`;
     document.querySelector('[data-option-id="work-incident"]').href = `options/work-incident.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="performance-highlight"]').href = `options/performance-highlight.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="incident-highlight"]').href = `options/incident-highlight.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="staff-incident"]').href = `options/staff-incident.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="goal-summary"]').href = `options/goal-summary.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="history"]').href = `options/history.html?theme=${theme()}`;
   }
 
   function setScope(scope, updateUrl = true) {

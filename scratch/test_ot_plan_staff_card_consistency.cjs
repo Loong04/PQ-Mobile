@@ -40,7 +40,7 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     assert.equal(firstCard.name, 'Aqilah Antasha');
     assert.equal(firstCard.idFollowsName, true);
     assert.equal(firstCard.id, '#000008');
-    assert.deepEqual(firstCard.labels, ['Job Title', 'Shift', 'OT Hours', 'MTD OT']);
+    assert.deepEqual(firstCard.labels, ['Job Title', 'OT Hours', 'MTD OT']);
     assert.equal(firstCard.otHours, '2.5 h');
     assert.equal(await page.$$eval('.ot-hours-input', inputs => inputs.length), 0);
     assert.equal(await page.$eval('#otDetailHoursLabel', node => node.textContent.trim()), 'Hours: 2.5 h');
@@ -57,9 +57,29 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     await new Promise(resolve => setTimeout(resolve, 320));
 
     const initiallySelected = await page.$eval('.ot-staff-card', card => card.classList.contains('selected'));
+    await page.click('.ot-staff-card .ot-staff-summary-panel');
+    assert.equal(await page.$eval('#staffOtHistoryModal', node => getComputedStyle(node).display), 'flex');
+    assert.equal(await page.$eval('#staffHistoryEmployeeName', node => node.textContent.trim()), 'Aqilah Antasha');
+    assert.equal(await page.$eval('#staffHistoryEmployeeId', node => node.textContent.trim()), '#000008');
+    assert.equal(await page.$eval('#staffHistoryTotalRecords', node => node.textContent.trim()), '3');
+    assert.equal(await page.$eval('#staffHistoryTotalHours', node => node.textContent.trim()), '7.50 h');
+    assert.deepEqual(
+      await page.$$eval('#staffHistoryTableHeader > span', cells => cells.map(cell => cell.textContent.trim())),
+      ['Date', 'Shift', 'Hours']
+    );
+    assert.equal(await page.$$eval('#staffHistoryTableRows .staff-history-row', rows => rows.length), 3);
+    assert.equal(
+      await page.$$eval('#staffHistoryTableRows .staff-history-hours', cells => cells.reduce((total, cell) => total + Number.parseFloat(cell.textContent), 0)),
+      7.5
+    );
+    assert.equal(await page.$eval('.ot-staff-card', card => card.classList.contains('selected')), initiallySelected);
+    await page.evaluate(() => closeModal('staffOtHistoryModal'));
+    await new Promise(resolve => setTimeout(resolve, 320));
+
     await page.click('.ot-staff-card .custom-checkbox');
     const selectedAfterClick = await page.$eval('.ot-staff-card', card => card.classList.contains('selected'));
     assert.notEqual(selectedAfterClick, initiallySelected);
+    assert.equal(await page.$eval('#staffOtHistoryModal', node => getComputedStyle(node).display), 'none');
     assert.equal(await page.$eval('.main-content', node => node.scrollWidth <= node.clientWidth + 1), true);
     assert.deepEqual(errors, []);
     console.log('PASS: OT Plan staff cards match the Shift Planning teal card design.');

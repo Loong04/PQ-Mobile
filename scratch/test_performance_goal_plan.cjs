@@ -118,7 +118,7 @@ async function setField(page, selector, value) {
             topActionsBeforeHero: Boolean(topActions && hero && topActions.nextElementSibling === hero),
             addHasTextLabel: addButton?.textContent.includes('Add Goal') || false,
             addGlyph: addGlyph?.textContent.trim() || null,
-            addHasComfortableTarget: Boolean(addRect && addRect.width >= 90 && addRect.height >= 40),
+            addHasComfortableTarget: Boolean(addRect && addRect.width >= 40 && addRect.height >= 40 && Math.abs(addRect.width - addRect.height) <= 1),
             addGlyphSize: addGlyph ? Math.round(parseFloat(getComputedStyle(addGlyph).fontSize)) : null,
             addLabel: addButton?.getAttribute('aria-label') || null,
             hasListHeading: Boolean(document.querySelector('.goal-plan-list-heading')),
@@ -135,7 +135,7 @@ async function setField(page, selector, value) {
           addIsInHeader: false,
           headerButtons: [],
           topActionsBeforeHero: false,
-          addHasTextLabel: true,
+          addHasTextLabel: false,
           addGlyph: '+',
           addHasComfortableTarget: true,
           addGlyphSize: 20,
@@ -144,7 +144,7 @@ async function setField(page, selector, value) {
           hasVisibleListTitle: true,
           hasVisibleListCount: false,
           goalListLabel: 'Performance Goals'
-        }, 'Add Goal sits beside the Performance Goals heading with a text label, while totals stay equal in width');
+        }, 'Add Goal is an accessible plus-only button beside the Performance Goals heading, while totals stay equal in width');
         assert.deepEqual(await page.evaluate(() => {
           const target = document.querySelector('.goal-plan-card-target');
           const content = document.querySelector('.goal-plan-content').getBoundingClientRect();

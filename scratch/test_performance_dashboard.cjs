@@ -15,6 +15,8 @@ const url = (file, query = '') => pathToFileURL(path.join(root, file)).href + qu
   const errors = [];
   try {
     const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', request => /^https?:/.test(request.url()) ? request.abort() : request.continue());
     page.on('pageerror', error => errors.push(error.message));
     await page.setViewport({ width: 420, height: 844 });
     for (const theme of ['dark', 'light']) {
@@ -50,7 +52,7 @@ const url = (file, query = '') => pathToFileURL(path.join(root, file)).href + qu
         assert.equal(await page.$eval('#performanceIndividualPanel', el => el.hidden), true);
         assert.ok(page.url().includes('scope=team'));
         assert.deepEqual(await page.$$eval('#performanceTeamPanel .performance-option-title', els => els.map(el => el.textContent.trim())),
-          ['Goal Summary', 'Performance Evaluation', 'Performance Highlight', 'Staff Incident', 'Incident Highlight']);
+          ['Goal Summary', 'Performance Evaluation', 'Performance Highlight', 'Staff Incident', 'Incident Highlight', 'History']);
         await page.reload({ waitUntil: 'domcontentloaded' });
         assert.equal(await page.$eval('#performanceTabTeam', el => el.getAttribute('aria-selected')), 'true', 'Reload preserves team scope');
         assert.ok(await page.evaluate(() => {

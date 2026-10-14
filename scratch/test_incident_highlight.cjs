@@ -1,0 +1,122 @@
+const assert=require('node:assert/strict');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+const puppeteer=require('puppeteer');
+const url=(file,theme)=>pathToFileURL(path.resolve(__dirname,'../modules/performance/'+file)).href+'?scope=team&theme='+theme;
+const labels=['Employee #','Name','Incident Date','Created Date','Incident Type','Incident Action','Measure Value','Merit','Remarks','Attachment'];
+(async()=>{
+  const browser=await puppeteer.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--allow-file-access-from-files','--no-sandbox']});
+  try {
+    for(const theme of ['light','dark'])for(const width of [360,420]){
+      const page=await browser.newPage(),errors=[];
+      page.on('pageerror',error=>errors.push(error.message));
+      await page.setRequestInterception(true);page.on('request',request=>/^https?:/.test(request.url())?request.abort():request.continue());
+      await page.setViewport({width,height:844});
+      await page.goto(url('index.html',theme),{waitUntil:'load'});
+      assert.equal(await page.$eval('[data-option-id="incident-highlight"]',node=>node.tagName),'A');
+      await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('[data-option-id="incident-highlight"]')]);
+      assert.ok(page.url().includes('/options/incident-highlight.html'));
+      assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),theme);
+      const original=await page.evaluate(()=>JSON.stringify(window.PERFORMANCE_INCIDENT_HIGHLIGHT_DATA));
+      assert.deepEqual(await page.$$eval('#incidentHighlightTable thead th',nodes=>nodes.map(node=>node.textContent.trim())),['Emp #','Name','Total','Branch','Department','Position']);
+      assert.deepEqual(await page.$$eval('#incidentHighlightTable tbody tr',nodes=>nodes.map(node=>[node.cells[0].textContent.trim(),node.cells[1].textContent.trim(),node.cells[2].textContent.trim()])),[['#EBB01','Alex Tan','4'],['#EBB02','Daniel Wong','3'],['#EBB03','Nur Izzati','-2']]);
+      const count=()=>page.$eval('#incidentHighlightTotalRecords',node=>node.textContent.trim());
+      const total=()=>page.$eval('#incidentHighlightTotalPoints',node=>node.textContent.trim());
+      assert.equal(await count(),'3');assert.equal(await total(),'5');
+      assert.deepEqual(await page.$eval('#incidentHighlightTable thead th',node=>({bg:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color})),{bg:'rgb(124, 58, 237)',color:'rgb(255, 255, 255)'});
+      assert.deepEqual(await page.$eval('#incidentHighlightViewChart',node=>({text:node.textContent.trim(),pie:!!node.querySelector('.fa-chart-pie'),nowrap:getComputedStyle(node).whiteSpace})),{text:'View Chart',pie:true,nowrap:'nowrap'});
+      await page.screenshot({path:path.join(__dirname,`incident-highlight-table-${theme}-${width}.png`)});
+      const trigger='[data-incident-employee="EBB01"]';
+      await page.click(trigger);
+      assert.equal(await page.$$eval('#incidentHighlightDetailsList table',nodes=>nodes.length),6,'Total opens all matching employee incidents');
+      assert.deepEqual(await page.$$eval('#incidentHighlightDetailsList > div:first-child table th',nodes=>nodes.map(node=>node.textContent.trim())),labels);
+      assert.deepEqual(await page.$$eval('#incidentHighlightDetailsList > div:first-child table td',nodes=>nodes.slice(0,-1).map(node=>node.textContent.trim())),['#EBB01','Alex Tan','12 Oct 2026','12 Oct 2026 14:30','Commendation','Recognition','1 completed handover','Yes','Completed the project handover ahead of schedule and prepared clear notes for the team.']);
+      assert.ok(await page.$eval('#incidentHighlightDetailsList > div:first-child table tr:last-child a',node=>node.textContent.includes('handover-notes.txt')&&node.download==='handover-notes.txt'));
+      assert.ok(await page.$eval('#incidentHighlightDetailEmpNo',node=>node.previousElementSibling.id==='incidentHighlightDetailName'&&node.textContent==='#EBB01'));
+      await page.setViewport({width,height:568});
+      await page.$eval('#incidentHighlightDetailsOverlay .detail-popout-body',node=>{node.scrollTop=node.scrollHeight;});
+      assert.ok(await page.$eval('#incidentHighlightDetailsList > div:last-child table tr:last-child',node=>{const rect=node.getBoundingClientRect(),body=node.closest('.detail-popout-body').getBoundingClientRect(),panel=node.closest('.detail-popout-panel').getBoundingClientRect();return rect.top>=body.top-1&&rect.bottom<=body.bottom+1&&panel.top>=0&&panel.bottom<=innerHeight+1;}));
+      await page.screenshot({path:path.join(__dirname,`incident-highlight-details-${theme}-${width}.png`)});
+      await page.keyboard.press('Escape');assert.ok(await page.$eval(trigger,node=>document.activeElement===node));
+      await page.keyboard.press('Enter');await page.click('#incidentHighlightCloseDetails');await page.setViewport({width,height:844});
+      const fields={keyword:'incidentHighlightKeyword',startDate:'incidentHighlightStartDate',endDate:'incidentHighlightEndDate',company:'incidentHighlightCompany',branch:'incidentHighlightBranch',department:'incidentHighlightDepartment',incidentType:'incidentHighlightIncidentType',meritType:'incidentHighlightMeritType',pointMin:'incidentHighlightPointMin',pointMax:'incidentHighlightPointMax'};
+      const apply=async values=>{await page.click('#incidentHighlightFilterTrigger');await page.evaluate(({values,fields})=>{for(const [key,id]of Object.entries(fields))document.getElementById(id).value=values[key]??'';},{values,fields});await page.click('#incidentHighlightApplyFilter');};
+      const names=()=>page.$$eval('#incidentHighlightTable tbody .attendance-report-name',nodes=>nodes.map(node=>node.textContent.trim()));
+      await page.click('#incidentHighlightFilterTrigger');
+      assert.deepEqual(await page.$$eval('#incidentHighlightFilterForm label',nodes=>nodes.map(node=>node.textContent.trim())),['Search Keyword','Start Date','End Date','Company','Branch','Department','Incident Type','Merit Type','Point Range']);
+      await page.screenshot({path:path.join(__dirname,`incident-highlight-filter-${theme}-${width}.png`)});await page.keyboard.press('Escape');
+      await apply({keyword:'#ebb01'});assert.deepEqual(await names(),['Alex Tan']);assert.equal(await total(),'4');
+      await apply({keyword:'product designer'});assert.deepEqual(await names(),['Daniel Wong']);
+      await apply({company:'PeopleHCM Services'});assert.deepEqual(await names(),['Nur Izzati']);
+      await apply({branch:'Penang'});assert.deepEqual(await names(),['Nur Izzati']);
+      await apply({department:'Product'});assert.deepEqual(await names(),['Daniel Wong']);
+      await apply({startDate:'2026-10-12',endDate:'2026-10-12'});assert.deepEqual(await names(),['Alex Tan']);assert.equal(await total(),'5');
+      await apply({meritType:'merit'});assert.equal(await total(),'16');
+      await apply({meritType:'demerit'});assert.equal(await total(),'-11');
+      await apply({incidentType:'Attendance'});assert.equal(await count(),'2');assert.equal(await total(),'-6');
+      await apply({pointMin:'-2',pointMax:'-2'});assert.deepEqual(await names(),['Nur Izzati']);
+      await apply({pointMin:'4',pointMax:'4'});assert.deepEqual(await names(),['Alex Tan'],'Range filters employee total, not individual incident points');
+      await page.click(trigger);assert.equal(await page.$$eval('#incidentHighlightDetailsList table',nodes=>nodes.length),6);await page.keyboard.press('Escape');
+      await apply({keyword:'Alex',startDate:'2026-10-12',endDate:'2026-10-12',company:'PeopleHCM Malaysia',branch:'Kuala Lumpur',department:'Sales',incidentType:'Commendation',meritType:'merit',pointMin:'5',pointMax:'5'});
+      assert.equal(await count(),'1');assert.equal(await total(),'5');await page.click(trigger);assert.equal(await page.$$eval('#incidentHighlightDetailsList table',nodes=>nodes.length),1,'Details show only events that contributed to the filtered total');await page.keyboard.press('Escape');
+      await page.click('#incidentHighlightViewChart');
+      assert.equal(await page.$eval('#incidentHighlightChartTotal',node=>node.textContent.trim()),'5');
+      assert.equal(await page.$$eval('#incidentHighlightChartLegend [data-incidents]',nodes=>nodes.reduce((sum,node)=>sum+Number(node.dataset.incidents),0)),1);
+      assert.equal(await page.$('button[id*="Trend"]'),null,'Incident Highlight has no View Trend');
+      assert.doesNotMatch(await page.$eval('#incidentHighlightChartView',node=>node.textContent),/View Trend/);
+      await page.click('#incidentHighlightBack');assert.equal(await total(),'5');
+      await apply({startDate:'2026-11-01',endDate:'2026-09-01'});assert.equal(await page.$eval('#incidentHighlightFilterError',node=>node.hidden),false);assert.equal(await total(),'5');
+      await page.click('#incidentHighlightResetFilter');await page.click('#incidentHighlightCloseFilter');assert.equal(await count(),'3');
+      await apply({pointMin:'8',pointMax:'2'});assert.equal(await page.$eval('#incidentHighlightFilterError',node=>node.hidden),false);assert.equal(await count(),'3');await page.keyboard.press('Escape');
+      await apply({keyword:'no matches'});assert.equal(await count(),'0');assert.equal(await total(),'0');
+      await page.click('#incidentHighlightViewChart');assert.equal(await page.$$eval('#incidentHighlightChartSegments circle',nodes=>nodes.length),0);assert.equal(await page.$eval('#incidentHighlightChartTotal',node=>node.textContent.trim()),'0');await page.keyboard.press('Escape');
+      await page.click('#incidentHighlightFilterTrigger');await page.click('#incidentHighlightResetFilter');await page.click('#incidentHighlightCloseFilter');
+      await page.click('#incidentHighlightFilterTrigger');await page.type('#incidentHighlightKeyword','unapplied');await page.keyboard.press('Escape');assert.equal(await count(),'3');
+      await page.click('#incidentHighlightViewChart');
+      await page.select('#incidentHighlightChartMetric','meritType');
+      assert.deepEqual(await page.$$eval('#incidentHighlightChartLegend [data-category]',nodes=>nodes.map(node=>[node.dataset.category,node.dataset.incidents,node.dataset.points]).sort()),[['Demerit','5','-11'],['Merit','5','16']]);
+      assert.ok(await page.$$eval('#incidentHighlightChartSegments circle',nodes=>nodes.every(node=>!node.getAttribute('stroke-dasharray').includes('-'))),'Signed points do not produce negative donut slices');
+      await page.screenshot({path:path.join(__dirname,`incident-highlight-chart-${theme}-${width}.png`)});
+      await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(()=>JSON.stringify(window.PERFORMANCE_INCIDENT_HIGHLIGHT_DATA)),original);
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.ok(await page.$eval('main',node=>node.scrollWidth<=node.clientWidth+1));
+      await page.click('#incidentHighlightFilterTrigger');await page.setViewport({width,height:568});
+      await page.$eval('#incidentHighlightFilterForm .performance-highlight-filter-fields',node=>{node.scrollTop=node.scrollHeight;});
+      assert.ok(await page.$eval('#incidentHighlightApplyFilter',node=>{const rect=node.getBoundingClientRect();return rect.top>=0&&rect.bottom<=innerHeight+1;}));await page.keyboard.press('Escape');
+      await page.click(`[data-set-theme="${theme==='light'?'dark':'light'}"]`);assert.ok(await page.$eval('#incidentHighlightBack',node=>node.href.includes('theme='+document.documentElement.dataset.theme)));
+      await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('#incidentHighlightBack')]);assert.equal(await page.$eval('#performanceTeamPanel',node=>node.hidden),false);
+      assert.deepEqual(errors,[]);await page.close();console.log(`PASS: Incident Highlight signed totals, filters, details and chart without trend; ${theme} ${width}px`);
+    }
+    const edge=await browser.newPage();await edge.setViewport({width:360,height:844});
+    await edge.setRequestInterception(true);edge.on('request',request=>/^https?:/.test(request.url())?request.abort():request.continue());
+    await edge.evaluateOnNewDocument(()=>{
+      const fixture=[
+        {reference:'EDGE-MERIT',empNo:'#001',name:'Zero Total',incidentDate:'2026-10-02',createdDate:'2026-10-02T10:00',point:3,merit:true,measureValue:0,remarks:'<img src=x onerror=alert(1)>',attachments:[{name:'safe.txt',url:'https://example.com/safe.txt'},{name:'unsafe.txt',url:'javascript:alert(1)'}]},
+        {reference:'EDGE-DEMERIT',empNo:'#001',name:'Zero Total',incidentDate:'2026-10-01',point:-3,merit:false},
+        {reference:'EDGE-MISSING',empNo:'002',name:'Missing Points',point:null,merit:null,attachments:[]},
+        {reference:'EDGE-NEGATIVE',empNo:'003',name:'Negative Total',point:-2,merit:null,incidentDate:'2026-10-02'}
+      ];
+      Object.defineProperty(window,'PERFORMANCE_INCIDENT_HIGHLIGHT_DATA',{configurable:true,get:()=>fixture,set:()=>{}});
+    });
+    await edge.goto(url('options/incident-highlight.html','light'),{waitUntil:'load'});
+    assert.deepEqual(await edge.$$eval('#incidentHighlightTable tbody tr',nodes=>nodes.map(node=>node.cells[2].textContent.trim())),['0','—','-2']);
+    await edge.click('[data-incident-employee="001"]');
+    const values=await edge.$$eval('#incidentHighlightDetailsList > div:first-child td',nodes=>nodes.map(node=>node.textContent.trim()));
+    assert.equal(values[0],'#001');assert.equal(values[6],'0');assert.equal(values[8],'<img src=x onerror=alert(1)>');assert.equal(await edge.$('#incidentHighlightDetailsList img'),null);
+    assert.equal(await edge.$$eval('#incidentHighlightDetailsList a',nodes=>nodes.length),1,'Unsafe attachment URLs remain plain text');
+    assert.equal(await edge.$eval('#incidentHighlightDetailsList a',node=>node.rel),'noopener noreferrer');
+    await edge.keyboard.press('Escape');await edge.click('#incidentHighlightFilterTrigger');
+    await edge.$eval('#incidentHighlightPointMin',node=>{node.value='0';});await edge.$eval('#incidentHighlightPointMax',node=>{node.value='0';});await edge.click('#incidentHighlightApplyFilter');
+    assert.equal(await edge.$eval('#incidentHighlightTotalRecords',node=>node.textContent.trim()),'1','Zero totals are valid, while unknown totals do not match a numeric range');
+    await edge.click('#incidentHighlightFilterTrigger');await edge.click('#incidentHighlightResetFilter');await edge.select('#incidentHighlightMeritType','demerit');await edge.click('#incidentHighlightApplyFilter');
+    assert.equal(await edge.$eval('#incidentHighlightTotalRecords',node=>node.textContent.trim()),'1','Unknown merit is not treated as demerit');
+    assert.equal(await edge.$eval('#incidentHighlightTotalPoints',node=>node.textContent.trim()),'-3');
+    await edge.click('[data-incident-employee="001"]');assert.equal(await edge.$$eval('#incidentHighlightDetailsList table',nodes=>nodes.length),1);
+    assert.equal(await edge.$$eval('#incidentHighlightDetailsList td',nodes=>nodes[7].textContent.trim()),'No');
+    await edge.keyboard.press('Escape');await edge.click('#incidentHighlightFilterTrigger');await edge.click('#incidentHighlightResetFilter');
+    await edge.type('#incidentHighlightKeyword','Missing Points');await edge.click('#incidentHighlightApplyFilter');
+    assert.equal(await edge.$eval('#incidentHighlightTotalPoints',node=>node.textContent.trim()),'—','All-unknown points must not become a known zero summary');
+    await edge.click('#incidentHighlightViewChart');assert.equal(await edge.$eval('#incidentHighlightChartTotal',node=>node.textContent.trim()),'—','All-unknown points remain unavailable in the chart');
+    await edge.close();console.log('PASS: Zero/unknown totals, numeric range boundaries, unknown merit, safe attachments and text-only remarks.');
+  } finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

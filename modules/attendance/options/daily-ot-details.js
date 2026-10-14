@@ -54,13 +54,20 @@
     });
   });
 
+  const actions = document.getElementById('dailyOtActions');
+  function syncUpdateVisibility() {
+    actions.hidden = !document.querySelector('.daily-ot-void-checkbox:checked');
+  }
+
   document.querySelectorAll('.daily-ot-void-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', () => {
       const approved = document.getElementById(`dailyOtApproved${checkbox.dataset.recordIndex}`);
       approved.disabled = checkbox.checked;
       approved.setCustomValidity('');
+      syncUpdateVisibility();
     });
   });
+  syncUpdateVisibility();
 
   document.getElementById('dailyOtUpdate').addEventListener('click', () => {
     let approvedMinutes = 0;

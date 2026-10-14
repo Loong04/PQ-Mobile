@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Performance Highlight</title>
+  <script>(() => { document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') === 'light' ? 'light' : 'dark'; })();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+  <link rel="stylesheet" href="../../../css/detail-popout.css">
+  <link rel="stylesheet" href="../css/performance.css">
+  <link rel="stylesheet" href="../css/performance-highlight.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../js/performance-highlight-data.js" defer></script>
+  <script src="../js/highlight-export.js" defer></script>
+  <script src="../js/performance-highlight.js" defer></script>
+</head>
+<body class="attendance-highlight-page performance-highlight-page">
+  <preview-top-bar active-page="performance"></preview-top-bar>
+  <div class="phone-container">
+    <header class="performance-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="performance-header-row">
+        <a id="performanceHighlightBack" class="performance-back" href="../index.html?scope=team" aria-label="Back to Performance"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <h1 id="performanceHighlightTitle" data-print-title="Performance Highlight">Performance Highlight</h1>
+        <span class="performance-header-spacer" aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content performance-highlight-content">
+      <section id="performanceHighlightReportView" aria-label="Performance evaluations">
+        <div class="filter-summary-bar performance-highlight-filter-summary">
+          <div><small>Current Filter</small><strong id="performanceHighlightFilterSummary"></strong></div>
+          <button type="button" id="performanceHighlightFilterTrigger" aria-label="Open Performance Highlight filter" aria-haspopup="dialog" aria-controls="performanceHighlightFilterOverlay"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+        </div>
+        <div class="attendance-report-summary record-summary-card" aria-live="polite">
+          <div class="attendance-report-summary-row">
+            <div class="record-summary-metric"><span class="record-summary-label">Total Records</span><strong id="performanceHighlightTotalRecords" class="record-summary-value">0</strong></div>
+            <button type="button" id="performanceHighlightViewChart" class="view-chart-btn"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
+          </div>
+          <div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label">Average Score</span><strong id="performanceHighlightAverageScore" class="performance-highlight-average">—</strong></div><div class="performance-highlight-export-actions"><button type="button" id="performanceHighlightExportPdf" class="performance-highlight-export-pdf" title="Export PDF" aria-label="Export PDF"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></button><button type="button" id="performanceHighlightExportExcel" class="performance-highlight-export-excel" title="Export Excel" aria-label="Export Excel"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></button></div></div>
+        </div>
+        <section class="attendance-report-table-card">
+          <div class="attendance-report-table-scroll">
+            <table id="performanceHighlightTable" class="attendance-report-table" aria-label="Employee performance scores">
+              <thead><tr><th scope="col">Emp #</th><th scope="col">Name</th><th scope="col">Score</th><th scope="col">Branch</th><th scope="col">Department</th><th scope="col">Position</th></tr></thead><tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+      <section id="performanceHighlightChartView" class="attendance-report-chart" aria-label="Performance score analysis" hidden>
+        <section class="attendance-report-breakdown"><label for="performanceHighlightChartMetric">BREAKDOWN BY</label><select id="performanceHighlightChartMetric"></select></section>
+        <section class="attendance-report-chart-card">
+          <div class="performance-highlight-chart-heading"><div><h3 id="performanceHighlightChartTitle"></h3><p id="performanceHighlightChartSubtitle"></p></div><button type="button" id="performanceHighlightViewTrend" class="performance-highlight-view-trend"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>View Trend</span></button></div>
+          <div class="attendance-report-donut"><svg id="performanceHighlightChartDonut" viewBox="0 0 180 180" role="img"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="performanceHighlightChartSegments"></g></svg><div class="attendance-report-donut-center"><strong id="performanceHighlightChartAverage">—</strong><small>Average Score</small></div></div>
+          <p id="performanceHighlightChartNote" class="attendance-report-note"></p>
+        </section>
+        <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="performanceHighlightChartColumn">Branch</span><span>Avg Score</span><span>% Records</span></div><div id="performanceHighlightChartLegend"></div></section>
+      </section>
+      <section id="performanceHighlightTrendView" aria-label="Performance score trend" hidden>
+        <section class="performance-highlight-analysis-card performance-highlight-period-card"><small>SELECTED PERIOD</small><p><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span id="performanceHighlightTrendRange"></span></p></section>
+        <button type="button" id="performanceHighlightTrendTotalCard" class="performance-highlight-analysis-card performance-highlight-trend-total"><span><b>Average Score</b><small id="performanceHighlightTrendScoreType"></small></span><strong id="performanceHighlightTrendAverage">—</strong></button>
+        <section class="performance-highlight-analysis-card performance-highlight-trend-card"><h2>Monthly Average Score</h2><p id="performanceHighlightTrendNote"></p><div id="performanceHighlightTrendBars"></div></section>
+      </section>
+      <section id="performanceHighlightAnalysisView" class="attendance-report-chart" aria-label="Selected performance score analysis" hidden>
+        <section class="attendance-report-breakdown"><label for="performanceHighlightAnalysisMetric">BREAKDOWN BY</label><select id="performanceHighlightAnalysisMetric"></select></section>
+        <section class="attendance-report-chart-card">
+          <h3 id="performanceHighlightAnalysisTitle"></h3><p id="performanceHighlightAnalysisSubtitle"></p>
+          <div class="attendance-report-donut"><svg id="performanceHighlightAnalysisDonut" viewBox="0 0 180 180" role="img"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="performanceHighlightAnalysisSegments"></g></svg><div class="attendance-report-donut-center"><strong id="performanceHighlightAnalysisAverage">—</strong><small>Average Score</small></div></div>
+          <p id="performanceHighlightAnalysisNote" class="attendance-report-note"></p>
+        </section>
+        <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="performanceHighlightAnalysisColumn">Branch</span><span>Avg Score</span><span>% Records</span></div><div id="performanceHighlightAnalysisLegend"></div></section>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <div id="performanceHighlightFilterOverlay" class="performance-highlight-filter-overlay standard-filter-sheet" aria-hidden="true" hidden>
+      <form id="performanceHighlightFilterForm" class="standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="performanceHighlightFilterTitle" novalidate>
+        <div class="standard-filter-handle" aria-hidden="true"></div>
+        <header class="standard-filter-header"><h2 id="performanceHighlightFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="performanceHighlightResetFilter" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" id="performanceHighlightCloseFilter" class="standard-filter-close" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="performance-highlight-filter-fields">
+          <div><label for="performanceHighlightKeyword">Search Keyword</label><input id="performanceHighlightKeyword" name="keyword" type="search" placeholder="Search name, employee ID, branch or position"></div>
+          <div><label for="performanceHighlightPeriod">Period</label><select id="performanceHighlightPeriod" name="period"><option value="">All Periods</option></select></div>
+          <div><label for="performanceHighlightEvaluationType">Evaluation Type</label><select id="performanceHighlightEvaluationType" name="evaluationType"><option value="">All Evaluation Types</option></select></div>
+          <div><label for="performanceHighlightScoreGrade">Score Grade</label><select id="performanceHighlightScoreGrade" name="scoreGrade"><option value="">All Score Grades</option></select></div>
+          <div><label for="performanceHighlightScoreType">Score Type</label><select id="performanceHighlightScoreType" name="scoreType"><option value="overallScore">Overall Score</option><option value="goalScore">Goal Score</option><option value="competencyScore">Competency Score</option></select></div>
+          <div role="group" aria-labelledby="performanceHighlightScoreRangeLabel"><label id="performanceHighlightScoreRangeLabel" for="performanceHighlightScoreMin">Score Range</label><div class="performance-highlight-score-range"><input id="performanceHighlightScoreMin" name="scoreMin" type="number" min="0" max="100" step="any" aria-label="Minimum score" aria-describedby="performanceHighlightFilterError"><span aria-hidden="true">–</span><input id="performanceHighlightScoreMax" name="scoreMax" type="number" min="0" max="100" step="any" aria-label="Maximum score" aria-describedby="performanceHighlightFilterError"></div></div>
+          <p id="performanceHighlightFilterError" class="performance-highlight-error" role="alert" hidden></p>
+        </div>
+        <footer class="standard-filter-footer"><button type="submit" id="performanceHighlightApplyFilter" class="standard-filter-apply">Apply Filter</button></footer>
+      </form>
+    </div>
+    <div id="performanceHighlightDetailsOverlay" class="performance-highlight-details-overlay detail-popout-overlay" aria-hidden="true" hidden>
+      <section class="detail-popout-panel" role="dialog" aria-modal="true" aria-labelledby="performanceHighlightDetailName">
+        <header class="detail-popout-header"><span class="detail-popout-header-contents"><h2 id="performanceHighlightDetailName" class="detail-popout-title"></h2><span id="performanceHighlightDetailEmpNo" class="detail-popout-subtitle"></span></span><button type="button" id="performanceHighlightCloseDetails" class="detail-popout-close" aria-label="Close performance details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="detail-popout-body"><table class="detail-popout-table" aria-label="Performance evaluation details"><tbody id="performanceHighlightDetailsRows"></tbody></table></div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

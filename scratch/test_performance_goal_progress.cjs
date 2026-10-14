@@ -25,6 +25,8 @@ async function setField(page, selector, value) {
 
   try {
     const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', request => /^https?:/.test(request.url()) ? request.abort() : request.continue());
     page.on('pageerror', error => errors.push(error.message));
 
     await page.setViewport({ width: 420, height: 844 });
@@ -41,7 +43,9 @@ async function setField(page, selector, value) {
 
         assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme);
         assert.equal(await page.$eval('#goalProgressTitle', node => node.textContent.trim()), 'Goal Progress');
+        assert.ok(await page.$('#goalProgressFilterTrigger.claim-filter-bar'),'Goal Progress uses the shared Current Filter bar');
         assert.deepEqual(await page.$$eval('.goal-progress-filter label', nodes => nodes.map(node => node.textContent.trim())), ['Period', 'Evaluation Type']);
+        assert.equal(await page.$('.goal-progress-card-header i'),null,'Goal title has no decorative target icon');
         assert.equal(await page.$eval('#goalProgressTotal', node => node.textContent.trim()), '1');
 
         const card = await page.$eval('.goal-progress-card', node => {
@@ -69,13 +73,29 @@ async function setField(page, selector, value) {
         });
         await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-${theme}-${width}.png`) });
 
+        await page.click('#goalProgressFilterTrigger');
+        assert.equal(await page.$eval('#goalProgressFilterModal',node=>node.getAttribute('aria-hidden')),'false');
+        await page.screenshot({path:path.join(__dirname,`performance-goal-progress-filter-${theme}-${width}.png`)});
         await setField(page, '#goalProgressEvaluationFilter', 'Annual Review');
+        assert.equal(await page.$eval('#goalProgressTotal',node=>node.textContent.trim()),'1','Draft filter does not change records before Apply');
+        await page.keyboard.press('Escape');
+        assert.equal(await page.evaluate(()=>document.activeElement.id),'goalProgressFilterTrigger');
+        await page.click('#goalProgressFilterTrigger');
+        assert.equal(await page.$eval('#goalProgressEvaluationFilter',node=>node.value),'','Closing without Apply discards draft changes');
+        await setField(page, '#goalProgressEvaluationFilter', 'Annual Review');
+        await page.click('#goalProgressApplyFilter');
         assert.equal(await page.$eval('#goalProgressTotal', node => node.textContent.trim()), '0', 'Evaluation type filter updates total record');
         assert.equal(await page.$eval('#goalProgressEmpty', node => node.hidden), false, 'Empty state appears when filters have no results');
+        assert.ok(await page.$eval('#goalProgressFilterSummary',node=>node.textContent.includes('Annual Review')));
+        await page.click('#goalProgressFilterTrigger');
         await setField(page, '#goalProgressEvaluationFilter', 'Mid-Year Review');
+        await page.click('#goalProgressApplyFilter');
         assert.equal(await page.$eval('#goalProgressTotal', node => node.textContent.trim()), '1');
+        await page.click('#goalProgressFilterTrigger');await page.click('#goalProgressResetFilter');await page.click('#goalProgressApplyFilter');
+        assert.equal(await page.$eval('#goalProgressFilterSummary',node=>node.textContent),'All Periods • All Evaluation Types');
 
         await page.click('.goal-progress-update');
+        assert.ok(await page.$('.goal-progress-content'),'Update opens the Goal Progress form without navigating through the bottom bar');
         assert.deepEqual(await page.evaluate(() => ({ pageY: window.scrollY, phoneY: document.querySelector('.phone-container').scrollTop, contentY: document.querySelector('.goal-progress-content').scrollTop })), { pageY: 0, phoneY: 0, contentY: 0 }, 'Switching views keeps the preview frame fixed and resets only the phone content');
         assert.equal(await page.$eval('#goalProgressListView', node => node.hidden), true);
         assert.equal(await page.$eval('#goalProgressUpdateView', node => node.hidden), false);

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Goal Summary</title>
+  <script>(() => { document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') === 'light' ? 'light' : 'dark'; })();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css"><link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css"><link rel="stylesheet" href="../css/performance.css">
+  <link rel="stylesheet" href="../css/performance-highlight.css"><link rel="stylesheet" href="../css/goal-summary.css">
+  <script src="../../../js/components.js"></script><script src="../../../js/app.js" defer></script>
+  <script src="../js/goal-summary-data.js" defer></script><script src="../js/goal-summary.js" defer></script>
+</head>
+<body class="attendance-highlight-page performance-highlight-page goal-summary-page">
+  <preview-top-bar active-page="performance"></preview-top-bar>
+  <div class="phone-container">
+    <header class="performance-header"><phone-status-bar time="9:41"></phone-status-bar><div class="performance-header-row"><a id="goalSummaryBack" class="performance-back" href="../index.html?scope=team" aria-label="Back to Performance"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a><h1 id="goalSummaryTitle" data-print-title="Goal Summary">Goal Summary</h1><span class="performance-header-spacer" aria-hidden="true"></span></div></header>
+    <main class="main-content performance-highlight-content">
+      <section id="goalSummaryReportView" aria-label="Goal achievement by goal type">
+        <div class="filter-summary-bar performance-highlight-filter-summary"><div><small>Current Filter</small><strong id="goalSummaryFilterSummary"></strong></div><button type="button" id="goalSummaryFilterTrigger" aria-label="Open Goal Summary filter" aria-haspopup="dialog" aria-controls="goalSummaryFilterOverlay"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button></div>
+        <div class="attendance-report-summary record-summary-card" aria-live="polite"><div class="attendance-report-summary-row"><div class="record-summary-metric"><span class="record-summary-label">Total Records</span><strong id="goalSummaryTotalRecords" class="record-summary-value">0</strong></div><button type="button" id="goalSummaryViewChart" class="view-chart-btn"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button></div></div>
+        <section class="attendance-report-table-card"><div class="attendance-report-table-scroll"><table id="goalSummaryTable" class="attendance-report-table" aria-label="Goal type counts and achievement"><colgroup><col class="goal-summary-type-col"><col><col></colgroup><thead><tr><th scope="col">Goal Type</th><th scope="col">Count</th><th scope="col">Achieve%</th></tr></thead><tbody></tbody></table></div></section>
+      </section>
+      <section id="goalSummaryEmployeeView" aria-label="Employee goals for selected goal type" hidden>
+        <div class="attendance-report-summary record-summary-card" aria-live="polite"><div class="attendance-report-summary-row"><div class="record-summary-metric"><span class="record-summary-label">Total Records</span><strong id="goalSummaryEmployeeCount" class="record-summary-value">0</strong></div><button type="button" id="goalSummaryEmployeeViewChart" class="view-chart-btn"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button></div></div>
+        <h2 id="goalSummaryEmployeeType" class="goal-summary-employee-heading"></h2>
+        <div id="goalSummaryEmployeeCards" class="goal-summary-employee-cards"></div>
+      </section>
+      <section id="goalSummaryChartView" class="attendance-report-chart" aria-label="Goal Summary analysis" hidden>
+        <section class="attendance-report-breakdown"><label for="goalSummaryChartMetric">BREAKDOWN BY</label><select id="goalSummaryChartMetric"></select></section>
+        <section class="attendance-report-chart-card"><h3 id="goalSummaryChartTitle"></h3><p>Share of filtered goals</p><div class="attendance-report-donut"><svg id="goalSummaryChartDonut" viewBox="0 0 180 180" role="img"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="goalSummaryChartSegments"></g></svg><div class="attendance-report-donut-center"><strong id="goalSummaryChartTotal">0</strong><small>Total Records</small></div></div><p id="goalSummaryChartNote" class="attendance-report-note"></p></section>
+        <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="goalSummaryChartColumn">Goal Type</span><span>Count</span><span>Achieve%</span></div><div id="goalSummaryChartLegend"></div></section>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <div id="goalSummaryFilterOverlay" class="performance-highlight-filter-overlay standard-filter-sheet" aria-hidden="true" hidden>
+      <form id="goalSummaryFilterForm" class="standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="goalSummaryFilterTitle" novalidate>
+        <div class="standard-filter-handle" aria-hidden="true"></div><header class="standard-filter-header"><h2 id="goalSummaryFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button type="button" id="goalSummaryResetFilter" class="standard-filter-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button type="button" id="goalSummaryCloseFilter" class="standard-filter-close" aria-label="Close Goal Summary filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="performance-highlight-filter-fields">
+          <div><label for="goalSummaryKeyword">Search Keyword</label><input id="goalSummaryKeyword" name="keyword" type="search" placeholder="Search name, employee ID, goal or job"></div>
+          <div><label for="goalSummaryCompany">Company</label><select id="goalSummaryCompany" name="company"><option value="">All Companies</option></select></div>
+          <div><label for="goalSummaryBranch">Branch</label><select id="goalSummaryBranch" name="branch"><option value="">All Branches</option></select></div>
+          <div><label for="goalSummaryDepartment">Department</label><select id="goalSummaryDepartment" name="department"><option value="">All Departments</option></select></div>
+          <div><label for="goalSummaryJob">Job</label><select id="goalSummaryJob" name="job"><option value="">All Jobs</option></select></div>
+          <div><label for="goalSummaryPeriod">Period</label><select id="goalSummaryPeriod" name="period"><option value="">All Periods</option></select></div>
+          <div><label for="goalSummaryEvaluationType">Evaluation Type</label><select id="goalSummaryEvaluationType" name="evaluationType"><option value="">All Evaluation Types</option></select></div>
+          <div role="group" aria-labelledby="goalSummaryAchievedLabel"><label id="goalSummaryAchievedLabel" for="goalSummaryAchievedMin">Achieved%</label><div class="performance-highlight-score-range"><input id="goalSummaryAchievedMin" name="achievedMin" type="number" min="0" max="100" step="any" placeholder="Min" aria-label="Minimum achieved percentage" aria-describedby="goalSummaryFilterError"><span aria-hidden="true">–</span><input id="goalSummaryAchievedMax" name="achievedMax" type="number" min="0" max="100" step="any" placeholder="Max" aria-label="Maximum achieved percentage" aria-describedby="goalSummaryFilterError"></div></div>
+          <p id="goalSummaryFilterError" class="performance-highlight-error" role="alert" hidden></p>
+        </div>
+        <footer class="standard-filter-footer"><button type="submit" id="goalSummaryApplyFilter" class="standard-filter-apply">Apply Filter</button></footer>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

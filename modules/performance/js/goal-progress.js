@@ -3,7 +3,8 @@
   const $ = id => document.getElementById(id);
   const state = {
     goals: source.goals.map(goal => ({ ...goal, records: [] })),
-    selectedId: null
+    selectedId: null,
+    filters: { period: '', evaluationType: '' }
   };
 
   function node(tag, className, text) {
@@ -53,7 +54,7 @@
       node('h3', 'goal-progress-card-title', goal.title),
       node('span', 'goal-progress-card-context', `${goal.kra} · Unit: ${goal.unit}`)
     );
-    header.append(headerCopy, icon('fa-bullseye'));
+    header.append(headerCopy);
 
     const body = node('dl', 'goal-progress-card-body');
     const latest = latestRecord(goal);
@@ -77,8 +78,8 @@
   }
 
   function filteredGoals() {
-    const period = $('goalProgressPeriodFilter').value;
-    const type = $('goalProgressEvaluationFilter').value;
+    const period = state.filters.period;
+    const type = state.filters.evaluationType;
     return state.goals.filter(goal => (!period || goal.period === period) && (!type || goal.evaluationType === type));
   }
 
@@ -87,6 +88,23 @@
     $('goalProgressCards').replaceChildren(...goals.map(renderCard));
     $('goalProgressTotal').textContent = String(goals.length);
     $('goalProgressEmpty').hidden = goals.length > 0;
+    $('goalProgressFilterSummary').textContent = `${state.filters.period || 'All Periods'} • ${state.filters.evaluationType || 'All Evaluation Types'}`;
+  }
+
+  function setFilterBackgroundInert(value) {
+    document.querySelectorAll('.phone-container > header, .phone-container > main, .phone-container > phone-bottom-nav, .phone-container > #goalProgressToast, body > preview-top-bar').forEach(element => { element.inert = value; });
+  }
+  function openFilter() {
+    $('goalProgressPeriodFilter').value = state.filters.period;
+    $('goalProgressEvaluationFilter').value = state.filters.evaluationType;
+    $('goalProgressFilterModal').classList.add('active'); $('goalProgressFilterModal').setAttribute('aria-hidden', 'false');
+    $('goalProgressFilterTrigger').setAttribute('aria-expanded', 'true'); setFilterBackgroundInert(true);
+    $('goalProgressPeriodFilter').focus();
+  }
+  function closeFilter() {
+    $('goalProgressFilterModal').classList.remove('active'); $('goalProgressFilterModal').setAttribute('aria-hidden', 'true');
+    $('goalProgressFilterTrigger').setAttribute('aria-expanded', 'false'); setFilterBackgroundInert(false);
+    $('goalProgressFilterTrigger').focus({ preventScroll: true });
   }
 
   function selectedGoal() {
@@ -200,8 +218,24 @@
   document.addEventListener('DOMContentLoaded', () => {
     source.periods.forEach(period => $('goalProgressPeriodFilter').append(new Option(period, period)));
     source.evaluationTypes.forEach(type => $('goalProgressEvaluationFilter').append(new Option(type, type)));
-    $('goalProgressPeriodFilter').addEventListener('change', renderCards);
-    $('goalProgressEvaluationFilter').addEventListener('change', renderCards);
+    $('goalProgressFilterTrigger').addEventListener('click', openFilter);
+    $('goalProgressCloseFilter').addEventListener('click', closeFilter);
+    $('goalProgressResetFilter').addEventListener('click', () => $('goalProgressFilterForm').reset());
+    $('goalProgressFilterForm').addEventListener('submit', event => {
+      event.preventDefault();
+      state.filters = { period: $('goalProgressPeriodFilter').value, evaluationType: $('goalProgressEvaluationFilter').value };
+      renderCards(); closeFilter();
+    });
+    $('goalProgressFilterModal').addEventListener('click', event => { if (event.target === event.currentTarget) closeFilter(); });
+    document.addEventListener('keydown', event => {
+      const modal = $('goalProgressFilterModal'); if (!modal.classList.contains('active')) return;
+      if (event.key === 'Escape') { event.preventDefault(); closeFilter(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = [...modal.querySelectorAll('button,select')].filter(element => !element.disabled && element.getClientRects().length);
+      const first = focusable[0], last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
     $('goalProgressBack').addEventListener('click', event => {
       if ($('goalProgressUpdateView').hidden) return;
       event.preventDefault();

@@ -698,17 +698,33 @@
       transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
     }
     .history-card-item.summary-history-card.theme-green {
+      --summary-rate-color: #059669;
       border-left-color: #10b981;
       background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, .06) 100%);
+    }
+    .history-card-item.summary-history-card.theme-orange {
+      --summary-rate-color: #b45309;
+      border-left-color: #f59e0b;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(245, 158, 11, .06) 100%);
     }
     .history-card-item.summary-history-card.theme-blue {
       border-left-color: #3b82f6;
       background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59, 130, 246, .06) 100%);
     }
     .history-card-item.summary-history-card.theme-purple {
+      --summary-rate-color: #7c3aed;
       border-left-color: #7c3aed;
       background: linear-gradient(135deg, var(--bg-card) 0%, rgba(124, 58, 237, .06) 100%);
     }
+    .history-card-item.summary-history-card.theme-red {
+      --summary-rate-color: #dc2626;
+      border-left-color: #ef4444;
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(239, 68, 68, .06) 100%);
+    }
+    [data-theme="dark"] .summary-history-card.theme-green { --summary-rate-color: #34d399; }
+    [data-theme="dark"] .summary-history-card.theme-orange { --summary-rate-color: #fbbf24; }
+    [data-theme="dark"] .summary-history-card.theme-purple { --summary-rate-color: #a78bfa; }
+    [data-theme="dark"] .summary-history-card.theme-red { --summary-rate-color: #f87171; }
     .history-card-item.summary-history-card:hover { box-shadow: var(--shadow-card); }
     .history-card-item.summary-history-card:active { transform: scale(.985); }
     .history-card-item.summary-history-card:focus-visible {
@@ -763,6 +779,10 @@
       border-color: rgba(16, 185, 129, .18);
       background: rgba(16, 185, 129, .05);
     }
+    .summary-history-card.theme-orange .summary-history-details {
+      border-color: rgba(245, 158, 11, .18);
+      background: rgba(245, 158, 11, .05);
+    }
     .summary-history-card.theme-blue .summary-history-details {
       border-color: rgba(59, 130, 246, .18);
       background: rgba(59, 130, 246, .05);
@@ -770,6 +790,10 @@
     .summary-history-card.theme-purple .summary-history-details {
       border-color: rgba(124, 58, 237, .18);
       background: rgba(124, 58, 237, .05);
+    }
+    .summary-history-card.theme-red .summary-history-details {
+      border-color: rgba(239, 68, 68, .18);
+      background: rgba(239, 68, 68, .05);
     }
     .summary-history-detail {
       display: flex;
@@ -788,6 +812,7 @@
       text-align: right;
       overflow-wrap: anywhere;
     }
+    .summary-history-detail .summary-history-attendance-rate { color: var(--summary-rate-color); }
     .summary-history-status[data-status="normal"] { color: #059669; background: rgba(16, 185, 129, .14); border: 1px solid rgba(16, 185, 129, .35); }
     .summary-history-status[data-status="exception"] { color: #d97706; background: rgba(245, 158, 11, .14); border: 1px solid rgba(245, 158, 11, .35); }
     [data-theme="dark"] .summary-history-status[data-status="normal"] { color: #34d399; background: rgba(16, 185, 129, .22); border-color: rgba(16, 185, 129, .45); }
@@ -1259,6 +1284,19 @@
       return "green";
     }
 
+    function getAttendanceRate(staff) {
+      return staff.scheduledDays ? Math.round(staff.presentDays / staff.scheduledDays * 100) : 0;
+    }
+
+    function getStaffCardTheme(staff, title) {
+      if (title !== "Normal Present Days") return getThemeForTitle(title);
+      const rate = getAttendanceRate(staff);
+      if (rate > 90) return "green";
+      if (rate >= 60) return "orange";
+      if (rate >= 30) return "purple";
+      return "red";
+    }
+
     function getMetricNumber(item, title) {
       return Number(item[getMetricConfig(title).key]) || 0;
     }
@@ -1278,9 +1316,7 @@
         ];
       }
       if (title === "Normal Present Days") {
-        const attendanceRate = item.scheduledDays
-          ? Math.round(item.presentDays / item.scheduledDays * 100)
-          : 0;
+        const attendanceRate = getAttendanceRate(item);
         return [
           ["Job Title", item.jobTitle],
           ["Scheduled Days", String(item.scheduledDays)],
@@ -1355,11 +1391,13 @@
       }
 
       container.innerHTML = currentStaffItems.map(function (item, index) {
+        const staffTheme = getStaffCardTheme(item, title);
         const employeeId = item.empNo.startsWith("#") ? item.empNo : "#" + item.empNo;
         const detailRows = getStaffCardRows(item, title).map(function (row) {
-          return '<div class="summary-history-detail"><span>' + row[0] + '</span> <strong>' + row[1] + '</strong></div>';
+          const rateClass = row[0] === "Attendance Rate" ? ' class="summary-history-attendance-rate"' : '';
+          return '<div class="summary-history-detail"><span>' + row[0] + '</span> <strong' + rateClass + '>' + row[1] + '</strong></div>';
         }).join("");
-        return '<article class="history-card-item summary-history-card theme-' + theme + '" role="button" tabindex="0" ' +
+        return '<article class="history-card-item summary-history-card theme-' + staffTheme + '" role="button" tabindex="0" ' +
           'aria-label="View ' + item.name + ' daily records" onclick="openStaffDailyDetails(' + index + ')" ' +
           'onkeydown="if(event.key === &quot;Enter&quot; || event.key === &quot; &quot;){event.preventDefault();openStaffDailyDetails(' + index + ');}">' +
             '<div class="summary-history-card-header"><div class="summary-history-card-heading">' +
@@ -1508,7 +1546,7 @@
 
     function renderDailyList() {
       const container = document.getElementById("daily-list-container");
-      const theme = getThemeForTitle(listActiveTitle);
+      const theme = getStaffCardTheme(selectedStaff, listActiveTitle);
       document.getElementById("daily-record-count").textContent = String(currentDailyItems.length);
       document.getElementById("daily-total-hours").textContent = getDailyTotalHours(selectedStaff, listActiveTitle).toFixed(2);
       if (!currentDailyItems.length) {

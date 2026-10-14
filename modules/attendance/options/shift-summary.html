@@ -237,6 +237,11 @@
       box-shadow: var(--shadow-card);
       margin-bottom: 20px;
     }
+    .summary-table-card > .data-table-column-header {
+      background: #7c3aed !important;
+      color: #ffffff !important;
+      border-bottom-color: rgba(255, 255, 255, 0.22) !important;
+    }
     .summary-table-hdr {
       display: grid;
       grid-template-columns: 88px 1fr 85px;
@@ -265,6 +270,42 @@
     .summary-table-row:last-child { border-bottom: none; }
     .summary-table-row:hover { background: rgba(124, 58, 237, 0.04); }
     .summary-table-row:active { transform: scale(0.995); background: rgba(124, 58, 237, 0.08); }
+    .summary-table-row.is-chart-selected {
+      background: rgba(124, 58, 237, 0.14);
+      box-shadow: inset 4px 0 0 #7c3aed;
+    }
+    .summary-table-row:focus-visible {
+      outline: 2px solid #7c3aed;
+      outline-offset: -2px;
+    }
+
+    #chartCyanSlice,
+    #chartRoseSlice {
+      transition: stroke-dasharray 0.55s cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+    }
+    .inline-chart-container.is-refreshing {
+      animation: inlineChartSurfaceRefresh 0.6s ease;
+    }
+    .inline-chart-container.is-refreshing .inline-chart-visual {
+      animation: inlineChartDonutRefresh 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .inline-chart-container.is-refreshing #inlineChartTitle,
+    .inline-chart-container.is-refreshing #chartTotalHeadcountLabel {
+      animation: inlineChartTextRefresh 0.45s ease;
+    }
+    @keyframes inlineChartSurfaceRefresh {
+      0% { background: rgba(124, 58, 237, 0.16); }
+      100% { background: transparent; }
+    }
+    @keyframes inlineChartDonutRefresh {
+      0% { transform: scale(0.88) rotate(-8deg); opacity: 0.55; }
+      65% { transform: scale(1.04) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    @keyframes inlineChartTextRefresh {
+      0% { transform: translateY(5px); opacity: 0.35; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
     
     .summary-table-footer {
       display: grid;
@@ -554,10 +595,10 @@
         </div>
 
         <!-- 2. INLINE DONUT CHART & LEGEND CONTAINER (MATCHING TARGET SCREENSHOT) -->
-        <div class="inline-chart-container" style="padding: 8px 4px 14px; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+        <div class="inline-chart-container" id="inlineChartContainer" style="padding: 8px 4px 14px; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 8px;">
             <!-- Donut SVG Slices -->
-            <div style="position: relative; width: 160px; height: 160px; flex-shrink: 0;">
+            <div class="inline-chart-visual" style="position: relative; width: 160px; height: 160px; flex-shrink: 0; transform-origin: center;">
               <svg width="160" height="160" viewBox="0 0 160 160" style="transform: rotate(-90deg);">
                 <circle cx="80" cy="80" r="58" fill="transparent" stroke="var(--border-subtle)" stroke-width="26" opacity="0.3"></circle>
                 <!-- Cyan slice for OFF DAY (95.47%) -->
@@ -590,7 +631,7 @@
 
           <!-- Centered text below chart -->
           <div style="text-align: center; margin-top: 14px;">
-            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Headcount by Shift</div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);" id="inlineChartTitle">Headcount by Shift</div>
             <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-top: 3px;" id="chartTotalHeadcountLabel">Total Headcount :287</div>
           </div>
         </div>
@@ -839,6 +880,8 @@
     let currentActiveSection = 'summary'; // 'summary' | 'chart' | 'detail'
     let currentSelectedShift = 'N/A';
     let currentSelectedRole = 'all';
+    let currentChartJobTitle = 'all';
+    let inlineChartRefreshTimer;
 
     document.addEventListener('DOMContentLoaded', () => {
       updateDateDisplay();
@@ -960,6 +1003,7 @@
     // Reset Filters
     function resetFilters() {
       currentDate = new Date(2026, 8, 24);
+      currentChartJobTitle = 'all';
       updateDateDisplay();
       document.getElementById('filterShiftType').value = 'all';
       document.getElementById('filterDepartment').value = 'all';
@@ -999,6 +1043,10 @@
     function renderAll() {
       const filtered = getFilteredData();
       const total = filtered.reduce((sum, item) => sum + item.count, 0);
+
+      if (currentChartJobTitle !== 'all' && !filtered.some(item => item.jobTitle === currentChartJobTitle)) {
+        currentChartJobTitle = 'all';
+      }
       
       // Update Top KPI Card
       const totalHeadcount = document.getElementById('kpiTotalHeadcount');
@@ -1010,6 +1058,93 @@
       if (shiftCount) shiftCount.textContent = Object.keys(shiftGroups).length;
 
       renderSummaryTable(filtered);
+      renderInlineDonutChart(filtered);
+    }
+
+    function renderInlineDonutChart(data, animate = false) {
+      const chartData = currentChartJobTitle === 'all'
+        ? data
+        : data.filter(item => item.jobTitle === currentChartJobTitle);
+      const offDayCount = chartData
+        .filter(item => item.shift === 'OFF DAY')
+        .reduce((sum, item) => sum + item.count, 0);
+      const naCount = chartData
+        .filter(item => item.shift === 'N/A')
+        .reduce((sum, item) => sum + item.count, 0);
+      const total = chartData.reduce((sum, item) => sum + item.count, 0);
+      const circumference = 2 * Math.PI * 58;
+      const offDayLength = total > 0 ? (offDayCount / total) * circumference : 0;
+      const naLength = total > 0 ? (naCount / total) * circumference : 0;
+      const formatCount = count => Number.isInteger(count) ? count.toFixed(0) : count.toFixed(2);
+      const formatPercent = count => total > 0 ? ((count / total) * 100).toFixed(2) : '0.00';
+
+      const cyanSlice = document.getElementById('chartCyanSlice');
+      const roseSlice = document.getElementById('chartRoseSlice');
+      const chartContainer = document.getElementById('inlineChartContainer');
+      const title = document.getElementById('inlineChartTitle');
+      const totalLabel = document.getElementById('chartTotalHeadcountLabel');
+      const offDayLegend = document.getElementById('legendOffDayVal');
+      const naLegend = document.getElementById('legendNaVal');
+
+      const drawSlices = () => {
+        if (cyanSlice) {
+          cyanSlice.setAttribute('stroke-dasharray', `${offDayLength} ${circumference}`);
+          cyanSlice.setAttribute('stroke-dashoffset', '0');
+          cyanSlice.style.opacity = offDayCount > 0 ? '1' : '0';
+        }
+        if (roseSlice) {
+          roseSlice.setAttribute('stroke-dasharray', `${naLength} ${circumference}`);
+          roseSlice.setAttribute('stroke-dashoffset', `${-offDayLength}`);
+          roseSlice.style.opacity = naCount > 0 ? '1' : '0';
+        }
+      };
+
+      if (animate && chartContainer) {
+        chartContainer.classList.remove('is-refreshing');
+        chartContainer.dataset.refreshCount = `${Number(chartContainer.dataset.refreshCount || 0) + 1}`;
+        if (cyanSlice) {
+          cyanSlice.style.transition = 'none';
+          cyanSlice.setAttribute('stroke-dasharray', `0 ${circumference}`);
+          cyanSlice.setAttribute('stroke-dashoffset', '0');
+          cyanSlice.style.opacity = '0.2';
+        }
+        if (roseSlice) {
+          roseSlice.style.transition = 'none';
+          roseSlice.setAttribute('stroke-dasharray', `0 ${circumference}`);
+          roseSlice.setAttribute('stroke-dashoffset', '0');
+          roseSlice.style.opacity = '0.2';
+        }
+        void chartContainer.offsetWidth;
+        chartContainer.classList.add('is-refreshing');
+        if (cyanSlice) cyanSlice.style.transition = '';
+        if (roseSlice) roseSlice.style.transition = '';
+        requestAnimationFrame(() => requestAnimationFrame(drawSlices));
+        clearTimeout(inlineChartRefreshTimer);
+        inlineChartRefreshTimer = setTimeout(() => {
+          chartContainer.classList.remove('is-refreshing');
+        }, 600);
+      } else {
+        drawSlices();
+      }
+      if (title) {
+        title.textContent = currentChartJobTitle === 'all'
+          ? 'Headcount by Shift'
+          : `${currentChartJobTitle} by Shift`;
+      }
+      if (totalLabel) totalLabel.textContent = `Total Headcount :${formatCount(total)}`;
+      if (offDayLegend) offDayLegend.textContent = `${formatPercent(offDayCount)}% ${formatCount(offDayCount)}`;
+      if (naLegend) naLegend.textContent = `${formatPercent(naCount)}% ${formatCount(naCount)}`;
+    }
+
+    function selectSummaryJobTitle(jobTitle) {
+      currentChartJobTitle = jobTitle;
+      const filtered = getFilteredData();
+      renderSummaryTable(filtered);
+      renderInlineDonutChart(filtered, true);
+      document.getElementById('inlineChartContainer')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
     }
 
     // Render Main Summary Table (Table Show)
@@ -1044,7 +1179,13 @@
       if (footerTotal) footerTotal.innerText = `${total.toFixed(2)}`;
 
       container.innerHTML = data.map(item => `
-        <div class="summary-table-row" onclick="openShiftEmployeeDetail('${item.shift}', '${item.jobTitle}')">
+        <div class="summary-table-row${currentChartJobTitle === item.jobTitle ? ' is-chart-selected' : ''}"
+             role="button"
+             tabindex="0"
+             aria-pressed="${currentChartJobTitle === item.jobTitle}"
+             aria-label="Show ${item.jobTitle} headcount chart"
+             onclick="selectSummaryJobTitle('${item.jobTitle}')"
+             onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectSummaryJobTitle('${item.jobTitle}'); }">
           <div>
             <span class="table-shift-badge ${item.badgeClass}">${item.shift}</span>
           </div>
