@@ -86,14 +86,17 @@ const fileUrl = (relative, query = '') => pathToFileURL(path.join(root, relative
       await page.click('#careerPlanAttachments [data-remove-file]');
       assert.equal(await page.$eval('#careerPlanAttachments', node => node.textContent.trim()), '');
 
-      await page.click('#careerPlanSave');
-      assert.equal(await page.$eval('#employeeCareerToast', node => node.textContent.trim()), 'Career plan saved');
+      assert.deepEqual(
+        await page.$$eval('.employee-career-form-actions > *', nodes => nodes.map(node => node.textContent.trim())),
+        ['Cancel', 'Update'],
+        'Career Plan provides only Cancel and Update actions'
+      );
       await page.click('#careerPlanSubmit');
-      assert.equal(await page.$eval('#employeeCareerToast', node => node.textContent.trim()), 'Career plan submitted successfully');
+      assert.equal(await page.$eval('#employeeCareerToast', node => node.textContent.trim()), 'Career plan updated successfully');
 
       assert.ok(await page.$('#careerPlanCancel'), 'Career Plan provides Cancel');
-      assert.equal(await page.$eval('#careerPlanSave span', node => node.textContent.trim()), 'Save');
-      assert.ok(await page.$('#careerPlanSubmit'), 'Career Plan provides Submit');
+      assert.equal(await page.$('#careerPlanSave'), null, 'Career Plan removes Save');
+      assert.ok(await page.$('#careerPlanSubmit'), 'Career Plan provides Update');
       assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth + 1), `${theme} Career Plan fits a 390px viewport`);
     }
 

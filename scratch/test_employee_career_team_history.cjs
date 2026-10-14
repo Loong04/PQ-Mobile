@@ -77,6 +77,13 @@ async function setDateRange(page, startDate, endDate) {
   }, { startDate, endDate });
 }
 
+async function confirmationDetailSnapshot(page) {
+  return page.$$eval('#teamConfirmationDetailsRows tr', rows => rows.map(row => ({
+    label: row.querySelector('.detail-popout-label')?.textContent.trim() || '',
+    value: row.querySelector('.detail-popout-value')?.textContent.trim() || ''
+  })));
+}
+
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
@@ -129,6 +136,107 @@ async function setDateRange(page, startDate, endDate) {
       ariaHidden: node.getAttribute('aria-hidden')
     })), { hidden: true, ariaHidden: 'true' }, 'Date filter starts closed');
     await assertConfirmationCards(page);
+    assert.deepEqual(
+      await page.$$eval('#teamHistoryList .history-card-item', cards => cards.map(card => ({
+        tag: card.tagName,
+        type: card.getAttribute('type'),
+        recordId: card.dataset.confirmationId || '',
+        hasPopup: card.getAttribute('aria-haspopup'),
+        controls: card.getAttribute('aria-controls'),
+        cursor: getComputedStyle(card).cursor
+      }))),
+      [
+        { tag: 'BUTTON', type: 'button', recordId: 'SC-2026-0015', hasPopup: 'dialog', controls: 'teamConfirmationDetailsOverlay', cursor: 'pointer' },
+        { tag: 'BUTTON', type: 'button', recordId: 'SC-2026-0016', hasPopup: 'dialog', controls: 'teamConfirmationDetailsOverlay', cursor: 'pointer' }
+      ],
+      'Staff Confirmation cards are native detail-dialog triggers'
+    );
+
+    await page.focus('#teamConfirmationFilterTrigger');
+    await page.$eval('[data-confirmation-id="SC-2026-0015"]', card => card.click());
+    assert.deepEqual(await page.$eval('#teamConfirmationDetailsOverlay', node => ({
+      hidden: node.hidden,
+      ariaHidden: node.getAttribute('aria-hidden')
+    })), { hidden: false, ariaHidden: 'false' }, 'Clicking a confirmation card opens its detail popout');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'teamConfirmationCloseDetails', 'Detail close button receives focus');
+    assert.equal(await page.$eval('#teamConfirmationDetailsOverlay', overlay => [...overlay.parentElement.children]
+      .filter(node => node !== overlay)
+      .every(node => node.inert)), true, 'Detail popout makes background content inert');
+    assert.deepEqual(await confirmationDetailSnapshot(page), [
+      { label: 'Reference #', value: 'SC-2026-0015' },
+      { label: 'Emp #', value: '#EBB01' },
+      { label: 'Name', value: 'Aina Rahman' },
+      { label: 'Position', value: 'People Operations Executive' },
+      { label: 'Hire Date', value: '15 Jan 2026' },
+      { label: 'Employment Type', value: 'Permanent' },
+      { label: 'Confirm Due', value: '15 Jul 2026' },
+      { label: 'Recommendation', value: 'Confirm Employment' },
+      { label: 'Effective Date', value: '1 Oct 2026' },
+      { label: 'Extension Months', value: '0' },
+      { label: 'Adjustment', value: 'RM 300.00' },
+      { label: 'Score', value: '92 / 100' },
+      { label: 'Remark', value: 'Please update the salary adjustment approval and resubmit.' },
+      { label: 'Attachment', value: 'Aina_Rahman_Confirmation.pdf' }
+    ], 'Detail popout displays every requested Staff Confirmation field in order');
+    assert.deepEqual(await page.$eval('#teamConfirmationDetailsRows tr:last-child .detail-popout-value', node => ({
+      items: node.querySelectorAll('.team-history-detail-attachment').length,
+      icons: node.querySelectorAll('.fa-paperclip').length,
+      links: node.querySelectorAll('a').length
+    })), { items: 1, icons: 1, links: 0 }, 'Provisional attachment is presented as a paperclip file item without a broken link');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'teamConfirmationCloseDetails', 'Detail popout traps focus when close is its only control');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.$eval('#teamConfirmationDetailsOverlay', node => node.hidden), true, 'Escape closes Staff Confirmation details');
+    assert.equal(await page.evaluate(() => document.activeElement?.dataset.confirmationId), 'SC-2026-0015', 'Closing details restores focus to the card');
+
+    await page.evaluate(() => {
+      const record = window.EMPLOYEE_CAREER_TEAM_HISTORY_DATA['staff-confirmation']
+        .find(item => item.id === 'SC-2026-0015');
+      record.attachments[0].url = 'https://files.example.test/Aina_Rahman_Confirmation.pdf';
+    });
+    await page.keyboard.press('Enter');
+    assert.equal(await page.$eval('#teamConfirmationDetailsOverlay', node => node.hidden), false, 'Enter activates the confirmation card');
+    assert.deepEqual(await page.$eval('#teamConfirmationDetailsRows tr:last-child .team-history-detail-attachment', node => ({
+      tag: node.tagName,
+      href: node.getAttribute('href'),
+      target: node.getAttribute('target'),
+      rel: node.getAttribute('rel'),
+      download: node.getAttribute('download'),
+      ariaLabel: node.getAttribute('aria-label')
+    })), {
+      tag: 'A',
+      href: 'https://files.example.test/Aina_Rahman_Confirmation.pdf',
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      download: 'Aina_Rahman_Confirmation.pdf',
+      ariaLabel: 'Download attachment Aina_Rahman_Confirmation.pdf'
+    }, 'A valid attachment URL becomes a safe labelled file link');
+    await page.click('#teamConfirmationCloseDetails');
+    assert.equal(await page.evaluate(() => document.activeElement?.dataset.confirmationId), 'SC-2026-0015', 'Close button restores focus to the card');
+    await page.evaluate(() => {
+      const record = window.EMPLOYEE_CAREER_TEAM_HISTORY_DATA['staff-confirmation']
+        .find(item => item.id === 'SC-2026-0015');
+      record.attachments[0].url = 'javascript:alert(1)';
+    });
+    await page.keyboard.press('Enter');
+    assert.deepEqual(await page.$eval('#teamConfirmationDetailsRows tr:last-child .team-history-detail-attachment', node => ({
+      tag: node.tagName,
+      href: node.getAttribute('href')
+    })), { tag: 'SPAN', href: null }, 'A rejected attachment protocol remains non-clickable plain text');
+    await page.click('#teamConfirmationCloseDetails');
+    await page.evaluate(() => {
+      const record = window.EMPLOYEE_CAREER_TEAM_HISTORY_DATA['staff-confirmation']
+        .find(item => item.id === 'SC-2026-0015');
+      record.attachments[0].url = '';
+    });
+
+    await page.click('[data-confirmation-id="SC-2026-0015"]');
+    const detailsBackdropPoint = await page.$eval('#teamConfirmationDetailsOverlay', node => {
+      const rect = node.getBoundingClientRect();
+      return { x: rect.left + (rect.width / 2), y: rect.top + 8 };
+    });
+    await page.mouse.click(detailsBackdropPoint.x, detailsBackdropPoint.y);
+    assert.equal(await page.$eval('#teamConfirmationDetailsOverlay', node => node.hidden), true, 'Clicking the backdrop closes Staff Confirmation details');
 
     await page.click('#teamConfirmationFilterTrigger');
     assert.deepEqual(await page.$eval('#teamConfirmationFilterOverlay', node => ({
@@ -156,6 +264,15 @@ async function setDateRange(page, startDate, endDate) {
       ['Daniel Wong'],
       'Submitted date filter includes records that sit exactly on both boundaries'
     );
+    await page.click('[data-confirmation-id="SC-2026-0016"]');
+    const danielDetails = await confirmationDetailSnapshot(page);
+    assert.deepEqual(danielDetails.filter((_, index) => [0, 1, 2, 13].includes(index)), [
+      { label: 'Reference #', value: 'SC-2026-0016' },
+      { label: 'Emp #', value: '#EBB02' },
+      { label: 'Name', value: 'Daniel Wong' },
+      { label: 'Attachment', value: 'No attachments' }
+    ], 'Filtered cards open the matching record without stale detail values');
+    await page.click('#teamConfirmationCloseDetails');
 
     await page.click('#teamConfirmationFilterTrigger');
     await setDateRange(page, '2026-10-31', '2026-10-01');
@@ -199,6 +316,7 @@ async function setDateRange(page, startDate, endDate) {
       assert.equal(await page.$eval('#teamHistoryRecordCount', node => node.textContent.trim()), '2');
       assert.equal(await page.$eval('#teamHistoryCategoryTitle', node => node.textContent.trim()), `${label} History`);
       assert.equal(await page.$eval('#teamConfirmationFilterBar', node => node.hidden), true, `${label} does not display the Staff Confirmation filter`);
+      assert.equal(await page.$$eval('#teamHistoryList [data-confirmation-id]', nodes => nodes.length), 0, `${label} cards remain non-confirmation records`);
 
       if (key === 'staff-request') {
         assert.equal(await page.$$eval('#teamHistoryList .history-card-item', nodes => nodes.length), 2);
@@ -224,8 +342,8 @@ async function setDateRange(page, startDate, endDate) {
     assert.equal(new URL(page.url()).searchParams.get('category'), 'staff-confirmation');
 
     for (const width of [360, 420]) {
-      await page.setViewport({ width, height: 844, deviceScaleFactor: 1 });
       for (const theme of ['light', 'dark']) {
+        await page.setViewport({ width, height: 844, deviceScaleFactor: 1 });
         await open(page, historyPage, `?category=staff-engagement&theme=${theme}`);
         await page.waitForFunction(() => {
           const container = document.querySelector('.team-history-tabs');
@@ -266,6 +384,47 @@ async function setDateRange(page, startDate, endDate) {
         assert.equal(layout.tabs.overflowX, 'auto', `${theme} Team History tab bar is horizontally scrollable at ${width}px`);
         assert.equal(layout.tabs.scrolled, true, `${theme} selected final tab is scrolled into view at ${width}px: ${JSON.stringify(layout.tabs)}`);
         assert.equal(layout.tabs.activeVisible, true, `${theme} selected final tab is visible at ${width}px: ${JSON.stringify(layout.tabs)}`);
+
+        await page.setViewport({ width, height: 568, deviceScaleFactor: 1 });
+        await open(page, historyPage, `?category=staff-confirmation&theme=${theme}`);
+        await page.click('[data-confirmation-id="SC-2026-0015"]');
+        const detailLayout = await page.evaluate(async () => {
+          const overlay = document.querySelector('#teamConfirmationDetailsOverlay');
+          const panel = overlay.querySelector('.detail-popout-panel');
+          const body = overlay.querySelector('.detail-popout-body');
+          const finalRow = body.querySelector('tr:last-child');
+          const overlayRect = overlay.getBoundingClientRect();
+          const panelRect = panel.getBoundingClientRect();
+          const wasScrollable = body.scrollHeight > body.clientHeight;
+          body.scrollTop = body.scrollHeight;
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const bodyRect = body.getBoundingClientRect();
+          const finalRect = finalRow.getBoundingClientRect();
+          return {
+            theme: document.documentElement.dataset.theme,
+            pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            panelContained: panelRect.left >= overlayRect.left - 1
+              && panelRect.right <= overlayRect.right + 1
+              && panelRect.top >= overlayRect.top - 1
+              && panelRect.bottom <= overlayRect.bottom + 1,
+            bodyOverflowX: body.scrollWidth - body.clientWidth,
+            overflowY: getComputedStyle(body).overflowY,
+            wasScrollable,
+            scrolled: body.scrollTop > 0,
+            finalLabel: finalRow.querySelector('.detail-popout-label')?.textContent.trim(),
+            finalRowVisible: finalRect.top >= bodyRect.top - 1 && finalRect.bottom <= bodyRect.bottom + 1
+          };
+        });
+        assert.equal(detailLayout.theme, theme);
+        assert.ok(detailLayout.pageOverflow <= 1, `${theme} confirmation detail has no page overflow at ${width}px`);
+        assert.equal(detailLayout.panelContained, true, `${theme} confirmation detail stays inside the phone at ${width}px`);
+        assert.ok(detailLayout.bodyOverflowX <= 1, `${theme} confirmation detail has no horizontal body overflow at ${width}px`);
+        assert.equal(detailLayout.overflowY, 'auto', `${theme} confirmation detail uses contained vertical scrolling at ${width}px`);
+        assert.equal(detailLayout.wasScrollable, true, `${theme} confirmation detail scrolls on a 568px-high phone at ${width}px`);
+        assert.equal(detailLayout.scrolled, true, `${theme} confirmation detail can scroll to its final row at ${width}px`);
+        assert.equal(detailLayout.finalLabel, 'Attachment', `${theme} confirmation detail ends with Attachment at ${width}px`);
+        assert.equal(detailLayout.finalRowVisible, true, `${theme} Attachment is reachable after scrolling at ${width}px`);
+        await page.keyboard.press('Escape');
       }
     }
 
@@ -273,6 +432,9 @@ async function setDateRange(page, startDate, endDate) {
       await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
       await open(page, historyPage, '?category=staff-confirmation&theme=light');
       await page.screenshot({ path: 'C:/tmp/team-history-confirmation-light.png', fullPage: true });
+      await page.click('[data-confirmation-id="SC-2026-0015"]');
+      await page.screenshot({ path: 'C:/tmp/team-history-confirmation-details-light.png', fullPage: true });
+      await page.keyboard.press('Escape');
       await page.click('#teamConfirmationFilterTrigger');
       await page.screenshot({ path: 'C:/tmp/team-history-confirmation-filter-light.png', fullPage: true });
       await page.keyboard.press('Escape');

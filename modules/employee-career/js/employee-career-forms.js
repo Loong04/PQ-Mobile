@@ -131,8 +131,6 @@
     if (!editId) { bindSubmit(form, 'Feedback submitted successfully'); return; }
     document.querySelector('h1').textContent = 'Edit Feedback';
     const submit = document.getElementById('feedbackSubmit');
-    submit.querySelector('span').textContent = 'Save';
-    submit.querySelector('i').className = 'fa-solid fa-floppy-disk';
     function syncHistoryLinks() {
       const activeTheme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
       document.querySelectorAll('[data-option-back]').forEach(link => { link.href = `../history.html?category=feedback&theme=${activeTheme}`; });
@@ -225,8 +223,7 @@
     path.addEventListener('change', renderNextPositions);
     renderNextPositions();
     initAttachments(form, ['careerPlanFiles', 'careerPlanCamera'], 'careerPlanAttachments');
-    document.getElementById('careerPlanSave')?.addEventListener('click', () => showToast('Career plan saved'));
-    bindSubmit(form, 'Career plan submitted successfully');
+    bindSubmit(form, 'Career plan updated successfully');
   }
 
   function initConfirmStaff() {

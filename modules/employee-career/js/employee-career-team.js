@@ -9,6 +9,8 @@
   $('employeeCareerActiveHeadcountTotal').textContent = String(events.find(item => item.id === 'active').total);
   let opener;
   let background = [];
+  let appliedEvent = '';
+  let filterBackground = [];
   const element = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -16,29 +18,61 @@
     return node;
   };
   function renderEvents() {
-    const selected = $('employeeCareerEventFilter').value;
+    const selected = appliedEvent;
+    const selectedEvent = events.find(item => item.id === selected);
+    $('employeeCareerEventFilterSummary').textContent = selectedEvent?.title || 'All Events';
     $('employeeCareerStaffEventRows').replaceChildren(...events.filter(item => !selected || item.id === selected).map(item => {
       const row = element('tr');
       row.append(element('td', '', item.title), element('td', '', String(item.total)));
-      for (const kind of ['detail', 'chart']) {
-        const cell = element('td');
-        const button = element('button', 'employee-career-event-' + kind);
-        button.type = 'button';
-        button.dataset[kind === 'detail' ? 'careerEventDetail' : 'careerEventChart'] = item.id;
-        button.setAttribute('aria-label', `${kind === 'detail' ? 'View details' : 'View chart'} for ${item.title}`);
-        button.setAttribute('aria-haspopup', 'dialog');
-        if (kind === 'chart') {
-          const icon = element('i', 'fa-solid fa-chart-pie');
-          icon.setAttribute('aria-hidden', 'true');
-          button.append(icon);
-        }
-        button.append(element('span', '', kind === 'detail' ? 'Detail' : 'View Chart'));
-        button.addEventListener('click', () => openEvent(item, kind, button));
-        cell.append(button);
-        row.append(cell);
-      }
+      const cell = element('td');
+      const button = element('button', 'employee-career-event-detail');
+      button.type = 'button';
+      button.dataset.careerEventDetail = item.id;
+      button.setAttribute('aria-label', `View details for ${item.title}`);
+      button.setAttribute('aria-haspopup', 'dialog');
+      button.append(element('span', '', 'Detail'));
+      button.addEventListener('click', () => openEvent(item, button));
+      cell.append(button);
+      row.append(cell);
       return row;
     }));
+  }
+  function closeEventFilter() {
+    const overlay = $('employeeCareerEventFilterOverlay');
+    if (overlay.hidden) return;
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('is-open');
+    $('employeeCareerEventFilterTrigger').setAttribute('aria-expanded', 'false');
+    filterBackground.forEach(node => { node.inert = false; });
+    filterBackground = [];
+    $('employeeCareerEventFilterTrigger').focus({ preventScroll: true });
+  }
+  function openEventFilter() {
+    const overlay = $('employeeCareerEventFilterOverlay');
+    const phone = overlay.parentElement;
+    $('employeeCareerEventFilter').value = appliedEvent;
+    filterBackground = [
+      ...[...phone.children].filter(node => node !== overlay && !node.inert),
+      ...[...document.body.children].filter(node => node !== phone && !node.inert)
+    ];
+    filterBackground.forEach(node => { node.inert = true; });
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('is-open');
+    $('employeeCareerEventFilterTrigger').setAttribute('aria-expanded', 'true');
+    $('employeeCareerEventFilter').focus({ preventScroll: true });
+  }
+  function applyEventFilter() {
+    appliedEvent = $('employeeCareerEventFilter').value;
+    closeEventFilter();
+    renderEvents();
+  }
+  function resetEventFilter() {
+    $('employeeCareerEventFilter').value = '';
+    appliedEvent = '';
+    closeEventFilter();
+    renderEvents();
   }
   function closeEvent() {
     const overlay = $('employeeCareerTeamEventOverlay');
@@ -49,40 +83,23 @@
     background = [];
     if (opener?.isConnected) opener.focus({ preventScroll: true });
   }
-  function openEvent(item, kind, trigger) {
+  function openEvent(item, trigger) {
     const overlay = $('employeeCareerTeamEventOverlay');
     opener = trigger;
     $('employeeCareerTeamEventTitle').textContent = item.title;
     $('employeeCareerTeamEventTotal').textContent = String(item.total);
-    $('employeeCareerTeamEventDetails').hidden = kind !== 'detail';
-    $('employeeCareerTeamEventChart').hidden = kind !== 'chart';
-    if (kind === 'detail') {
-      $('employeeCareerTeamEventPeople').replaceChildren(...item.records.map(record => {
-        const row = element('tr', 'career-event-person');
-        const person = element('td');
-        person.append(element('strong', 'career-event-person-name', record.name), element('span', 'career-event-person-id', '#' + record.empNo));
-        const date = element('td', 'career-event-person-date', record.date ? new Date(record.date + 'T12:00:00').toLocaleDateString('en-GB') : '—');
-        row.append(person, date);
-        return row;
-      }));
-      $('employeeCareerTeamEventEmpty').hidden = item.records.length > 0;
-      $('employeeCareerTeamEventDetails').querySelector('table').hidden = !item.records.length;
-      $('employeeCareerTeamEventAvailable').hidden = !item.records.length || item.records.length === item.total;
-      $('employeeCareerTeamEventAvailable').textContent = `${item.records.length} available employee records of ${item.total}.`;
-    } else {
-      const max = Math.max(...events.map(event => event.total));
-      $('employeeCareerTeamEventBars').replaceChildren(...events.map(event => {
-        const row = element('div', 'career-event-chart-row' + (event.id === item.id ? ' is-selected' : ''));
-        row.append(element('span', 'career-event-chart-label', event.title), element('strong', 'career-event-chart-value', String(event.total)));
-        const track = element('div', 'career-event-chart-track');
-        track.setAttribute('aria-hidden', 'true');
-        const fill = element('span', 'career-event-chart-fill');
-        fill.style.width = `${event.total / max * 100}%`;
-        track.append(fill);
-        row.append(track);
-        return row;
-      }));
-    }
+    $('employeeCareerTeamEventPeople').replaceChildren(...item.records.map(record => {
+      const row = element('tr', 'career-event-person');
+      const person = element('td');
+      person.append(element('strong', 'career-event-person-name', record.name), element('span', 'career-event-person-id', '#' + record.empNo));
+      const date = element('td', 'career-event-person-date', record.date ? new Date(record.date + 'T12:00:00').toLocaleDateString('en-GB') : '—');
+      row.append(person, date);
+      return row;
+    }));
+    $('employeeCareerTeamEventEmpty').hidden = item.records.length > 0;
+    $('employeeCareerTeamEventDetails').querySelector('table').hidden = !item.records.length;
+    $('employeeCareerTeamEventAvailable').hidden = !item.records.length || item.records.length === item.total;
+    $('employeeCareerTeamEventAvailable').textContent = `${item.records.length} available employee records of ${item.total}.`;
     overlay.querySelector('.detail-popout-body').scrollTop = 0;
     background = [...overlay.parentElement.children].filter(node => node !== overlay && !node.inert);
     background.forEach(node => { node.inert = true; });
@@ -93,7 +110,11 @@
   function init() {
     if (!$('employeeCareerStaffEvents')) return;
     events.forEach(item => { const option = element('option', '', item.title); option.value = item.id; $('employeeCareerEventFilter').append(option); });
-    $('employeeCareerEventFilter').addEventListener('change', renderEvents);
+    $('employeeCareerEventFilterTrigger').addEventListener('click', openEventFilter);
+    $('employeeCareerEventFilterClose').addEventListener('click', closeEventFilter);
+    $('employeeCareerEventFilterReset').addEventListener('click', resetEventFilter);
+    $('employeeCareerEventFilterForm').addEventListener('submit', event => { event.preventDefault(); applyEventFilter(); });
+    $('employeeCareerEventFilterOverlay').addEventListener('click', event => { if (event.target === event.currentTarget) closeEventFilter(); });
     $('employeeCareerActiveHeadcount').addEventListener('click', () => {
       const url = new URL('../employee-career/options/team/active-headcount.html', location.href);
       url.searchParams.set('theme', document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
@@ -116,6 +137,17 @@
     $('employeeCareerTeamEventClose').addEventListener('click', closeEvent);
     $('employeeCareerTeamEventOverlay').addEventListener('click', event => { if (event.target === event.currentTarget) closeEvent(); });
     document.addEventListener('keydown', event => {
+      const filterOverlay = $('employeeCareerEventFilterOverlay');
+      if (!filterOverlay.hidden) {
+        if (event.key === 'Escape') { event.preventDefault(); closeEventFilter(); }
+        if (event.key === 'Tab') {
+          const controls = [...filterOverlay.querySelectorAll('button, input, select, [tabindex="0"]')].filter(node => node.getClientRects().length && !node.disabled);
+          const first = controls[0], last = controls.at(-1);
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
+        return;
+      }
       if ($('employeeCareerTeamEventOverlay').hidden) return;
       if (event.key === 'Escape') { event.preventDefault(); closeEvent(); }
       if (event.key === 'Tab') {

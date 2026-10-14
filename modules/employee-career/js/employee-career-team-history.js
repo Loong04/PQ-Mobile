@@ -46,6 +46,17 @@
     }).format(new Date(Date.UTC(Number(year), Number(month) - 1, Number(day))));
   }
 
+  function attachmentUrl(value) {
+    if (!value) return null;
+    try {
+      const url = new URL(value, location.href);
+      if (url.protocol === 'https:' || url.protocol === 'http:') return url.href;
+      const modulePath = new URL('../../', location.href).pathname;
+      if (location.protocol === 'file:' && url.protocol === 'file:' && url.pathname.startsWith(modulePath)) return url.href;
+    } catch { /* Unavailable attachments remain plain text. */ }
+    return null;
+  }
+
   function confirmationFilterSummary() {
     const { startDate, endDate } = confirmationFilter;
     if (startDate && endDate) return `${formatDate(startDate)} - ${formatDate(endDate)}`;
@@ -108,15 +119,23 @@
   function cardMarkup(record) {
     const status = statusMarkup(record);
     const name = kind === 'staff-request' ? record.title : record.employeeName;
-    return `<article class="history-card-item team-history-card" data-status="${status.tone}" aria-label="${escape(name || labels[kind])}, ${escape(record.status || 'Pending')}">
+    const isConfirmation = kind === 'staff-confirmation';
+    const tag = isConfirmation ? 'button' : 'article';
+    const fields = isConfirmation
+      ? [['Recommendation', record.recommendation], ['Submitted', formatDate(record.submittedDate)], ['Adjustment', record.adjustment]]
+      : record.fields;
+    const triggerAttributes = isConfirmation
+      ? `type="button" data-confirmation-id="${escape(record.id || '')}" aria-haspopup="dialog" aria-controls="teamConfirmationDetailsOverlay"`
+      : '';
+    return `<${tag} ${triggerAttributes} class="history-card-item team-history-card" data-status="${status.tone}" aria-label="${isConfirmation ? 'View details for ' : ''}${escape(name || labels[kind])}, ${escape(record.status || 'Pending')}">
       <span class="history-card-header">
         ${headingMarkup(record)}
         ${status.html}
       </span>
       <span class="history-card-details team-history-card-details">
-        ${fieldMarkup(record.fields)}
+        ${fieldMarkup(fields)}
       </span>
-    </article>`;
+    </${tag}>`;
   }
 
   function render() {
@@ -147,6 +166,99 @@
     }
   }
 
+  function openOverlay(overlay, focusTarget, returnTarget = document.activeElement) {
+    activeOverlay = overlay;
+    returnFocus = returnTarget;
+    overlay.hidden = false;
+    overlay.classList.toggle('is-open', overlay.classList.contains('standard-filter-sheet'));
+    overlay.setAttribute('aria-hidden', 'false');
+    inerted = [...overlay.parentElement.children].filter(node => node !== overlay && !node.inert);
+    inerted.forEach(node => { node.inert = true; });
+    focusTarget.focus({ preventScroll: true });
+  }
+
+  function closeOverlay({ restoreFocus = true } = {}) {
+    if (!activeOverlay) return;
+    activeOverlay.hidden = true;
+    activeOverlay.classList.remove('is-open');
+    activeOverlay.setAttribute('aria-hidden', 'true');
+    activeOverlay = null;
+    inerted.forEach(node => { node.inert = false; });
+    inerted = [];
+    if (restoreFocus && returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
+    returnFocus = null;
+  }
+
+  function openConfirmationDetails(record, trigger) {
+    const overlay = $('teamConfirmationDetailsOverlay');
+    const display = value => value === '' || value == null ? '—' : String(value);
+    const fields = [
+      ['Reference #', record.reference || record.id],
+      ['Emp #', `#${String(record.empNo || '').replace(/^#+/, '')}`],
+      ['Name', record.employeeName],
+      ['Position', record.position],
+      ['Hire Date', formatDate(record.hireDate)],
+      ['Employment Type', record.employmentType],
+      ['Confirm Due', formatDate(record.confirmDue)],
+      ['Recommendation', record.recommendation],
+      ['Effective Date', formatDate(record.effectiveDate)],
+      ['Extension Months', record.extensionMonths],
+      ['Adjustment', record.adjustment],
+      ['Score', record.score == null ? null : `${record.score} / 100`],
+      ['Remark', record.remark]
+    ];
+    const rows = fields.map(([label, value]) => {
+      const row = document.createElement('tr');
+      const labelCell = document.createElement('th');
+      const valueCell = document.createElement('td');
+      labelCell.scope = 'row';
+      labelCell.className = 'detail-popout-label';
+      labelCell.textContent = label;
+      valueCell.className = 'detail-popout-value';
+      valueCell.textContent = display(value);
+      row.append(labelCell, valueCell);
+      return row;
+    });
+    const attachmentRow = document.createElement('tr');
+    const attachmentLabel = document.createElement('th');
+    const attachmentValue = document.createElement('td');
+    attachmentLabel.scope = 'row';
+    attachmentLabel.className = 'detail-popout-label';
+    attachmentLabel.textContent = 'Attachment';
+    attachmentValue.className = 'detail-popout-value';
+    if (!record.attachments?.length) attachmentValue.textContent = 'No attachments';
+    else {
+      const attachmentList = document.createElement('span');
+      attachmentList.className = 'team-history-detail-attachments';
+      record.attachments.forEach(attachment => {
+        const url = attachmentUrl(attachment.url);
+        const item = document.createElement(url ? 'a' : 'span');
+        const icon = document.createElement('i');
+        const name = document.createElement('span');
+        item.className = 'team-history-detail-attachment';
+        if (url) {
+          item.href = url;
+          item.target = '_blank';
+          item.rel = 'noopener noreferrer';
+          item.download = attachment.name || 'attachment';
+          item.setAttribute('aria-label', `Download attachment ${attachment.name || 'Attachment'}`);
+        }
+        icon.className = 'fa-solid fa-paperclip';
+        icon.setAttribute('aria-hidden', 'true');
+        name.textContent = attachment.name || 'Attachment';
+        item.append(icon, name);
+        attachmentList.append(item);
+      });
+      attachmentValue.append(attachmentList);
+    }
+    attachmentRow.append(attachmentLabel, attachmentValue);
+    rows.push(attachmentRow);
+    $('teamConfirmationDetailsRows').replaceChildren(...rows);
+    $('teamConfirmationDetailsSubtitle').textContent = `#${String(record.empNo || '').replace(/^#+/, '')} · ${record.employeeName || '—'}`;
+    overlay.querySelector('.detail-popout-body').scrollTop = 0;
+    openOverlay(overlay, $('teamConfirmationCloseDetails'), trigger);
+  }
+
   function fillConfirmationFilter(values) {
     $('teamConfirmationStartDate').value = values.startDate;
     $('teamConfirmationEndDate').value = values.endDate;
@@ -160,26 +272,7 @@
     if (kind !== 'staff-confirmation') return;
     const overlay = $('teamConfirmationFilterOverlay');
     fillConfirmationFilter(confirmationFilter);
-    activeOverlay = overlay;
-    returnFocus = document.activeElement;
-    overlay.hidden = false;
-    overlay.classList.add('is-open');
-    overlay.setAttribute('aria-hidden', 'false');
-    inerted = [...overlay.parentElement.children].filter(node => node !== overlay && !node.inert);
-    inerted.forEach(node => { node.inert = true; });
-    $('teamConfirmationStartDate').focus({ preventScroll: true });
-  }
-
-  function closeConfirmationFilter({ restoreFocus = true } = {}) {
-    if (!activeOverlay) return;
-    activeOverlay.hidden = true;
-    activeOverlay.classList.remove('is-open');
-    activeOverlay.setAttribute('aria-hidden', 'true');
-    activeOverlay = null;
-    inerted.forEach(node => { node.inert = false; });
-    inerted = [];
-    if (restoreFocus && returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
-    returnFocus = null;
+    openOverlay(overlay, $('teamConfirmationStartDate'), $('teamConfirmationFilterTrigger'));
   }
 
   function applyConfirmationFilter() {
@@ -203,14 +296,14 @@
     }
 
     confirmationFilter = { startDate: start.value, endDate: end.value };
-    closeConfirmationFilter();
+    closeOverlay();
     render();
     document.querySelector('main')?.scrollTo({ top: 0 });
   }
 
   function selectKind(nextKind) {
     if (!Object.hasOwn(labels, nextKind)) return;
-    if (activeOverlay) closeConfirmationFilter({ restoreFocus: false });
+    if (activeOverlay) closeOverlay({ restoreFocus: false });
     kind = nextKind;
     updateUrl();
     render();
@@ -223,8 +316,15 @@
       const button = event.target.closest('[data-team-history-kind]');
       if (button) selectKind(button.dataset.teamHistoryKind);
     });
+    $('teamHistoryList')?.addEventListener('click', event => {
+      const trigger = event.target.closest('[data-confirmation-id]');
+      if (!trigger) return;
+      const record = (data['staff-confirmation'] || []).find(item => String(item.id) === trigger.dataset.confirmationId);
+      if (record) openConfirmationDetails(record, trigger);
+    });
     $('teamConfirmationFilterTrigger')?.addEventListener('click', openConfirmationFilter);
-    $('teamConfirmationCloseFilter')?.addEventListener('click', closeConfirmationFilter);
+    $('teamConfirmationCloseFilter')?.addEventListener('click', closeOverlay);
+    $('teamConfirmationCloseDetails')?.addEventListener('click', closeOverlay);
     $('teamConfirmationResetFilter')?.addEventListener('click', () => {
       fillConfirmationFilter(confirmationDefaults);
       applyConfirmationFilter();
@@ -234,13 +334,16 @@
       applyConfirmationFilter();
     });
     $('teamConfirmationFilterOverlay')?.addEventListener('click', event => {
-      if (event.target === event.currentTarget) closeConfirmationFilter();
+      if (event.target === event.currentTarget) closeOverlay();
+    });
+    $('teamConfirmationDetailsOverlay')?.addEventListener('click', event => {
+      if (event.target === event.currentTarget) closeOverlay();
     });
     document.addEventListener('keydown', event => {
       if (!activeOverlay) return;
       if (event.key === 'Escape') {
         event.preventDefault();
-        closeConfirmationFilter();
+        closeOverlay();
         return;
       }
       if (event.key !== 'Tab') return;

@@ -5,6 +5,10 @@
 :root {
   /* One title-bar gradient for every module, in both themes. */
   --module-header-background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+  /* Column headers use the same solid brand purple in both themes. */
+  --table-header-background: #7c3aed;
+  --table-header-text: #ffffff;
+  --table-header-divider: rgba(255, 255, 255, 0.2);
 }
 
 :root,
@@ -310,4 +314,50 @@
   background: #f8fafc !important;
   border: 1px solid #e2e8f0 !important;
   color: #7c3aed !important;
+}
+
+/* App-wide column headers. Priority is intentional: older reports contain
+   inline colors and module-specific light/dark overrides. Row labels in
+   key/value detail tables retain their existing theme surfaces. */
+table > thead,
+table > thead > tr,
+table > thead > tr > :is(th, td),
+table th[scope="col"],
+[role="table"] [role="row"]:has(> [role="columnheader"]),
+[role="columnheader"],
+.data-table-column-header,
+:is(.attendance-report-legend-head, .hours-highlight-legend-head,
+    .timesheet-legend-head, .staff-list-legend-head,
+    .staff-feedback-chart-legend-head, .daily-ot-chart-legend-head,
+    .highlight-monthly-head, .ir-highlight-monthly-head,
+    .staff-attrition-monthly-head, .staff-list-monthly-head,
+    .daily-ot-trend-column-head, .org-statistics-bars-head) {
+  background: var(--table-header-background) !important;
+  color: var(--table-header-text) !important;
+  border-color: var(--table-header-divider) !important;
+}
+
+table > thead > tr > :is(th, td) *,
+table th[scope="col"] *,
+[role="columnheader"] *,
+.data-table-column-header *,
+:is(.attendance-report-legend-head, .hours-highlight-legend-head,
+    .timesheet-legend-head, .staff-list-legend-head,
+    .staff-feedback-chart-legend-head, .daily-ot-chart-legend-head,
+    .highlight-monthly-head, .ir-highlight-monthly-head,
+    .staff-attrition-monthly-head, .staff-list-monthly-head,
+    .daily-ot-trend-column-head, .org-statistics-bars-head) * {
+  color: var(--table-header-text) !important;
+}
+
+/* Div-based data breakdowns keep their columns aligned with the rows below. */
+:is(.data-table-breakdown-header, .attendance-report-legend-head, .hours-highlight-legend-head,
+    .timesheet-legend-head, .staff-list-legend-head,
+    .staff-feedback-chart-legend-head, .daily-ot-chart-legend-head,
+    .highlight-monthly-head, .ir-highlight-monthly-head,
+    .staff-attrition-monthly-head, .staff-list-monthly-head,
+    .daily-ot-trend-column-head, .org-statistics-bars-head) {
+  padding: 10px 8px !important;
+  margin-inline: -8px;
+  border-radius: 8px 8px 0 0;
 }

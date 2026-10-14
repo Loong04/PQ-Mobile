@@ -33,7 +33,7 @@
   };
   const filters = Object.fromEntries(Object.entries(defaults).map(([category, values]) => [category, {...values}]));
   const initialKind = new URLSearchParams(location.search).get('category');
-  let kind = Object.hasOwn(records, initialKind) ? initialKind : 'feedback';
+  let kind = [...document.querySelectorAll('[data-history-kind]')].some(button => button.dataset.historyKind === initialKind) ? initialKind : 'feedback';
   const isRequestKind = () => kind === 'career-plan' || kind === 'cv-change-request';
   let activeRecord = null;
   let modal = null;

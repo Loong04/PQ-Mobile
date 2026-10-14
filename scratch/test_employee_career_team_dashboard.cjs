@@ -20,6 +20,21 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$$eval('#employeeCareerStaffEvents summary, #employeeCareerStaffEvents .employee-career-expiry-chevron', nodes => nodes.length), 0, 'Staff Events has no collapse control');
       await page.click('#employeeCareerStaffEvents .employee-career-expiry-header');
       assert.ok(await page.$eval('#employeeCareerStaffEvents table', node => node.getBoundingClientRect().height > 0), 'Clicking the title keeps staff events visible');
+      assert.equal(await page.$$eval('#employeeCareerStaffEvents > .employee-career-event-filter', nodes => nodes.length), 0, 'The inline Event dropdown row is replaced by a filter summary');
+      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events');
+      assert.deepEqual(await page.$eval('#employeeCareerEventFilterTrigger', node => ({
+        label: node.getAttribute('aria-label'),
+        hasPopup: node.getAttribute('aria-haspopup'),
+        controls: node.getAttribute('aria-controls'),
+        expanded: node.getAttribute('aria-expanded'),
+        icon: node.querySelector('i')?.classList.contains('fa-sliders')
+      })), {
+        label: 'Open Staff Events filter',
+        hasPopup: 'dialog',
+        controls: 'employeeCareerEventFilterOverlay',
+        expanded: 'false',
+        icon: true
+      }, 'Staff Events exposes the standard filter trigger contract');
       assert.equal(await page.$$eval('#employeeCareerOptions .employee-career-option', nodes => nodes.length), 6);
       await page.click('[data-action="view-all"]');
       await page.waitForFunction(() => document.activeElement.id === 'employeeCareerCloseAll');
@@ -47,7 +62,13 @@ const puppeteer = require('puppeteer');
       assert.deepEqual(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.map(node => [node.cells[0].textContent.trim(), Number(node.cells[1].textContent)])), [
         ['Active', 281], ['Birthday', 44], ['Confirmation Due', 3], ['Retirement Due', 1], ['Medical Check', 6], ['Confirmation Past Due', 237], ['Retirement Past Due', 80], ['Contract Expiry Past Due', 29]
       ]);
-      assert.ok(await page.$$eval('[data-career-event-chart]', nodes => nodes.every(node => node.querySelector('.fa-chart-pie') && node.textContent.trim() === 'View Chart' && getComputedStyle(node).whiteSpace === 'nowrap')));
+      assert.deepEqual(
+        await page.$$eval('#employeeCareerStaffEvents thead th', nodes => nodes.map(node => node.textContent.trim())),
+        ['Event', 'Count', 'Detail'],
+        'Staff Events keeps only the three requested columns'
+      );
+      assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.every(node => node.cells.length === 3)), true, 'Each Staff Events row has three cells');
+      assert.equal(await page.$$eval('[data-career-event-chart], #employeeCareerTeamEventChart', nodes => nodes.length), 0, 'Staff Events exposes no chart control or chart view');
       assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth));
       assert.ok(await page.$$eval('#employeeCareerStaffEventRows td', nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)), 'Event names, counts and buttons must fit');
       await page.waitForFunction(() => getComputedStyle(document.querySelector('#employeeCareerAllOptions')).visibility === 'hidden');
@@ -55,8 +76,34 @@ const puppeteer = require('puppeteer');
       await page.$eval('main', node => { node.scrollTop = node.scrollHeight; });
       await page.screenshot({ path: path.resolve(__dirname, `employee-career-team-dashboard-${theme}-${width}-events.png`) });
 
+      await page.click('#employeeCareerEventFilterTrigger');
+      await page.waitForSelector('#employeeCareerEventFilterOverlay', { visible: true });
+      assert.equal(await page.$eval('#employeeCareerEventFilterOverlay', node => node.getAttribute('aria-hidden')), 'false');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-expanded')), 'true');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilter', 'Opening the filter focuses Event Type');
+      assert.equal(await page.$eval('main', node => node.inert), true, 'Opening the filter makes dashboard content inert');
+      assert.equal(await page.$eval('preview-top-bar', node => node.inert), true, 'Opening the modal filter also makes the outer preview toolbar inert');
       await page.select('#employeeCareerEventFilter', 'birthday');
+      await page.click('#employeeCareerEventFilterClose');
+      assert.equal(await page.$eval('#employeeCareerEventFilterOverlay', node => node.hidden), true, 'Close dismisses the filter sheet');
+      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Close discards an unapplied event');
+      assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.length), 8, 'Close preserves the applied event filter');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterTrigger', 'Close restores focus to the filter trigger');
+      assert.equal(await page.$eval('main', node => node.inert), false, 'Closing the filter restores dashboard interaction');
+      assert.equal(await page.$eval('preview-top-bar', node => node.inert), false, 'Closing the filter restores the outer preview toolbar');
+
+      await page.click('#employeeCareerEventFilterTrigger');
+      assert.equal(await page.$eval('#employeeCareerEventFilter', node => node.value), '', 'Opening restores the applied event value');
+      await page.select('#employeeCareerEventFilter', 'birthday');
+      await page.click('#employeeCareerEventFilterApply');
       assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.length), 1);
+      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'Birthday');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-expanded')), 'false');
+      await page.click('#employeeCareerEventFilterTrigger');
+      await page.select('#employeeCareerEventFilter', 'retirement-due');
+      await page.click('#employeeCareerEventFilterClose');
+      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'Birthday', 'Close preserves a previously applied non-default event');
+      assert.deepEqual(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.map(node => node.cells[0].textContent.trim())), ['Birthday']);
       await page.click('[data-career-event-detail="birthday"]');
       await page.waitForSelector('#employeeCareerTeamEventOverlay', { visible: true });
       assert.equal(await page.$eval('#employeeCareerTeamEventTitle', node => node.textContent), 'Birthday');
@@ -77,19 +124,36 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$eval('main', node => node.inert), false);
       assert.equal(await page.evaluate(() => document.activeElement.dataset.careerEventDetail), 'birthday');
 
+      await page.click('#employeeCareerEventFilterTrigger');
       await page.select('#employeeCareerEventFilter', 'retirement-due');
+      await page.click('#employeeCareerEventFilterApply');
       await page.click('[data-career-event-detail="retirement-due"]');
       assert.equal(await page.$eval('#employeeCareerTeamEventTotal', node => node.textContent), '1');
       assert.equal(await page.$eval('#employeeCareerTeamEventEmpty', node => node.hidden), false, 'Missing employee rows use an honest empty state');
       await page.keyboard.press('Escape');
-      await page.select('#employeeCareerEventFilter', '');
+      await page.click('#employeeCareerEventFilterTrigger');
+      await page.click('#employeeCareerEventFilterReset');
       assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.length), 8);
-      await page.click('[data-career-event-chart="birthday"]');
-      assert.equal(await page.$eval('#employeeCareerTeamEventChart', node => node.hidden), false);
-      assert.equal(await page.$$eval('.career-event-chart-row', nodes => nodes.length), 8);
-      assert.equal(await page.$eval('.career-event-chart-row.is-selected .career-event-chart-value', node => node.textContent), '44');
-      await page.screenshot({ path: path.resolve(__dirname, `employee-career-team-dashboard-${theme}-${width}-chart.png`) });
+      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Reset applies the default event filter');
+
+      await page.click('#employeeCareerEventFilterTrigger');
+      await page.select('#employeeCareerEventFilter', 'birthday');
+      await page.$eval('#employeeCareerEventFilterOverlay', node => node.click());
+      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Backdrop close discards an unapplied event');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterTrigger');
+
+      await page.click('#employeeCareerEventFilterTrigger');
+      await page.focus('#employeeCareerEventFilterApply');
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterReset', 'Tab wraps from the final filter control to Reset');
+      await page.keyboard.down('Shift');
+      await page.keyboard.press('Tab');
+      await page.keyboard.up('Shift');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterApply', 'Shift+Tab wraps from Reset to the final filter control');
+      await page.select('#employeeCareerEventFilter', 'birthday');
       await page.keyboard.press('Escape');
+      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Escape discards an unapplied event');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterTrigger');
 
       await page.click('#employeeCareerTabIndividual');
       assert.equal(await page.$$eval('[data-career-scope="team"]', nodes => nodes.every(node => node.hidden)), true);
@@ -97,7 +161,6 @@ const puppeteer = require('puppeteer');
       await page.click('#employeeCareerTabTeam');
       assert.equal(await page.$$eval('[data-career-scope="team"]', nodes => nodes.every(node => !node.hidden)), true);
       await page.setViewport({ width, height: 800 });
-      await page.select('#employeeCareerEventFilter', '');
       await page.click('[data-career-event-detail="active"]');
       await page.waitForSelector('#employeeCareerTeamEventOverlay', { visible: true });
       await page.keyboard.press('Tab');
@@ -106,7 +169,7 @@ const puppeteer = require('puppeteer');
       await page.waitForFunction(() => document.querySelector('#employeeCareerTeamEventOverlay .detail-popout-body').scrollTop > 0);
       await page.keyboard.press('Escape');
       assert.deepEqual(errors, []);
-      console.log(`PASS ${theme} ${width}: Team order, shared actions, toasts, event filter, details/chart, focus and scope`);
+      console.log(`PASS ${theme} ${width}: Team order, shared actions, toasts, event filter, details, focus and scope`);
       await page.close();
     }
   } finally { await browser.close(); }

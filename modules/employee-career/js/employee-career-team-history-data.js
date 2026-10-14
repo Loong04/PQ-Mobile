@@ -5,25 +5,37 @@ window.EMPLOYEE_CAREER_TEAM_HISTORY_DATA = {
       id: 'SC-2026-0015',
       employeeName: 'Aina Rahman',
       empNo: 'EBB01',
+      position: 'People Operations Executive',
+      hireDate: '2026-01-15',
+      employmentType: 'Permanent',
+      confirmDue: '2026-07-15',
       status: 'To Resubmit',
       submittedDate: '2026-10-04',
-      fields: [
-        ['Recommendation', 'Confirm Employment'],
-        ['Submitted', '4 Oct 2026'],
-        ['Adjustment', 'RM 300.00']
-      ]
+      recommendation: 'Confirm Employment',
+      effectiveDate: '2026-10-01',
+      extensionMonths: 0,
+      adjustment: 'RM 300.00',
+      score: 92,
+      remark: 'Please update the salary adjustment approval and resubmit.',
+      attachments: [{ name: 'Aina_Rahman_Confirmation.pdf', url: '' }]
     },
     {
       id: 'SC-2026-0016',
       employeeName: 'Daniel Wong',
       empNo: 'EBB02',
+      position: 'Product Designer',
+      hireDate: '2026-02-03',
+      employmentType: 'Permanent',
+      confirmDue: '2026-08-03',
       status: 'To Resubmit',
       submittedDate: '2026-10-12',
-      fields: [
-        ['Recommendation', 'Further Review'],
-        ['Submitted', '12 Oct 2026'],
-        ['Adjustment', 'No Adjustment']
-      ]
+      recommendation: 'Further Review',
+      effectiveDate: '2026-11-01',
+      extensionMonths: 3,
+      adjustment: 'No Adjustment',
+      score: 84,
+      remark: 'Please include the manager endorsement before resubmitting.',
+      attachments: []
     }
   ],
   'staff-exit': [

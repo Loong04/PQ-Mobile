@@ -38,6 +38,45 @@ const isRoseBorder = value => {
   return red > 220 && green > 120 && green < 230 && blue > 130 && blue < 240 && red > green;
 };
 
+const parseColor = value => {
+  const channels = value.match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
+  return {
+    red: channels[0] || 0,
+    green: channels[1] || 0,
+    blue: channels[2] || 0,
+    alpha: channels.length > 3 ? channels[3] : 1
+  };
+};
+
+const compositeColor = (foreground, background) => {
+  const alpha = foreground.alpha + background.alpha * (1 - foreground.alpha);
+  if (alpha === 0) return { red: 0, green: 0, blue: 0, alpha: 0 };
+  return {
+    red: (foreground.red * foreground.alpha + background.red * background.alpha * (1 - foreground.alpha)) / alpha,
+    green: (foreground.green * foreground.alpha + background.green * background.alpha * (1 - foreground.alpha)) / alpha,
+    blue: (foreground.blue * foreground.alpha + background.blue * background.alpha * (1 - foreground.alpha)) / alpha,
+    alpha
+  };
+};
+
+const contrastRatio = (foreground, backgroundLayers) => {
+  const white = { red: 255, green: 255, blue: 255, alpha: 1 };
+  let background = white;
+  for (let index = backgroundLayers.length - 1; index >= 0; index -= 1) {
+    background = compositeColor(parseColor(backgroundLayers[index]), background);
+  }
+  const renderedForeground = compositeColor(parseColor(foreground), background);
+  const luminance = color => {
+    const linear = [color.red, color.green, color.blue].map(channel => {
+      const normalized = channel / 255;
+      return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  };
+  const values = [luminance(renderedForeground), luminance(background)].sort((left, right) => right - left);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+};
+
 async function getRenderedState(page) {
   return page.evaluate(() => ({
     summary: document.querySelector('.confirm-new-user-summary').textContent.replace(/\s+/g, ' ').trim(),
@@ -133,7 +172,7 @@ async function inspectScenario(browser, theme, width) {
     assert.equal(card.name, card.expectedName, `${theme}/${width}: card ${index + 1} name must be in the header`);
     assert.equal(card.identity, card.expectedIdentity, `${theme}/${width}: card ${index + 1} NRIC/Passport must sit below the name`);
     assert.deepEqual(card.labels, expectedLabels, `${theme}/${width}: card ${index + 1} grid must contain only the remaining metadata`);
-    assert.equal(card.metadata.length, 5, `${theme}/${width}: card ${index + 1} should use five open metadata blocks`);
+    assert.equal(card.metadata.length, 5, `${theme}/${width}: card ${index + 1} should use five metadata fields`);
     assert.deepEqual(card.metadata.map(item => item.label), expectedLabels, `${theme}/${width}: card ${index + 1} metadata blocks should preserve labels`);
     assert.equal(card.hasDuplicateNameLabel, false, `${theme}/${width}: card ${index + 1} must not duplicate Name in the grid`);
     assert.equal(card.hasDuplicateIdentityLabel, false, `${theme}/${width}: card ${index + 1} must not duplicate NRIC/Passport in the grid`);
@@ -152,9 +191,22 @@ async function inspectScenario(browser, theme, width) {
   })), { records: expectedRecords, sourceFrozen: true, recordFrozen: true });
 
   const layout = await page.evaluate(() => {
+    const tokenProbe = document.createElement('span');
+    tokenProbe.style.cssText = 'position:fixed;pointer-events:none;background:var(--bg-input);border:1px solid var(--border-subtle);color:var(--text-secondary)';
+    document.body.append(tokenProbe);
+    const tokenStyle = getComputedStyle(tokenProbe);
+    const tokens = {
+      inputBackground: tokenStyle.backgroundColor,
+      subtleBorder: tokenStyle.borderTopColor,
+      secondaryText: tokenStyle.color
+    };
+    tokenProbe.remove();
     const boundedFields = ['name', 'identity', 'mobile', 'email'];
     const cards = [...document.querySelectorAll('.confirm-new-user-card')].map(card => {
       const cardBox = card.getBoundingClientRect();
+      const cardStyle = getComputedStyle(card);
+      const phoneStyle = getComputedStyle(document.querySelector('.phone-container'));
+      const bodyStyle = getComputedStyle(document.body);
       const values = boundedFields.map(field => {
         const node = field === 'name' ? card.querySelector('.confirm-new-user-name') : card.querySelector(`[data-field="${field}"]`);
         const box = node.getBoundingClientRect();
@@ -162,9 +214,25 @@ async function inspectScenario(browser, theme, width) {
         const canWrap = style.whiteSpace !== 'nowrap' && (style.overflowWrap !== 'normal' || style.wordBreak !== 'normal');
         return { inside: box.left >= cardBox.left - 1 && box.right <= cardBox.right + 1, fits: node.scrollWidth <= node.clientWidth + 1, canWrap };
       });
+      const metadataTiles = [...card.querySelectorAll('.confirm-new-user-meta')].map(item => {
+        const box = item.getBoundingClientRect();
+        const style = getComputedStyle(item);
+        return {
+          inside: box.left >= cardBox.left - 1 && box.right <= cardBox.right + 1,
+          fits: item.scrollWidth <= item.clientWidth + 1,
+          borderWidth: Number.parseFloat(style.borderTopWidth),
+          borderColor: style.borderTopColor,
+          radius: Number.parseFloat(style.borderTopLeftRadius),
+          background: style.backgroundColor,
+          labelColor: getComputedStyle(item.querySelector('dt')).color,
+          backgroundLayers: [style.backgroundColor, cardStyle.backgroundColor, phoneStyle.backgroundColor, bodyStyle.backgroundColor],
+          padding: Number.parseFloat(style.paddingTop)
+        };
+      });
       return {
         withinViewport: cardBox.left >= -1 && cardBox.right <= window.innerWidth + 1,
         values,
+        metadataTiles,
         radius: getComputedStyle(card).borderTopLeftRadius,
         hasChevron: Boolean(card.querySelector('.fa-chevron-right, .fa-angle-right, [class*="chevron"]'))
       };
@@ -184,6 +252,7 @@ async function inspectScenario(browser, theme, width) {
     return {
       pageFits: document.documentElement.scrollWidth <= window.innerWidth,
       listFits: list.scrollWidth <= list.clientWidth + 1,
+      tokens,
       cards,
       modernCard: {
         headerBackground: getComputedStyle(card.querySelector('header')).backgroundImage,
@@ -220,6 +289,19 @@ async function inspectScenario(browser, theme, width) {
       assert.equal(value.inside, true, `${theme}/${width}: key field ${fieldIndex + 1} escapes card ${index + 1}`);
       assert.equal(value.fits, true, `${theme}/${width}: key field ${fieldIndex + 1} has horizontal overflow in card ${index + 1}`);
       assert.equal(value.canWrap, true, `${theme}/${width}: key field ${fieldIndex + 1} must permit wrapping`);
+    });
+    assert.equal(card.metadataTiles.length, 5, `${theme}/${width}: card ${index + 1} keeps all five bordered metadata fields`);
+    card.metadataTiles.forEach((tile, fieldIndex) => {
+      assert.equal(tile.inside, true, `${theme}/${width}: metadata field ${fieldIndex + 1} escapes card ${index + 1}`);
+      assert.equal(tile.fits, true, `${theme}/${width}: metadata field ${fieldIndex + 1} overflows card ${index + 1}`);
+      assert.ok(tile.borderWidth >= 1, `${theme}/${width}: metadata field ${fieldIndex + 1} needs a visible border`);
+      assert.equal(tile.borderColor, layout.tokens.subtleBorder, `${theme}/${width}: metadata field ${fieldIndex + 1} must use the shared subtle border token`);
+      assert.ok(tile.radius >= 10 && tile.radius <= 14, `${theme}/${width}: metadata field ${fieldIndex + 1} needs the shared rounded detail-box shape`);
+      assert.notEqual(tile.background, 'rgba(0, 0, 0, 0)', `${theme}/${width}: metadata field ${fieldIndex + 1} needs a distinct detail-box surface`);
+      assert.equal(tile.background, layout.tokens.inputBackground, `${theme}/${width}: metadata field ${fieldIndex + 1} must use the shared input surface token`);
+      assert.ok(contrastRatio(tile.labelColor, tile.backgroundLayers) >= 4.5, `${theme}/${width}: metadata field ${fieldIndex + 1} label needs at least 4.5:1 contrast`);
+      assert.equal(tile.labelColor, layout.tokens.secondaryText, `${theme}/${width}: metadata field ${fieldIndex + 1} label must use the accessible secondary text token`);
+      assert.ok(tile.padding >= 10, `${theme}/${width}: metadata field ${fieldIndex + 1} needs consistent inner spacing`);
     });
     assert.equal(card.radius, '20px', `${theme}/${width}: card ${index + 1} must match Pending Approval's radius`);
     assert.equal(card.hasChevron, false, `${theme}/${width}: card ${index + 1} must not show a chevron`);
