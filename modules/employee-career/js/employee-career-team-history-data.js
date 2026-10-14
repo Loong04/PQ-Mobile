@@ -5,24 +5,24 @@ window.EMPLOYEE_CAREER_TEAM_HISTORY_DATA = {
       id: 'SC-2026-0015',
       employeeName: 'Aina Rahman',
       empNo: 'EBB01',
-      status: 'Approved',
+      status: 'To Resubmit',
+      submittedDate: '2026-10-04',
       fields: [
-        ['Confirmation Due', '30 Sep 2026'],
         ['Recommendation', 'Confirm Employment'],
-        ['Effective Date', '1 Oct 2026'],
-        ['Assessment Score', '92 / 100']
+        ['Submitted', '4 Oct 2026'],
+        ['Adjustment', 'RM 300.00']
       ]
     },
     {
       id: 'SC-2026-0016',
       employeeName: 'Daniel Wong',
       empNo: 'EBB02',
-      status: 'Pending',
+      status: 'To Resubmit',
+      submittedDate: '2026-10-12',
       fields: [
-        ['Confirmation Due', '18 Oct 2026'],
         ['Recommendation', 'Further Review'],
-        ['Effective Date', '1 Nov 2026'],
-        ['Assessment Score', '84 / 100']
+        ['Submitted', '12 Oct 2026'],
+        ['Adjustment', 'No Adjustment']
       ]
     }
   ],

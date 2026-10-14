@@ -38,6 +38,45 @@ async function assertEmployeeCards(page, category) {
   });
 }
 
+async function assertConfirmationCards(page) {
+  const cards = await page.$$eval('#teamHistoryList .history-card-item', nodes => nodes.map(node => ({
+    name: node.querySelector('.team-history-employee-name')?.textContent.trim() || '',
+    id: node.querySelector('.team-history-employee-id')?.textContent.trim() || '',
+    adjacent: Boolean(node.querySelector('.team-history-employee-name + .team-history-employee-id')),
+    reference: node.querySelector('.team-history-record-ref')?.textContent.trim() || '',
+    status: node.querySelector('.status-pill')?.textContent.trim() || '',
+    tone: node.dataset.status || '',
+    labels: [...node.querySelectorAll('.history-card-row > span')].map(label => label.textContent.trim()),
+    values: [...node.querySelectorAll('.history-card-row > strong')].map(value => value.textContent.trim())
+  })));
+
+  assert.deepEqual(cards, [
+    {
+      name: 'Aina Rahman', id: '#EBB01', adjacent: true, reference: '',
+      status: 'To Resubmit', tone: 'resubmit',
+      labels: ['Recommendation', 'Submitted', 'Adjustment'],
+      values: ['Confirm Employment', '4 Oct 2026', 'RM 300.00']
+    },
+    {
+      name: 'Daniel Wong', id: '#EBB02', adjacent: true, reference: '',
+      status: 'To Resubmit', tone: 'resubmit',
+      labels: ['Recommendation', 'Submitted', 'Adjustment'],
+      values: ['Further Review', '12 Oct 2026', 'No Adjustment']
+    }
+  ], 'Staff Confirmation cards use the approved fields, employee ID placement and To Resubmit status');
+}
+
+async function setDateRange(page, startDate, endDate) {
+  await page.evaluate(({ startDate: start, endDate: end }) => {
+    const startInput = document.getElementById('teamConfirmationStartDate');
+    const endInput = document.getElementById('teamConfirmationEndDate');
+    startInput.value = start;
+    endInput.value = end;
+    startInput.dispatchEvent(new Event('input', { bubbles: true }));
+    endInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }, { startDate, endDate });
+}
+
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
@@ -78,7 +117,80 @@ async function assertEmployeeCards(page, category) {
     assert.equal(await page.$eval('[data-team-history-kind=staff-confirmation]', node => node.getAttribute('aria-pressed')), 'true');
     assert.equal(await page.$eval('#teamHistoryRecordCount', node => node.textContent.trim()), '2');
     assert.equal(await page.$eval('#teamHistoryCategoryTitle', node => node.textContent.trim()), 'Staff Confirmation History');
-    await assertEmployeeCards(page, 'Staff Confirmation');
+    assert.equal(await page.$eval('#teamConfirmationFilterBar', node => node.hidden), false, 'Staff Confirmation displays its Submitted date filter');
+    assert.equal(await page.$eval('#teamConfirmationFilterSummary', node => node.textContent.trim()), 'All Submission Dates');
+    assert.deepEqual(
+      await page.$$eval('#teamConfirmationFilterForm label', nodes => nodes.map(node => node.textContent.trim())),
+      ['Start Date', 'End Date'],
+      'Staff Confirmation filter contains the requested date controls'
+    );
+    assert.deepEqual(await page.$eval('#teamConfirmationFilterOverlay', node => ({
+      hidden: node.hidden,
+      ariaHidden: node.getAttribute('aria-hidden')
+    })), { hidden: true, ariaHidden: 'true' }, 'Date filter starts closed');
+    await assertConfirmationCards(page);
+
+    await page.click('#teamConfirmationFilterTrigger');
+    assert.deepEqual(await page.$eval('#teamConfirmationFilterOverlay', node => ({
+      hidden: node.hidden,
+      open: node.classList.contains('is-open'),
+      ariaHidden: node.getAttribute('aria-hidden')
+    })), { hidden: false, open: true, ariaHidden: 'false' }, 'Date filter opens as the standard bottom sheet');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'teamConfirmationStartDate', 'Start Date receives focus');
+    assert.equal(await page.$eval('#teamConfirmationFilterOverlay', overlay => [...overlay.parentElement.children]
+      .filter(node => node !== overlay)
+      .every(node => node.inert)), true, 'Background content is inert while the filter is open');
+    await page.focus('#teamConfirmationResetFilter');
+    await page.keyboard.down('Shift');
+    await page.keyboard.press('Tab');
+    await page.keyboard.up('Shift');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'teamConfirmationApplyFilter', 'Shift+Tab wraps from the first control to the last control');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'teamConfirmationResetFilter', 'Tab wraps from the last control to the first control');
+    await setDateRange(page, '2026-10-12', '2026-10-12');
+    await page.click('#teamConfirmationApplyFilter');
+    assert.equal(await page.$eval('#teamHistoryRecordCount', node => node.textContent.trim()), '1', 'Submitted date filter updates Total Records');
+    assert.equal(await page.$eval('#teamConfirmationFilterSummary', node => node.textContent.trim()), '12 Oct 2026 - 12 Oct 2026');
+    assert.deepEqual(
+      await page.$$eval('#teamHistoryList .team-history-employee-name', nodes => nodes.map(node => node.textContent.trim())),
+      ['Daniel Wong'],
+      'Submitted date filter includes records that sit exactly on both boundaries'
+    );
+
+    await page.click('#teamConfirmationFilterTrigger');
+    await setDateRange(page, '2026-10-31', '2026-10-01');
+    await page.click('#teamConfirmationApplyFilter');
+    assert.equal(await page.$eval('#teamConfirmationFilterOverlay', node => node.hidden), false, 'Invalid date range keeps the filter open');
+    assert.equal(await page.$eval('#teamConfirmationFilterError', node => node.hidden), false, 'Invalid date range displays an error');
+    assert.equal(await page.$eval('#teamConfirmationFilterError', node => node.textContent.trim()), 'End Date must be on or after Start Date.');
+    assert.equal(await page.$eval('#teamConfirmationEndDate', node => node.getAttribute('aria-invalid')), 'true');
+    assert.equal(await page.$eval('#teamHistoryRecordCount', node => node.textContent.trim()), '1', 'Invalid range leaves applied results unchanged');
+    await page.click('#teamConfirmationResetFilter');
+    assert.equal(await page.$eval('#teamConfirmationFilterOverlay', node => node.hidden), true, 'Reset applies the cleared filter and closes the sheet');
+    assert.equal(await page.$eval('#teamConfirmationFilterSummary', node => node.textContent.trim()), 'All Submission Dates');
+    assert.equal(await page.$eval('#teamHistoryRecordCount', node => node.textContent.trim()), '2');
+
+    await page.click('#teamConfirmationFilterTrigger');
+    await setDateRange(page, '2027-01-01', '2027-01-31');
+    await page.click('#teamConfirmationApplyFilter');
+    assert.equal(await page.$eval('#teamHistoryRecordCount', node => node.textContent.trim()), '0');
+    assert.equal(await page.$eval('#teamHistoryEmpty', node => node.hidden), false, 'A date range without records displays the empty state');
+    assert.equal(await page.$eval('#teamHistoryEmptyCopy', node => node.textContent.trim()), 'No records match the selected submission dates.');
+    await page.click('#teamConfirmationFilterTrigger');
+    await page.click('#teamConfirmationResetFilter');
+
+    await page.click('#teamConfirmationFilterTrigger');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.$eval('#teamConfirmationFilterOverlay', node => node.hidden), true, 'Escape closes the filter sheet');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'teamConfirmationFilterTrigger', 'Closing restores focus to the trigger');
+    await page.click('#teamConfirmationFilterTrigger');
+    const backdropPoint = await page.$eval('#teamConfirmationFilterOverlay', node => {
+      const rect = node.getBoundingClientRect();
+      return { x: rect.left + (rect.width / 2), y: rect.top + 24 };
+    });
+    await page.mouse.click(backdropPoint.x, backdropPoint.y);
+    assert.equal(await page.$eval('#teamConfirmationFilterOverlay', node => node.hidden), true, 'Clicking the backdrop closes the filter sheet');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'teamConfirmationFilterTrigger', 'Backdrop close restores focus to the trigger');
 
     for (const [key, label] of categories.slice(1)) {
       await page.click(`[data-team-history-kind=${key}]`);
@@ -86,6 +198,7 @@ async function assertEmployeeCards(page, category) {
       assert.equal(await page.$eval(`[data-team-history-kind=${key}]`, node => node.getAttribute('aria-pressed')), 'true');
       assert.equal(await page.$eval('#teamHistoryRecordCount', node => node.textContent.trim()), '2');
       assert.equal(await page.$eval('#teamHistoryCategoryTitle', node => node.textContent.trim()), `${label} History`);
+      assert.equal(await page.$eval('#teamConfirmationFilterBar', node => node.hidden), true, `${label} does not display the Staff Confirmation filter`);
 
       if (key === 'staff-request') {
         assert.equal(await page.$$eval('#teamHistoryList .history-card-item', nodes => nodes.length), 2);
@@ -160,6 +273,9 @@ async function assertEmployeeCards(page, category) {
       await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
       await open(page, historyPage, '?category=staff-confirmation&theme=light');
       await page.screenshot({ path: 'C:/tmp/team-history-confirmation-light.png', fullPage: true });
+      await page.click('#teamConfirmationFilterTrigger');
+      await page.screenshot({ path: 'C:/tmp/team-history-confirmation-filter-light.png', fullPage: true });
+      await page.keyboard.press('Escape');
       await open(page, historyPage, '?category=staff-request&theme=dark');
       await page.screenshot({ path: 'C:/tmp/team-history-request-dark.png', fullPage: true });
     }
