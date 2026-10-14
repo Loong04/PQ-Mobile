@@ -64,11 +64,9 @@ async function assertHistoryTotal(page, options) {
   assert.equal(result.iconCount, 0, `${options.name}: total card must not use an icon`);
   assert.equal(Number(result.value), result.itemCount, `${options.name}: total must equal visible records`);
   if (options.expected !== undefined) assert.equal(result.itemCount, options.expected, `${options.name}: fixture count`);
-  assert.equal(result.backgroundImage, 'none', `${options.name}: total card must not use a gradient`);
-  if (options.dark) assert.notEqual(result.backgroundColor, 'rgb(255, 255, 255)', `${options.name}: dark card must use the neutral themed surface`);
-  else assert.equal(result.backgroundColor, 'rgb(255, 255, 255)', `${options.name}: light card must be white`);
-  assert.equal(result.labelColor, result.bodyColor, `${options.name}: label must use the original page text color`);
-  assert.equal(result.valueColor, result.bodyColor, `${options.name}: value must use the original page text color`);
+  assert.equal(result.backgroundImage, 'linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(99, 102, 241, 0.05))', `${options.name}: shared lavender summary surface`);
+  assert.equal(result.labelColor, options.dark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)', `${options.name}: muted summary label`);
+  assert.equal(result.valueColor, options.dark ? 'rgb(192, 132, 252)' : 'rgb(124, 58, 237)', `${options.name}: purple record count`);
   assert.ok(result.beforeList, `${options.name}: total card must appear before the records`);
   assert.ok(result.unobscured, `${options.name}: total card must not be covered by a fixed or absolute header`);
   assert.ok(result.fits, `${options.name}: total card must fit the content width`);
@@ -213,7 +211,7 @@ async function run() {
     await assertHistoryTotal(page, { name: 'Leave History dark theme', listSelector: '#myHistoryCardsList', itemSelector: ':scope > .history-item-card', expected: 6, dark: true });
 
     assert.deepEqual(pageErrors, []);
-    console.log('PASS: every production History list has one neutral, responsive Total Records card synchronized to its active records.');
+    console.log('PASS: every production History list has one lavender, responsive Total Records card synchronized to its active records.');
   } finally {
     await browser.close();
   }

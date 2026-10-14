@@ -3,6 +3,48 @@
    Zero build tool required. 100% offline & file:// compatible.
    ======================================================== */
 
+// Presentation for legacy count captions. The source text and numeric value stay
+// intact when forms refresh a caption with textContent or innerText.
+window.PeopleHcmRecordSummary = (() => {
+  const registered = new WeakSet();
+  function enhance(element) {
+    if (!element || registered.has(element)) return;
+    registered.add(element);
+    const observer = new MutationObserver(render);
+    function render() {
+      observer.disconnect();
+      const match = element.textContent.trim().match(/^(Total\s+Records?(?:\s+Found)?\s*:\s*)([\d,]+)$/i);
+      element.classList.toggle('record-summary-card', !!match);
+      element.classList.toggle('record-summary-metric', !!match);
+      if (match) {
+        const label = document.createElement('span');
+        label.className = 'record-summary-label';
+        label.textContent = match[1];
+        const value = document.createElement('strong');
+        value.className = 'record-summary-value';
+        value.textContent = match[2];
+        element.replaceChildren(label, value);
+      }
+      observer.observe(element, { childList: true, characterData: true, subtree: true });
+    }
+    render();
+  }
+  function scan(root) {
+    if (root.nodeType !== Node.ELEMENT_NODE) return;
+    if (root.matches('[data-record-summary-count]')) enhance(root);
+    root.querySelectorAll('[data-record-summary-count]').forEach(enhance);
+  }
+  function init() {
+    scan(document.body);
+    new MutationObserver(records => {
+      for (const record of records) record.addedNodes.forEach(scan);
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
+  return { enhance };
+})();
+
 // 1. Desktop Preview Top Bar Component (Only Dark Mode & Light Mode buttons outside the phone)
 // Resolve shared detail assets from this script so nested module pages and file:// previews work alike.
 {

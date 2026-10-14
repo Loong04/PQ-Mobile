@@ -111,6 +111,13 @@ async function assertNoHorizontalOverflow(page, context) {
       await assertNoHorizontalOverflow(page, `${theme} ${width}px status summary`);
       await page.screenshot({ path: path.resolve(__dirname, `active-headcount-status-table-${theme}-${width}.png`) });
 
+      await page.click('[data-headcount-status-summary="other"] td');
+      assert.equal(await page.$eval('#activeHeadcountStaffTotalRecords', node => node.textContent.trim()), '108');
+      assert.equal(await page.$$eval('#activeHeadcountStaffList .active-headcount-employee-card', cards => cards.length), 108);
+      await assertNoHorizontalOverflow(page, `${theme} ${width}px other active staff`);
+      await page.screenshot({ path: path.resolve(__dirname, `active-headcount-staff-cards-${theme}-${width}.png`) });
+      await page.click('#activeHeadcountBack');
+
       await page.click('[data-headcount-status-summary="confirmed"] td');
       assert.equal(await page.$eval('#activeHeadcountSummaryView', node => node.hidden), true);
       assert.equal(await page.$eval('#activeHeadcountStaffView', node => node.hidden), false);
@@ -121,16 +128,24 @@ async function assertNoHorizontalOverflow(page, context) {
         const id = card.querySelector('.employee-id');
         const grade = card.querySelector('.active-headcount-employee-grade');
         const position = card.querySelector('.active-headcount-employee-position');
+        const header = card.querySelector('.manpower-employee-identity');
+        const details = card.querySelector('.manpower-employee-card-details');
         const style = getComputedStyle(card);
         return Boolean(name?.textContent.trim())
           && /^#\S+/.test(id?.textContent.trim() || '')
           && id.getBoundingClientRect().top >= name.getBoundingClientRect().bottom - 1
           && Boolean(grade?.textContent.trim())
           && Boolean(position?.textContent.trim())
-          && parseFloat(style.borderLeftWidth) >= 4
+          && header?.contains(name) && header.contains(id)
+          && getComputedStyle(header).backgroundImage.includes('linear-gradient')
+          && getComputedStyle(name).color === 'rgb(255, 255, 255)'
+          && style.borderLeftWidth === style.borderRightWidth
+          && style.borderLeftColor === style.borderRightColor
+          && details?.children.length === 2
+          && [...details.children].every(row => parseFloat(getComputedStyle(row).borderWidth) >= 1)
           && parseFloat(style.borderRadius) >= 18
           && !card.querySelector('.fa-chevron-right');
-      })), 'Confirmed staff uses history-style cards with name, #ID, grade, position and no chevron');
+      })), 'Staff cards show name and #ID in a purple header, with bordered Grade and Position details below');
       await assertNoHorizontalOverflow(page, `${theme} ${width}px confirmed staff`);
 
       const firstEmployeeSelector = '#activeHeadcountStaffList .active-headcount-employee-card';

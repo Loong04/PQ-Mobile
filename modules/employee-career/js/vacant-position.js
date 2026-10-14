@@ -70,16 +70,15 @@
     $('vacantPositionRecordsTotal').textContent = String(group.records.length);
     $('vacantPositionRecords').replaceChildren();
     group.records.forEach(record => {
-      const card = node('button', 'history-card-item active-headcount-employee-card');
+      const card = node('button', 'manpower-employee-card active-headcount-employee-card');
       card.type = 'button';
-      card.dataset.status = 'draft';
       card.dataset.vacancyId = record.id;
       card.setAttribute('aria-label', `View vacancy details for ${record.job}, vacant since ${date(record.since)}`);
-      const identity = node('span', 'active-headcount-employee-identity');
+      const identity = node('span', 'manpower-employee-identity');
       identity.append(node('span', 'employee-name', record.job));
-      const details = node('span', 'history-card-details active-headcount-employee-details');
+      const details = node('span', 'manpower-employee-card-details');
       [['Grade', record.grade || '—'], ['Last Incumbent', record.lastIncumbent || '—'], ['Since', date(record.since)]].forEach(([label, value]) => {
-        const row = node('span', 'active-headcount-employee-row');
+        const row = node('span', 'manpower-employee-card-row');
         row.append(node('span', '', label), node('strong', '', value));
         details.append(row);
       });

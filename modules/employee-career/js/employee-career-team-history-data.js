@@ -43,51 +43,51 @@ window.EMPLOYEE_CAREER_TEAM_HISTORY_DATA = {
       id: 'SE-2026-0008',
       employeeName: 'Daniel Wong',
       empNo: 'EBB02',
-      status: 'Pending',
-      fields: [
-        ['Exit Type', 'Resignation'],
-        ['Notice Date', '2 Oct 2026'],
-        ['Last Paid Day', '31 Oct 2026'],
-        ['Reason', 'Career Opportunity']
-      ]
+      position: 'Product Designer',
+      status: 'Submitted',
+      exitType: 'Resignation',
+      noticeDate: '2026-10-02',
+      lastPaidDate: '2026-10-31',
+      reason: 'Career Opportunity'
     },
     {
       id: 'SE-2026-0007',
       employeeName: 'Nur Izzati',
       empNo: 'EBB03',
+      position: 'Finance Analyst',
       status: 'Approved',
-      fields: [
-        ['Exit Type', 'Contract End'],
-        ['Notice Date', '15 Sep 2026'],
-        ['Last Paid Day', '30 Sep 2026'],
-        ['Reason', 'Contract Completed']
-      ]
+      exitType: 'Contract End',
+      noticeDate: '2026-09-15',
+      lastPaidDate: '2026-09-30',
+      reason: 'Contract Completed'
     }
   ],
   'staff-request': [
     {
       id: 'SR-2026-0012',
       reference: 'SR-2026-0012',
+      employeeName: 'Aina Rahman',
       title: 'Senior Executive',
-      status: 'Pending',
-      fields: [
-        ['Request Period', 'Oct 2026'],
-        ['Department', 'People Operations'],
-        ['Headcount', '2'],
-        ['Required By', '1 Dec 2026']
-      ]
+      request: 'Senior Executive',
+      status: 'Approved',
+      period: '2026-10',
+      department: 'People Operations',
+      job: 'Senior Executive',
+      count: 2,
+      requiredBy: '2026-12-01'
     },
     {
       id: 'SR-2026-0011',
       reference: 'SR-2026-0011',
+      employeeName: 'Daniel Wong',
       title: 'Product Support Specialist',
+      request: 'Product Support Specialist',
       status: 'Approved',
-      fields: [
-        ['Request Period', 'Sep 2026'],
-        ['Department', 'Customer Experience'],
-        ['Headcount', '1'],
-        ['Required By', '15 Nov 2026']
-      ]
+      period: '2026-09',
+      department: 'Customer Experience',
+      job: 'Product Support Specialist',
+      count: 1,
+      requiredBy: '2026-11-15'
     }
   ],
   'staff-engagement': [
@@ -95,23 +95,23 @@ window.EMPLOYEE_CAREER_TEAM_HISTORY_DATA = {
       id: 'SEG-2026-0021',
       employeeName: 'Aina Rahman',
       empNo: 'EBB01',
-      status: 'Completed',
-      fields: [
-        ['Interview Date', '8 Oct 2026'],
-        ['Flight Risk', 'Low'],
-        ['Recommendation', 'Continue Development Plan']
-      ]
+      position: 'People Operations Executive',
+      interviewerName: 'Lee',
+      interviewerPosition: 'Account Executive',
+      status: 'Submitted',
+      interviewDate: '2026-10-08',
+      flightRisk: 'Low',
+      recommendation: 'Continue Development Plan'
     },
     {
       id: 'SEG-2026-0022',
       employeeName: 'Daniel Wong',
       empNo: 'EBB02',
-      status: 'Follow-up Required',
-      fields: [
-        ['Interview Date', '12 Oct 2026'],
-        ['Flight Risk', 'Medium'],
-        ['Recommendation', 'Manager Follow-up']
-      ]
+      position: 'Product Designer',
+      status: 'Submitted',
+      interviewDate: '2026-10-12',
+      flightRisk: 'Medium',
+      recommendation: 'Manager Follow-up'
     }
   ]
 };

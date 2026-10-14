@@ -51,13 +51,26 @@ async function assertFits(page, context) {
       assert.deepEqual(await page.$$eval('[data-vacancy-id]', cards => cards.map(card => card.dataset.vacancyId)), ['vac-account-01', 'vac-account-02']);
       assert.deepEqual(await page.$eval('[data-vacancy-id="vac-account-01"]', card => ({
         title: card.querySelector('.employee-name').textContent.trim(),
-        fields: [...card.querySelectorAll('.active-headcount-employee-row')].map(row => [...row.children].map(cell => cell.textContent.trim())),
+        fields: [...card.querySelectorAll('.manpower-employee-card-row')].map(row => [...row.children].map(cell => cell.textContent.trim())),
         companyShown: card.textContent.includes('PEOPLE QUEST SDN BHD')
       })), {
         title: 'ACCOUNT EXECUTIVE',
         fields: [['Grade', 'G2-EXECUTIVE'], ['Last Incumbent', 'Lim Mei Ling'], ['Since', '02 Apr 2025']],
         companyShown: false
       }, 'Vacancy card shows the position title and grade, last incumbent and since date');
+      assert.ok(await page.$$eval('[data-vacancy-id]', cards => cards.every(card => {
+        const header = card.querySelector('.manpower-employee-identity');
+        const title = header?.querySelector('.employee-name');
+        const details = card.querySelector('.manpower-employee-card-details');
+        const style = getComputedStyle(card);
+        return Boolean(title)
+          && getComputedStyle(title).color === 'rgb(255, 255, 255)'
+          && getComputedStyle(header).backgroundImage.includes('linear-gradient')
+          && style.borderLeftWidth === style.borderRightWidth
+          && style.borderLeftColor === style.borderRightColor
+          && details?.children.length === 3
+          && [...details.children].every(row => parseFloat(getComputedStyle(row).borderWidth) >= 1);
+      })), 'Vacancy cards use a purple title header and three bordered detail fields');
       await assertFits(page, `${theme} ${width} records`);
       await page.screenshot({ path: path.resolve(__dirname, `vacant-position-records-${theme}-${width}.png`) });
       await page.click('[data-vacancy-id="vac-account-01"]');

@@ -20,21 +20,115 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.$$eval('#employeeCareerStaffEvents summary, #employeeCareerStaffEvents .employee-career-expiry-chevron', nodes => nodes.length), 0, 'Staff Events has no collapse control');
       await page.click('#employeeCareerStaffEvents .employee-career-expiry-header');
       assert.ok(await page.$eval('#employeeCareerStaffEvents table', node => node.getBoundingClientRect().height > 0), 'Clicking the title keeps staff events visible');
-      assert.equal(await page.$$eval('#employeeCareerStaffEvents > .employee-career-event-filter', nodes => nodes.length), 0, 'The inline Event dropdown row is replaced by a filter summary');
-      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events');
+      assert.equal(await page.$$eval('#employeeCareerStaffEvents > .employee-career-event-filter, #employeeCareerStaffEvents > .employee-career-event-filter-summary', nodes => nodes.length), 0, 'Staff Events has no separate filter row or summary card');
+      assert.deepEqual(await page.$eval('#employeeCareerStaffEvents', section => {
+        const label = section.querySelector(':scope > .employee-career-expiry-header');
+        const card = section.querySelector(':scope > .employee-career-event-card');
+        const table = section.querySelector('.employee-career-event-table');
+        const title = section.querySelector('#employeeCareerStaffEventsTitle');
+        const icon = label.querySelector('.employee-career-expiry-icon');
+        const trigger = label.querySelector('#employeeCareerEventFilterTrigger');
+        const columnHeader = table.querySelector('th[scope=\col\]');
+        const transparent = 'rgba(0, 0, 0, 0)';
+        const sectionStyle = getComputedStyle(section);
+        const labelStyle = getComputedStyle(label);
+        const titleStyle = getComputedStyle(title);
+        const iconStyle = getComputedStyle(icon);
+        const triggerStyle = getComputedStyle(trigger);
+        const cardStyle = card ? getComputedStyle(card) : null;
+        const columnHeaderStyle = getComputedStyle(columnHeader);
+        return {
+          labelBeforeCard: label.nextElementSibling === card,
+          tableInsideCard: card?.firstElementChild === table,
+          sectionBorderWidth: parseFloat(sectionStyle.borderTopWidth),
+          sectionHasSurface: sectionStyle.backgroundColor !== transparent,
+          sectionOverflow: sectionStyle.overflow,
+          labelGradient: labelStyle.backgroundImage,
+          labelHasSurface: labelStyle.backgroundColor !== transparent,
+          titleTransform: titleStyle.textTransform,
+          titleIsWhite: titleStyle.color === 'rgb(255, 255, 255)',
+          iconHasTile: iconStyle.backgroundColor !== transparent,
+          triggerHasSurface: triggerStyle.backgroundColor !== transparent,
+          triggerBorderWidth: parseFloat(triggerStyle.borderTopWidth),
+          triggerIsWhite: triggerStyle.color === 'rgb(255, 255, 255)',
+          cardBorderWidth: cardStyle ? parseFloat(cardStyle.borderTopWidth) : 0,
+          cardRadius: cardStyle ? parseFloat(cardStyle.borderTopLeftRadius) : 0,
+          cardHasSurface: cardStyle ? cardStyle.backgroundColor !== transparent : false,
+          cardOverflow: cardStyle?.overflow || '',
+          purpleColumnHeader: columnHeaderStyle.backgroundColor === 'rgb(124, 58, 237)',
+          whiteColumnHeaderText: columnHeaderStyle.color === 'rgb(255, 255, 255)'
+        };
+      }), {
+        labelBeforeCard: true,
+        tableInsideCard: true,
+        sectionBorderWidth: 0,
+        sectionHasSurface: false,
+        sectionOverflow: 'visible',
+        labelGradient: 'none',
+        labelHasSurface: false,
+        titleTransform: 'uppercase',
+        titleIsWhite: false,
+        iconHasTile: false,
+        triggerHasSurface: true,
+        triggerBorderWidth: 1,
+        triggerIsWhite: false,
+        cardBorderWidth: 1,
+        cardRadius: 20,
+        cardHasSurface: true,
+        cardOverflow: 'hidden',
+        purpleColumnHeader: true,
+        whiteColumnHeaderText: true
+      }, 'Staff Events keeps its label and filter outside an independent rounded table card');
+      assert.ok(
+        await page.$eval('#employeeCareerStaffEvents thead tr', row => {
+          const height = row.getBoundingClientRect().height;
+          return height >= 41 && height <= 45;
+        }),
+        'Staff Events keeps its purple column header between 41px and 45px to balance the table rows'
+      );
       assert.deepEqual(await page.$eval('#employeeCareerEventFilterTrigger', node => ({
+        inHeader: node.parentElement.matches('#employeeCareerStaffEvents > .employee-career-expiry-header'),
+        afterTitle: node.previousElementSibling?.id === 'employeeCareerStaffEventsTitle',
+        calendarBeforeTitle: node.previousElementSibling?.previousElementSibling?.classList.contains('employee-career-expiry-icon'),
+        rightmost: node.nextElementSibling === null,
+        alignedRight: Math.abs(node.parentElement.getBoundingClientRect().right - node.getBoundingClientRect().right) <= 1,
+        text: node.textContent.trim(),
         label: node.getAttribute('aria-label'),
         hasPopup: node.getAttribute('aria-haspopup'),
         controls: node.getAttribute('aria-controls'),
         expanded: node.getAttribute('aria-expanded'),
-        icon: node.querySelector('i')?.classList.contains('fa-sliders')
+        icon: node.querySelector('i')?.classList.contains('fa-sliders'),
+        hitWidth: Math.round(node.getBoundingClientRect().width),
+        hitHeight: Math.round(node.getBoundingClientRect().height)
       })), {
-        label: 'Open Staff Events filter',
+        inHeader: true,
+        afterTitle: true,
+        calendarBeforeTitle: true,
+        rightmost: true,
+        alignedRight: true,
+        text: '',
+        label: 'Open Staff Events filter. Current filter: All Events',
         hasPopup: 'dialog',
         controls: 'employeeCareerEventFilterOverlay',
         expanded: 'false',
-        icon: true
-      }, 'Staff Events exposes the standard filter trigger contract');
+        icon: true,
+        hitWidth: 40,
+        hitHeight: 40
+      }, 'Staff Events exposes the consistent accessible filter icon on the far right');
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+      const filterBox = await page.$eval('#employeeCareerEventFilterTrigger', node => {
+        const box = node.getBoundingClientRect();
+        return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+      });
+      await page.mouse.move(filterBox.x, filterBox.y);
+      await page.mouse.down();
+      assert.deepEqual(await page.$eval('#employeeCareerEventFilterTrigger', node => {
+        const style = getComputedStyle(node);
+        return { transitionDuration: style.transitionDuration, transform: style.transform };
+      }), { transitionDuration: '0s', transform: 'none' }, 'Reduced motion disables the Staff Events filter animation and pressed scale');
+      await page.mouse.move(0, 0);
+      await page.mouse.up();
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
       assert.equal(await page.$$eval('#employeeCareerOptions .employee-career-option', nodes => nodes.length), 6);
       await page.click('[data-action="view-all"]');
       await page.waitForFunction(() => document.activeElement.id === 'employeeCareerCloseAll');
@@ -64,11 +158,19 @@ const puppeteer = require('puppeteer');
       ]);
       assert.deepEqual(
         await page.$$eval('#employeeCareerStaffEvents thead th', nodes => nodes.map(node => node.textContent.trim())),
-        ['Event', 'Count', 'Detail'],
-        'Staff Events keeps only the three requested columns'
+        ['Event', 'Count'],
+        'Staff Events keeps only Event and Count columns'
       );
-      assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.every(node => node.cells.length === 3)), true, 'Each Staff Events row has three cells');
-      assert.equal(await page.$$eval('[data-career-event-chart], #employeeCareerTeamEventChart', nodes => nodes.length), 0, 'Staff Events exposes no chart control or chart view');
+      assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.every(node => node.cells.length === 2)), true, 'Each Staff Events row has two cells');
+      assert.equal(await page.$$eval('.employee-career-event-detail, [data-career-event-detail], [data-career-event-chart], #employeeCareerTeamEventChart', nodes => nodes.length), 0, 'Staff Events exposes no Detail column button or chart control');
+      assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.every(node =>
+        node.dataset.careerEventRow &&
+        node.getAttribute('role') === 'button' &&
+        node.tabIndex === 0 &&
+        node.getAttribute('aria-haspopup') === 'dialog' &&
+        node.getAttribute('aria-controls') === 'employeeCareerTeamEventOverlay' &&
+        node.getAttribute('aria-label') === `View details for ${node.cells[0].textContent.trim()}`
+      )), true, 'Every Staff Events row is an accessible details trigger');
       assert.ok(await page.$eval('main', node => node.scrollWidth <= node.clientWidth));
       assert.ok(await page.$$eval('#employeeCareerStaffEventRows td', nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)), 'Event names, counts and buttons must fit');
       await page.waitForFunction(() => getComputedStyle(document.querySelector('#employeeCareerAllOptions')).visibility === 'hidden');
@@ -86,7 +188,7 @@ const puppeteer = require('puppeteer');
       await page.select('#employeeCareerEventFilter', 'birthday');
       await page.click('#employeeCareerEventFilterClose');
       assert.equal(await page.$eval('#employeeCareerEventFilterOverlay', node => node.hidden), true, 'Close dismisses the filter sheet');
-      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Close discards an unapplied event');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-label')), 'Open Staff Events filter. Current filter: All Events', 'Close discards an unapplied event');
       assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.length), 8, 'Close preserves the applied event filter');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterTrigger', 'Close restores focus to the filter trigger');
       assert.equal(await page.$eval('main', node => node.inert), false, 'Closing the filter restores dashboard interaction');
@@ -97,17 +199,17 @@ const puppeteer = require('puppeteer');
       await page.select('#employeeCareerEventFilter', 'birthday');
       await page.click('#employeeCareerEventFilterApply');
       assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.length), 1);
-      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'Birthday');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-label')), 'Open Staff Events filter. Current filter: Birthday');
       assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-expanded')), 'false');
       await page.click('#employeeCareerEventFilterTrigger');
       await page.select('#employeeCareerEventFilter', 'retirement-due');
       await page.click('#employeeCareerEventFilterClose');
-      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'Birthday', 'Close preserves a previously applied non-default event');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-label')), 'Open Staff Events filter. Current filter: Birthday', 'Close preserves a previously applied non-default event');
       assert.deepEqual(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.map(node => node.cells[0].textContent.trim())), ['Birthday']);
-      await page.click('[data-career-event-detail="birthday"]');
+      await page.click('[data-career-event-row="birthday"]');
       await page.waitForSelector('#employeeCareerTeamEventOverlay', { visible: true });
       assert.equal(await page.$eval('#employeeCareerTeamEventTitle', node => node.textContent), 'Birthday');
-      assert.equal(await page.$eval('#employeeCareerTeamEventTotal', node => node.textContent), '44');
+      assert.equal(await page.$eval('#employeeCareerTeamEventOverlay', node => node.innerText.includes('Total Records')), false, 'Staff Events details open directly to employee information without a Total Records summary');
       assert.ok(await page.$$eval('.career-event-person', nodes => nodes.length > 0 && nodes.every(node => {
         const name = node.querySelector('.career-event-person-name');
         const id = node.querySelector('.career-event-person-id');
@@ -122,24 +224,33 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerTeamEventClose');
       await page.keyboard.press('Escape');
       assert.equal(await page.$eval('main', node => node.inert), false);
-      assert.equal(await page.evaluate(() => document.activeElement.dataset.careerEventDetail), 'birthday');
+      assert.equal(await page.evaluate(() => document.activeElement.dataset.careerEventRow), 'birthday', 'Closing details restores focus to its row');
 
       await page.click('#employeeCareerEventFilterTrigger');
       await page.select('#employeeCareerEventFilter', 'retirement-due');
       await page.click('#employeeCareerEventFilterApply');
-      await page.click('[data-career-event-detail="retirement-due"]');
-      assert.equal(await page.$eval('#employeeCareerTeamEventTotal', node => node.textContent), '1');
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.dataset.careerEventRow), 'retirement-due', 'Tab reaches the filtered Staff Events row');
+      assert.deepEqual(await page.$eval('[data-career-event-row="retirement-due"]', node => {
+        const style = getComputedStyle(node);
+        return { cursor: style.cursor, outlineStyle: style.outlineStyle, outlineWidth: Number.parseFloat(style.outlineWidth) };
+      }), { cursor: 'pointer', outlineStyle: 'solid', outlineWidth: 2 }, 'Focused Staff Events rows visibly communicate that they are interactive');
+      await page.keyboard.down('Enter');
+      await page.keyboard.down('Enter');
+      await page.keyboard.up('Enter');
+      assert.equal(await page.$eval('#employeeCareerTeamEventOverlay', node => node.hidden), false, 'Held Enter opens details once and leaves the popup open');
       assert.equal(await page.$eval('#employeeCareerTeamEventEmpty', node => node.hidden), false, 'Missing employee rows use an honest empty state');
       await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(() => document.activeElement.dataset.careerEventRow), 'retirement-due', 'Enter-opened details restore focus to the row');
       await page.click('#employeeCareerEventFilterTrigger');
       await page.click('#employeeCareerEventFilterReset');
       assert.equal(await page.$$eval('#employeeCareerStaffEventRows tr', nodes => nodes.length), 8);
-      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Reset applies the default event filter');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-label')), 'Open Staff Events filter. Current filter: All Events', 'Reset applies the default event filter');
 
       await page.click('#employeeCareerEventFilterTrigger');
       await page.select('#employeeCareerEventFilter', 'birthday');
       await page.$eval('#employeeCareerEventFilterOverlay', node => node.click());
-      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Backdrop close discards an unapplied event');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-label')), 'Open Staff Events filter. Current filter: All Events', 'Backdrop close discards an unapplied event');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterTrigger');
 
       await page.click('#employeeCareerEventFilterTrigger');
@@ -152,7 +263,7 @@ const puppeteer = require('puppeteer');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterApply', 'Shift+Tab wraps from Reset to the final filter control');
       await page.select('#employeeCareerEventFilter', 'birthday');
       await page.keyboard.press('Escape');
-      assert.equal(await page.$eval('#employeeCareerEventFilterSummary', node => node.textContent.trim()), 'All Events', 'Escape discards an unapplied event');
+      assert.equal(await page.$eval('#employeeCareerEventFilterTrigger', node => node.getAttribute('aria-label')), 'Open Staff Events filter. Current filter: All Events', 'Escape discards an unapplied event');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'employeeCareerEventFilterTrigger');
 
       await page.click('#employeeCareerTabIndividual');
@@ -161,8 +272,12 @@ const puppeteer = require('puppeteer');
       await page.click('#employeeCareerTabTeam');
       assert.equal(await page.$$eval('[data-career-scope="team"]', nodes => nodes.every(node => !node.hidden)), true);
       await page.setViewport({ width, height: 800 });
-      await page.click('[data-career-event-detail="active"]');
+      await page.focus('[data-career-event-row="active"]');
+      await page.keyboard.down('Space');
+      await page.keyboard.down('Space');
+      await page.keyboard.up('Space');
       await page.waitForSelector('#employeeCareerTeamEventOverlay', { visible: true });
+      assert.equal(await page.$eval('#employeeCareerTeamEventOverlay', node => node.hidden), false, 'Held Space opens details once and leaves the popup open');
       await page.keyboard.press('Tab');
       assert.ok(await page.$eval('#employeeCareerTeamEventOverlay .detail-popout-body', node => node.scrollHeight > node.clientHeight), 'Short phones require scrolling through Active details');
       await page.keyboard.press('PageDown');

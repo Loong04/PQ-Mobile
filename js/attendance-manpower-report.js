@@ -55,6 +55,12 @@ function appendManpowerRows(container, rows) {
     const text = document.createElement('dd');
     key.textContent = label;
     text.textContent = value;
+    if (label === 'Total Records') {
+      container.classList.add('record-summary-card');
+      row.classList.add('record-summary-metric');
+      key.classList.add('record-summary-label');
+      text.classList.add('record-summary-value');
+    }
     row.append(key, text);
     list.append(row);
   }
@@ -88,6 +94,7 @@ function prepareManpowerDetailView(title, overviewRows) {
     scope.textContent = `${group.company} · ${group.section} · ${group.costCenter}`;
   }
   const overview = document.getElementById('manpowerDetailOverview');
+  overview.classList.remove('record-summary-card');
   overview.classList.toggle('manpower-summary-overview', currentView === 'summary');
   overview.replaceChildren();
   appendManpowerRows(overview, overviewRows);

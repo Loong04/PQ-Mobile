@@ -21,6 +21,46 @@ const puppeteer = require('puppeteer');
       assert.ok(await page.$('#employeeCareerExpiry'), 'Individual needs the expiry section below Quick Options');
       assert.equal(await page.$eval('#employeeCareerExpiry', node => node.hidden), false);
       assert.equal(await page.evaluate(() => document.querySelector('.employee-career-quick').nextElementSibling.id), 'employeeCareerExpiry');
+      assert.deepEqual(await page.evaluate(() => {
+        const section = document.querySelector('#employeeCareerExpiry');
+        const label = section.querySelector('.employee-career-expiry-header');
+        const title = document.querySelector('#employeeCareerExpiryTitle');
+        const icon = label.querySelector('.employee-career-expiry-icon');
+        const card = section.querySelector('.employee-career-expiry-card');
+        const table = section.querySelector('.employee-career-expiry-table');
+        const sectionStyle = getComputedStyle(section);
+        const labelStyle = getComputedStyle(label);
+        const titleStyle = getComputedStyle(title);
+        const iconStyle = getComputedStyle(icon);
+        const cardStyle = card ? getComputedStyle(card) : null;
+        return {
+          labelBeforeCard: label.nextElementSibling === card,
+          tableInsideCard: card?.firstElementChild === table,
+          sectionBorder: Number.parseFloat(sectionStyle.borderTopWidth),
+          sectionSurface: sectionStyle.backgroundColor,
+          sectionOverflow: sectionStyle.overflow,
+          labelGradient: labelStyle.backgroundImage,
+          titleTransform: titleStyle.textTransform,
+          iconSurface: iconStyle.backgroundColor,
+          cardBorder: cardStyle ? Number.parseFloat(cardStyle.borderTopWidth) : 0,
+          cardRadius: cardStyle ? Number.parseFloat(cardStyle.borderTopLeftRadius) : 0,
+          cardSurface: cardStyle ? cardStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' : false,
+          cardOverflow: cardStyle?.overflow || ''
+        };
+      }), {
+        labelBeforeCard: true,
+        tableInsideCard: true,
+        sectionBorder: 0,
+        sectionSurface: 'rgba(0, 0, 0, 0)',
+        sectionOverflow: 'visible',
+        labelGradient: 'none',
+        titleTransform: 'uppercase',
+        iconSurface: 'rgba(0, 0, 0, 0)',
+        cardBorder: 1,
+        cardRadius: 20,
+        cardSurface: true,
+        cardOverflow: 'hidden'
+      }, 'Expiry uses a Leave-style external section label above its own rounded table card');
       assert.deepEqual(await page.$$eval('#employeeCareerExpiry th', nodes => nodes.map(node => node.textContent.trim())), ['Type', 'Description', 'DueDay', 'Expiry']);
       assert.equal(await page.$$eval('#employeeCareerExpiry tbody tr', nodes => nodes.length), 10, 'All visible reference records remain available');
       assert.deepEqual(await page.$$eval('#employeeCareerExpiry tbody tr:first-child td', nodes => nodes.map(node => node.textContent.trim())), ['License', 'Sample Description 1', '-5,381', '18/01/2012']);

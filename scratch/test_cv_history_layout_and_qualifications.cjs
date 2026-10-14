@@ -36,9 +36,10 @@ const request = {
       const personal = await page.$eval('#cv-panel-personal', panel => {
         const metadata = panel.querySelector('.cv-history-metadata');
         const name = panel.querySelector('[data-cv-field="Name"]');
-        return { framed: getComputedStyle(metadata).borderTopWidth !== '0px', rowColumns: getComputedStyle(name.parentElement).gridTemplateColumns.split(' ').length, metadataColumns: getComputedStyle(metadata.firstElementChild).gridTemplateColumns.split(' ').length, valueAlignment: getComputedStyle(name).textAlign, marked: getComputedStyle(name.querySelector('.cv-history-field-value')).borderLeftWidth !== '0px' };
+        const changedStyle = getComputedStyle(name.querySelector('.cv-history-field-value'));
+        return { framed: getComputedStyle(metadata).borderTopWidth !== '0px', rowColumns: getComputedStyle(name.parentElement).gridTemplateColumns.split(' ').length, metadataColumns: getComputedStyle(metadata.firstElementChild).gridTemplateColumns.split(' ').length, valueAlignment: getComputedStyle(name).textAlign, changedColor: changedStyle.color, markerBorder: changedStyle.borderLeftWidth, markerBackground: changedStyle.backgroundColor };
       });
-      assert.deepEqual(personal, { framed: true, rowColumns: 2, metadataColumns: 1, valueAlignment: 'right', marked: true }, 'Reference layout uses grouped cards, paired fields and a marked changed value');
+      assert.deepEqual(personal, { framed: true, rowColumns: 2, metadataColumns: 1, valueAlignment: 'right', changedColor: theme === 'light' ? 'rgb(220, 38, 38)' : 'rgb(248, 113, 113)', markerBorder: '0px', markerBackground: 'rgba(0, 0, 0, 0)' }, 'Changed values use red text without a colored background or marker border');
       await page.evaluate(() => document.fonts.ready);
       await page.screenshot({ path: path.join(__dirname, `cv-history-grouped-personal-${theme}.png`) });
       await page.click('[data-cv-tab="qualification"]');

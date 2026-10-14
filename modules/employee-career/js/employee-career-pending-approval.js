@@ -94,13 +94,6 @@
     $('careerPendingCount').textContent = String(visible.length);
     $('careerPendingEmpty').hidden = visible.length > 0;
     $('careerPendingEmptyText').textContent = records.some(item => item.status === 'pending') ? 'Try another request type or filter.' : 'Employee & Career requests awaiting review will appear here.';
-    document.querySelectorAll('[data-career-pending-tab]').forEach(tab => {
-      const active = tab.dataset.careerPendingTab === category;
-      tab.classList.toggle('active', active);
-      tab.setAttribute('aria-selected', String(active));
-      tab.tabIndex = active ? 0 : -1;
-      if (active) $('careerPendingPanel').setAttribute('aria-labelledby', tab.id);
-    });
     updateSelection();
     if (focusedCard && !focused.isConnected) {
       const replacement = [...$('careerPendingQueue').children].find(card => card.dataset.careerRequestId === focusedCard.dataset.careerRequestId);
@@ -235,25 +228,7 @@
   }
   function init() {
     const types = [...new Set([...(window.EMPLOYEE_CAREER_PENDING_CATEGORIES || []), ...records.map(item => item.type).filter(Boolean)])];
-    const tabs = [types.find(Boolean) || 'CV Change Request'];
-    category = tabs[0];
-    tabs.forEach((type, index) => {
-      const tab = node('button', 'filter-pill', type || 'All Requests');
-      tab.type = 'button'; tab.id = 'careerPendingTab-' + index; tab.dataset.careerPendingTab = type;
-      tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', 'careerPendingPanel');
-      tab.addEventListener('click', () => { category = type; render(); });
-      $('careerPendingTabs').append(tab);
-    });
-    $('careerPendingTabs').addEventListener('keydown', event => {
-      const tabs = [...$('careerPendingTabs').children];
-      const index = tabs.indexOf(document.activeElement);
-      let next;
-      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
-      if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
-      if (event.key === 'Home') next = 0;
-      if (event.key === 'End') next = tabs.length - 1;
-      if (next !== undefined) { event.preventDefault(); tabs[next].click(); tabs[next].focus(); }
-    });
+    category = types.find(Boolean) || 'CV Change Request';
     filter = window.PendingApprovalFilter.create('careerPendingFilter', { summaryId: 'careerPendingFilterSummary', onApply: render });
     $('careerPendingFilterTrigger').addEventListener('click', filter.open);
     $('careerPendingSelectAll').addEventListener('change', event => { visible.forEach(item => { if (event.target.checked) selected.add(item.id); else selected.delete(item.id); }); render(); });
@@ -262,6 +237,11 @@
     $('careerPendingBack').addEventListener('click', () => { const url = new URL($('careerPendingBack').href); url.searchParams.set('theme', document.documentElement.dataset.theme); $('careerPendingBack').href = url.href; });
     document.addEventListener('click', event => {
       if (event.target.closest('[data-close-career-sheet]') || event.target === sheet) { closeSheet(); return; }
+      const familyMember = event.target.closest('[data-cv-family-member]');
+      if (familyMember && current()) {
+        window.EmployeeCareerCVHistoryDetails.openFamilyMember(current(), familyMember);
+        return;
+      }
       const qualificationCard = event.target.closest('[data-qualification-card-toggle]');
       if (qualificationCard && window.EmployeeCareerCVHistoryDetails) {
         window.EmployeeCareerCVHistoryDetails.toggleQualificationCard($('careerPendingDetails').querySelector('.payroll-approval-details-body'), qualificationCard.dataset.qualificationCardToggle);

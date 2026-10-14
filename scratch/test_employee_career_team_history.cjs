@@ -94,6 +94,8 @@ async function confirmationDetailSnapshot(page) {
 
   try {
     const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', request => /^https?:/.test(request.url()) ? request.abort() : request.continue());
     page.on('pageerror', error => pageErrors.push(error.message));
 
     await open(page, 'modules/employee-career/index.html', '?scope=team&theme=light');
@@ -326,6 +328,11 @@ async function confirmationDetailSnapshot(page) {
           ['Ref: SR-2026-0012', 'Ref: SR-2026-0011']
         );
         assert.equal(await page.$$eval('#teamHistoryList .history-card-details', nodes => nodes.length), 2);
+      } else if (key === 'staff-engagement') {
+        assert.equal(await page.$$eval('#teamHistoryList [data-engagement-id]', nodes => nodes.length), 2, 'Staff Engagement cards open their own details');
+        assert.equal(await page.$$eval('#teamHistoryList .team-history-employee-id', nodes => nodes.length), 0, 'Interviewer cards do not display the employee ID of another person');
+        assert.deepEqual(await page.$$eval('#teamHistoryList .team-history-employee-name', nodes => nodes.map(node => node.textContent.trim())), ['Lee', '—']);
+        assert.equal(await page.$eval('#teamEngagementFilterBar', node => node.hidden), false);
       } else {
         await assertEmployeeCards(page, label);
       }

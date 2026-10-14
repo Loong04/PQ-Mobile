@@ -20,20 +20,26 @@
   function renderEvents() {
     const selected = appliedEvent;
     const selectedEvent = events.find(item => item.id === selected);
-    $('employeeCareerEventFilterSummary').textContent = selectedEvent?.title || 'All Events';
+    $('employeeCareerEventFilterTrigger').setAttribute('aria-label', `Open Staff Events filter. Current filter: ${selectedEvent?.title || 'All Events'}`);
     $('employeeCareerStaffEventRows').replaceChildren(...events.filter(item => !selected || item.id === selected).map(item => {
-      const row = element('tr');
+      const row = element('tr', 'employee-career-event-row');
+      row.tabIndex = 0;
+      row.dataset.careerEventRow = item.id;
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-label', `View details for ${item.title}`);
+      row.setAttribute('aria-haspopup', 'dialog');
+      row.setAttribute('aria-controls', 'employeeCareerTeamEventOverlay');
       row.append(element('td', '', item.title), element('td', '', String(item.total)));
-      const cell = element('td');
-      const button = element('button', 'employee-career-event-detail');
-      button.type = 'button';
-      button.dataset.careerEventDetail = item.id;
-      button.setAttribute('aria-label', `View details for ${item.title}`);
-      button.setAttribute('aria-haspopup', 'dialog');
-      button.append(element('span', '', 'Detail'));
-      button.addEventListener('click', () => openEvent(item, button));
-      cell.append(button);
-      row.append(cell);
+      row.addEventListener('click', () => openEvent(item, row));
+      row.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+      });
+      row.addEventListener('keyup', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        openEvent(item, row);
+      });
       return row;
     }));
   }
@@ -87,7 +93,6 @@
     const overlay = $('employeeCareerTeamEventOverlay');
     opener = trigger;
     $('employeeCareerTeamEventTitle').textContent = item.title;
-    $('employeeCareerTeamEventTotal').textContent = String(item.total);
     $('employeeCareerTeamEventPeople').replaceChildren(...item.records.map(record => {
       const row = element('tr', 'career-event-person');
       const person = element('td');

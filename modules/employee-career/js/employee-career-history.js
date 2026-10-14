@@ -293,6 +293,11 @@
       closeModal();
     });
     $('historyDetailBody').addEventListener('click', event => {
+      const familyMember = event.target.closest('[data-cv-family-member]');
+      if (familyMember) {
+        window.EmployeeCareerCVHistoryDetails.openFamilyMember(activeRecord, familyMember);
+        return;
+      }
       const qualificationCard = event.target.closest('[data-qualification-card-toggle]');
       if (qualificationCard) {
         window.EmployeeCareerCVHistoryDetails.toggleQualificationCard($('historyDetailBody'), qualificationCard.dataset.qualificationCardToggle);

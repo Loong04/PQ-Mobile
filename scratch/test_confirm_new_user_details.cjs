@@ -133,7 +133,7 @@ async function inspectScenario(browser, theme, width) {
   assert.deepEqual(await page.$$eval('[required]', nodes => nodes.map(node => node.id).sort()), ['newUserAddress1', 'newUserAddress2', 'newUserAddress3', 'newUserBasicPay', 'newUserBranch', 'newUserCompany', 'newUserDepartment', 'newUserEmergencyAddress1', 'newUserEmergencyAddress2', 'newUserEmergencyAddress3', 'newUserEmergencyPostCode', 'newUserHireDate', 'newUserJobPosition', 'newUserJobType', 'newUserName', 'newUserPostCode', 'newUserReportingGroup', 'newUserShiftGroup', 'newUserSupervisor'].sort());
 
   assert.equal(await page.$eval('.new-user-profile-name', node => node.textContent.trim()), 'TAN SIOW WEI');
-  assert.equal(await page.$eval('.new-user-profile-id', node => node.textContent.trim()), '858542719340');
+  assert.equal(await page.$eval('.new-user-profile-id', node => node.textContent.trim()), '#858542719340');
 
   assert.deepEqual(errors, []);
   await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('#newUserSubmit')]);

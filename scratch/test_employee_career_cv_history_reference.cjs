@@ -69,6 +69,13 @@ const ref = number => 'ECR' + String(number).padStart(16, '0');
       }
       await page.setViewport({ width: 360, height: 640 });
       await page.click('[data-cv-tab="contacts"]');
+      assert.deepEqual(await page.$$eval('#cv-panel-contacts [data-cv-contact-group]', groups => groups.map(group => ({
+        title: group.querySelector('h3').textContent.trim(),
+        fields: [...group.querySelectorAll('[data-cv-field]')].map(field => field.dataset.cvField)
+      }))), [
+        { title: 'Correspondence Contact', fields: ['Company Email', 'Phone #', 'Mobile #', 'Address', 'Postal Code', 'City', 'State', 'Country'] },
+        { title: 'Emergency Contact', fields: ['Emergency Contact #', 'Contact Name', 'Contact Address', 'Contact Postal Code', 'Contact City', 'Contact State', 'Contact Country', 'Remarks'] }
+      ], 'Contact information is split into correspondence and emergency groups without losing fields');
       const tabTop = await page.$eval('.cv-history-detail-tabs', node => node.getBoundingClientRect().top);
       await page.$eval('.cv-history-detail-scroll', node => { node.scrollTop = node.scrollHeight; });
       assert.equal(await page.$eval('.cv-history-detail-tabs', node => node.getBoundingClientRect().top), tabTop, 'Section navigation stays visible while details scroll');

@@ -102,21 +102,20 @@
     list.replaceChildren();
 
     employees.forEach(employee => {
-      const card = node('button', 'history-card-item active-headcount-employee-card');
+      const card = node('button', 'manpower-employee-card active-headcount-employee-card');
       card.type = 'button';
-      card.dataset.status = 'draft';
       card.dataset.empNo = employee.empNo;
       card.setAttribute('aria-label', `View employee details for ${employee.name}, ${normalizeEmployeeId(employee.empNo)}`);
 
-      const identity = node('span', 'active-headcount-employee-identity');
+      const identity = node('span', 'manpower-employee-identity');
       identity.append(
         node('span', 'employee-name', employee.name),
         node('span', 'employee-id', normalizeEmployeeId(employee.empNo))
       );
-      const details = node('span', 'history-card-details active-headcount-employee-details');
-      const grade = node('span', 'active-headcount-employee-row');
+      const details = node('span', 'manpower-employee-card-details');
+      const grade = node('span', 'manpower-employee-card-row');
       grade.append(node('span', '', 'Grade'), node('strong', 'active-headcount-employee-grade', employee.grade));
-      const position = node('span', 'active-headcount-employee-row');
+      const position = node('span', 'manpower-employee-card-row');
       position.append(node('span', '', 'Position'), node('strong', 'active-headcount-employee-position', employee.position));
       details.append(grade, position);
       card.append(identity, details);

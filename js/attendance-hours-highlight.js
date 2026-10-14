@@ -103,8 +103,11 @@
     const list = document.getElementById('highlightDetailsList');
     list.replaceChildren();
     if (kind === 'overtime' && employee.details.length) {
-      const meta = textElement('div', 'hours-highlight-detail-meta');
-      meta.append(textElement('span', '', 'Total Records: ' + employee.details.length));
+      const meta = textElement('div', 'hours-highlight-detail-meta record-summary-card');
+      const count = textElement('span', 'record-summary-metric');
+      count.append(textElement('span', 'record-summary-label', 'Total Records: '),
+        textElement('strong', 'record-summary-value', String(employee.details.length)));
+      meta.append(count);
       const total = textElement('span', '', 'Total Hours: ');
       const value = textElement('strong', '', hoursText(sumHours(employee.details)));
       value.id = 'highlightDetailsTotal';

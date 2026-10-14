@@ -70,7 +70,7 @@ function populateProfile() {
   const initials = (profile.name || 'New User').split(/\s+/).map(part => part[0]).slice(0, 2).join('');
   document.getElementById('newUserProfileAvatar').textContent = initials;
   document.getElementById('newUserProfileName').textContent = profile.name || 'New User';
-  document.getElementById('newUserProfileId').textContent = profile.identity || '\u2014';
+  document.getElementById('newUserProfileId').textContent = profile.identity ? '#' + String(profile.identity).replace(/^#+/, '') : '\u2014';
   renderAttachments(profile.attachments);
 
   const theme = document.documentElement.dataset.theme || 'dark';

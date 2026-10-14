@@ -23,10 +23,7 @@ const url = file => pathToFileURL(path.resolve(__dirname, '..', file)).href;
       const target = await page.$eval('#employeeCareerPendingApproval', n => n.href);
       await page.goto(target, { waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('h1', n => n.textContent.trim()), 'Pending Approval');
-      assert.deepEqual(await page.$$eval('#careerPendingTabs [data-career-pending-tab]', tabs => tabs.map(tab => ({
-        label: tab.textContent.trim(),
-        selected: tab.getAttribute('aria-selected')
-      }))), [{ label: 'CV Change Request', selected: 'true' }], 'Pending Approval has one request-type tab');
+      assert.equal(await page.$('#careerPendingTabs'), null, 'Pending Approval omits the redundant request-type title bar');
       assert.equal(await page.$eval('#careerPendingCount', n => n.textContent), '1');
       assert.equal(await page.$eval('#careerPendingSelectAll', n => n.disabled), false);
       assert.equal(await page.$eval('#careerPendingEmpty', n => n.hidden), true);
@@ -86,7 +83,7 @@ const url = file => pathToFileURL(path.resolve(__dirname, '..', file)).href;
         n.querySelector('.history-employee-name').nextElementSibling?.textContent === '#EBB12'
       )));
       assert.ok(await page.$eval('#cv-panel-personal', n => (
-        ['Submitted', '13/10/2026', 'ECR00000000000000563', 'Farhan', '22 Apr 1960', '0', 'ebb12@gmail.com', 'Married', '18 Jul 1984', 'A212222048', '25 Mar 2015', 'AX000234496', '12 Aug 2021', 'Key Level', '—']
+        ['Submitted', '13/10/2026', 'ECR00000000000000563', 'Farhan', '22 Apr 1960', '0', 'ebb12@gmail.com', 'Married', '18 Jul 1984', 'A212222048', '25 Mar 2015', 'AX000234496', '12 Aug 2021']
           .every(value => n.textContent.includes(value))
       )));
       assert.equal(await page.$eval('#cv-panel-personal [data-cv-field=Name]', n => n.classList.contains('cv-history-field-changed')), true);
@@ -214,8 +211,15 @@ const url = file => pathToFileURL(path.resolve(__dirname, '..', file)).href;
       }
 
       await page.click('[data-cv-tab="contacts"]');
+      assert.deepEqual(await page.$$eval('#cv-panel-contacts [data-cv-contact-group]', groups => groups.map(group => ({
+        title: group.querySelector('h3').textContent.trim(),
+        fields: [...group.querySelectorAll('[data-cv-field]')].map(field => field.dataset.cvField)
+      }))), [
+        { title: 'Correspondence Contact', fields: ['Company Email', 'Phone #', 'Mobile #', 'Address', 'Postal Code', 'City', 'State', 'Country'] },
+        { title: 'Emergency Contact', fields: ['Emergency Contact #', 'Contact Name', 'Contact Address', 'Contact Postal Code', 'Contact City', 'Contact State', 'Contact Country', 'Remarks'] }
+      ], 'Pending Approval keeps correspondence and emergency contact details separate');
       const contacts = await page.$eval('#cv-panel-contacts', n => n.textContent);
-      for (const value of ['yewweijiang123@gmail.com', 'Phone #', 'Mobile #', '0123456789', '10, JALAN UPTOWN 2', '#05-33 JALAN 2228', 'DAMANSARA KOTA', '40862', 'Damansara', 'SELANGOR', 'MALAYSIA', '04-6677778', 'RAZALI', 'AS CORRESPONDENCE ADDRESS', '01920', 'Puchong', 'Contact State', '—', 'FATHER']) {
+      for (const value of ['yewweijiang123@gmail.com', 'Phone #', 'Mobile #', '0123456789', '10, JALAN UPTOWN 2', '#05-33 JALAN 2228', 'DAMANSARA KOTA', '40862', 'Damansara', 'SELANGOR', 'MALAYSIA', '04-6677778', 'RAZALI', 'AS CORRESPONDENCE ADDRESS', '01920', 'Puchong', 'State', '—', 'FATHER']) {
         assert.ok(contacts.includes(value), 'Contacts includes ' + value);
       }
       await page.click('[data-cv-tab="family"]');
