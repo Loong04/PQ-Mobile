@@ -4,6 +4,7 @@
   const state = {
     goals: source.goals.map(goal => ({ ...goal, records: [] })),
     selectedId: null,
+    editingRecordId: null,
     filters: { period: '', evaluationType: '' }
   };
 
@@ -118,6 +119,9 @@
 
   function clearForm() {
     $('goalProgressForm').reset();
+    state.editingRecordId = null;
+    $('goalProgressAdd').querySelector('span').textContent = 'Add';
+    $('goalProgressAdd').querySelector('i').className = 'fa-solid fa-plus';
     clearError();
   }
 
@@ -131,7 +135,7 @@
   function formValues() {
     const numberValue = id => $(id).value === '' ? null : Number($(id).value);
     return {
-      id: `PROGRESS-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: state.editingRecordId || `PROGRESS-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       date: $('goalProgressDate').value,
       hours: numberValue('goalProgressHours'),
       achievedValue: numberValue('goalProgressAchievedValue'),
@@ -158,15 +162,34 @@
       const row = node('tr');
       row.append(node('td', '', formatDate(record.date)), node('td', 'goal-progress-achieved-cell', `${formatNumber(record.achievedValue)} ${goal.unit} · ${formatNumber(record.achievedPercent)}%`));
       const actionCell = node('td');
-      const remove = node('button', 'goal-progress-delete');
+      const actions = node('div', 'goal-progress-row-actions');
+      const edit = node('button', 'goal-progress-row-action goal-progress-edit');
+      edit.type = 'button';
+      edit.setAttribute('aria-label', `Edit progress from ${formatDate(record.date)}`); edit.title = 'Edit';
+      edit.append(icon('fa-pen-to-square'));
+      edit.addEventListener('click', () => {
+        clearError(); state.editingRecordId = record.id;
+        $('goalProgressDate').value = record.date;
+        $('goalProgressHours').value = record.hours;
+        $('goalProgressAchievedValue').value = record.achievedValue;
+        $('goalProgressAchievedPercent').value = record.achievedPercent;
+        $('goalProgressRemark').value = record.remark;
+        $('goalProgressAdd').querySelector('span').textContent = 'Update';
+        $('goalProgressAdd').querySelector('i').className = 'fa-solid fa-pen-to-square';
+        document.querySelector('.goal-progress-content').scrollTop = 0;
+        $('goalProgressDate').focus({ preventScroll: true });
+      });
+      const remove = node('button', 'goal-progress-row-action goal-progress-delete');
       remove.type = 'button';
       remove.setAttribute('aria-label', `Delete progress from ${formatDate(record.date)}`);
-      remove.append(icon('fa-trash'), node('span', '', 'Delete'));
+      remove.title = 'Delete'; remove.append(icon('fa-trash'));
       remove.addEventListener('click', () => {
+        if (state.editingRecordId === record.id) clearForm();
         goal.records = goal.records.filter(item => item.id !== record.id);
         renderHistory();
+        ($('goalProgressTableBody').querySelector('.goal-progress-delete') || $('goalProgressDate')).focus({ preventScroll: true });
       });
-      actionCell.append(remove);
+      actions.append(edit, remove); actionCell.append(actions);
       row.append(actionCell);
       return row;
     });
@@ -253,10 +276,15 @@
         showError(...error);
         return;
       }
-      selectedGoal().records.push(record);
+      const goal = selectedGoal(), isEditing = state.editingRecordId !== null;
+      if (isEditing) {
+        const index = goal.records.findIndex(item => item.id === state.editingRecordId);
+        if (index < 0) { showError('Progress record not found. Clear the form and try again.', $('goalProgressDate')); return; }
+        goal.records[index] = record;
+      } else goal.records.push(record);
       renderHistory();
       clearForm();
-      showToast('Progress added.');
+      showToast(isEditing ? 'Progress updated.' : 'Progress added.');
     });
     syncBack();
     renderCards();

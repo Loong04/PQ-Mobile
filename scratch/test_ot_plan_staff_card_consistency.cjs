@@ -40,7 +40,7 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     assert.equal(firstCard.name, 'Aqilah Antasha');
     assert.equal(firstCard.idFollowsName, true);
     assert.equal(firstCard.id, '#000008');
-    assert.deepEqual(firstCard.labels, ['Job Title', 'OT Hours', 'MTD OT']);
+    assert.deepEqual(firstCard.labels, ['Job Title', 'Hours', 'MTD OT']);
     assert.equal(firstCard.otHours, '2.5 h');
     assert.equal(await page.$$eval('.ot-hours-input', inputs => inputs.length), 0);
     assert.equal(await page.$eval('#otDetailHoursLabel', node => node.textContent.trim()), 'Hours: 2.5 h');
@@ -57,6 +57,7 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     await new Promise(resolve => setTimeout(resolve, 320));
 
     const initiallySelected = await page.$eval('.ot-staff-card', card => card.classList.contains('selected'));
+    await page.$eval('.ot-staff-card .ot-staff-summary-panel', panel => panel.scrollIntoView({ block: 'center' }));
     await page.click('.ot-staff-card .ot-staff-summary-panel');
     assert.equal(await page.$eval('#staffOtHistoryModal', node => getComputedStyle(node).display), 'flex');
     assert.equal(await page.$eval('#staffHistoryEmployeeName', node => node.textContent.trim()), 'Aqilah Antasha');

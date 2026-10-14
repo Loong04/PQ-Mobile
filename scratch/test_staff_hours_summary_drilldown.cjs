@@ -24,14 +24,14 @@ const puppeteer = require('puppeteer');
       totalLabel: overview.querySelector('#staff-list-total-label').textContent.trim(),
       total: overview.querySelector('#staff-list-total-value').textContent.trim(),
       chart: overview.querySelector('.view-chart-btn').textContent.trim()
-    })), { records: '5', totalLabel: 'Total Scheduled Days', total: '108.00', chart: 'View Chart' });
+    })), { records: '8', totalLabel: 'Total Scheduled Days', total: '168.00', chart: 'View Chart' });
 
     const employeeCards = await page.$$eval('#details-list-container .summary-history-card', cards => cards.map(card => ({
       name: card.querySelector('.staff-name-text').textContent.trim(),
       id: card.querySelector('.staff-name-text').nextElementSibling.textContent.trim(),
       rows: [...card.querySelectorAll('.summary-history-detail')].map(row => row.textContent.replace(/\s+/g, ' ').trim())
     })));
-    assert.equal(employeeCards.length, 5);
+    assert.equal(employeeCards.length, 8);
     assert.equal(employeeCards[0].name, 'John Tan');
     assert.equal(employeeCards[0].id, '#EBB01');
     assert.deepEqual(employeeCards[0].rows, ['Job Title Senior Developer', 'Scheduled Days 22', 'Scheduled Hours 176.00']);
@@ -209,11 +209,11 @@ const puppeteer = require('puppeteer');
       totalLabel: overview.querySelector('#staff-list-total-label').textContent.trim(),
       total: overview.querySelector('#staff-list-total-value').textContent.trim()
     })), {
-      records: '3',
+      records: '32',
       totalLabel: 'Total Hours',
-      total: '24.00'
+      total: '256.00'
     });
-    assert.equal(await page.$$eval('#details-list-container .summary-history-card', cards => cards.length), 3);
+    assert.equal(await page.$$eval('#details-list-container .summary-history-card', cards => cards.length), 32);
     assert.deepEqual(await page.$eval('#details-list-container .summary-history-card', card => ({
       name: card.querySelector('.staff-name-text').textContent.trim(),
       id: card.querySelector('.summary-history-employee-id').textContent.trim(),
@@ -301,11 +301,11 @@ const puppeteer = require('puppeteer');
       totalLabel: overview.querySelector('#staff-list-total-label').textContent.trim(),
       total: overview.querySelector('#staff-list-total-value').textContent.trim()
     })), {
-      records: '6',
+      records: '7',
       totalLabel: 'Total Hours',
-      total: '12.00'
+      total: '14.00'
     });
-    assert.equal(await page.$$eval('#details-list-container .summary-history-card', cards => cards.length), 6);
+    assert.equal(await page.$$eval('#details-list-container .summary-history-card', cards => cards.length), 7);
     assert.deepEqual(await page.$eval('#details-list-container .summary-history-card', card => ({
       name: card.querySelector('.staff-name-text').textContent.trim(),
       id: card.querySelector('.summary-history-employee-id').textContent.trim(),
@@ -443,7 +443,7 @@ const puppeteer = require('puppeteer');
     await page.waitForSelector('#modal-attendance-details', { hidden: true });
 
     await page.evaluate(() => goBack());
-    assert.equal(await page.$eval('#statAbsentDays', node => node.textContent.trim()), '9');
+    assert.equal(await page.$eval('#statAbsentDays', node => node.textContent.trim()), '39');
     await page.$eval('.exceptions-bento-matrix .summary-kpi-card:nth-child(2)', card => card.click());
     assert.equal(await page.$eval('#headerTitle', node => node.textContent.trim()), 'Staff Absent Days Summary');
     assert.deepEqual(await page.$eval('#staff-list-overview', overview => ({
@@ -451,11 +451,11 @@ const puppeteer = require('puppeteer');
       totalLabel: overview.querySelector('#staff-list-total-label').textContent.trim(),
       total: overview.querySelector('#staff-list-total-value').textContent.trim()
     })), {
-      records: '9',
+      records: '39',
       totalLabel: 'Total Hours',
-      total: '72.00'
+      total: '312.00'
     });
-    assert.equal(await page.$$eval('#details-list-container .summary-history-card', cards => cards.length), 9);
+    assert.equal(await page.$$eval('#details-list-container .summary-history-card', cards => cards.length), 39);
     assert.deepEqual(await page.$eval('#details-list-container .summary-history-card', card => ({
       name: card.querySelector('.staff-name-text').textContent.trim(),
       id: card.querySelector('.summary-history-employee-id').textContent.trim(),

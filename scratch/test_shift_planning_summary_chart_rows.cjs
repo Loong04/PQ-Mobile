@@ -20,6 +20,14 @@ const pageUrl = pathToFileURL(path.resolve(__dirname, '../modules/attendance/opt
     await page.goto(pageUrl + '?theme=light', { waitUntil: 'load' });
     await page.click('#tabSummaryBtn');
 
+    const tableHeaderStyle = await page.$eval('#summaryTabView .summary-table-hdr', node => {
+      const style = getComputedStyle(node);
+      return { backgroundImage: style.backgroundImage, color: style.color };
+    });
+    assert.match(tableHeaderStyle.backgroundImage, /124, 58, 237/);
+    assert.match(tableHeaderStyle.backgroundImage, /109, 40, 217/);
+    assert.equal(tableHeaderStyle.color, 'rgb(255, 255, 255)');
+
     assert.equal(await page.$eval('#summaryChartTitle', node => node.textContent.trim()), 'Headcount by Shift');
     assert.equal(await page.$eval('#summaryChartTotal', node => node.textContent.trim()), '287');
 

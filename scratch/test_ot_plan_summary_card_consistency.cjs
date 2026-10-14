@@ -60,7 +60,10 @@ async function readCardStyles(page) {
     assert.equal(cards.length, 5);
     assert.equal(await page.$$eval(cardSelector, nodes => nodes.every(node => node.classList.contains('calendar-purple-card'))), true);
     assert.equal(await page.$$eval(cardSelector, nodes => nodes.some(node => node.classList.contains('ot-theme'))), false);
-    assert.equal(await page.$$eval(cardSelector, nodes => nodes.every(node => node.querySelector('.calendar-purple-card-header .fa-chevron-right'))), true);
+    assert.equal(
+      await page.$$eval(cardSelector, nodes => nodes.every(node => !node.querySelector('.calendar-purple-card-header .fa-chevron-right'))),
+      true
+    );
     assert.equal(await page.$$eval(cardSelector, nodes => nodes.every(node => node.querySelectorAll('.calendar-purple-detail').length === 3)), true);
     assert.equal(await page.$$eval(cardSelector, nodes => nodes.every(node => node.querySelector('.calendar-purple-detail.full-width'))), true);
     assert.equal(
@@ -78,7 +81,7 @@ async function readCardStyles(page) {
     assert.equal(await page.$eval('#otDetailShift', node => node.textContent.trim()), '8.30:17.30W');
     assert.deepEqual(errors, []);
 
-    console.log('OT Plan summary cards match Shift Plan card design.');
+    console.log('OT Plan summary cards keep the shared styling without chevrons.');
   } finally {
     await browser.close();
   }

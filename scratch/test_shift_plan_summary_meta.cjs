@@ -28,25 +28,32 @@ const summaries = [
 
       for (const [viewId, countId] of summaries) {
         await page.evaluate(id => switchView(id), viewId);
-        await page.waitForSelector(`#${countId} .record-summary-label`);
+        await page.waitForSelector(`#${viewId} .summary-detail-info-card`);
         const layout = await page.$eval(`#${viewId}`, (view, currentCountId) => {
-          const overview = view.querySelector('.shift-top-header + div');
-          const dateRow = overview.querySelector('.summary-date-display');
-          const countRow = document.getElementById(currentCountId);
+          const overview = view.querySelector('.summary-detail-info-card');
+          const dateRow = overview.querySelector('.shift-detail-info-date');
+          const countValue = document.getElementById(currentCountId);
+          const countRow = countValue.closest('.shift-detail-info-row');
           const dateBox = dateRow.getBoundingClientRect();
           const countBox = countRow.getBoundingClientRect();
           const overviewStyle = getComputedStyle(overview);
-          const standardSummaryStyle = getComputedStyle(document.querySelector('.list-header.record-summary-card'));
+          const detailStyle = getComputedStyle(document.querySelector('#view-work-shift-detail .shift-detail-info-card'));
           const countStyle = getComputedStyle(countRow);
           return {
             visibleIconCount: [...overview.querySelectorAll('i')].filter(icon => icon.getClientRects().length > 0).length,
             dateAboveTotal: dateBox.bottom <= countBox.top,
             rowsShareWidth: Math.abs(dateBox.left - countBox.left) <= 1 && Math.abs(dateBox.right - countBox.right) <= 1,
-            dateLabelColor: getComputedStyle(dateRow.querySelector('span')).color,
-            totalLabelColor: getComputedStyle(countRow.querySelector('.record-summary-label')).color,
+            dateLabelColor: getComputedStyle(dateRow.querySelector('.shift-detail-info-label')).color,
+            totalLabelColor: getComputedStyle(countRow.querySelector('.shift-detail-info-label')).color,
+            totalValueAlign: getComputedStyle(countValue).textAlign,
+            totalRowColumns: countStyle.gridTemplateColumns,
             overviewBackgroundImage: overviewStyle.backgroundImage,
-            standardSummaryBackgroundImage: standardSummaryStyle.backgroundImage,
-            dividerWidth: countStyle.borderTopWidth
+            detailBackgroundImage: detailStyle.backgroundImage,
+            overviewRadius: overviewStyle.borderRadius,
+            detailRadius: detailStyle.borderRadius,
+            overviewShadow: overviewStyle.boxShadow,
+            detailShadow: detailStyle.boxShadow,
+            dividerWidth: getComputedStyle(dateRow).borderBottomWidth
           };
         }, countId);
 
@@ -54,7 +61,11 @@ const summaries = [
         assert.equal(layout.dateAboveTotal, true, `${theme} ${viewId}: Date must occupy the first row and Total Records the second row`);
         assert.equal(layout.rowsShareWidth, true, `${theme} ${viewId}: Date and Total Records must each use a full row`);
         assert.equal(layout.dateLabelColor, layout.totalLabelColor, `${theme} ${viewId}: Date label must use the normal muted text color`);
-        assert.equal(layout.overviewBackgroundImage, layout.standardSummaryBackgroundImage, `${theme} ${viewId}: Summary metadata must use the shared pale-purple summary color`);
+        assert.equal(layout.totalValueAlign, 'right', `${theme} ${viewId}: Total Records value must align like employee detail values`);
+        assert.match(layout.totalRowColumns, /px.*px/, `${theme} ${viewId}: Total Records must use the same two-column row layout`);
+        assert.equal(layout.overviewBackgroundImage, layout.detailBackgroundImage, `${theme} ${viewId}: Summary and detail metadata must share the same surface`);
+        assert.equal(layout.overviewRadius, layout.detailRadius, `${theme} ${viewId}: Summary and detail metadata must share the same radius`);
+        assert.equal(layout.overviewShadow, layout.detailShadow, `${theme} ${viewId}: Summary and detail metadata must share the same shadow`);
         assert.equal(layout.dividerWidth, '1px', `${theme} ${viewId}: Date must use a separator line above Total Records`);
       }
 

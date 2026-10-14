@@ -109,6 +109,7 @@ async function setField(page, selector, value) {
           'Date', 'Hours Spent', 'Achieved Value', 'Achieved %', 'Remark'
         ]);
         assert.deepEqual(await page.$$eval('#goalProgressTable thead th', nodes => nodes.map(node => node.textContent.trim())), ['Date', 'Achieved', 'Action']);
+        assert.ok(await page.$eval('#goalProgressClear',node=>{const add=getComputedStyle(document.getElementById('goalProgressAdd')),clear=getComputedStyle(node);return clear.backgroundImage===add.backgroundImage&&clear.color===add.color;}),'Clear Form matches Add purple styling');
 
         await page.click('#goalProgressAdd');
         assert.equal(await page.$eval('#goalProgressFormError', node => node.textContent.trim()), 'Date is required.');
@@ -128,26 +129,48 @@ async function setField(page, selector, value) {
         await page.click('#goalProgressAdd');
 
         assert.deepEqual(await page.$$eval('#goalProgressTableBody tr', rows => rows.map(row => [...row.cells].map(cell => cell.textContent.trim()))), [
-          ['13 Oct 2026', '2,500 MT · 72.5%', 'Delete']
+          ['13 Oct 2026', '2,500 MT · 72.5%', '']
         ], 'Add places the progress record in the table');
+        assert.equal(await page.$$eval('#goalProgressTableBody button',nodes=>nodes.length),2);
+        assert.ok(await page.$('.goal-progress-edit i.fa-pen-to-square'));
+        assert.ok(await page.$('.goal-progress-delete i.fa-trash'));
+        assert.equal(await page.$('#goalProgressTableBody button span'),null,'Actions show icons without labels');
+        assert.ok(await page.$$eval('#goalProgressTableBody button',nodes=>{const add=getComputedStyle(document.getElementById('goalProgressAdd'));return nodes.every(node=>{const style=getComputedStyle(node);return style.backgroundImage===add.backgroundImage&&style.color==='rgb(255, 255, 255)';});}),'Edit and Delete use the same purple gradient and white icons as Add');
         await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-update-${theme}-${width}.png`) });
+        await page.$eval('#goalProgressTable',table=>table.scrollIntoView({block:'nearest',behavior:'instant'}));
+        assert.ok(await page.$eval('.goal-progress-row-actions',node=>{const row=node.getBoundingClientRect(),cell=node.closest('td').getBoundingClientRect(),main=node.closest('main').getBoundingClientRect();return row.right<=cell.right+1&&row.left>=cell.left&&row.bottom<=main.bottom+1;}),'Both icon actions fit their column and remain above bottom navigation');
+        await page.screenshot({path:path.join(__dirname,`performance-goal-progress-actions-${theme}-${width}.png`)});
         assert.deepEqual(await page.$eval('#goalProgressForm', form => [...form.elements].filter(item => item.matches('input, textarea')).map(item => item.value)), ['', '', '', '', ''], 'Add clears the form after a successful entry');
         assert.deepEqual(await page.evaluate(() => Object.keys(sessionStorage).concat(Object.keys(localStorage)).filter(key => key.startsWith('peoplehcm:performance:goal-progress'))), [], 'Goal progress records are not persisted');
+        await page.click('.goal-progress-edit');
+        assert.deepEqual(await page.$eval('#goalProgressForm',form=>[...form.elements].filter(item=>item.matches('input,textarea')).map(item=>item.value)),['2026-10-13','6.5','2500','72.5','Mill delivery verified.'],'Edit prefills all original progress values');
+        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Update');
+        await setField(page,'#goalProgressAchievedValue','-1');await page.click('#goalProgressAdd');
+        assert.equal(await page.$eval('#goalProgressFormError',node=>node.textContent.trim()),'Achieved Value cannot be negative.');
+        assert.equal(await page.$$eval('#goalProgressTableBody tr',nodes=>nodes.length),1,'Invalid edit does not alter the progress log');
+        await setField(page,'#goalProgressDate','2026-10-14');await setField(page,'#goalProgressHours','8');await setField(page,'#goalProgressAchievedValue','3000');await setField(page,'#goalProgressAchievedPercent','80');await setField(page,'#goalProgressRemark','Revision verified.');
+        await page.click('#goalProgressAdd');
+        assert.deepEqual(await page.$$eval('#goalProgressTableBody tr',rows=>rows.map(row=>[...row.cells].map(cell=>cell.textContent.trim()))),[['14 Oct 2026','3,000 MT · 80%','']],'Editing updates the original row instead of adding another');
+        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Add');
 
         await page.click('#goalProgressBack');
         assert.equal(await page.$eval('#goalProgressTitle', node => node.textContent.trim()), 'Goal Progress');
-        assert.deepEqual(await page.$$eval('.goal-progress-detail dd', nodes => nodes.map(node => node.textContent.trim()).slice(-2)), ['13 Oct 2026', '2,500 MT · 72.5%'], 'Latest entry updates the goal card');
+        assert.deepEqual(await page.$$eval('.goal-progress-detail dd', nodes => nodes.map(node => node.textContent.trim()).slice(-2)), ['14 Oct 2026', '3,000 MT · 80%'], 'Edited entry updates the goal card');
 
         await page.click('.goal-progress-update');
+        await page.click('.goal-progress-edit');
         await setField(page, '#goalProgressDate', '2026-10-14');
         await setField(page, '#goalProgressHours', '3');
         await page.click('#goalProgressClear');
         assert.deepEqual(await page.$eval('#goalProgressForm', form => [...form.elements].filter(item => item.matches('input, textarea')).map(item => item.value)), ['', '', '', '', ''], 'Clear Form resets every input');
+        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Add','Clear Form exits edit mode');
+        await page.click('.goal-progress-edit');
 
         await page.$eval('.goal-progress-delete', button => button.scrollIntoView({ block: 'center' }));
         await page.click('.goal-progress-delete');
         assert.equal(await page.$$eval('#goalProgressTableBody tr', rows => rows.length), 0, 'Delete removes the progress row');
         assert.equal(await page.$eval('#goalProgressHistoryEmpty', node => node.hidden), false, 'Empty history state returns after deletion');
+        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Add','Deleting an edited row exits edit mode');
 
         await page.reload({ waitUntil: 'domcontentloaded' });
         await page.click('.goal-progress-update');

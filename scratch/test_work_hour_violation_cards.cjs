@@ -52,6 +52,12 @@ const puppeteer = require('puppeteer');
         await page.waitForSelector('#detailModal', { visible: true });
         assert.equal(await page.$eval('#detailName', el => el.textContent), 'Aqilah Antasha');
         assert.equal(await page.$eval('#detailRecordCount', el => el.textContent), '3');
+        assert.equal(await page.$eval('#detailModal .violation-detail-meta', meta => {
+          const summary = meta.querySelector('.record-summary-card');
+          const metaBox = meta.getBoundingClientRect();
+          const summaryBox = summary.getBoundingClientRect();
+          return Math.abs(summaryBox.left - metaBox.left) <= 1 && Math.abs(summaryBox.right - metaBox.right) <= 1;
+        }), true, 'Total Records card must span the full detail content width');
         assert.deepEqual(await page.$$eval('#detailTableBody tr', rows => rows.map(row => [...row.cells].map(cell => cell.textContent))), [
           ['24 Sep 2026', 'OFF DAY', '0830, 1945'],
           ['25 Sep 2026', 'REST DAY', '0828, 1945'],

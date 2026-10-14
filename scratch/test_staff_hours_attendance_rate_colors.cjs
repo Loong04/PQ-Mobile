@@ -47,16 +47,46 @@ async function cardAppearance(page, selector) {
       page.on('pageerror', error => errors.push(error.message));
       await page.setViewport({ width, height: 920 });
       await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
-      await page.evaluate(value => document.documentElement.dataset.theme = value, theme);
+      await page.click(`preview-top-bar [data-set-theme="${theme}"]`);
+      await page.waitForFunction(() => document.querySelector('.phone-container').getAnimations({ subtree: true }).every(animation => !(animation instanceof CSSTransition)), { timeout: 2000 });
       const originalData = await page.evaluate(() => JSON.stringify(sampleStaffData));
       await page.click('.bento-group-work .summary-kpi-card:nth-child(2)');
-      assert.equal(await page.$eval('#list-record-count', node => node.textContent), '5');
-      assert.equal(await page.$eval('#staff-list-total-value', node => node.textContent), '105.00');
+      assert.equal(await page.$eval('#list-record-count', node => node.textContent), '8');
+      assert.equal(await page.$eval('#staff-list-total-value', node => node.textContent), '135.00');
       assert.deepEqual(await page.$$eval('#details-list-container .summary-history-card', cards => cards.map(card => {
         const row = [...card.querySelectorAll('.summary-history-detail')].find(row => row.querySelector('span').textContent === 'Attendance Rate');
         return row.querySelector('strong').textContent;
-      })), ['100%', '91%', '95%', '100%', '100%']);
+      })), ['100%', '91%', '95%', '100%', '100%', '85%', '45%', '20%']);
       await page.screenshot({ path: path.resolve(__dirname, `staff-hours-attendance-rate-${theme}-${width}.png`) });
+      await page.$eval('#details-list-container .summary-history-card:nth-child(6)', card => {
+        document.querySelector('.main-content').scrollTop = card.offsetTop - 16;
+      });
+      await page.screenshot({ path: path.resolve(__dirname, `staff-hours-attendance-rate-examples-${theme}-${width}.png`) });
+
+      for (const example of [
+        { index: 6, name: 'Daniel Lim', exception: 'Unapproved OT', hours: '2.00', lateIn: '-', theme: 'orange', count: 17 },
+        { index: 7, name: 'Priya Kumar', exception: 'Odd Clocking', hours: '0.00', lateIn: '00:15', theme: 'purple', count: 9 },
+        { index: 8, name: 'Kevin Ng', exception: 'Odd Clocking', hours: '0.00', lateIn: '00:15', theme: 'red', count: 4 }
+      ]) {
+        await page.click(`#details-list-container .summary-history-card:nth-child(${example.index})`);
+        const badges = await page.$$eval('#daily-list-container .summary-history-status', nodes => nodes.map(node => ({ text: node.textContent.trim(), status: node.dataset.status })));
+        assert.equal(badges.length, example.count);
+        assert.deepEqual(badges[0], { text: example.exception, status: 'exception' }, `${example.name} shows the sample incident instead of Normal`);
+        assert.ok(badges.slice(1).every(badge => badge.text === 'Odd Clocking' && badge.status === 'exception'), 'Remaining sample days also show their clocking exceptions');
+        assert.equal((await cardAppearance(page, '#daily-list-container .summary-history-card')).theme, `theme-${example.theme}`);
+        if (width === 420) await page.screenshot({ path: path.resolve(__dirname, `staff-hours-attendance-exceptions-${example.theme}-${theme}.png`) });
+        await page.click('#daily-list-container .summary-history-card');
+        await page.waitForSelector('#modal-attendance-details', { visible: true });
+        assert.deepEqual(await page.evaluate(() => ({
+          exception: document.getElementById('ad-exception').textContent,
+          hours: document.getElementById('ad-unapproved-ot').textContent,
+          lateIn: document.getElementById('ad-late-in').textContent,
+          overtime: !document.getElementById('ad-overtime-info-table').hidden
+        })), { exception: example.exception, hours: example.hours, lateIn: example.lateIn, overtime: example.exception === 'Unapproved OT' }, 'Details match the exception shown on the card');
+        await page.click('#modal-attendance-details .modal-close-round');
+        await page.waitForSelector('#modal-attendance-details', { hidden: true });
+        await page.evaluate(() => goBack());
+      }
 
       // Supply isolated test records through the data reader; never mutate the staff dataset.
       await page.evaluate(rates => {

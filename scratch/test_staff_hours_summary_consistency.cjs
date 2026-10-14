@@ -112,15 +112,15 @@ const puppeteer = require('puppeteer');
       leaveHours: document.getElementById('statLeaveHours').textContent.trim(),
       lostHours: document.getElementById('statLostHours').textContent.trim()
     })), {
-      scheduled: '108',
+      scheduled: '168',
       scheduledPct: '100%',
-      present: '105',
-      presentPct: '97%',
-      normalHours: '836.00',
-      odd: '3',
+      present: '135',
+      presentPct: '80%',
+      normalHours: '1,076.00',
+      odd: '32',
       normalOt: '96.00',
-      unapprovedOt: '12.00',
-      absentDays: '9',
+      unapprovedOt: '14.00',
+      absentDays: '39',
       leaveHours: '24.00',
       lostHours: '4.00'
     }, 'Dashboard totals must come from the active staff records');

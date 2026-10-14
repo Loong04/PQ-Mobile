@@ -46,9 +46,9 @@ async function readDetailInfoCard(page, viewSelector) {
     await page.$eval('[onclick*="view-work-shift-summary"]', node => node.click());
 
     assert.equal(await page.$eval('#view-work-shift-summary', node => node.classList.contains('active')), true);
-    assert.match(await page.$eval('#view-work-shift-summary .summary-date-display', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 17 Sep.* 2026$/);
+    assert.match(await page.$eval('#view-work-shift-summary .shift-detail-info-date', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 17 Sep.* 2026$/);
     assert.match(await page.$eval('#wsSummaryDateFilter', node => node.textContent.trim()), /^17 Sep.* 2026$/);
-    assert.equal(await page.$eval('#wsSummaryRecordCount', node => node.textContent.trim()), 'Total Records: 1');
+    assert.equal(await page.$eval('#wsSummaryRecordCount', node => node.textContent.trim()), '1');
     assert.equal(await page.$$eval('#view-work-shift-summary .calendar-purple-card', cards => cards.length), 1);
     assert.equal(await page.$eval('#view-work-shift-summary .calendar-purple-card-title', node => node.textContent.trim()), '8.30:17.30W');
     assert.deepEqual(await page.$$eval('#view-work-shift-summary .calendar-purple-card .summary-value', nodes => nodes.map(node => node.textContent.trim())), ['268', '2,144.00', '0.00']);
@@ -98,8 +98,8 @@ async function readDetailInfoCard(page, viewSelector) {
 
     await page.evaluate(() => goBackToCalendar());
     await page.$eval('[onclick*="view-no-work-summary"]', node => node.click());
-    assert.match(await page.$eval('#view-no-work-summary .summary-date-display', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 17 Sep.* 2026$/);
-    assert.equal(await page.$eval('#nwSummaryRecordCount', node => node.textContent.trim()), 'Total Records: 1');
+    assert.match(await page.$eval('#view-no-work-summary .shift-detail-info-date', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 17 Sep.* 2026$/);
+    assert.equal(await page.$eval('#nwSummaryRecordCount', node => node.textContent.trim()), '1');
     assert.equal(await page.$eval('#view-no-work-summary .calendar-purple-card-title', node => node.textContent.trim()), 'Rest / Off Day');
     assert.equal(await page.$eval('#view-no-work-summary .summary-value', node => node.textContent.trim()), '13');
     assert.equal(await page.$('#view-no-work-summary .calendar-purple-card .fa-chevron-right'), null);

@@ -817,41 +817,75 @@
     .summary-history-status[data-status="exception"] { color: #d97706; background: rgba(245, 158, 11, .14); border: 1px solid rgba(245, 158, 11, .35); }
     [data-theme="dark"] .summary-history-status[data-status="normal"] { color: #34d399; background: rgba(16, 185, 129, .22); border-color: rgba(16, 185, 129, .45); }
     [data-theme="dark"] .summary-history-status[data-status="exception"] { color: #fbbf24; background: rgba(245, 158, 11, .22); border-color: rgba(245, 158, 11, .45); }
-    .bar-chart-item { margin-bottom: 24px; }
-    .chart-label-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    .chart-label-row .name {
+    /* Match the Hours Summary date/bar/value chart layout. */
+    .summary-chart-heading { margin-bottom: 16px; }
+    .summary-chart-heading h2 { color: var(--text-primary); font-size: 17px; font-weight: 800; }
+    .summary-chart-heading p { margin-top: 5px; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+    .summary-chart-card {
+      --chart-label-width: 72px;
+      --chart-value-width: 72px;
+      --chart-column-gap: 12px;
       min-width: 0;
-      color: var(--text-primary);
-      font-size: 13px;
-      font-weight: 700;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      padding: 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sm);
     }
-    .chart-label-row .val {
-      flex-shrink: 0;
-      color: var(--purple-primary);
-      font-size: 14px;
-      font-weight: 900;
+    .summary-chart-card[data-chart-mode="staff"] { --chart-label-width: 96px; }
+    .summary-chart-columns, #view-chart .bar-chart-item, .summary-chart-axis {
+      display: grid;
+      grid-template-columns: var(--chart-label-width) minmax(0, 1fr) var(--chart-value-width);
+      column-gap: var(--chart-column-gap);
+      align-items: center;
     }
-    .bar-track {
-      width: 100%;
-      height: 12px;
-      overflow: hidden;
-      border-radius: 8px;
-      background: var(--bg-input);
+    .summary-chart-columns {
+      padding-bottom: 12px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .6px;
     }
-    .bar-fill {
+    .summary-chart-value-heading { grid-column: 3; text-align: right; }
+    .summary-chart-plot { position: relative; }
+    .summary-chart-gridlines {
+      position: absolute;
+      inset-block: 0;
+      left: calc(var(--chart-label-width) + var(--chart-column-gap));
+      right: calc(var(--chart-value-width) + var(--chart-column-gap));
+      pointer-events: none;
+    }
+    .summary-chart-gridline { position: absolute; inset-block: 0; border-left: 1px dashed var(--border-subtle); }
+    #view-chart .bar-chart-item { position: relative; min-height: 44px; }
+    #view-chart .name { min-width: 0; color: var(--text-secondary); font-size: 12px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+    .summary-chart-year { display: block; margin-top: 1px; color: var(--text-muted); font-size: 10px; font-weight: 600; }
+    .summary-chart-employee-id { display: block; margin: 3px 0 4px; color: var(--text-muted); font: 700 11.5px monospace, sans-serif; opacity: .8; }
+    #view-chart .val { min-width: 0; color: var(--text-primary); font-size: 12px; font-weight: 800; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    #view-chart .bar-track { width: 100%; height: 16px; min-width: 0; position: relative; }
+    #view-chart .bar-fill {
       width: 0;
       height: 100%;
-      border-radius: 8px;
-      transition: width 1s cubic-bezier(.4, 0, .2, 1);
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      box-shadow: 0 2px 6px rgba(124, 58, 237, .18);
+      transition: width .45s cubic-bezier(.2, .7, .3, 1);
+    }
+    .summary-chart-axis { margin-top: 4px; }
+    .summary-chart-ticks { grid-column: 2; position: relative; min-height: 24px; border-top: 1px solid var(--border-subtle); }
+    .summary-chart-tick { position: absolute; top: 6px; color: var(--text-muted); font-size: 9px; font-weight: 600; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+    .summary-chart-tick:first-child { transform: none; }
+    .summary-chart-tick:last-child { transform: translateX(-100%); }
+    .summary-chart-axis-label { margin-top: 8px; color: var(--text-secondary); font-size: 11px; font-weight: 700; text-align: center; }
+    .summary-chart-empty { padding: 28px 0; color: var(--text-muted); font-size: 13px; text-align: center; }
+    @media (max-width: 375px) {
+      .summary-chart-card { --chart-label-width: 64px; --chart-value-width: 64px; --chart-column-gap: 10px; padding: 12px; }
+      .summary-chart-card[data-chart-mode="staff"] { --chart-label-width: 84px; }
+      #view-chart .name, #view-chart .val { font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #view-chart .bar-fill { transition: none; }
     }
     .attendance-detail-section-title {
       padding: 14px 0 7px;
@@ -1258,6 +1292,72 @@
       lostHours: 0,
       status: "Pending",
       shift: "9:00 AM - 6:00 PM (GROUP B)"
+    },
+    {
+      empNo: "EBB06",
+      name: "Daniel Lim",
+      jobTitle: "Support Engineer",
+      department: "IT Dept",
+      company: "ACME Corporation",
+      costCentre: "CC-101 IT & Tech",
+      scheduledDays: 20,
+      presentDays: 17,
+      normalWorkHours: 136,
+      normalOt: 0,
+      otherOt: 0,
+      plannedOt: 0,
+      unapprovedOt: 2,
+      absentDays: 3,
+      absentOt: 0,
+      oddClocking: 16,
+      leaveHours: 0,
+      lostHours: 0,
+      status: "Exception",
+      shift: "8:30 AM - 5:30 PM (GROUP A)"
+    },
+    {
+      empNo: "EBB07",
+      name: "Priya Kumar",
+      jobTitle: "HR Coordinator",
+      department: "Human Resources",
+      company: "ACME Corporation",
+      costCentre: "CC-103 HR & Admin",
+      scheduledDays: 20,
+      presentDays: 9,
+      normalWorkHours: 72,
+      normalOt: 0,
+      otherOt: 0,
+      plannedOt: 0,
+      unapprovedOt: 0,
+      absentDays: 11,
+      absentOt: 0,
+      oddClocking: 9,
+      leaveHours: 0,
+      lostHours: 0,
+      status: "Exception",
+      shift: "8:30 AM - 5:30 PM (GROUP A)"
+    },
+    {
+      empNo: "EBB08",
+      name: "Kevin Ng",
+      jobTitle: "Logistics Officer",
+      department: "Operations",
+      company: "Apex Logistics",
+      costCentre: "CC-104 Operations",
+      scheduledDays: 20,
+      presentDays: 4,
+      normalWorkHours: 32,
+      normalOt: 0,
+      otherOt: 0,
+      plannedOt: 0,
+      unapprovedOt: 0,
+      absentDays: 16,
+      absentOt: 0,
+      oddClocking: 4,
+      leaveHours: 0,
+      lostHours: 0,
+      status: "Exception",
+      shift: "8:30 AM - 5:30 PM (GROUP A)"
     }
   ];
 
@@ -1460,10 +1560,14 @@
       const isPlannedOt = title === "Planned OT Hours";
       return Array.from({ length: count }, function (_, index) {
         const date = getRecordDate(index);
-        const clockTimes = isAbsent ? "-" : index === 0 ? "08:30 - 17:30" : "08:" + String(24 + index % 6).padStart(2, "0") + " - 17:" + String(30 + index % 10).padStart(2, "0");
         const recordHours = title === "Scheduled Work Days" ? 8 : perRecord;
         const hasUnapprovedException = isUnapproved ||
           (title === "Normal Present Days" && index === 0 && Number(staff.unapprovedOt) > 0);
+        const hasOddException = isOdd ||
+          (title === "Normal Present Days" && !hasUnapprovedException &&
+            index < Number(staff.oddClocking) + (Number(staff.unapprovedOt) > 0 ? 1 : 0));
+        const clockTimes = isAbsent ? "-" : title === "Normal Present Days" && hasOddException ? "08:45 - 17:45" :
+          index === 0 ? "08:30 - 17:30" : "08:" + String(24 + index % 6).padStart(2, "0") + " - 17:" + String(30 + index % 10).padStart(2, "0");
         const unapprovedHours = isUnapproved ? perRecord : hasUnapprovedException ? Number(staff.unapprovedOt) : 0;
         const hasOvertimeInfo = isApprovedOt || hasUnapprovedException || isPlannedOt;
         return {
@@ -1480,7 +1584,7 @@
           normalHours: isAbsent || isLeave ? "-" : "08:00",
           schedHours: recordHours.toFixed(2),
           metricHours: recordHours,
-          lateIn: isOdd ? "00:15" : "-",
+          lateIn: hasOddException ? "00:15" : "-",
           earlyOut: "-",
           timeOff: isLeave ? "08:00" : "-",
           absent: isAbsent ? "Yes" : "No",
@@ -1488,7 +1592,7 @@
           unapprovedOt: hasUnapprovedException ? unapprovedHours.toFixed(2) : "0.00",
           planHours: isPlannedOt ? perRecord.toFixed(2) : "0.00",
           absentOtHours: isAbsentOt ? perRecord.toFixed(2) : "0.00",
-          exception: isAbsent ? "Absent" : isLeave ? "On Leave" : isOdd ? "Odd Clocking" :
+          exception: isAbsent ? "Absent" : isLeave ? "On Leave" : hasOddException ? "Odd Clocking" :
             hasUnapprovedException ? "Unapproved OT" : "-",
           docNo: "-",
           leaveCode: isLeave ? "AL" : "-",
@@ -1647,30 +1751,80 @@
       setTimeout(function () { overlay.style.display = "none"; }, 300);
     }
 
+    function getSummaryChartScale(values, isDays) {
+      const maximum = Math.max(...values, 0) || 1;
+      const rawStep = maximum / 4;
+      const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+      const step = Math.max(isDays ? 1 : 0, [1, 2, 5, 10].find(value => value * magnitude >= rawStep) * magnitude);
+      const intervals = Math.ceil(maximum / step);
+      return { maximum: step * intervals, ticks: Array.from({ length: intervals + 1 }, (_, index) => Number((index * step).toFixed(6))) };
+    }
+
     function renderSummaryChart() {
       const chart = document.getElementById("view-chart");
       const isStaffChart = chartMode === "staff";
+      const isDays = getMetricConfig(listActiveTitle).kind === "days";
       const items = isStaffChart ? currentStaffItems : currentDailyItems;
-      const values = items.map(function (item) {
-        return isStaffChart ? getMetricNumber(item, listActiveTitle) : item.metricHours;
+      const values = items.map(item => Math.max(0, isStaffChart ? getMetricNumber(item, listActiveTitle) : isDays ? 1 : Number(item.metricHours) || 0));
+      const scale = getSummaryChartScale(values, isDays);
+      const node = (tag, className, text) => {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = text;
+        return element;
+      };
+      chart.replaceChildren();
+      const heading = node("div", "summary-chart-heading");
+      heading.append(node("h2", "", isStaffChart ? "Staff Breakdown" : "Daily Breakdown"), node("p", "", listActiveTitle));
+      const card = node("section", "summary-chart-card");
+      card.dataset.chartMode = chartMode;
+      card.setAttribute("aria-label", listActiveTitle + (isStaffChart ? " by employee" : " by date"));
+      chart.append(heading, card);
+      if (!items.length) {
+        card.append(node("p", "summary-chart-empty", "No records found."));
+        return;
+      }
+      const columns = node("div", "summary-chart-columns");
+      columns.append(node("span", "summary-chart-category-heading", isStaffChart ? "EMPLOYEE" : "DATE"), node("span", "summary-chart-value-heading", isDays ? "DAYS" : "HOURS"));
+      const plot = node("div", "summary-chart-plot");
+      const gridlines = node("div", "summary-chart-gridlines");
+      gridlines.setAttribute("aria-hidden", "true");
+      scale.ticks.forEach(tick => {
+        const line = node("span", "summary-chart-gridline");
+        line.style.left = tick / scale.maximum * 100 + "%";
+        gridlines.append(line);
       });
-      const maximum = Math.max.apply(null, values.concat([0]));
-      const gradient = "linear-gradient(90deg, #7c3aed, #a78bfa)";
-      chart.innerHTML = '<h2 style="font-size:16px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">' +
-        (isStaffChart ? "Staff Breakdown" : "Daily Hours Breakdown") + '</h2>' +
-        items.map(function (item, index) {
-          const label = isStaffChart ? item.name : item.day + ", " + item.fullDate;
-          const suffix = getMetricConfig(listActiveTitle).kind === "days" && isStaffChart ? "" : " Hrs";
-          const value = values[index].toFixed(2);
-          const width = maximum ? values[index] / maximum * 100 : 0;
-          return '<div class="bar-chart-item"><div class="chart-label-row"><span class="name">' + label +
-            '</span><span class="val">' + value + suffix + '</span></div><div class="bar-track">' +
-            '<div class="bar-fill" data-width="' + width + '%" style="background:' + gradient + ';"></div></div></div>';
-        }).join("") +
-        '<div style="height:120px;width:100%;pointer-events:none;"></div>';
-      setTimeout(function () {
-        chart.querySelectorAll(".bar-fill").forEach(function (bar) { bar.style.width = bar.dataset.width; });
-      }, 50);
+      plot.append(gridlines);
+      const fills = [];
+      items.forEach((item, index) => {
+        const row = node("div", "bar-chart-item");
+        const label = node("span", "name", isStaffChart ? item.name : item.fullDate.replace(/\s+\d{4}$/, ""));
+        if (isStaffChart) {
+          label.append(node("span", "summary-chart-employee-id", "#" + String(item.empNo).replace(/^#/, "")));
+        } else {
+          label.append(node("span", "summary-chart-year", item.fullDate.match(/\d{4}$/)?.[0] || ""));
+        }
+        const value = node("span", "val", isDays ? values[index] + (values[index] === 1 ? " Day" : " Days") : values[index].toFixed(2) + " Hrs");
+        row.setAttribute("aria-label", (isStaffChart ? item.name : item.fullDate) + ": " + value.textContent);
+        const track = node("div", "bar-track");
+        track.setAttribute("aria-hidden", "true");
+        const fill = node("div", "bar-fill");
+        fill.dataset.width = Number((values[index] / scale.maximum * 100).toFixed(4)) + "%";
+        fills.push(fill);
+        track.append(fill);
+        row.append(label, track, value);
+        plot.append(row);
+      });
+      const axis = node("div", "summary-chart-axis");
+      const ticks = node("div", "summary-chart-ticks");
+      scale.ticks.forEach(tick => {
+        const label = node("span", "summary-chart-tick", String(tick));
+        label.style.left = tick / scale.maximum * 100 + "%";
+        ticks.append(label);
+      });
+      axis.append(ticks);
+      card.append(columns, plot, axis, node("p", "summary-chart-axis-label", "Total " + listActiveTitle));
+      setTimeout(() => fills.forEach(fill => { fill.style.width = fill.dataset.width; }), 50);
     }
 
     function openChart(mode) {

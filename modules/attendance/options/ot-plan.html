@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../../css/theme.css">
   <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/detail-popout.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-page); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-primary); padding: 20px 0; }
@@ -253,6 +254,16 @@
     .select-all-control input { width: 18px; height: 18px; margin: 0; accent-color: var(--purple-primary); cursor: pointer; }
     .select-all-control:has(input:focus-visible) { outline: 3px solid rgba(124, 58, 237, 0.22); outline-offset: 3px; border-radius: 8px; }
     .select-all-control:has(input:disabled) { opacity: 0.5; cursor: default; }
+    .ot-filter-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 50px; padding: 11px 13px; border: 1px solid var(--border-subtle); border-radius: 14px; background: var(--bg-input); }
+    .ot-filter-switch-copy { color: var(--text-primary); font-size: 12px; font-weight: 700; line-height: 1.35; }
+    .ot-filter-switch-control { position: relative; display: inline-block; width: 44px; height: 24px; flex: 0 0 44px; }
+    .ot-filter-switch-control input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .ot-filter-switch-track { position: absolute; inset: 0; border-radius: 24px; background: #cbd5e1; pointer-events: none; transition: background 0.2s ease; }
+    .ot-filter-switch-track::before { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.2s ease; }
+    .ot-filter-switch-control input:checked + .ot-filter-switch-track { background: var(--purple-primary); }
+    .ot-filter-switch-control input:checked + .ot-filter-switch-track::before { transform: translateX(20px); }
+    .ot-filter-switch-control input:focus-visible + .ot-filter-switch-track { outline: 3px solid var(--purple-border); outline-offset: 3px; }
+    [data-theme="dark"] .ot-filter-switch-track, html[data-theme="dark"] .ot-filter-switch-track { background: #475569; }
 
     /* Employee Card - Matches Shift Planning staff cards */
     .ot-staff-card {
@@ -267,8 +278,10 @@
       gap: 14px;
       box-shadow: var(--shadow-sm);
       transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
     }
     .ot-staff-card:active { transform: scale(0.985); }
+    .ot-staff-card:focus-visible { outline: 3px solid rgba(124, 58, 237, 0.28); outline-offset: 3px; }
     .ot-staff-card.selected {
       border-top-color: rgba(124, 58, 237, 0.6);
       border-right-color: rgba(124, 58, 237, 0.6);
@@ -291,6 +304,7 @@
       cursor: pointer;
       transition: all 0.2s;
       flex-shrink: 0;
+      padding: 0;
     }
     .ot-staff-card.selected .custom-checkbox {
       background: #7c3aed;
@@ -323,6 +337,15 @@
     .ot-staff-detail { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .ot-staff-detail > span { color: var(--text-secondary); font-size: 11.5px; font-weight: 600; }
     .ot-staff-detail > strong { color: var(--text-primary); font-size: 12px; font-weight: 800; text-align: right; }
+    .staff-history-summary { display: grid; gap: 0; padding: 13px 15px; border: 1px solid var(--border-subtle); border-radius: 18px; background: var(--record-summary-background); }
+    .staff-history-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .staff-history-summary-row + .staff-history-summary-row { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border-subtle); }
+    .staff-history-summary-label { color: var(--text-muted); font-size: 11px; font-weight: 700; }
+    .staff-history-summary-value { color: var(--purple-primary); font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .staff-history-grid { grid-template-columns: 1.35fr 0.8fr 0.7fr; }
+    .staff-history-row { display: grid; grid-template-columns: 1.35fr 0.8fr 0.7fr; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 12px; font-weight: 700; }
+    .staff-history-row:last-child { border-bottom: 0; }
+    .staff-history-hours { text-align: right; color: var(--purple-primary); font-weight: 800; font-variant-numeric: tabular-nums; }
 
     /* Grid Calendar Styles (matches Shift Plan) */
     .grid-cal-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-sm); }
@@ -483,6 +506,11 @@
       border-bottom: 1.5px solid var(--border-subtle);
       align-items: center;
     }
+    #summaryTabView .summary-table-hdr {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      border-bottom-color: rgba(109, 40, 217, 0.45);
+    }
     .summary-table-row {
       display: grid;
       grid-template-columns: 1.2fr 1fr 70px 75px;
@@ -506,6 +534,30 @@
       outline: 2px solid #7c3aed;
       outline-offset: -2px;
     }
+    .ot-hours-detail-trigger {
+      min-width: 72px;
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--purple-subtle);
+      color: var(--purple-primary);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .ot-hours-detail-trigger:active { transform: scale(0.96); }
+    .ot-hours-detail-trigger:focus-visible { outline: 2px solid var(--purple-primary); outline-offset: 2px; }
+    .ot-hours-schedule-title { margin: 14px 0 7px; color: var(--text-muted); font-size: 12px; font-weight: 800; }
+    .ot-hours-schedule-wrap { overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 10px; background: var(--bg-card); }
+    .ot-hours-schedule-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10.5px; }
+    .ot-hours-schedule-table th { padding: 9px 7px; border: 1px solid rgba(255, 255, 255, 0.22); background: #7c3aed; color: #ffffff; font-weight: 800; text-align: left; white-space: nowrap; }
+    .ot-hours-schedule-table td { padding: 8px 7px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary); font-weight: 600; overflow-wrap: anywhere; }
+    .ot-hours-schedule-table tbody tr:nth-child(even) td { background: var(--bg-input); }
+    .ot-hours-schedule-table th:nth-child(1), .ot-hours-schedule-table td:nth-child(1) { width: 25%; font-family: monospace, sans-serif; }
+    .ot-hours-schedule-table th:nth-child(2), .ot-hours-schedule-table td:nth-child(2) { width: 33%; }
+    .ot-hours-schedule-table th:nth-child(3), .ot-hours-schedule-table td:nth-child(3),
+    .ot-hours-schedule-table th:nth-child(4), .ot-hours-schedule-table td:nth-child(4) { width: 21%; text-align: right; }
 
     #summaryChartBeforeCircle,
     #summaryChartAfterCircle,
@@ -641,6 +693,44 @@
     .calendar-purple-detail.full-width { grid-column: 1 / -1; }
     .calendar-purple-label { display: block; margin-bottom: 3px; color: var(--text-muted); font-size: 10px; font-weight: 700; }
     .calendar-purple-detail .summary-value { display: block; color: var(--text-primary); font-size: 12.5px; font-weight: 800; overflow-wrap: anywhere; }
+    .history-card-item.employee-purple-card,
+    [data-theme="dark"] .history-card-item.employee-purple-card,
+    html[data-theme="dark"] .history-card-item.employee-purple-card {
+      padding: 0;
+      overflow: hidden;
+      flex-direction: column;
+      align-items: stretch;
+      flex-shrink: 0;
+      border-color: var(--border-subtle);
+      background: var(--bg-card);
+    }
+    .employee-purple-header {
+      padding: 11px 14px 10px;
+      background: var(--purple-primary);
+      color: #ffffff;
+    }
+    .employee-card-name { font-size: 14px; font-weight: 800; line-height: 1.25; }
+    .employee-card-id { margin-top: 2px; color: rgba(255, 255, 255, 0.78); font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; }
+    .employee-purple-body {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 12px 14px 14px;
+    }
+    .employee-purple-body.single-column { grid-template-columns: minmax(0, 1fr); }
+    .shift-detail-info-card {
+      border-radius: 18px !important;
+      background: var(--record-summary-background) !important;
+      box-shadow: none !important;
+    }
+    .shift-detail-info-date { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle); }
+    .shift-detail-info-rows { display: grid; gap: 4px; }
+    .shift-detail-info-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: baseline; column-gap: 12px; font-size: 12px; }
+    .shift-detail-info-label { min-width: 0; color: var(--text-muted); font-weight: 600; line-height: 1.35; }
+    .shift-detail-info-value { min-width: 0; color: var(--text-primary); font-weight: 800; line-height: 1.35; text-align: right; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+    .shift-detail-info-value.is-accent { color: var(--purple-primary); }
+    .shift-detail-info-date .shift-detail-info-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+    .shift-detail-info-date .shift-detail-info-value { font-size: 12.5px; }
     .history-time-row { font-size: 14.5px; font-weight: 800; color: var(--purple-primary); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
     [data-theme="dark"] .history-time-row, html[data-theme="dark"] .history-time-row { color: #c084fc; }
     .history-time-row.ot-time { color: #d97706; }
@@ -843,49 +933,10 @@
                 <div id="summaryChartCenterLabel" style="font-size: 9.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total Planned</div>
               </div>
             </div>
-
-            <div style="text-align: center; margin: 2px 0;">
-              <div style="font-size: 13px; font-weight: 800; color: var(--purple-primary); margin-top: 2px;" id="chartSubtotalText">Total Hours : 5.00 (2)</div>
-            </div>
-
-            <div style="width: 100%; display: flex; flex-direction: column; gap: 8px; background: var(--bg-card); padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle);">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="width: 10px; height: 10px; background: #f59e0b; border-radius: 3px;"></div>
-                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 BEFORE WORK</span>
-                </div>
-                <span id="summaryLegendBefore" style="font-size: 12px; font-weight: 800; color: #f59e0b;">50.0% (2.5h)</span>
-              </div>
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="width: 10px; height: 10px; background: #7c3aed; border-radius: 3px;"></div>
-                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 AFTER WORK</span>
-                </div>
-                <span id="summaryLegendAfter" style="font-size: 12px; font-weight: 800; color: var(--purple-primary);">50.0% (2.5h)</span>
-              </div>
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="width: 10px; height: 10px; background: #3b82f6; border-radius: 3px;"></div>
-                  <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 2.0 REST DAY</span>
-                </div>
-                <span id="summaryLegendRest" style="font-size: 12px; font-weight: 800; color: #3b82f6;">0.0% (0.0h)</span>
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- OT BREAKDOWN DATA TABLE HEADER -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
-          <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-table-list" style="color: var(--purple-primary);"></i>
-            <span>OT Breakdown Table</span>
-          </div>
-          <div id="summaryOtTableRecordCount" style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border-subtle);">
-            2 Records
-          </div>
-        </div>
-
-        <!-- 4. OT BREAKDOWN TABLE (3 COLUMNS MATCHING TARGET SCREENSHOT: Shift | Job Title | Hours) -->
+        <!-- OT SUMMARY TABLE -->
         <div class="summary-table-card">
           <div class="summary-table-hdr" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
             <div>Shift</div>
@@ -893,11 +944,6 @@
             <div style="text-align: right;">Hours</div>
           </div>
           <div id="summaryOtTableRows"></div>
-          <div class="summary-table-footer" style="grid-template-columns: 1.5fr 1.3fr 1fr;">
-            <div style="color: var(--text-primary);">Total</div>
-            <div></div>
-            <div id="summaryOtTableTotal" style="text-align: right; color: var(--purple-primary);">5.00 (2)</div>
-          </div>
         </div>
       </div>
 
@@ -1148,7 +1194,6 @@
         <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', 'OT 1.5 BEFORE WORK', 28, '28.00')" class="history-card-item calendar-purple-card">
           <div class="calendar-purple-card-header">
             <div class="calendar-purple-card-title">8.30:17.30W</div>
-            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </div>
           <div class="calendar-purple-card-body">
             <div class="calendar-purple-detail full-width">
@@ -1169,7 +1214,6 @@
         <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', '1.5 OT', 59, '106.00')" class="history-card-item calendar-purple-card">
           <div class="calendar-purple-card-header">
             <div class="calendar-purple-card-title">8.30:17.30W</div>
-            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </div>
           <div class="calendar-purple-card-body">
             <div class="calendar-purple-detail full-width">
@@ -1218,7 +1262,6 @@
         <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', 'OT 1.5 BEFORE WORK', 28, '45.00')" class="history-card-item calendar-purple-card">
           <div class="calendar-purple-card-header">
             <div class="calendar-purple-card-title">8.30:17.30W</div>
-            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </div>
           <div class="calendar-purple-card-body">
             <div class="calendar-purple-detail full-width">
@@ -1267,7 +1310,6 @@
         <a href="javascript:void(0)" onclick="openOtPlanDetail('8.30:17.30W', 'OT 1.5 AFTER WORK', 35, '62.00')" class="history-card-item calendar-purple-card">
           <div class="calendar-purple-card-header">
             <div class="calendar-purple-card-title">8.30:17.30W</div>
-            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </div>
           <div class="calendar-purple-card-body">
             <div class="calendar-purple-detail full-width">
@@ -1288,7 +1330,6 @@
         <a href="javascript:void(0)" onclick="openOtPlanDetail('0700:1500', 'OT 2.0 REST DAY', 10, '20.00')" class="history-card-item calendar-purple-card">
           <div class="calendar-purple-card-header">
             <div class="calendar-purple-card-title">0700:1500</div>
-            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </div>
           <div class="calendar-purple-card-body">
             <div class="calendar-purple-detail full-width">
@@ -1482,28 +1523,27 @@
         </div>
       </div>
       <!-- Info Header Card -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 6px; padding: 12px 16px; box-shadow: var(--shadow-sm);">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle);">
-          <i class="fa-regular fa-calendar-check" style="color: var(--purple-primary); font-size: 13px;"></i>
-          <span style="font-size: 11px; font-weight: 800; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px;">Date:</span>
-          <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary);" id="otDetailDate">23 Sep 2026</span>
+      <div class="shift-detail-info-card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; margin: 12px 16px 6px; padding: 12px 16px; box-shadow: var(--shadow-sm);">
+        <div class="shift-detail-info-row shift-detail-info-date">
+          <span class="shift-detail-info-label">Date:</span>
+          <span class="shift-detail-info-value" id="otDetailDate">23 Sep 2026</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <div style="display: flex; justify-content: space-between; font-size: 12px;">
-            <span style="color: var(--text-muted); font-weight: 600;">Shift:</span>
-            <span style="color: var(--text-primary); font-weight: 800;" id="otDetailShift">8.30:17.30W</span>
+        <div class="shift-detail-info-rows">
+          <div class="shift-detail-info-row">
+            <span class="shift-detail-info-label">Shift:</span>
+            <span class="shift-detail-info-value" id="otDetailShift">8.30:17.30W</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 12px;">
-            <span style="color: var(--text-muted); font-weight: 600;">OT Type:</span>
-            <span style="color: #f59e0b; font-weight: 800;" id="otDetailOtType">OT 1.5 BEFORE WORK</span>
+          <div class="shift-detail-info-row">
+            <span class="shift-detail-info-label">OT Type:</span>
+            <span class="shift-detail-info-value is-accent" id="otDetailOtType">OT 1.5 BEFORE WORK</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 12px;">
-            <span style="color: var(--text-muted); font-weight: 600;">Total Headcount:</span>
-            <span style="color: var(--text-primary); font-weight: 800;" id="otDetailHeadcount">28</span>
+          <div class="shift-detail-info-row">
+            <span class="shift-detail-info-label">Total Headcount:</span>
+            <span class="shift-detail-info-value" id="otDetailHeadcount">28</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 12px;">
-            <span style="color: var(--text-muted); font-weight: 600;">Total Hours:</span>
-            <span style="color: var(--text-primary); font-weight: 800;" id="otDetailTotalHours">28.00</span>
+          <div class="shift-detail-info-row">
+            <span class="shift-detail-info-label">Total Hours:</span>
+            <span class="shift-detail-info-value" id="otDetailTotalHours">28.00</span>
           </div>
         </div>
       </div>
@@ -1547,6 +1587,43 @@
       <div class="scroll-body" id="lvEmployeeCardsContainer" style="flex: 1; overflow-y: auto; padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none; -ms-overflow-style: none;">
       </div>
     </div>
+
+    <!-- ================= BOTTOM SHEET: STAFF OT HISTORY ================= -->
+  <div class="modal-overlay" id="staffOtHistoryModal" onclick="closeModalOnBackdrop(event, 'staffOtHistoryModal')">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="drag-handle"></div>
+      <div class="sheet-header">
+        <div>
+          <div class="sheet-title" id="staffHistoryEmployeeName">Employee Name</div>
+          <div class="emp-id-label" id="staffHistoryEmployeeId">#000000</div>
+        </div>
+        <button type="button" class="sheet-close-btn" onclick="closeModal('staffOtHistoryModal')" aria-label="Close OT details"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="sheet-body">
+        <div class="staff-history-summary">
+          <div class="staff-history-summary-row">
+            <span class="staff-history-summary-label">Total Records</span>
+            <strong class="staff-history-summary-value" id="staffHistoryTotalRecords">0</strong>
+          </div>
+          <div class="staff-history-summary-row">
+            <span class="staff-history-summary-label">Total Hours</span>
+            <strong class="staff-history-summary-value" id="staffHistoryTotalHours">0.00 h</strong>
+          </div>
+        </div>
+        <div class="summary-table-card" style="margin-bottom: 0;">
+          <div class="summary-table-hdr staff-history-grid" id="staffHistoryTableHeader">
+            <span>Date</span>
+            <span>Shift</span>
+            <span style="text-align: right;">Hours</span>
+          </div>
+          <div id="staffHistoryTableRows"></div>
+        </div>
+      </div>
+      <div class="sheet-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('staffOtHistoryModal')">Close</button>
+      </div>
+    </div>
+  </div>
 
     <!-- ================= BOTTOM SHEET 1: EDIT OT DETAILS ================= -->
   <div class="modal-overlay" id="editOtDetailsModal" onclick="closeModalOnBackdrop(event, 'editOtDetailsModal')">
@@ -1680,26 +1757,25 @@
         </div>
         <div class="ot-filter-field">
           <label for="staffFilterUnapprovedOt" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Unapproved OT</label>
-          <select id="staffFilterUnapprovedOt" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;">
-            <option value="all">- All -</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
+          <div class="ot-filter-switch-row">
+            <span class="ot-filter-switch-copy">Only show unapproved OT</span>
+            <label class="ot-filter-switch-control" aria-label="Only show unapproved OT">
+              <input type="checkbox" id="staffFilterUnapprovedOt" role="switch">
+              <span class="ot-filter-switch-track" aria-hidden="true"></span>
+            </label>
+          </div>
         </div>
       </div>
 
       <div class="sheet-body" id="calendarFilterFields" style="padding: 16px 20px; display: none; flex-direction: column; gap: 14px; max-height: 65vh; overflow-y: auto;">
         <div class="ot-filter-field"><label for="calendarFilterSearchKeyword" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Search Keyword</label><input type="search" id="calendarFilterSearchKeyword" placeholder="Employee ID or name" autocomplete="off" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"></div>
-        <div class="ot-filter-field"><label for="calendarFilterStaffShift" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Staff's Shift</label><select id="calendarFilterStaffShift" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Staff Shifts -</option><option value="W01">W01 · Morning Shift</option><option value="W02">W02 · Regular Day</option><option value="W03">W03 · Night Shift</option></select></div>
-        <div class="ot-filter-field"><label for="calendarFilterStaffJob" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Staff's Job</label><select id="calendarFilterStaffJob" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Staff Jobs -</option><option value="Admin Executive">Admin Executive</option><option value="Barista Operations">Barista Operations</option><option value="Account Executive">Account Executive</option><option value="IT Support Engineer">IT Support Engineer</option></select></div>
-        <div class="ot-filter-field"><label for="calendarFilterStaffSkill" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Staff's Skill</label><select id="calendarFilterStaffSkill" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Staff Skills -</option><option value="Administration">Administration</option><option value="Coffee Preparation">Coffee Preparation</option><option value="Accounting">Accounting</option><option value="Technical Support">Technical Support</option></select></div>
+        <div class="ot-filter-field"><label for="calendarFilterStaffShift" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Staff Shift</label><select id="calendarFilterStaffShift" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Staff Shifts -</option><option value="W01">W01 · Morning Shift</option><option value="W02">W02 · Regular Day</option><option value="W03">W03 · Night Shift</option></select></div>
       </div>
 
       <div class="sheet-body" id="summaryFilterFields" style="padding: 16px 20px; display: none; flex-direction: column; gap: 14px; max-height: 65vh; overflow-y: auto;">
         <div class="ot-filter-field"><label for="summaryFilterDate" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Date</label><input type="date" id="summaryFilterDate" value="2026-09-23" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"></div>
         <div class="ot-filter-field"><label for="summaryFilterShiftType" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Shift Type</label><select id="summaryFilterShiftType" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Shift Types -</option><option value="W01">W01</option><option value="W02">W02</option><option value="W03">W03</option><option value="OFF">OFF</option></select></div>
         <div class="ot-filter-field"><label for="summaryFilterDepartment" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Department</label><select id="summaryFilterDepartment" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Departments -</option><option value="Operations">Operations</option><option value="Finance">Finance</option><option value="Human Resource">Human Resource</option><option value="Information Technology">Information Technology</option></select></div>
-        <div class="ot-filter-field"><label for="summaryFilterBranch" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Branch</label><select id="summaryFilterBranch" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Branches -</option><option value="HQ">Headquarters</option><option value="TS">Times Square</option><option value="MV">Mid Valley</option><option value="SP">Sunway Pyramid</option></select></div>
         <div class="ot-filter-field"><label for="summaryFilterSection" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Section</label><select id="summaryFilterSection" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Sections -</option><option value="Admin">Admin</option><option value="Barista">Barista</option><option value="Account">Account</option><option value="IT">IT</option><option value="HR">Human Resource</option></select></div>
         <div class="ot-filter-field"><label for="summaryFilterCostCentre" style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Cost Centre</label><select id="summaryFilterCostCentre" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; font-weight: 700; outline: none;"><option value="all">- All Cost Centres -</option><option value="CC1001">CC1001 · HQ Admin</option><option value="CC2002">CC2002 · TS Retail Store</option><option value="CC3003">CC3003 · MV Retail Store</option></select></div>
       </div>
@@ -1729,20 +1805,22 @@
     </div>
   </div>
 
-    <!-- CHART POPUP MODAL (AGENTS.md View Chart Standard + Donut Chart Display) -->
-  <div class="modal-overlay" id="chartModal" onclick="closeModalOnBackdrop(event, 'chartModal')" style="align-items: center; justify-content: center; padding: 16px;">
-    <div class="modal-content" onclick="event.stopPropagation()" style="width: 100%; max-width: 360px; background: var(--bg-card); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); padding: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 id="modalSummaryChartTitle" style="font-size: 16px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin: 0;">
-          <i class="fa-solid fa-chart-pie" style="color: #f59e0b;"></i> OT Distribution Chart
-        </h3>
-        <button onclick="closeModal('chartModal')" style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+  <!-- CHART INFO SHEET -->
+  <div class="modal-overlay" id="chartModal" onclick="closeModalOnBackdrop(event, 'chartModal')">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="drag-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" id="modalSummaryChartTitle" style="display: flex; align-items: center; gap: 7px;">
+          <i class="fa-solid fa-circle-info" style="color: var(--purple-primary);"></i>
+          <span>Chart Details</span>
+        </div>
+        <button type="button" class="sheet-close-btn" onclick="closeModal('chartModal')" aria-label="Close chart details">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-
-      <!-- Donut Chart & Legend -->
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <div class="sheet-body">
+        <!-- Donut Chart & Legend -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
         <div style="position: relative; width: 160px; height: 160px;">
           <svg width="160" height="160" viewBox="0 0 160 160" style="transform: rotate(-90deg);">
             <circle cx="80" cy="80" r="58" fill="transparent" stroke="var(--border-subtle)" stroke-width="24" opacity="0.3"></circle>
@@ -1779,8 +1857,38 @@
             <span data-modal-legend-value id="modalSummaryLegendRest" style="font-size: 12px; font-weight: 800; color: #3b82f6;">0.0% (0.0h)</span>
           </div>
         </div>
+        </div>
       </div>
     </div>
+  </div>
+
+  <!-- SUMMARY ROW OT HOURS DETAILS -->
+  <div class="modal-overlay detail-popout-overlay" id="otHoursDetailModal" onclick="closeModalOnBackdrop(event, 'otHoursDetailModal')">
+    <section class="detail-popout-panel" role="dialog" aria-modal="true" aria-labelledby="otHoursDetailTitle" onclick="event.stopPropagation()">
+      <header class="detail-popout-header">
+        <h2 class="detail-popout-title sheet-title" id="otHoursDetailTitle">OT Hours Details</h2>
+        <button type="button" class="detail-popout-close" onclick="closeModal('otHoursDetailModal')" aria-label="Close OT hours details">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div class="detail-popout-body">
+        <table class="detail-popout-table" id="otHoursPrimaryDetailsTable">
+          <tbody>
+            <tr><td class="detail-popout-label">Shift</td><td class="detail-popout-value" id="otHoursDetailShift">-</td></tr>
+            <tr><td class="detail-popout-label">Job Title</td><td class="detail-popout-value" id="otHoursDetailJobTitle">-</td></tr>
+            <tr><td class="detail-popout-label">Total Planned Hours</td><td class="detail-popout-value" id="otHoursDetailPlanned">0.00 h</td></tr>
+            <tr><td class="detail-popout-label">Total Approved Hours</td><td class="detail-popout-value" id="otHoursDetailApproved">0.00 h</td></tr>
+          </tbody>
+        </table>
+        <div class="ot-hours-schedule-title">Schedules</div>
+        <div class="ot-hours-schedule-wrap">
+          <table class="ot-hours-schedule-table" id="otHoursScheduleTable">
+            <thead><tr><th scope="col">Emp #</th><th scope="col">Name</th><th scope="col">Planned</th><th scope="col">Approved</th></tr></thead>
+            <tbody id="otHoursScheduleRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- JavaScript Logic -->
@@ -1810,7 +1918,37 @@
       { id: '000102', name: 'Muhammad Danial', dept: 'IT Support Engineer', section: 'IT', jobTitle: 'QA Engineer', branch: 'SP', currentShift: 'W02', otType: 'OT 2.0 REST DAY', otHours: 2.5, approvedOtHours: 1.5, actualOtHours: 1.0, requestedOtHours: 2.5, mtdOt: 2.0, hourlyRate: 19.50, unapprovedOt: true, selected: false },
       { id: '000103', name: 'Siti Nurhaliza', dept: 'Human Resource Officer', section: 'HR', jobTitle: 'HR Officer', branch: 'HQ', currentShift: 'W03', otType: 'OT 1.5 BEFORE WORK', otHours: 2.5, approvedOtHours: 2.0, actualOtHours: 1.5, requestedOtHours: 2.5, mtdOt: 6.0, hourlyRate: 18.00, unapprovedOt: false, selected: false }
     ];
+    const staffOtHistoryById = {
+      '000008': [
+        { date: '23 Sep 2026', shift: 'W01', hours: 2.5 },
+        { date: '18 Sep 2026', shift: 'W01', hours: 2.0 },
+        { date: '10 Sep 2026', shift: 'W02', hours: 3.0 }
+      ],
+      '000009': [
+        { date: '23 Sep 2026', shift: 'W01', hours: 2.5 },
+        { date: '16 Sep 2026', shift: 'W01', hours: 1.5 }
+      ],
+      '000100': [
+        { date: '23 Sep 2026', shift: 'W01', hours: 2.5 },
+        { date: '14 Sep 2026', shift: 'W01', hours: 2.5 },
+        { date: '07 Sep 2026', shift: 'W02', hours: 1.0 }
+      ],
+      '000101': [
+        { date: '23 Sep 2026', shift: 'W01', hours: 2.5 },
+        { date: '11 Sep 2026', shift: 'W01', hours: 2.0 }
+      ],
+      '000102': [
+        { date: '23 Sep 2026', shift: 'W02', hours: 2.5 },
+        { date: '09 Sep 2026', shift: 'W02', hours: 2.0 }
+      ],
+      '000103': [
+        { date: '23 Sep 2026', shift: 'W03', hours: 2.5 },
+        { date: '15 Sep 2026', shift: 'W03', hours: 1.5 },
+        { date: '04 Sep 2026', shift: 'W03', hours: 2.0 }
+      ]
+    };
     let selectedOtSummaryJobTitle = 'all';
+    let visibleOtSummaryRows = [];
     let otSummaryChartRefreshTimer;
 
     // Initialization on DOM Load
@@ -1851,12 +1989,8 @@
         const parts = [];
         const keyword = document.getElementById('calendarFilterSearchKeyword')?.value.trim() || '';
         const shift = document.getElementById('calendarFilterStaffShift')?.value || 'all';
-        const job = document.getElementById('calendarFilterStaffJob')?.value || 'all';
-        const skill = document.getElementById('calendarFilterStaffSkill')?.value || 'all';
         if (keyword) parts.push(`"${keyword}"`);
         if (shift !== 'all') parts.push(`Shift: ${shift}`);
-        if (job !== 'all') parts.push(`Job: ${job}`);
-        if (skill !== 'all') parts.push(`Skill: ${skill}`);
         filterDisplayText.textContent = parts.length ? parts.join(' • ') : `${document.getElementById('gridCalTitle')?.textContent || 'Calendar'} • All Staff`;
         return;
       }
@@ -1887,9 +2021,9 @@
       const filterSearchKeyword = document.getElementById('staffFilterSearchKeyword')?.value.toLowerCase().trim() || '';
       const filterSection = document.getElementById('staffFilterSection')?.value || 'all';
       const filterJobTitle = document.getElementById('staffFilterJobTitle')?.value || 'all';
-      const filterUnapprovedOt = document.getElementById('staffFilterUnapprovedOt')?.value || 'all';
+      const filterUnapprovedOt = document.getElementById('staffFilterUnapprovedOt')?.checked || false;
 
-      const isFilterActive = filterSearchKeyword !== '' || filterSection !== 'all' || filterJobTitle !== 'all' || filterUnapprovedOt !== 'all';
+      const isFilterActive = filterSearchKeyword !== '' || filterSection !== 'all' || filterJobTitle !== 'all' || filterUnapprovedOt;
 
       const filterDisplayText = document.getElementById('currentFilterTextDisplay');
       if (filterDisplayText) {
@@ -1897,7 +2031,7 @@
           const parts = [];
           if (filterSection !== 'all') parts.push(`Section: ${filterSection}`);
           if (filterJobTitle !== 'all') parts.push(`Title: ${filterJobTitle}`);
-          if (filterUnapprovedOt !== 'all') parts.push(`Unapproved OT: ${filterUnapprovedOt === 'yes' ? 'Yes' : 'No'}`);
+          if (filterUnapprovedOt) parts.push('Unapproved OT: Yes');
           if (filterSearchKeyword !== '') parts.push(`"${filterSearchKeyword}"`);
           filterDisplayText.textContent = parts.join(' • ');
         } else {
@@ -1913,7 +2047,7 @@
           const parts = [];
           if (filterSection !== 'all') parts.push(`Section: ${filterSection}`);
           if (filterJobTitle !== 'all') parts.push(`Title: ${filterJobTitle}`);
-          if (filterUnapprovedOt !== 'all') parts.push(`Unapproved OT: ${filterUnapprovedOt === 'yes' ? 'Yes' : 'No'}`);
+          if (filterUnapprovedOt) parts.push('Unapproved OT: Yes');
           if (filterSearchKeyword !== '') parts.push(`"${filterSearchKeyword}"`);
           summaryText.textContent = `Active Filter: ${parts.join(' · ')}`;
         } else {
@@ -1941,8 +2075,7 @@
         if (filterJobTitle !== 'all' && emp.dept !== filterJobTitle) return;
 
         // Unapproved OT Filter
-        if (filterUnapprovedOt === 'yes' && !emp.unapprovedOt) return;
-        if (filterUnapprovedOt === 'no' && emp.unapprovedOt) return;
+        if (filterUnapprovedOt && !emp.unapprovedOt) return;
 
         totalCount++;
         if (emp.selected) selectedCount++;
@@ -1950,27 +2083,31 @@
         const card = document.createElement('div');
         card.className = `ot-staff-card ${emp.selected ? 'selected' : ''}`;
         card.dataset.staffId = emp.id;
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `View OT details for ${emp.name}`);
         
         // Strict AGENTS.md Employee ID Placement: #empNo directly BELOW employee name
         card.innerHTML = `
           <div class="ot-staff-card-top">
-            <div class="ot-staff-identity" onclick="toggleStaffSelection('${emp.id}')">
+            <div class="ot-staff-identity">
               <div class="ot-staff-name">${emp.name}</div>
               <div class="emp-id-label">#${emp.id}</div>
             </div>
             <div class="ot-staff-card-controls">
-              <div class="custom-checkbox" onclick="toggleStaffSelection('${emp.id}')" aria-hidden="true">
+              <button type="button" class="custom-checkbox" onclick="event.stopPropagation(); toggleStaffSelection('${emp.id}')" aria-label="${emp.selected ? 'Deselect' : 'Select'} ${emp.name}" aria-pressed="${emp.selected}">
                 <i class="fa-solid fa-check"></i>
-              </div>
+              </button>
             </div>
           </div>
           <div class="ot-staff-summary-panel">
             <div class="ot-staff-detail"><span>Job Title</span><strong>${emp.dept}</strong></div>
-            <div class="ot-staff-detail"><span>Shift</span><strong>${emp.currentShift}</strong></div>
-            <div class="ot-staff-detail"><span>OT Hours</span><strong class="ot-hours-value">${emp.otHours} h</strong></div>
-            <div class="ot-staff-detail"><span>MTD OT</span><strong>${emp.mtdOt} h</strong></div>
+            <div class="ot-staff-detail"><span>Hours</span><strong class="ot-hours-value">${emp.otHours} h</strong></div>
+            <div class="ot-staff-detail"><span>MTD OT</span><strong>${getStaffMtdOtHours(emp.id).toFixed(1)} h</strong></div>
           </div>
         `;
+        card.addEventListener('click', () => openStaffOtHistory(emp.id));
+        card.addEventListener('keydown', event => handleStaffCardKeydown(event, emp.id));
         container.appendChild(card);
       });
 
@@ -2005,6 +2142,42 @@
       }
     }
 
+    function getStaffOtHistory(id) {
+      return staffOtHistoryById[id] || [];
+    }
+
+    function getStaffMtdOtHours(id) {
+      return getStaffOtHistory(id).reduce((total, record) => total + Number(record.hours || 0), 0);
+    }
+
+    function openStaffOtHistory(id) {
+      const employee = staffDatabase.find(item => item.id === id);
+      if (!employee) return;
+      const records = getStaffOtHistory(id);
+      const totalHours = getStaffMtdOtHours(id);
+
+      document.getElementById('staffHistoryEmployeeName').textContent = employee.name;
+      document.getElementById('staffHistoryEmployeeId').textContent = `#${employee.id}`;
+      document.getElementById('staffHistoryTotalRecords').textContent = String(records.length);
+      document.getElementById('staffHistoryTotalHours').textContent = `${totalHours.toFixed(2)} h`;
+      document.getElementById('staffHistoryTableRows').innerHTML = records.length
+        ? records.map(record => `
+          <div class="staff-history-row">
+            <span>${record.date}</span>
+            <span>${record.shift}</span>
+            <span class="staff-history-hours">${Number(record.hours).toFixed(2)} h</span>
+          </div>
+        `).join('')
+        : '<div style="padding: 24px 14px; text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 700;">No OT records available.</div>';
+      openModal('staffOtHistoryModal');
+    }
+
+    function handleStaffCardKeydown(event, id) {
+      if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      openStaffOtHistory(id);
+    }
+
     function handleSelectAllCheckbox(checked) {
       const visibleStaffIds = new Set(
         [...document.querySelectorAll('#staffCardsContainer .ot-staff-card')]
@@ -2035,15 +2208,20 @@
             jobTitle: employee.dept.toUpperCase(),
             sourceJobTitle: employee.dept,
             hours: 0,
+            approvedHours: 0,
+            employees: [],
             count: 0
           });
         }
         const row = groupedRowsMap.get(groupKey);
         row.hours += getOtSummaryMetricValue(employee);
+        row.approvedHours += Number(employee.approvedOtHours) || 0;
+        row.employees.push(employee);
         row.count += 1;
       });
 
       const summaryRows = [...groupedRowsMap.values()];
+      visibleOtSummaryRows = summaryRows;
       if (selectedOtSummaryJobTitle !== 'all' && !summaryRows.some(row => row.sourceJobTitle === selectedOtSummaryJobTitle)) {
         selectedOtSummaryJobTitle = 'all';
       }
@@ -2051,7 +2229,6 @@
         ? selectedStaff
         : selectedStaff.filter(employee => employee.dept === selectedOtSummaryJobTitle);
       const chartTotal = chartStaff.reduce((total, employee) => total + getOtSummaryMetricValue(employee), 0);
-      const tableTotal = summaryRows.reduce((total, row) => total + row.hours, 0);
       const typeTotals = {
         before: 0,
         after: 0,
@@ -2072,35 +2249,27 @@
       document.getElementById('summaryChartTotal').textContent = chartTotal.toFixed(1) + 'h';
       document.getElementById('summaryChartCenterLabel').textContent =
         (selectedOtSummaryJobTitle === 'all' ? 'Total ' : 'Selected ') + metric.label.replace(' Hours', '');
-      document.getElementById('chartSubtotalText').textContent =
-        'Total Hours : ' + chartTotal.toFixed(2) + ' (' + chartStaff.length + ')';
-      document.getElementById('summaryOtTableRecordCount').textContent =
-        summaryRows.length + (summaryRows.length === 1 ? ' Record' : ' Records');
-      document.getElementById('summaryOtTableTotal').textContent =
-        tableTotal.toFixed(2) + ' (' + selectedStaff.length + ')';
-
       const legendEntries = [
-        { key: 'before', inlineId: 'summaryLegendBefore', modalId: 'modalSummaryLegendBefore' },
-        { key: 'after', inlineId: 'summaryLegendAfter', modalId: 'modalSummaryLegendAfter' },
-        { key: 'rest', inlineId: 'summaryLegendRest', modalId: 'modalSummaryLegendRest' }
+        { key: 'before', modalId: 'modalSummaryLegendBefore' },
+        { key: 'after', modalId: 'modalSummaryLegendAfter' },
+        { key: 'rest', modalId: 'modalSummaryLegendRest' }
       ];
       legendEntries.forEach(entry => {
         const hours = typeTotals[entry.key];
         const percent = chartTotal ? (hours / chartTotal) * 100 : 0;
         const text = percent.toFixed(1) + '% (' + hours.toFixed(1) + 'h)';
-        document.getElementById(entry.inlineId).textContent = text;
         document.getElementById(entry.modalId).textContent = text;
       });
 
       const rowsContainer = document.getElementById('summaryOtTableRows');
       rowsContainer.innerHTML = summaryRows.length
-        ? summaryRows.map(row =>
+        ? summaryRows.map((row, rowIndex) =>
           '<div class="summary-table-row' + (selectedOtSummaryJobTitle === row.sourceJobTitle ? ' is-chart-selected' : '') + '" ' +
           'style="grid-template-columns: 1.5fr 1.3fr 1fr;" role="button" tabindex="0" ' +
           'aria-pressed="' + (selectedOtSummaryJobTitle === row.sourceJobTitle) + '" data-summary-job-title="' + row.sourceJobTitle + '">' +
             '<div><span class="table-shift-badge ' + (row.shift === 'W02' ? 'blue' : row.shift === 'W03' ? 'purple' : 'amber') + '">' + row.shift + '</span></div>' +
             '<div style="font-weight: 800; font-size: 12px;">' + row.jobTitle + '</div>' +
-            '<div style="text-align: right; font-weight: 800; color: var(--purple-primary);">' + row.hours.toFixed(2) + ' (' + row.count + ')</div>' +
+            '<div style="text-align: right;"><button type="button" class="ot-hours-detail-trigger" onclick="event.stopPropagation(); openOtHoursDetail(' + rowIndex + ')" aria-label="View ' + row.jobTitle + ' OT hours details">' + row.hours.toFixed(2) + ' (' + row.count + ')</button></div>' +
           '</div>'
         ).join('')
         : '<div style="padding: 24px 14px; text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 700;">No selected staff to summarize.</div>';
@@ -2168,6 +2337,24 @@
         behavior: 'smooth',
         block: 'center'
       });
+    }
+
+    function openOtHoursDetail(rowIndex) {
+      const row = visibleOtSummaryRows[rowIndex];
+      if (!row) return;
+      document.getElementById('otHoursDetailShift').textContent = row.shift;
+      document.getElementById('otHoursDetailJobTitle').textContent = row.jobTitle;
+      document.getElementById('otHoursDetailPlanned').textContent = row.hours.toFixed(2) + ' h';
+      document.getElementById('otHoursDetailApproved').textContent = row.approvedHours.toFixed(2) + ' h';
+      document.getElementById('otHoursScheduleRows').innerHTML = row.employees.map(employee => `
+        <tr>
+          <td>#${employee.id}</td>
+          <td>${employee.name}</td>
+          <td>${Number(employee.otHours).toFixed(2)} h</td>
+          <td>${Number(employee.approvedOtHours).toFixed(2)} h</td>
+        </tr>
+      `).join('');
+      openModal('otHoursDetailModal');
     }
 
     function updateStickyBar() {
@@ -2276,21 +2463,18 @@
         document.getElementById('staffFilterSearchKeyword').value = '';
         document.getElementById('staffFilterSection').value = 'all';
         document.getElementById('staffFilterJobTitle').value = 'all';
-        document.getElementById('staffFilterUnapprovedOt').value = 'all';
+        document.getElementById('staffFilterUnapprovedOt').checked = false;
         renderStaffCards();
         updateStickyBar();
       } else if (currentMainTab === 'calendar') {
         document.getElementById('calendarFilterSearchKeyword').value = '';
         document.getElementById('calendarFilterStaffShift').value = 'all';
-        document.getElementById('calendarFilterStaffJob').value = 'all';
-        document.getElementById('calendarFilterStaffSkill').value = 'all';
         renderGridCalendar();
         updateCurrentFilterDisplayForTab();
       } else {
         document.getElementById('summaryFilterDate').value = `${yyyy}-${mm}-${dd}`;
         document.getElementById('summaryFilterShiftType').value = 'all';
         document.getElementById('summaryFilterDepartment').value = 'all';
-        document.getElementById('summaryFilterBranch').value = 'all';
         document.getElementById('summaryFilterSection').value = 'all';
         document.getElementById('summaryFilterCostCentre').value = 'all';
         updateCurrentFilterDisplayForTab();
@@ -2569,17 +2753,28 @@
       document.getElementById('otDetailTotalHours').textContent = totalHrs;
       
       const container = document.getElementById('otEmployeeCardsContainer');
-      const list = count <= 28 ? otPlanEmployeeDataset.slice(0, count) : otPlanEmployeeDataset;
+      const list = Array.from({ length: count }, (_, index) => otPlanEmployeeDataset[index] || {
+        name: `OT Plan Staff ${index + 1}`,
+        id: String(index + 1).padStart(6, '0'),
+        jobTitle: 'ACCOUNT EXECUTIVE',
+        hours: '1.00'
+      });
       
       container.innerHTML = list.map(emp => `
-        <div class="history-card-item ot-theme" style="display: block; width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 0;">
-          <div style="font-size: 14.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${emp.name}</div>
-          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); opacity: 0.8; font-family: monospace, sans-serif; margin-bottom: 6px; margin-top: 2px;">#${emp.id}</div>
-          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
-            Job Title: <span style="color: var(--text-primary); font-weight: 700;">${emp.jobTitle}</span>
+        <div class="history-card-item employee-purple-card" style="width: 100%; box-sizing: border-box; margin-bottom: 0;">
+          <div class="employee-purple-header">
+            <div class="employee-card-name">${emp.name}</div>
+            <div class="employee-card-id">#${emp.id}</div>
           </div>
-          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
-            Hours: <span style="color: var(--text-primary); font-weight: 700;">${emp.hours || '1.00'}</span>
+          <div class="employee-purple-body">
+            <div class="calendar-purple-detail full-width">
+              <span class="calendar-purple-label">Job Title</span>
+              <span class="summary-value">${emp.jobTitle}</span>
+            </div>
+            <div class="calendar-purple-detail full-width">
+              <span class="calendar-purple-label">Hours</span>
+              <span class="summary-value">${emp.hours || '1.00'}</span>
+            </div>
           </div>
         </div>
       `).join('');

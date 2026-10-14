@@ -44,8 +44,8 @@ async function readDetailInfoCard(page, viewSelector) {
     });
 
     await page.$eval('[onclick*="view-ot-plan-summary"]', node => node.click());
-    assert.match(await page.$eval('#view-ot-plan-summary .summary-date-display', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 03 Sep.* 2026$/);
-    assert.equal(await page.$eval('#otSummaryRecordCount', node => node.textContent.trim()), 'Total Records: 2');
+    assert.match(await page.$eval('#view-ot-plan-summary .shift-detail-info-date', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 03 Sep.* 2026$/);
+    assert.equal(await page.$eval('#otSummaryRecordCount', node => node.textContent.trim()), '2');
     assert.equal(await page.$$eval('#view-ot-plan-summary .calendar-purple-card', cards => cards.length), 2);
     assert.deepEqual(
       await page.$$eval('#view-ot-plan-summary .calendar-purple-card', cards => cards.map(card => ({
@@ -81,8 +81,8 @@ async function readDetailInfoCard(page, viewSelector) {
     assert.equal(await page.$eval('#otDetailOtType', node => getComputedStyle(node).color), 'rgb(124, 58, 237)', 'OT Type must keep its existing purple emphasis');
 
     await page.evaluate(() => switchView('view-leave-summary'));
-    assert.match(await page.$eval('#view-leave-summary .summary-date-display', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 03 Sep.* 2026$/);
-    assert.equal(await page.$eval('#lvSummaryRecordCount', node => node.textContent.trim()), 'Total Records: 3');
+    assert.match(await page.$eval('#view-leave-summary .shift-detail-info-date', node => node.textContent.replace(/\s+/g, ' ').trim()), /^Date: 03 Sep.* 2026$/);
+    assert.equal(await page.$eval('#lvSummaryRecordCount', node => node.textContent.trim()), '3');
     assert.equal(await page.$$eval('#view-leave-summary .calendar-purple-card', cards => cards.length), 3);
     assert.deepEqual(
       await page.$$eval('#view-leave-summary .calendar-purple-card', cards => cards.map(card => ({
