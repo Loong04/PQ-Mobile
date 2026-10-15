@@ -11,12 +11,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/app.css">
+  <link rel="stylesheet" href="../../css/history-cards.css">
   <link rel="stylesheet" href="css/training-competency.css">
+  <link rel="stylesheet" href="css/training-calendar.css">
   <script src="../../js/components.js"></script>
   <script src="../../js/app.js" defer></script>
+  <script src="js/training-competency-data.js" defer></script>
+  <script src="js/training-calendar.js" defer></script>
   <script src="js/training-competency-app.js" defer></script>
 </head>
-<body class="training-competency-page">
+<body class="training-competency-page" data-training-calendar-page="dashboard">
   <preview-top-bar active-page="training-competency"></preview-top-bar>
   <div class="phone-container">
     <header class="training-competency-header">
@@ -53,10 +57,29 @@
             <li><a class="training-competency-option" data-option-id="training-need" href="options/training-need.html"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-clipboard-question"></i></span><span class="training-competency-option-title">Training Need</span></a></li>
             <li><a class="training-competency-option" data-option-id="learning-development-plan" href="options/learning-development-plan.html"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-route"></i></span><span class="training-competency-option-title">L&amp;D Plan</span></a></li>
             <li><a class="training-competency-option" data-option-id="training-plan" href="options/training-plan.html"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></span><span class="training-competency-option-title">Training Plan</span></a></li>
-            <li><a class="training-competency-option" data-option-id="training-calendar" href="options/training-calendar.html"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span><span class="training-competency-option-title">Training Calendar</span></a></li>
+            <li><button type="button" class="training-competency-option" data-option-id="training-calendar"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span><span class="training-competency-option-title">Training Calendar</span></button></li>
             <li><a class="training-competency-option" data-option-id="training-clocking" href="options/training-clocking.html"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span><span class="training-competency-option-title">Training Clocking</span></a></li>
             <li><a class="training-competency-option" data-option-id="training-feedback" href="options/training-feedback.html"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-message"></i></span><span class="training-competency-option-title">Training Feedback</span></a></li>
           </ul>
+        </section>
+
+        <section id="trainingCalendarSection" class="training-competency-section training-dashboard-calendar" aria-labelledby="trainingCalendarSectionTitle">
+          <h2 id="trainingCalendarSectionTitle" class="training-competency-section-title"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>My Training Calendar</span></h2>
+          <div class="calendar-card training-dashboard-calendar-card">
+            <div class="training-calendar-card-header">
+              <div class="training-calendar-heading">
+                <h3 id="trainingCalendarMonth" tabindex="-1">October 2026</h3>
+                <p class="training-calendar-subtitle">Training Activities</p>
+              </div>
+              <div class="training-calendar-controls">
+                <button id="trainingCalendarInfo" class="training-calendar-info" type="button" title="Training calendar information"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></button>
+                <button id="trainingCalendarPrevious" class="training-calendar-stepper" type="button" aria-label="Previous month"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                <button id="trainingCalendarNext" class="training-calendar-stepper" type="button" aria-label="Next month"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+              </div>
+            </div>
+            <div class="training-calendar-weekdays" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div id="trainingCalendarGrid" class="cal-days-grid" aria-label="Training calendar dates"></div>
+          </div>
         </section>
       </div>
 
@@ -79,6 +102,28 @@
     <phone-bottom-nav active="apps"></phone-bottom-nav>
     <left-profile-drawer></left-profile-drawer>
     <notification-sheet></notification-sheet>
+    <div id="trainingCalendarSheet" class="training-calendar-sheet-overlay" aria-hidden="true">
+      <section class="training-calendar-sheet" role="dialog" aria-modal="true" aria-labelledby="trainingCalendarSheetDate">
+        <div class="training-calendar-sheet-handle" aria-hidden="true"></div>
+        <header class="training-calendar-sheet-heading"><div><p>Training Schedule</p><h2 id="trainingCalendarSheetDate">Selected Date</h2></div><button id="trainingCalendarSheetClose" type="button" aria-label="Close training schedule"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div id="trainingCalendarEvents" class="training-calendar-events"></div>
+        <button id="trainingCalendarSheetCancel" class="training-calendar-sheet-cancel" type="button">Cancel</button>
+      </section>
+    </div>
+    <div id="trainingClassDetailsModal" class="training-calendar-detail-overlay" aria-hidden="true">
+      <section class="training-calendar-detail-modal" role="dialog" aria-modal="true" aria-labelledby="trainingClassDetailsTitle">
+        <header class="training-calendar-detail-heading">
+          <h2 id="trainingClassDetailsTitle">Training Class Details</h2>
+          <button id="trainingClassDetailsClose" type="button" aria-label="Close training class details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div class="training-calendar-detail-scroll">
+          <dl id="trainingClassDetailsFields" class="training-calendar-class-details"></dl>
+        </div>
+        <footer class="training-calendar-detail-footer">
+          <button id="trainingClassDetailsCancel" type="button">Cancel</button>
+        </footer>
+      </section>
+    </div>
     <div id="trainingCompetencyOptionsOverlay" class="training-competency-options-overlay" aria-hidden="true" hidden>
       <section class="training-competency-options-sheet" role="dialog" aria-modal="true" aria-labelledby="trainingCompetencyOptionsTitle">
         <div class="training-competency-options-handle" aria-hidden="true"></div>

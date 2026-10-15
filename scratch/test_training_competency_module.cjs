@@ -54,7 +54,7 @@ async function open(page, url) {
 
     assert.deepEqual(
       collectHtmlFiles(path.dirname(modulePath)).sort(),
-      ['index.html', 'options/competency.html', 'options/course-catalog.html', 'options/learning-development-edit.html', 'options/learning-development-plan.html', 'options/learning-development-update.html', 'options/staff-learning-development-plan.html', 'options/staff-learning-development-update.html', 'options/staff-learning-development-edit.html', 'options/staff-competency.html', 'options/staff-competency-employee.html', 'options/staff-competency-assess.html', 'options/staff-tna.html', 'options/training-calendar.html', 'options/training-request-details.html', 'options/training-clocking.html', 'options/training-feedback-form.html', 'options/training-feedback.html', 'options/training-highlight.html', 'options/training-need.html', 'options/training-plan.html', 'options/competency-summary.html', 'options/competency-summary-levels.html', 'options/competency-summary-employees.html', 'options/competency-summary-employee.html', 'options/skill-expiry.html', 'options/skill-expiry-levels.html', 'options/skill-expiry-employees.html'].sort(),
+      ['index.html', 'options/competency.html', 'options/course-catalog.html', 'options/learning-development-edit.html', 'options/learning-development-plan.html', 'options/learning-development-update.html', 'options/staff-learning-development-plan.html', 'options/staff-learning-development-update.html', 'options/staff-learning-development-edit.html', 'options/staff-competency.html', 'options/staff-competency-employee.html', 'options/staff-competency-assess.html', 'options/staff-tna.html', 'options/training-request-details.html', 'options/training-clocking.html', 'options/training-feedback-form.html', 'options/training-feedback.html', 'options/training-highlight.html', 'options/training-need.html', 'options/training-plan.html', 'options/competency-summary.html', 'options/competency-summary-levels.html', 'options/competency-summary-employees.html', 'options/competency-summary-employee.html', 'options/skill-expiry.html', 'options/skill-expiry-levels.html', 'options/skill-expiry-employees.html'].sort(),
       'Implemented Training and Competency destination pages exist'
     );
 
@@ -102,13 +102,13 @@ async function open(page, url) {
       'Training Highlight'
     ]);
     assert.equal(await page.$$eval('[data-option-id]', nodes => nodes.length), 14);
-    assert.equal(await page.$$eval('[data-option-id][href]', nodes => nodes.length), 14, 'Implemented individual and team options link to destination pages');
-    assert.equal(await page.$$eval('button[data-option-id]', nodes => nodes.length), 0, 'Every Training and Competency option links to an implemented page');
+    assert.equal(await page.$$eval('[data-option-id][href]', nodes => nodes.length), 13, 'Destination options link to their implemented pages');
+    assert.equal(await page.$$eval('button[data-option-id]', nodes => nodes.length), 1, 'Training Calendar remains an in-page dashboard shortcut');
     assert.equal(await page.$eval('[data-option-id="competency"]', node => node.getAttribute('href')), 'options/competency.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="course-catalog"]', node => node.getAttribute('href')), 'options/course-catalog.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="learning-development-plan"]', node => node.getAttribute('href')), 'options/learning-development-plan.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="training-plan"]', node => node.getAttribute('href')), 'options/training-plan.html?theme=dark');
-    assert.equal(await page.$eval('[data-option-id="training-calendar"]', node => node.getAttribute('href')), 'options/training-calendar.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="training-calendar"]', node => node.tagName), 'BUTTON');
     assert.equal(await page.$eval('[data-option-id="training-clocking"]', node => node.getAttribute('href')), 'options/training-clocking.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="training-feedback"]', node => node.getAttribute('href')), 'options/training-feedback.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="staff-competency"]', node => node.getAttribute('href')), 'options/staff-competency.html?theme=dark');

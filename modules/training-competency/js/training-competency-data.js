@@ -195,18 +195,21 @@ window.TRAINING_CALENDAR_DATA = {
     {
       id: 'microsoft-365-productivity',
       date: '2026-10-20',
+      status: 'Approved',
       activity: 'Microsoft 365 Productivity',
       classDetails: {
-        class: 'CLS-2026-0108',
+        class: 'A01',
         description: 'Hands-on productivity training covering collaboration, documents and workflow tools.',
         courseTitle: 'Microsoft 365 Productivity',
         classStatus: 'Scheduled',
         start: '2026-10-20T09:00',
         end: '2026-10-20T17:00',
         venue: 'Training Room 3A',
+        closingDate: '2026-10-16T17:00',
         trainer: 'Alicia Tan',
         capacity: '24 Participants',
-        remark: 'Please bring a company laptop for the practical exercises.'
+        remark: 'Please bring a company laptop for the practical exercises.',
+        attachment: 'Microsoft 365 Class Guide.pdf'
       },
       requestDetails: {
         documentReference: 'TR-2026-0108',
@@ -226,18 +229,21 @@ window.TRAINING_CALENDAR_DATA = {
     {
       id: 'effective-crisis-management',
       date: '2026-10-27',
+      status: 'Submitted',
       activity: 'Effective Crisis Management',
       classDetails: {
-        class: 'CLS-2026-0116',
+        class: 'A02',
         description: 'Scenario-based workshop for managing operational incidents and stakeholder communication.',
         courseTitle: 'Effective Crisis Management',
         classStatus: 'Scheduled',
         start: '2026-10-27T08:30',
         end: '2026-10-27T16:30',
         venue: 'Leadership Centre, Level 8',
+        closingDate: '2026-10-23T17:00',
         trainer: 'Daniel Wong',
         capacity: '18 Participants',
-        remark: 'Pre-reading materials will be shared before the class.'
+        remark: 'Pre-reading materials will be shared before the class.',
+        attachment: 'Crisis Management Workbook.pdf'
       },
       requestDetails: {
         documentReference: 'TR-2026-0116',

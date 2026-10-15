@@ -100,7 +100,7 @@ async function readSummary(page) {
     assert.equal(await page.$('#summaryOtTableTotal'), null);
     assert.equal(await page.$('#summaryTabView .summary-table-footer'), null);
     assert.equal(await page.$eval('#summaryTabView', view => view.textContent.includes('OT Breakdown Table')), false);
-    assert.deepEqual(planned.modalLegends, ['50.0% (2.5h)', '50.0% (2.5h)', '0.0% (0.0h)']);
+    assert.deepEqual(planned.modalLegends, ['50.0%', '50.0%', '0.0%']);
     assert.equal(await page.$eval('#chartModal', modal => getComputedStyle(modal).display), 'none');
     assert.equal(planned.tableRows, 2);
     assert.equal(await page.$eval('#summaryTabView', view => view.textContent.includes('127.0h')), false);
@@ -131,11 +131,14 @@ async function readSummary(page) {
 
     await page.click('#summaryChartInfoButton');
     assert.equal(await page.$eval('#chartModal', modal => getComputedStyle(modal).display), 'flex');
-    assert.equal(await page.$eval('#modalSummaryChartTotal', node => node.textContent.trim()), selected.chartTotal);
+    assert.equal(await page.$('#chartModal svg, #chartModal canvas'), null, 'Info shows details without a second chart');
+    assert.equal(await page.$eval('#chartModal .sheet-title', node => node.textContent.trim()), 'Chart Details');
+    assert.equal(await page.$eval('#chartModal .sheet-body', node => node.scrollWidth <= node.clientWidth + 1), true);
     assert.deepEqual(
       await page.$$eval('#chartModal [data-modal-legend-value]', nodes => nodes.map(node => node.textContent.trim())),
       selected.modalLegends
     );
+    assert.deepEqual(await page.$$eval('#chartModal [data-modal-legend-hours]', nodes => nodes.map(node => node.textContent.trim())), ['2.5 Hours', '0.0 Hours', '0.0 Hours']);
     assert.deepEqual(errors, []);
 
     console.log('OT Planning Summary chart, legend, table, and modal stay synchronized.');

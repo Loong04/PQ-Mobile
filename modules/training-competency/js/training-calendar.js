@@ -9,6 +9,10 @@
     return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
   }
 
+  function dateKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
   function formatDate(value) {
     const date = parseDateKey(value);
     return date ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(date) : value;
@@ -18,164 +22,265 @@
     const match = /T(\d{2}):(\d{2})/.exec(value || '');
     if (!match) return '-';
     const hour = Number(match[1]);
-    const minute = match[2];
-    return `${hour % 12 || 12}:${minute} ${hour >= 12 ? 'PM' : 'AM'}`;
+    return `${hour % 12 || 12}:${match[2]} ${hour >= 12 ? 'PM' : 'AM'}`;
   }
 
   function formatDateTime(value) {
-    const [dateKey] = (value || '').split('T');
-    return `${formatDate(dateKey)}, ${formatTime(value)}`;
+    const [key] = (value || '').split('T');
+    return `${formatDate(key)}, ${formatTime(value)}`;
   }
 
-  function calendarUrl(date) {
-    const query = new URLSearchParams({ date, theme: theme() });
-    return `training-calendar.html?${query}`;
+  function dashboardUrl(date) {
+    return `../index.html?scope=individual&date=${encodeURIComponent(date)}&theme=${theme()}#trainingCalendarSection`;
   }
 
   function detailsUrl(event) {
     const query = new URLSearchParams({ request: event.id, date: event.date, theme: theme() });
-    return `training-request-details.html?${query}`;
+    return `options/training-request-details.html?${query}`;
   }
 
-  function initCalendar() {
+  function initDashboardCalendar() {
+    const section = document.getElementById('trainingCalendarSection');
     const grid = document.getElementById('trainingCalendarGrid');
     const monthTitle = document.getElementById('trainingCalendarMonth');
-    const overlay = document.getElementById('trainingCalendarSheet');
-    const eventsList = document.getElementById('trainingCalendarEvents');
-    const sheetDate = document.getElementById('trainingCalendarSheetDate');
-    const closeButton = document.getElementById('trainingCalendarSheetClose');
+    const eventOverlay = document.getElementById('trainingCalendarSheet');
+    const eventList = document.getElementById('trainingCalendarEvents');
+    const eventDate = document.getElementById('trainingCalendarSheetDate');
+    const eventClose = document.getElementById('trainingCalendarSheetClose');
+    const classDetailsOverlay = document.getElementById('trainingClassDetailsModal');
+    const classDetailsFields = document.getElementById('trainingClassDetailsFields');
+    const classDetailsClose = document.getElementById('trainingClassDetailsClose');
     const main = document.querySelector('main');
-    const requestedDate = parseDateKey(params.get('date'));
     const initialParts = (source.initialMonth || '2026-10').split('-').map(Number);
+    const requestedDate = parseDateKey(params.get('date'));
     let visibleMonth = requestedDate || new Date(initialParts[0], initialParts[1] - 1, 1);
     visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1);
     let selectedDate = requestedDate ? params.get('date') : '';
-    let lastTrigger = null;
+    let lastEventTrigger = null;
+    let lastClassDetailsTrigger = null;
 
-    function syncLinks() {
-      document.getElementById('trainingCalendarBack').href = `../index.html?scope=individual&theme=${theme()}`;
-      eventsList.querySelectorAll('[data-request-id]').forEach(link => {
-        const event = source.events.find(item => item.id === link.dataset.requestId);
-        if (event) link.href = detailsUrl(event);
-      });
+    function eventsFor(key) {
+      return source.events.filter(event => event.date === key);
     }
 
-    function eventsFor(dateKey) {
-      return source.events.filter(event => event.date === dateKey);
-    }
-
-    function closeSheet(restoreFocus = true) {
-      if (overlay.getAttribute('aria-hidden') === 'true') return;
-      overlay.classList.remove('is-open');
-      overlay.setAttribute('aria-hidden', 'true');
-      main.inert = false;
-      if (restoreFocus && lastTrigger?.isConnected) lastTrigger.focus({ preventScroll: true });
-    }
-
-    function openSheet(dateKey, trigger) {
-      const events = eventsFor(dateKey);
-      if (!events.length) return;
-      selectedDate = dateKey;
-      lastTrigger = trigger;
-      document.querySelectorAll('.training-calendar-day').forEach(day => day.classList.toggle('selected', day.dataset.date === dateKey));
-      sheetDate.textContent = formatDate(dateKey);
-      eventsList.replaceChildren(...events.map(event => {
-        const card = document.createElement('article');
-        card.className = 'training-calendar-event-card';
-        const heading = document.createElement('h3');
-        heading.className = 'training-calendar-event-header';
-        heading.textContent = event.activity;
-        const body = document.createElement('div');
-        body.className = 'training-calendar-event-body';
-        const time = document.createElement('div');
-        time.className = 'training-calendar-event-time';
-        time.textContent = `${formatTime(event.classDetails.start)} – ${formatTime(event.classDetails.end)}`;
-        const actions = document.createElement('div');
-        actions.className = 'training-calendar-event-actions';
-        const detail = document.createElement('a');
-        detail.className = 'training-calendar-detail';
-        detail.dataset.requestId = event.id;
-        detail.href = detailsUrl(event);
-        detail.textContent = 'Detail';
-        actions.append(detail);
-        body.append(time, actions);
-        card.append(heading, body);
-        return card;
-      }));
-      syncLinks();
-      main.inert = true;
-      overlay.setAttribute('aria-hidden', 'false');
-      requestAnimationFrame(() => {
-        overlay.classList.add('is-open');
-        closeButton.focus({ preventScroll: true });
-      });
-    }
-
-    function dateKey(date) {
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    function createDay(date) {
+      const key = dateKey(date);
+      const events = eventsFor(key);
+      const day = document.createElement(events.length ? 'button' : 'span');
+      day.className = 'cal-day-cell';
+      day.dataset.date = key;
+      day.dataset.hasEvents = String(Boolean(events.length));
+      if (key === selectedDate) day.classList.add('selected');
+      const number = document.createElement('span');
+      number.className = 'cal-date-num';
+      number.textContent = date.getDate();
+      day.append(number);
+      if (events.length) {
+        day.type = 'button';
+        day.classList.add('status-event');
+        day.setAttribute('aria-label', `${formatDate(key)}, ${events.length} training ${events.length === 1 ? 'activity' : 'activities'}`);
+        const tag = document.createElement('span');
+        tag.className = 'cal-cell-tag';
+        tag.textContent = 'TRAIN';
+        day.append(tag);
+        day.addEventListener('click', () => openEventSheet(key, day));
+      }
+      return day;
     }
 
     function render() {
       const year = visibleMonth.getFullYear();
       const month = visibleMonth.getMonth();
       monthTitle.textContent = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(visibleMonth);
-      const mondayOffset = (new Date(year, month, 1).getDay() + 6) % 7;
-      const firstCell = new Date(year, month, 1 - mondayOffset);
       const fragment = document.createDocumentFragment();
-      for (let index = 0; index < 42; index += 1) {
-        const date = new Date(firstCell.getFullYear(), firstCell.getMonth(), firstCell.getDate() + index);
-        const key = dateKey(date);
-        const events = eventsFor(key);
-        const day = document.createElement(events.length ? 'button' : 'span');
-        day.className = 'training-calendar-day';
-        day.dataset.date = key;
-        day.dataset.hasEvents = String(Boolean(events.length));
-        day.textContent = date.getDate();
-        if (date.getMonth() !== month) day.classList.add('outside-month');
-        if (key === '2026-10-15') day.classList.add('today');
-        if (key === selectedDate) day.classList.add('selected');
-        if (events.length) {
-          day.type = 'button';
-          day.setAttribute('aria-label', `${formatDate(key)}, ${events.length} training ${events.length === 1 ? 'activity' : 'activities'}`);
-          day.addEventListener('click', () => openSheet(key, day));
-        }
-        fragment.append(day);
+      const leadCount = (new Date(year, month, 1).getDay() + 6) % 7;
+      const previousMonthLastDate = new Date(year, month, 0).getDate();
+      for (let index = leadCount; index > 0; index -= 1) {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'cal-day-cell other-month';
+        placeholder.textContent = previousMonthLastDate - index + 1;
+        fragment.append(placeholder);
       }
+      const dayCount = new Date(year, month + 1, 0).getDate();
+      for (let day = 1; day <= dayCount; day += 1) fragment.append(createDay(new Date(year, month, day)));
       grid.replaceChildren(fragment);
     }
 
+    function classDetailRow(label, value, modifier = '') {
+      const row = document.createElement('div');
+      row.className = 'training-calendar-class-detail-row';
+      const term = document.createElement('dt');
+      term.textContent = label;
+      const description = document.createElement('dd');
+      description.textContent = value || '-';
+      if (modifier) description.classList.add(modifier);
+      row.append(term, description);
+      return row;
+    }
+
+    function closeClassDetails(restoreFocus = true) {
+      if (classDetailsOverlay.getAttribute('aria-hidden') === 'true') return;
+      classDetailsOverlay.classList.remove('is-open');
+      classDetailsOverlay.setAttribute('aria-hidden', 'true');
+      eventOverlay.inert = false;
+      if (restoreFocus && lastClassDetailsTrigger?.isConnected) lastClassDetailsTrigger.focus({ preventScroll: true });
+    }
+
+    function openClassDetails(event, trigger) {
+      const details = event.classDetails;
+      lastClassDetailsTrigger = trigger;
+      classDetailsFields.replaceChildren(
+        classDetailRow('Class', details.class),
+        classDetailRow('Description', details.description),
+        classDetailRow('Course Title', details.courseTitle),
+        classDetailRow('Class Status', details.classStatus, 'training-calendar-class-status'),
+        classDetailRow('Start', formatDateTime(details.start)),
+        classDetailRow('End', formatDateTime(details.end)),
+        classDetailRow('Venue', details.venue),
+        classDetailRow('Closing Date', formatDateTime(details.closingDate)),
+        classDetailRow('Trainer / Facilitator', details.trainer),
+        classDetailRow('Class / Capacity', details.capacity),
+        classDetailRow('Remark', details.remark),
+        classDetailRow('Class Attachment', details.attachment, 'training-calendar-class-attachment')
+      );
+      eventOverlay.inert = true;
+      classDetailsOverlay.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => {
+        classDetailsOverlay.classList.add('is-open');
+        classDetailsClose.focus({ preventScroll: true });
+      });
+    }
+
+    function closeEventSheet(restoreFocus = true) {
+      if (eventOverlay.getAttribute('aria-hidden') === 'true') return;
+      closeClassDetails(false);
+      eventOverlay.classList.remove('is-open');
+      eventOverlay.setAttribute('aria-hidden', 'true');
+      main.inert = false;
+      if (restoreFocus && lastEventTrigger?.isConnected) lastEventTrigger.focus({ preventScroll: true });
+    }
+
+    function openEventSheet(key, trigger) {
+      const events = eventsFor(key);
+      if (!events.length) return;
+      selectedDate = key;
+      render();
+      lastEventTrigger = grid.querySelector(`[data-date="${key}"]`) || trigger;
+      eventDate.textContent = formatDate(key);
+      eventList.replaceChildren(...events.map(event => {
+        const details = event.classDetails;
+        const status = String(event.status || 'Submitted');
+        const statusTheme = status.toLowerCase();
+        const card = document.createElement('article');
+        card.className = 'training-calendar-event-card history-card-item';
+        card.dataset.status = statusTheme;
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `View details for class ${details.class}`);
+        const heading = document.createElement('div');
+        heading.className = 'history-card-heading';
+        const title = document.createElement('h3');
+        title.className = 'history-card-title';
+        title.textContent = details.class;
+        const course = document.createElement('div');
+        course.className = 'history-card-ref';
+        course.textContent = `Course: ${details.courseTitle}`;
+        heading.append(title, course);
+        const badge = document.createElement('span');
+        badge.className = 'card-status-badge';
+        badge.dataset.status = statusTheme;
+        const statusIcon = document.createElement('i');
+        statusIcon.className = statusTheme === 'approved' ? 'fa-solid fa-check' : 'fa-solid fa-hourglass-half';
+        statusIcon.setAttribute('aria-hidden', 'true');
+        badge.append(statusIcon, document.createTextNode(status));
+        const header = document.createElement('header');
+        header.className = 'training-calendar-event-card-header history-card-header';
+        header.append(heading, badge);
+        const body = document.createElement('div');
+        body.className = 'training-calendar-history-details history-card-details';
+        const description = document.createElement('div');
+        description.className = 'training-calendar-event-detail training-calendar-event-meta-row';
+        description.dataset.field = 'description';
+        const descriptionLabel = document.createElement('span');
+        descriptionLabel.textContent = 'Description';
+        const descriptionValue = document.createElement('strong');
+        descriptionValue.textContent = details.description;
+        description.append(descriptionLabel, descriptionValue);
+        const time = document.createElement('div');
+        time.className = 'training-calendar-event-time training-calendar-event-meta-row';
+        const timeLabel = document.createElement('span');
+        timeLabel.textContent = 'Time';
+        const timeValue = document.createElement('strong');
+        timeValue.textContent = `${formatTime(details.start)} – ${formatTime(details.end)}`;
+        time.append(timeLabel, timeValue);
+        const actions = document.createElement('footer');
+        actions.className = 'training-calendar-event-actions history-card-actions';
+        const detail = document.createElement('a');
+        detail.className = 'training-calendar-detail';
+        detail.href = detailsUrl(event);
+        detail.textContent = 'Detail';
+        detail.addEventListener('click', clickEvent => {
+          clickEvent.stopPropagation();
+          detail.href = detailsUrl(event);
+        });
+        card.addEventListener('click', () => openClassDetails(event, card));
+        card.addEventListener('keydown', keyEvent => {
+          if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+            keyEvent.preventDefault();
+            openClassDetails(event, card);
+          }
+        });
+        actions.append(detail);
+        body.append(description, time);
+        card.append(header, body, actions);
+        return card;
+      }));
+      main.inert = true;
+      eventOverlay.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => {
+        eventOverlay.classList.add('is-open');
+        eventClose.focus({ preventScroll: true });
+      });
+    }
+
     document.getElementById('trainingCalendarPrevious').addEventListener('click', () => {
-      closeSheet(false);
       visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
       selectedDate = '';
       render();
     });
     document.getElementById('trainingCalendarNext').addEventListener('click', () => {
-      closeSheet(false);
       visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
       selectedDate = '';
       render();
     });
-    closeButton.addEventListener('click', () => closeSheet());
-    document.getElementById('trainingCalendarSheetCancel').addEventListener('click', () => closeSheet());
-    overlay.addEventListener('click', event => { if (event.target === overlay) closeSheet(); });
-    overlay.querySelector('[role="dialog"]').addEventListener('click', event => event.stopPropagation());
-    document.addEventListener('keydown', event => {
-      if (overlay.getAttribute('aria-hidden') === 'true') return;
-      if (event.key === 'Escape') { event.preventDefault(); closeSheet(); return; }
-      if (event.key !== 'Tab') return;
-      const controls = [...overlay.querySelectorAll('button,a[href]')].filter(control => control.getClientRects().length);
-      const first = controls[0];
-      const last = controls.at(-1);
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    document.getElementById('trainingCalendarInfo').addEventListener('click', () => {
+      if (typeof window.showToast === 'function') window.showToast('Purple dates indicate scheduled training activities.');
     });
-    new MutationObserver(syncLinks).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    eventClose.addEventListener('click', () => closeEventSheet());
+    document.getElementById('trainingCalendarSheetCancel').addEventListener('click', () => closeEventSheet());
+    eventOverlay.addEventListener('click', event => {
+      if (event.target === eventOverlay) closeEventSheet();
+    });
+    classDetailsClose.addEventListener('click', () => closeClassDetails());
+    document.getElementById('trainingClassDetailsCancel').addEventListener('click', () => closeClassDetails());
+    classDetailsOverlay.addEventListener('click', event => {
+      if (event.target === classDetailsOverlay) closeClassDetails();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      if (classDetailsOverlay.getAttribute('aria-hidden') === 'false') {
+        event.preventDefault();
+        closeClassDetails();
+      } else if (eventOverlay.getAttribute('aria-hidden') === 'false') {
+        event.preventDefault();
+        closeEventSheet();
+      }
+    });
     render();
-    syncLinks();
     if (selectedDate && eventsFor(selectedDate).length) {
+      section.scrollIntoView({ block: 'start' });
       const trigger = grid.querySelector(`[data-date="${selectedDate}"]`);
-      requestAnimationFrame(() => openSheet(selectedDate, trigger));
+      requestAnimationFrame(() => openEventSheet(selectedDate, trigger));
     }
   }
 
@@ -205,14 +310,12 @@
     const unavailable = document.getElementById('trainingRequestUnavailable');
     const classFields = document.getElementById('trainingClassDetails');
     const requestFields = document.getElementById('trainingRequestFields');
-    const selectedDate = event?.date || params.get('date') || source.events[0]?.date || source.initialMonth + '-01';
-
+    const selectedDate = event?.date || params.get('date') || source.events[0]?.date || `${source.initialMonth}-01`;
     function syncLinks() {
-      const href = calendarUrl(selectedDate);
+      const href = dashboardUrl(selectedDate);
       document.getElementById('trainingRequestBack').href = href;
       document.getElementById('trainingRequestCancel').href = href;
     }
-
     syncLinks();
     new MutationObserver(syncLinks).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     if (!event) {
@@ -220,20 +323,13 @@
       unavailable.hidden = false;
       return;
     }
-
     const classData = event.classDetails;
     const requestData = event.requestDetails;
     classFields.replaceChildren(
-      field('Class', classData.class),
-      field('Description', classData.description),
-      field('Course Title', classData.courseTitle),
+      field('Class', classData.class), field('Description', classData.description), field('Course Title', classData.courseTitle),
       field('Class Status', '', 'class-status', () => statusMarkup(classData.classStatus, 'scheduled')),
-      field('Start', formatDateTime(classData.start)),
-      field('End', formatDateTime(classData.end)),
-      field('Venue', classData.venue),
-      field('Trainer / Facilitator', classData.trainer),
-      field('Class Capacity', classData.capacity),
-      field('Remark', classData.remark)
+      field('Start', formatDateTime(classData.start)), field('End', formatDateTime(classData.end)), field('Venue', classData.venue),
+      field('Trainer / Facilitator', classData.trainer), field('Class Capacity', classData.capacity), field('Remark', classData.remark)
     );
     requestFields.replaceChildren(
       field('Document Reference', requestData.documentReference),
@@ -250,17 +346,13 @@
         return wrapper;
       }),
       field('Attendance Status', '', 'attendance-status', () => statusMarkup(requestData.attendanceStatus, 'registered')),
-      field('Reason', requestData.reason),
-      field('Is Require Traveling', requestData.requireTraveling),
-      field('Is Require Accommodation', requestData.requireAccommodation),
-      field('Is Vegetarian', requestData.vegetarian),
-      field('Remark', requestData.remark),
-      field('Attended Hours', requestData.attendedHours),
-      field('Attendance Remark', requestData.attendanceRemark),
-      field('Approver Comments', requestData.approverComments)
+      field('Reason', requestData.reason), field('Is Require Traveling', requestData.requireTraveling),
+      field('Is Require Accommodation', requestData.requireAccommodation), field('Is Vegetarian', requestData.vegetarian),
+      field('Remark', requestData.remark), field('Attended Hours', requestData.attendedHours),
+      field('Attendance Remark', requestData.attendanceRemark), field('Approver Comments', requestData.approverComments)
     );
   }
 
-  if (pageType === 'calendar') initCalendar();
+  if (pageType === 'dashboard') initDashboardCalendar();
   if (pageType === 'details') initDetails();
 })();

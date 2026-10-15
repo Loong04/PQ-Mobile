@@ -19,7 +19,6 @@
     document.querySelector('[data-option-id="training-need"]').href = `options/training-need.html?theme=${theme()}`;
     document.querySelector('[data-option-id="learning-development-plan"]').href = `options/learning-development-plan.html?theme=${theme()}`;
     document.querySelector('[data-option-id="training-plan"]').href = `options/training-plan.html?theme=${theme()}`;
-    document.querySelector('[data-option-id="training-calendar"]').href = `options/training-calendar.html?theme=${theme()}`;
     document.querySelector('[data-option-id="training-clocking"]').href = `options/training-clocking.html?theme=${theme()}`;
     document.querySelector('[data-option-id="staff-competency"]').href = `options/staff-competency.html?theme=${theme()}`;
     document.querySelector('[data-option-id="competency-summary"]').href = `options/competency-summary.html?theme=${theme()}`;
@@ -129,6 +128,14 @@
   });
 
   document.querySelectorAll('button[data-option-id]').forEach(button => {
+    if (button.dataset.optionId === 'training-calendar') {
+      button.addEventListener('click', () => {
+        const section = document.getElementById('trainingCalendarSection');
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('trainingCalendarMonth').focus({ preventScroll: true });
+      });
+      return;
+    }
     button.addEventListener('click', () => {
       const title = button.querySelector('.training-competency-option-title').textContent.trim();
       showToast(`${title} is coming soon`);

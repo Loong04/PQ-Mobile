@@ -561,10 +561,7 @@
 
     #summaryChartBeforeCircle,
     #summaryChartAfterCircle,
-    #summaryChartRestCircle,
-    #modalSummaryChartBeforeCircle,
-    #modalSummaryChartAfterCircle,
-    #modalSummaryChartRestCircle {
+    #summaryChartRestCircle {
       transition: stroke-dasharray 0.58s cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 0.58s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
     }
     #summaryChartCard.is-refreshing { animation: summaryChartSurfaceRefresh 0.65s ease; }
@@ -813,7 +810,7 @@
 
       <!-- Main 3 Tabs Bar ("三个 card": Staff | Calendar | Summary) -->
       <div class="tabs-nav-card">
-        <button class="tab-card-btn active" id="tabStaffBtn" onclick="switchMainTab('staff')">Staff</button>
+        <button class="tab-card-btn active" id="tabStaffBtn" onclick="switchMainTab('staff')">Plan</button>
         <button class="tab-card-btn" id="tabCalendarBtn" onclick="switchMainTab('calendar')">Calendar</button>
         <button class="tab-card-btn" id="tabSummaryBtn" onclick="switchMainTab('summary')">Summary</button>
       </div>
@@ -1631,7 +1628,7 @@
       <div class="drag-handle"></div>
       <div class="sheet-header">
         <div>
-          <div class="sheet-title form-section-heading">OT Plan Approval</div>
+          <div class="sheet-title form-section-heading">OT Planning</div>
           <div style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);" id="editOtDateSubtext">Planning date: 23 Sep 2026</div>
         </div>
         <button type="button" class="sheet-close-btn" onclick="closeModal('editOtDetailsModal')"><i class="fa-solid fa-xmark"></i></button>
@@ -1819,44 +1816,28 @@
         </button>
       </div>
       <div class="sheet-body">
-        <!-- Donut Chart & Legend -->
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
-        <div style="position: relative; width: 160px; height: 160px;">
-          <svg width="160" height="160" viewBox="0 0 160 160" style="transform: rotate(-90deg);">
-            <circle cx="80" cy="80" r="58" fill="transparent" stroke="var(--border-subtle)" stroke-width="24" opacity="0.3"></circle>
-            <circle id="modalSummaryChartBeforeCircle" cx="80" cy="80" r="58" fill="transparent" stroke="#f59e0b" stroke-width="24" stroke-dasharray="0 364.4" stroke-dashoffset="0"></circle>
-            <circle id="modalSummaryChartAfterCircle" cx="80" cy="80" r="58" fill="transparent" stroke="#7c3aed" stroke-width="24" stroke-dasharray="0 364.4" stroke-dashoffset="0"></circle>
-            <circle id="modalSummaryChartRestCircle" cx="80" cy="80" r="58" fill="transparent" stroke="#3b82f6" stroke-width="24" stroke-dasharray="0 364.4" stroke-dashoffset="0"></circle>
-          </svg>
-          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <div id="modalSummaryChartTotal" style="font-size: 20px; font-weight: 900; color: var(--text-primary);">5.0h</div>
-            <div id="modalSummaryChartCenterLabel" style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total Planned</div>
-          </div>
-        </div>
-
-        <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; background: var(--bg-input); padding: 12px; border-radius: 14px; border: 1px solid var(--border-subtle);">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 3px;"></div>
-              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 BEFORE WORK</span>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px;">
+              <span style="display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 12.5px; font-weight: 800;"><span style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 3px; background: #f59e0b;"></span>OT 1.5 BEFORE WORK</span>
+              <span data-modal-legend-value id="modalSummaryLegendBefore" style="color: #f59e0b; font-size: 12.5px; font-weight: 800; white-space: nowrap;">0.0%</span>
             </div>
-            <span data-modal-legend-value id="modalSummaryLegendBefore" style="font-size: 12px; font-weight: 800; color: #f59e0b;">50.0% (2.5h)</span>
+            <div data-modal-legend-hours id="modalSummaryHoursBefore" style="font-size: 12px; font-weight: 700; color: var(--text-muted);">0.0 Hours</div>
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 12px; height: 12px; background: #7c3aed; border-radius: 3px;"></div>
-              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 1.5 AFTER WORK</span>
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px;">
+              <span style="display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 12.5px; font-weight: 800;"><span style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 3px; background: #7c3aed;"></span>OT 1.5 AFTER WORK</span>
+              <span data-modal-legend-value id="modalSummaryLegendAfter" style="color: #7c3aed; font-size: 12.5px; font-weight: 800; white-space: nowrap;">0.0%</span>
             </div>
-            <span data-modal-legend-value id="modalSummaryLegendAfter" style="font-size: 12px; font-weight: 800; color: var(--purple-primary);">50.0% (2.5h)</span>
+            <div data-modal-legend-hours id="modalSummaryHoursAfter" style="font-size: 12px; font-weight: 700; color: var(--text-muted);">0.0 Hours</div>
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 3px;"></div>
-              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">OT 2.0 REST DAY</span>
+          <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px;">
+              <span style="display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 12.5px; font-weight: 800;"><span style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 3px; background: #3b82f6;"></span>OT 2.0 REST DAY</span>
+              <span data-modal-legend-value id="modalSummaryLegendRest" style="color: #3b82f6; font-size: 12.5px; font-weight: 800; white-space: nowrap;">0.0%</span>
             </div>
-            <span data-modal-legend-value id="modalSummaryLegendRest" style="font-size: 12px; font-weight: 800; color: #3b82f6;">0.0% (0.0h)</span>
+            <div data-modal-legend-hours id="modalSummaryHoursRest" style="font-size: 12px; font-weight: 700; color: var(--text-muted);">0.0 Hours</div>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -2250,15 +2231,15 @@
       document.getElementById('summaryChartCenterLabel').textContent =
         (selectedOtSummaryJobTitle === 'all' ? 'Total ' : 'Selected ') + metric.label.replace(' Hours', '');
       const legendEntries = [
-        { key: 'before', modalId: 'modalSummaryLegendBefore' },
-        { key: 'after', modalId: 'modalSummaryLegendAfter' },
-        { key: 'rest', modalId: 'modalSummaryLegendRest' }
+        { key: 'before', modalId: 'modalSummaryLegendBefore', hoursId: 'modalSummaryHoursBefore' },
+        { key: 'after', modalId: 'modalSummaryLegendAfter', hoursId: 'modalSummaryHoursAfter' },
+        { key: 'rest', modalId: 'modalSummaryLegendRest', hoursId: 'modalSummaryHoursRest' }
       ];
       legendEntries.forEach(entry => {
         const hours = typeTotals[entry.key];
         const percent = chartTotal ? (hours / chartTotal) * 100 : 0;
-        const text = percent.toFixed(1) + '% (' + hours.toFixed(1) + 'h)';
-        document.getElementById(entry.modalId).textContent = text;
+        document.getElementById(entry.modalId).textContent = percent.toFixed(1) + '%';
+        document.getElementById(entry.hoursId).textContent = hours.toFixed(1) + ' Hours';
       });
 
       const rowsContainer = document.getElementById('summaryOtTableRows');
@@ -2286,27 +2267,22 @@
 
       const circumference = 364.4;
       const segments = [
-        { hours: typeTotals.before, inlineId: 'summaryChartBeforeCircle', modalId: 'modalSummaryChartBeforeCircle' },
-        { hours: typeTotals.after, inlineId: 'summaryChartAfterCircle', modalId: 'modalSummaryChartAfterCircle' },
-        { hours: typeTotals.rest, inlineId: 'summaryChartRestCircle', modalId: 'modalSummaryChartRestCircle' }
+        { hours: typeTotals.before, inlineId: 'summaryChartBeforeCircle' },
+        { hours: typeTotals.after, inlineId: 'summaryChartAfterCircle' },
+        { hours: typeTotals.rest, inlineId: 'summaryChartRestCircle' }
       ];
       const drawChart = () => {
         let offset = 0;
         segments.forEach(segment => {
           const arc = chartTotal ? (segment.hours / chartTotal) * circumference : 0;
-          [segment.inlineId, segment.modalId].forEach(id => {
-            const circle = document.getElementById(id);
-            circle.setAttribute('stroke-dasharray', arc.toFixed(1) + ' ' + circumference);
-            circle.setAttribute('stroke-dashoffset', '-' + offset.toFixed(1));
-            circle.style.opacity = segment.hours > 0 ? '1' : '0';
-          });
+          const circle = document.getElementById(segment.inlineId);
+          circle.setAttribute('stroke-dasharray', arc.toFixed(1) + ' ' + circumference);
+          circle.setAttribute('stroke-dashoffset', '-' + offset.toFixed(1));
+          circle.style.opacity = segment.hours > 0 ? '1' : '0';
           offset += arc;
         });
       };
 
-      document.getElementById('modalSummaryChartTotal').textContent = chartTotal.toFixed(1) + 'h';
-      document.getElementById('modalSummaryChartCenterLabel').textContent =
-        (selectedOtSummaryJobTitle === 'all' ? 'Total ' : 'Selected ') + metric.label.replace(' Hours', '');
       const chartCard = document.getElementById('summaryChartCard');
       if (animateChart && chartCard) {
         chartCard.classList.remove('is-refreshing');
