@@ -60,7 +60,7 @@ const APP_ROUTES = {
   'tax_relief': 'modules/payroll/options/tax-relief.html',
   'performance': () => `modules/performance/index.html?scope=individual&theme=${getCurrentTheme()}`,
   'performance_goals': () => `modules/performance/index.html?scope=individual&theme=${getCurrentTheme()}`,
-  'learning_dev': '#learning-development',
+  'learning_dev': () => `modules/training-competency/index.html?scope=individual&theme=${getCurrentTheme()}`,
   'people_documents': 'team.html',
   'work_behaviour': 'work-behaviour.html',
   'change_request': 'change-request.html',

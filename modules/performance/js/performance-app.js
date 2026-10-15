@@ -7,6 +7,8 @@
     document.getElementById('performanceBack').href = `../../app${theme()}.html`;
     document.querySelector('[data-option-id="goal-plan"]').href = `options/goal-plan.html?theme=${theme()}`;
     document.querySelector('[data-option-id="goal-progress"]').href = `options/goal-progress.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="self-evaluation"]').href = `options/self-evaluation.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="performance-evaluation"]').href = `options/performance-evaluation.html?theme=${theme()}`;
     document.querySelector('[data-option-id="work-incident"]').href = `options/work-incident.html?theme=${theme()}`;
     document.querySelector('[data-option-id="performance-highlight"]').href = `options/performance-highlight.html?theme=${theme()}`;
     document.querySelector('[data-option-id="incident-highlight"]').href = `options/incident-highlight.html?theme=${theme()}`;
