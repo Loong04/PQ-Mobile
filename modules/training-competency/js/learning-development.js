@@ -9,6 +9,7 @@
   const storageKey = 'peoplehcm.learningDevelopment.records.v1';
   const activities = structuredClone(source.activities);
   const selected = activities.find(activity => activity.id === params.get('activity'));
+  const addMode = page === 'edit' && params.get('mode') === 'add';
   let modalTrigger = null;
   let inerted = [];
   let storageError = '';
@@ -24,16 +25,11 @@
     return element;
   }
 
-  function icon(name) {
-    const element = node('i', `fa-solid fa-${name}`);
-    element.setAttribute('aria-hidden', 'true');
-    return element;
-  }
-
-  function url(file, activityId, recordId) {
+  function url(file, activityId, recordId, mode) {
     const query = new URLSearchParams({ theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark' });
     if (activityId) query.set('activity', activityId);
     if (recordId) query.set('record', recordId);
+    if (mode) query.set('mode', mode);
     return `${file}?${query}`;
   }
 
@@ -128,11 +124,10 @@
     return heading;
   }
 
-  function action(label, className, symbol, href) {
+  function action(label, className, href) {
     const button = node(href ? 'a' : 'button', className);
     if (href) button.href = href;
     else button.type = 'button';
-    if (symbol) button.append(icon(symbol));
     button.append(node('span', '', label));
     return button;
   }
@@ -152,7 +147,7 @@
         ['Review Month(s)', activity.reviewMonths, 'review-months'], ['Progress%', `${number(progress(activity))}%`, 'progress']
       ]));
       const footer = node('footer', 'ld-card-footer');
-      const update = action('Update', 'ld-primary ld-update', null, url('learning-development-update.html', activity.id));
+      const update = action('Update', 'ld-primary ld-update', url('learning-development-update.html', activity.id));
       update.setAttribute('aria-label', `Update ${activity.activity}`);
       footer.append(update);
       card.append(footer);
@@ -205,16 +200,15 @@
       open.setAttribute('aria-haspopup', 'dialog');
       open.setAttribute('aria-controls', 'ldDetailsOverlay');
       const heading = header(selected);
-      heading.append(icon('chevron-right'));
       open.append(heading, cardDetails([
         ['Start Date', date(record.start), 'start-date'], ['End Date', date(record.end), 'end-date'],
         ['Hours Used', number(record.hours), 'hours-used'], ['Progress%', `${number(record.progress)}%`, 'progress']
       ]));
       open.addEventListener('click', () => openDetails(record, open));
       const footer = node('footer', 'ld-card-footer');
-      const edit = action('Edit', 'ld-record-action ld-edit', 'pen-to-square', url('learning-development-edit.html', selected.id, record.id));
+      const edit = action('Edit', 'ld-record-action ld-edit', url('learning-development-edit.html', selected.id, record.id));
       edit.setAttribute('aria-label', `Edit progress from ${date(record.start)}`);
-      const remove = action('Delete', 'ld-record-action ld-delete', 'trash-can');
+      const remove = action('Delete', 'ld-record-action ld-delete');
       remove.setAttribute('aria-label', `Delete progress from ${date(record.start)}`);
       remove.addEventListener('click', () => {
         if (!persist(selected, selected.records.filter(item => item.id !== record.id))) return;
@@ -238,7 +232,14 @@
 
   function renderEdit() {
     summary('ldEditSummary', contextRows(selected));
-    [['ldStartInput', activeRecord.start], ['ldEndInput', activeRecord.end], ['ldProgressInput', activeRecord.progress], ['ldHoursInput', activeRecord.hours], ['ldRemarksInput', activeRecord.remarks]].forEach(([id, value]) => { $(id).value = value; });
+    const initial = addMode ? { start: '', end: '', progress: '', hours: '', remarks: '' } : activeRecord;
+    if (addMode) {
+      document.title = 'PeopleHCM - Add L&D Progress';
+      $('ldEditPageTitle').textContent = 'Add L&D Progress';
+      $('ldEditFormTitle').textContent = 'Progress Details';
+      $('ldSaveLabel').textContent = 'Add';
+    }
+    [['ldStartInput', initial.start], ['ldEndInput', initial.end], ['ldProgressInput', initial.progress], ['ldHoursInput', initial.hours], ['ldRemarksInput', initial.remarks]].forEach(([id, value]) => { $(id).value = value; });
     ['ldStartInput', 'ldEndInput'].forEach(id => { $(id).min = source.periodStart; $(id).max = selected.deadline; });
     $('ldEditForm').addEventListener('input', event => {
       event.target.removeAttribute('aria-invalid');
@@ -247,7 +248,8 @@
     $('ldEditForm').addEventListener('submit', event => {
       event.preventDefault();
       const record = {
-        id: activeRecord.id, start: $('ldStartInput').value, end: $('ldEndInput').value,
+        id: addMode ? (typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`) : activeRecord.id,
+        start: $('ldStartInput').value, end: $('ldEndInput').value,
         progress: $('ldProgressInput').value === '' ? NaN : Number($('ldProgressInput').value),
         hours: $('ldHoursInput').value === '' ? NaN : Number($('ldHoursInput').value), remarks: $('ldRemarksInput').value.trim()
       };
@@ -259,7 +261,8 @@
       if (!Number.isFinite(record.progress) || record.progress < 0 || record.progress > 100) return formError('Progress must be between 0 and 100%.', $('ldProgressInput'));
       if (!Number.isFinite(record.hours) || record.hours < 0) return formError('Hours must be 0 or more.', $('ldHoursInput'));
       if (record.remarks.length > 2000) return formError('Remarks must be 2,000 characters or fewer.', $('ldRemarksInput'));
-      if (!persist(selected, selected.records.map(item => item.id === activeRecord.id ? record : item))) return;
+      const records = addMode ? [...selected.records, record] : selected.records.map(item => item.id === activeRecord.id ? record : item);
+      if (!persist(selected, records)) return;
       location.href = url('learning-development-update.html', selected.id);
     });
   }
@@ -271,13 +274,16 @@
     $('ldUnavailableBack').href = url('learning-development-plan.html');
     if (page === 'edit') $('ldCancel').href = selected ? url('learning-development-update.html', selected.id) : url('learning-development-plan.html');
     if (page === 'plan') document.querySelectorAll('.ld-update').forEach((link, index) => { link.href = url('learning-development-update.html', activities[index].id); });
-    if (page === 'update' && selected) document.querySelectorAll('.ld-edit').forEach((link, index) => { link.href = url('learning-development-edit.html', selected.id, selected.records[index].id); });
+    if (page === 'update' && selected) {
+      $('ldAddProgress').href = url('learning-development-edit.html', selected.id, null, 'add');
+      document.querySelectorAll('.ld-edit').forEach((link, index) => { link.href = url('learning-development-edit.html', selected.id, selected.records[index].id); });
+    }
   }
 
   showStorageError(storageError);
-  if (page !== 'plan' && (!selected || page === 'edit' && !activeRecord)) {
+  if (page !== 'plan' && (!selected || page === 'edit' && !addMode && !activeRecord)) {
     $('ldUnavailable').hidden = false;
-    ['ldProgressSummary', 'ldRecords', 'ldEditSummary', 'ldEditForm'].forEach(id => { if ($(id)) $(id).hidden = true; });
+    ['ldProgressSummary', 'ldRecordsToolbar', 'ldRecords', 'ldEditSummary', 'ldEditForm'].forEach(id => { if ($(id)) $(id).hidden = true; });
   } else if (page === 'plan') renderPlan();
   else if (page === 'edit') renderEdit();
   else renderProgress();

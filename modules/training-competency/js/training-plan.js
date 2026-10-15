@@ -57,12 +57,6 @@
       if (course.attendanceStatus === 'Completed') status.classList.add('training-plan-completed');
       else if (course.attendanceStatus === 'Not Attended') status.classList.add('training-plan-pending');
       const remarks = detail('Remarks', course.remarks, 'remarks');
-      remarks.classList.add('training-plan-remarks');
-      const completed = course.attendanceStatus === 'Completed';
-      if (completed) remarks.classList.add('training-plan-remarks-completed');
-      const icon = node('i', `fa-solid ${completed ? 'fa-circle-check' : 'fa-circle-info'}`);
-      icon.setAttribute('aria-hidden', 'true');
-      remarks.querySelector('dd').replaceChildren(icon, node('span', '', display(course.remarks)));
       details.append(detail('Last Attended', course.lastAttended ? dateText(course.lastAttended) : 'Not yet attended', 'last-attended'),
         status, detail('Next Due Date', dateText(course.nextDueDate), 'next-due-date'), remarks);
       card.append(header, details);

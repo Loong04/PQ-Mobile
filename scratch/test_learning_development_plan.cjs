@@ -40,6 +40,38 @@ const storageKey = 'peoplehcm.learningDevelopment.records.v1';
     assert.equal(await value('progress'), '50%');
     assert.equal(await value('total-records'), '2');
     assert.equal(await value('total-used-hours'), '14');
+    assert.equal(await page.$$('.ld-record-card .ld-card-header .fa-chevron-right').then(nodes => nodes.length), 0, 'Progress cards do not show header arrows');
+    assert.equal(await page.$$('.ld-record-action i').then(nodes => nodes.length), 0, 'Edit and Delete actions are text only');
+    assert.deepEqual(await page.$eval('.ld-record-card', card => {
+      const styles = [...card.querySelectorAll('.ld-record-action')].map(button => {
+        const style = getComputedStyle(button);
+        return {
+          backgroundColor: style.backgroundColor,
+          backgroundImage: style.backgroundImage,
+          borderColor: style.borderColor,
+          boxShadow: style.boxShadow,
+          color: style.color
+        };
+      });
+      return { actionCount: styles.length, sameStyle: JSON.stringify(styles[0]) === JSON.stringify(styles[1]) };
+    }), { actionCount: 2, sameStyle: true }, 'Edit and Delete actions use the same colour treatment');
+    assert.deepEqual(await page.$eval('#ldAddProgress', button => ({
+      tag: button.tagName,
+      label: button.getAttribute('aria-label'),
+      icon: button.querySelector('i')?.classList.contains('fa-plus'),
+      visibleText: button.textContent.trim()
+    })), { tag: 'A', label: 'Add progress record', icon: true, visibleText: '' }, 'Progress records provide an accessible add icon');
+    await click('#ldAddProgress');
+    await page.waitForSelector('#ldEditForm');
+    assert.equal(await page.$eval('h1', node => node.textContent.trim()), 'Add L&D Progress');
+    assert.equal(await page.$eval('.form-section-heading', node => node.textContent.trim()), 'Progress Details');
+    assert.equal(await page.$eval('#ldSave', node => node.textContent.trim()), 'Add');
+    assert.deepEqual(await page.$$eval('#ldEditForm :is(input, textarea)', nodes => nodes.map(node => node.value)), ['', '', '', '', ''], 'Add opens the Edit-style form with empty fields');
+    await click('#ldSave');
+    assert.match(await page.$eval('#ldEditError', node => node.textContent), /Start Date is required/);
+    await click('#ldCancel');
+    await page.waitForSelector('#ldProgressSummary');
+    assert.equal(await value('total-records'), '2', 'Cancelling Add keeps existing progress records');
     await click('.ld-record-open');
     await page.waitForSelector('#ldDetailsOverlay:not([hidden])');
     assert.deepEqual(await page.$$eval('#ldDetailsRows th', nodes => nodes.map(node => node.textContent)), ['Start Date', 'End Date', 'Progress', 'Hours', 'Remarks']);
@@ -120,6 +152,25 @@ const storageKey = 'peoplehcm.learningDevelopment.records.v1';
         await page.waitForSelector('#ldProgressSummary');
       }
     }
+    await click('#ldAddProgress');
+    await page.waitForSelector('#ldEditForm');
+    await fill('#ldStartInput', '2026-08-01');
+    await fill('#ldEndInput', '2026-08-02');
+    await fill('#ldProgressInput', '80');
+    await fill('#ldHoursInput', '4');
+    await fill('#ldRemarksInput', 'Completed the follow-up leadership exercise.');
+    await click('#ldSave');
+    await page.waitForSelector('#ldProgressSummary');
+    assert.equal(await value('total-records'), '3');
+    assert.equal(await value('total-used-hours'), '20');
+    assert.equal(await value('progress'), '80%');
+    assert.deepEqual(await page.$$eval('.ld-record-card:last-child .ld-card-detail dd', nodes => nodes.map(node => node.textContent.trim())), ['01 Aug 2026', '02 Aug 2026', '4', '80%']);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await value('total-records'), '3', 'Added progress persists after reload');
+    await click('.ld-record-card:last-child .ld-delete');
+    assert.equal(await value('total-records'), '2');
+    assert.equal(await value('total-used-hours'), '16');
+    assert.equal(await value('progress'), '70%');
     await click('.ld-record-card:last-child .ld-delete');
     assert.equal(await value('total-records'), '1');
     assert.equal(await value('total-used-hours'), '6');

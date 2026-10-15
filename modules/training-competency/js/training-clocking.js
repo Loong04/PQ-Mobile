@@ -9,6 +9,7 @@
   const empty = document.getElementById('trainingClockingEmpty');
   const status = document.getElementById('trainingClockingStatus');
   let records = loadRecords();
+  const previewRecords = createPreviewRecords();
   let timer = 0;
 
   function theme() {
@@ -37,6 +38,22 @@
     document.getElementById('trainingClockingDay').textContent = now.toLocaleDateString('en-GB', { weekday: 'long' });
     document.getElementById('trainingClockingDate').textContent = formatDate(now);
     document.getElementById('trainingClockingTime').textContent = formatTime(now);
+  }
+
+  // Display two completed preview sessions without persisting them or changing clocking state.
+  function createPreviewRecords() {
+    const today = new Date();
+    return [2, 1].flatMap(daysAgo => ['Clock In', 'Clock Out'].map(type => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - daysAgo);
+      date.setHours(type === 'Clock In' ? 9 : 17, 0, 0, 0);
+      return {
+        timestamp: date.toISOString(),
+        date: formatDate(date),
+        type,
+        time: formatTime(date)
+      };
+    }));
   }
 
   function startClock() {
@@ -83,8 +100,9 @@
     return records.at(-1)?.type === 'Clock In';
   }
 
-  function createRow(record) {
+  function createRow(record, preview = false) {
     const row = document.createElement('tr');
+    if (preview) row.dataset.preview = 'true';
     const date = document.createElement('td');
     const typeCell = document.createElement('td');
     const type = document.createElement('span');
@@ -100,8 +118,10 @@
   }
 
   function render() {
-    rows.replaceChildren(...records.slice().reverse().map(createRow));
-    empty.hidden = records.length > 0;
+    const history = [...previewRecords.map(record => ({ record, preview: true })), ...records.map(record => ({ record, preview: false }))]
+      .sort((left, right) => right.record.timestamp.localeCompare(left.record.timestamp));
+    rows.replaceChildren(...history.map(({ record, preview }) => createRow(record, preview)));
+    empty.hidden = history.length > 0;
     clockIn.disabled = isClockedIn();
     clockOut.disabled = !isClockedIn();
     if (!records.length) status.textContent = 'Ready to clock in';

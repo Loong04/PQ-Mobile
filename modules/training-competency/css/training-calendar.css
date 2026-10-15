@@ -1,0 +1,160 @@
+.training-calendar-page [hidden],
+.training-request-page [hidden] { display: none !important; }
+
+.training-calendar-content { padding: 16px 16px 100px; }
+
+.training-calendar-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 384px;
+  margin: 0 auto;
+  padding: 18px 14px 15px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 22px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+.training-calendar-toolbar,
+.training-calendar-controls,
+.training-calendar-sheet-heading { display: flex; align-items: center; }
+
+.training-calendar-toolbar { justify-content: space-between; gap: 14px; padding: 0 2px 14px; border-bottom: 1px solid var(--border-subtle); }
+.training-calendar-toolbar p,
+.training-calendar-sheet-heading p { margin: 0 0 3px; color: var(--text-muted); font-size: 10.5px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.training-calendar-toolbar h2,
+.training-calendar-sheet-heading h2 { margin: 0; color: var(--text-primary); font-size: 17px; font-weight: 800; line-height: 1.25; }
+.training-calendar-controls { gap: 7px; }
+.training-calendar-controls button,
+.training-calendar-sheet-heading button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 11px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.training-calendar-weekdays,
+.training-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.training-calendar-weekdays { padding: 13px 0 8px; text-align: center; }
+.training-calendar-weekdays span { color: var(--text-muted); font-size: 10.5px; font-weight: 800; }
+
+.training-calendar-day {
+  position: relative;
+  min-width: 0;
+  min-height: 45px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8px 2px 5px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 750;
+}
+button.training-calendar-day { cursor: pointer; }
+.training-calendar-day.outside-month { color: var(--text-muted); opacity: .42; }
+.training-calendar-day.today { border-color: rgba(124, 58, 237, .42); }
+.training-calendar-day[data-has-events="true"] { border-color: rgba(124, 58, 237, .25); background: rgba(124, 58, 237, .1); color: var(--purple-text); }
+.training-calendar-day[data-has-events="true"]::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--purple-primary);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, .12);
+  transform: translateX(-50%);
+}
+.training-calendar-day.selected { border-color: transparent; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; box-shadow: 0 5px 14px rgba(124, 58, 237, .3); }
+.training-calendar-day.selected::after { background: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, .2); }
+.training-calendar-day:focus-visible,
+.training-calendar-controls button:focus-visible,
+.training-calendar-sheet button:focus-visible,
+.training-calendar-sheet a:focus-visible { outline: 3px solid rgba(168, 85, 247, .45); outline-offset: 2px; }
+
+.training-calendar-legend { display: flex; align-items: center; justify-content: flex-end; gap: 7px; margin-top: 14px; color: var(--text-muted); font-size: 10.5px; font-weight: 700; }
+.training-calendar-legend span { width: 7px; height: 7px; border-radius: 50%; background: var(--purple-primary); box-shadow: 0 0 0 3px rgba(124, 58, 237, .12); }
+
+.training-calendar-sheet-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  border-radius: inherit;
+  background: rgba(15, 23, 42, .62);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .24s ease, visibility .24s ease;
+}
+.training-calendar-sheet-overlay.is-open { opacity: 1; visibility: visible; pointer-events: auto; }
+.training-calendar-sheet {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 82%;
+  display: flex;
+  flex-direction: column;
+  padding: 11px 18px 24px;
+  border: 1px solid var(--border-subtle);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  background: var(--bg-card);
+  box-shadow: 0 -14px 42px rgba(0, 0, 0, .3);
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.16, 1, .3, 1);
+}
+.training-calendar-sheet-overlay.is-open .training-calendar-sheet { transform: translateY(0); }
+.training-calendar-sheet-handle { width: 42px; height: 4px; flex: 0 0 4px; margin: 0 auto 15px; border-radius: 999px; background: var(--border-subtle); }
+.training-calendar-sheet-heading { justify-content: space-between; gap: 16px; margin-bottom: 15px; }
+.training-calendar-sheet-heading button { border-radius: 50%; }
+.training-calendar-events { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.training-calendar-events::-webkit-scrollbar { display: none; }
+
+.training-calendar-event-card { overflow: hidden; flex: 0 0 auto; border: 1px solid var(--border-subtle); border-radius: 18px; background: var(--bg-card); box-shadow: var(--shadow-sm); }
+.training-calendar-event-header { padding: 14px 15px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-size: 13.5px; font-weight: 800; line-height: 1.35; }
+.training-calendar-event-body { padding: 13px 14px 14px; }
+.training-calendar-event-time { padding: 12px 13px; border: 1px solid var(--border-subtle); border-radius: 13px; background: var(--bg-input); color: var(--text-primary); font-size: 12.5px; font-weight: 800; text-align: center; }
+.training-calendar-event-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.training-calendar-detail { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 9px 18px; border-radius: 12px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; box-shadow: 0 4px 13px rgba(124, 58, 237, .3); font-size: 12.5px; font-weight: 800; text-decoration: none; }
+.training-calendar-sheet-cancel { min-height: 44px; margin-top: 16px; border: 1px solid var(--border-subtle); border-radius: 14px; background: var(--bg-input); color: var(--text-primary); font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+
+.training-request-content { padding: 16px 16px 100px; }
+.training-request-section { box-sizing: border-box; width: 100%; max-width: 384px; margin: 0 auto 15px; overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 20px; background: var(--bg-card); box-shadow: var(--shadow-card); }
+.training-request-section > h2 { margin: 0; padding: 14px 16px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-size: 14px; font-weight: 800; }
+.training-request-fields { margin: 0; padding: 16px; }
+.training-request-field { margin: 0 0 14px; }
+.training-request-field:last-child { margin-bottom: 0; }
+.training-request-field dt { margin-bottom: 6px; color: var(--text-muted); font-size: 11.5px; font-weight: 750; }
+.training-request-field dd { min-height: 44px; display: flex; flex-direction: column; justify-content: center; margin: 0; padding: 11px 13px; border: 1px solid var(--border-subtle); border-radius: 12px; background: var(--bg-input); color: var(--text-primary); font-size: 12.5px; font-weight: 650; line-height: 1.55; overflow-wrap: anywhere; }
+.training-request-status { align-self: flex-start; padding: 4px 9px; border: 1px solid rgba(16, 185, 129, .28); border-radius: 999px; background: rgba(16, 185, 129, .12); color: #10b981; font-size: 10.5px; font-weight: 800; }
+.training-request-status.scheduled,
+.training-request-status.registered { border-color: rgba(124, 58, 237, .28); background: rgba(124, 58, 237, .12); color: var(--purple-text); }
+.training-request-employee-name { display: block; color: var(--text-primary); font-weight: 800; }
+.training-request-employee-id { display: block; margin-top: 3px; margin-bottom: 4px; color: var(--text-muted); opacity: .8; font-family: monospace, sans-serif; font-size: 11.5px; font-weight: 700; }
+.training-request-actions { max-width: 384px; display: flex; justify-content: flex-end; margin: 18px auto 0; }
+.training-request-actions a { text-decoration: none; }
+.training-request-unavailable { max-width: 384px; margin: 0 auto; padding: 30px 20px; border: 1px dashed var(--border-subtle); border-radius: 20px; text-align: center; }
+.training-request-unavailable > i { color: var(--purple-primary); font-size: 28px; }
+.training-request-unavailable h2 { margin: 12px 0 6px; font-size: 15px; }
+.training-request-unavailable p { color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+
+@media (max-width: 370px) {
+  .training-calendar-content, .training-request-content { padding-inline: 12px; }
+  .training-calendar-card { padding-inline: 10px; }
+  .training-calendar-weekdays, .training-calendar-grid { gap: 3px; }
+  .training-calendar-day { min-height: 42px; }
+}

@@ -54,7 +54,7 @@ async function open(page, url) {
 
     assert.deepEqual(
       collectHtmlFiles(path.dirname(modulePath)).sort(),
-      ['index.html', 'options/competency.html', 'options/course-catalog.html', 'options/learning-development-edit.html', 'options/learning-development-plan.html', 'options/learning-development-update.html', 'options/training-clocking.html', 'options/training-need.html', 'options/training-plan.html'],
+      ['index.html', 'options/competency.html', 'options/course-catalog.html', 'options/learning-development-edit.html', 'options/learning-development-plan.html', 'options/learning-development-update.html', 'options/staff-learning-development-plan.html', 'options/staff-learning-development-update.html', 'options/staff-learning-development-edit.html', 'options/staff-competency.html', 'options/staff-competency-employee.html', 'options/staff-competency-assess.html', 'options/staff-tna.html', 'options/training-calendar.html', 'options/training-request-details.html', 'options/training-clocking.html', 'options/training-feedback-form.html', 'options/training-feedback.html', 'options/training-highlight.html', 'options/training-need.html', 'options/training-plan.html', 'options/competency-summary.html', 'options/competency-summary-levels.html', 'options/competency-summary-employees.html', 'options/competency-summary-employee.html', 'options/skill-expiry.html', 'options/skill-expiry-levels.html', 'options/skill-expiry-employees.html'].sort(),
       'Implemented Training and Competency destination pages exist'
     );
 
@@ -102,13 +102,20 @@ async function open(page, url) {
       'Training Highlight'
     ]);
     assert.equal(await page.$$eval('[data-option-id]', nodes => nodes.length), 14);
-    assert.equal(await page.$$eval('[data-option-id][href]', nodes => nodes.length), 6, 'Implemented individual options link to destination pages');
-    assert.equal(await page.$$eval('button[data-option-id]', nodes => nodes.length), 8, 'The remaining options stay as coming-soon buttons');
+    assert.equal(await page.$$eval('[data-option-id][href]', nodes => nodes.length), 14, 'Implemented individual and team options link to destination pages');
+    assert.equal(await page.$$eval('button[data-option-id]', nodes => nodes.length), 0, 'Every Training and Competency option links to an implemented page');
     assert.equal(await page.$eval('[data-option-id="competency"]', node => node.getAttribute('href')), 'options/competency.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="course-catalog"]', node => node.getAttribute('href')), 'options/course-catalog.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="learning-development-plan"]', node => node.getAttribute('href')), 'options/learning-development-plan.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="training-plan"]', node => node.getAttribute('href')), 'options/training-plan.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="training-calendar"]', node => node.getAttribute('href')), 'options/training-calendar.html?theme=dark');
     assert.equal(await page.$eval('[data-option-id="training-clocking"]', node => node.getAttribute('href')), 'options/training-clocking.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="training-feedback"]', node => node.getAttribute('href')), 'options/training-feedback.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="staff-competency"]', node => node.getAttribute('href')), 'options/staff-competency.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="competency-summary"]', node => node.getAttribute('href')), 'options/competency-summary.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="skill-expiry"]', node => node.getAttribute('href')), 'options/skill-expiry.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="staff-tna"]', node => node.getAttribute('href')), 'options/staff-tna.html?theme=dark');
+    assert.equal(await page.$eval('[data-option-id="staff-learning-development-plan"]', node => node.getAttribute('href')), 'options/staff-learning-development-plan.html?theme=dark');
     assert.deepEqual(await page.$$eval('[data-status]', nodes => nodes.map(node => ({
       status: node.dataset.status,
       count: node.querySelector('strong').textContent.trim(),
@@ -146,11 +153,10 @@ async function open(page, url) {
       teamHidden: false
     }, 'Arrow navigation updates focus, URL, panels, and ARIA state together');
 
-    await page.click('[data-option-id="training-highlight"]');
-    assert.deepEqual(await page.$eval('#appToast', node => ({ text: node.textContent.trim(), visible: node.classList.contains('show') })), {
-      text: 'Training Highlight is coming soon',
-      visible: true
-    });
+    assert.equal(await page.$('[data-view-all="trainingCompetencyTeamOptions"]'), null, 'Team shows its six options directly');
+    await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('[data-option-id="training-highlight"]')]);
+    assert.equal(await page.$eval('#trainingHighlightTitle', node => node.textContent), 'Training Highlight');
+    await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('#trainingHighlightBack')]);
 
     await page.focus('#trainingCompetencyTabTeam');
     await page.keyboard.press('ArrowLeft');
@@ -174,6 +180,8 @@ async function open(page, url) {
       assert.equal(await page.$eval('[data-option-id="competency"]', node => node.getAttribute('href')), `options/competency.html?theme=${theme}`);
       assert.equal(await page.$eval('[data-option-id="course-catalog"]', node => node.getAttribute('href')), 'options/course-catalog.html?theme=' + theme);
       assert.equal(await page.$eval('[data-option-id="training-clocking"]', node => node.getAttribute('href')), 'options/training-clocking.html?theme=' + theme);
+      assert.equal(await page.$eval('[data-option-id="training-feedback"]', node => node.getAttribute('href')), 'options/training-feedback.html?theme=' + theme);
+      assert.equal(await page.$eval('[data-option-id="staff-tna"]', node => node.getAttribute('href')), 'options/staff-tna.html?theme=' + theme);
     }
 
     await open(page, moduleUrl('?scope=team&theme=dark'));
@@ -181,21 +189,54 @@ async function open(page, url) {
     await page.waitForFunction(() => document.getElementById('trainingCompetencyBack').getAttribute('href') === '../../applight.html');
     assert.equal(await page.$eval('#trainingCompetencyBack', node => node.getAttribute('href')), '../../applight.html', 'Theme changes synchronize the back link');
 
-    for (const width of [360, 420]) {
+    for (const theme of ['dark', 'light']) for (const width of [360, 420]) {
       await page.setViewport({ width, height: 844, deviceScaleFactor: 1 });
       for (const scope of ['individual', 'team']) {
-        await open(page, moduleUrl(`?scope=${scope}&theme=light`));
+        await open(page, moduleUrl(`?scope=${scope}&theme=${theme}`));
         const layout = await page.evaluate(activeScope => {
           const options = document.querySelector(`#trainingCompetency${activeScope === 'team' ? 'Team' : 'Individual'}Options`);
           return {
             overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-            columns: getComputedStyle(options).gridTemplateColumns.split(' ').length
+            columns: getComputedStyle(options).gridTemplateColumns.split(' ').length,
+            visibleItems: [...options.children].filter(item => item.getClientRects().length).length,
+            rows: new Set([...options.children].filter(item => item.getClientRects().length).map(item => Math.round(item.getBoundingClientRect().top))).size
           };
         }, scope);
         assert.ok(layout.overflow <= 1, `${scope} has no horizontal overflow at ${width}px`);
         assert.equal(layout.columns, 3, `${scope} keeps three option columns at ${width}px`);
+        assert.equal(layout.visibleItems, 6, scope === 'team' ? 'Team shows all six options directly' : 'Individual shows five options and View All');
+        assert.equal(layout.rows, 2, `${scope} shows exactly two option rows`);
+        const trigger = `[data-view-all="trainingCompetency${scope === 'team' ? 'Team' : 'Individual'}Options"]`;
+        await page.screenshot({ path: path.join(__dirname, `training-quick-options-${scope}-${theme}-${width}.png`) });
+        if (scope === 'team') {
+          assert.equal(await page.$(trigger), null, 'Team does not need View All');
+          assert.ok(await page.$eval('[data-option-id="training-highlight"]', node => node.getClientRects().length > 0), 'Training Highlight is directly visible');
+          continue;
+        }
+        await page.click(trigger);
+        assert.equal(await page.$eval('#trainingCompetencyOptionsOverlay', node => node.hidden), false);
+        assert.equal(await page.$$eval('#trainingCompetencyAllOptions [data-option-ref]', nodes => nodes.length), scope === 'team' ? 6 : 8);
+        assert.equal(await page.$eval('main', node => node.inert), true);
+        assert.ok(await page.$$eval('#trainingCompetencyAllOptions a', (nodes, expectedTheme) => nodes.every(node => node.href.includes('theme=' + expectedTheme)), theme));
+        await page.keyboard.down('Shift');
+        await page.keyboard.press('Tab');
+        await page.keyboard.up('Shift');
+        assert.equal(await page.evaluate(() => document.getElementById('trainingCompetencyOptionsOverlay').contains(document.activeElement)), true, 'Focus stays in All Quick Options');
+        await page.screenshot({ path: path.join(__dirname, `training-all-options-${scope}-${theme}-${width}.png`) });
+        await page.keyboard.press('Escape');
+        assert.equal(await page.$eval('#trainingCompetencyOptionsOverlay', node => node.hidden), true);
+        assert.equal(await page.$eval('main', node => node.inert), false);
+        assert.equal(await page.$eval(trigger, node => document.activeElement === node), true);
       }
     }
+
+    await open(page, moduleUrl('?scope=individual&theme=light'));
+    await page.click('[data-view-all="trainingCompetencyIndividualOptions"]');
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      page.click('[data-option-ref="training-clocking"]')
+    ]);
+    assert.match(page.url(), /training-clocking\.html\?theme=light$/);
 
     const launchCases = [
       { theme: 'dark', activation: 'mouse' },

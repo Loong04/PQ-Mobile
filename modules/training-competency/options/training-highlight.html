@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Training Highlight</title>
+  <script>(() => { document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') === 'light' ? 'light' : 'dark'; })();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css"><link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/attendance-highlight-report.css">
+  <link rel="stylesheet" href="../../../css/detail-popout.css">
+  <link rel="stylesheet" href="../css/training-competency.css"><link rel="stylesheet" href="../../performance/css/performance-highlight.css">
+  <link rel="stylesheet" href="../css/training-highlight.css">
+  <script src="../../../js/components.js"></script><script src="../../../js/app.js" defer></script>
+  <script src="../../performance/js/highlight-export.js" defer></script>
+  <script src="../js/training-highlight-data.js" defer></script><script src="../js/training-highlight.js" defer></script>
+</head>
+<body class="training-competency-page attendance-highlight-page performance-highlight-page training-highlight-page">
+  <preview-top-bar active-page="training-competency"></preview-top-bar>
+  <div class="phone-container">
+    <header class="training-competency-header performance-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="training-competency-header-row performance-header-row">
+        <a id="trainingHighlightBack" class="training-competency-back performance-back" href="../index.html?scope=team" aria-label="Back to Training and Competency Team"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+        <h1 id="trainingHighlightTitle" data-print-title="Training Highlight">Training Highlight</h1><span class="training-competency-header-spacer performance-header-spacer" aria-hidden="true"></span>
+      </div>
+    </header>
+    <main class="main-content performance-highlight-content">
+      <section id="trainingHighlightReportView" aria-label="Training days by employee">
+        <div class="filter-summary-bar performance-highlight-filter-summary"><div><small>Current Filter</small><strong id="trainingHighlightFilterSummary">All Employees · Total Training Days</strong></div><button id="trainingHighlightFilterTrigger" type="button" aria-label="Open Training Highlight filter" aria-haspopup="dialog" aria-controls="trainingHighlightFilterOverlay" aria-expanded="false"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button></div>
+        <section class="attendance-report-summary record-summary-card" aria-label="Training totals" aria-live="polite">
+          <div class="attendance-report-summary-row"><div class="record-summary-metric"><span class="record-summary-label">Total Records</span><strong id="trainingHighlightTotalRecords" class="record-summary-value">0</strong></div><button id="trainingHighlightViewChart" class="view-chart-btn" type="button"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button></div>
+          <div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label">Total Training Days</span><strong id="trainingHighlightTotalDays" class="performance-highlight-average">0.00</strong></div><div class="performance-highlight-export-actions"><button id="trainingHighlightExportPdf" class="performance-highlight-export-pdf" type="button" title="Export PDF" aria-label="Export PDF"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></button><button id="trainingHighlightExportExcel" class="performance-highlight-export-excel" type="button" title="Export Excel" aria-label="Export Excel"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></button></div></div>
+        </section>
+        <section class="attendance-report-table-card"><div class="attendance-report-table-scroll"><table id="trainingHighlightTable" class="attendance-report-table" aria-label="Employee training days"><thead><tr><th scope="col">Emp #</th><th scope="col">Name</th><th scope="col">Days</th><th scope="col">Branch</th><th scope="col">Department</th><th scope="col">Position</th></tr></thead><tbody></tbody></table></div></section>
+      </section>
+      <section id="trainingHighlightChartView" class="attendance-report-chart" aria-label="Training days analysis" hidden>
+        <section class="attendance-report-breakdown"><label for="trainingHighlightChartMetric">BREAKDOWN BY</label><select id="trainingHighlightChartMetric"></select></section>
+        <section class="attendance-report-chart-card">
+          <div class="performance-highlight-chart-heading"><div><h3 id="trainingHighlightChartTitle"></h3><p id="trainingHighlightChartSubtitle">Share of total training days</p></div><button id="trainingHighlightViewTrend" class="performance-highlight-view-trend" type="button"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>View Trend</span></button></div>
+          <div class="attendance-report-donut"><svg id="trainingHighlightChartDonut" viewBox="0 0 180 180" role="img"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="trainingHighlightChartSegments"></g></svg><div class="attendance-report-donut-center"><strong id="trainingHighlightChartTotal">0.00</strong><small>Total Training Days</small></div></div>
+          <p id="trainingHighlightChartNote" class="attendance-report-note"></p>
+        </section>
+        <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="trainingHighlightChartColumn">Employee</span><span>Days</span><span>% of Total</span></div><div id="trainingHighlightChartLegend"></div><div id="trainingHighlightChartViewAllFooter" class="attendance-report-view-all" hidden><button id="trainingHighlightChartViewAll" type="button">View all categories</button></div></section>
+      </section>
+      <section id="trainingHighlightTrendView" aria-label="Training days trend" hidden>
+        <section class="performance-highlight-analysis-card performance-highlight-period-card"><small>SELECTED PERIOD</small><p><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span id="trainingHighlightTrendRange"></span></p></section>
+        <button id="trainingHighlightTrendTotalCard" class="performance-highlight-analysis-card performance-highlight-trend-total" type="button"><span><b>Total Training Days</b><small id="trainingHighlightTrendRecordCount"></small></span><strong id="trainingHighlightTrendTotal">0.00</strong></button>
+        <section class="performance-highlight-analysis-card performance-highlight-trend-card"><h2>Monthly Training Days</h2><p>Click a month to view its training days analysis.</p><div id="trainingHighlightTrendBars"></div></section>
+      </section>
+      <section id="trainingHighlightAnalysisView" class="attendance-report-chart" aria-label="Selected training days analysis" hidden>
+        <section class="attendance-report-breakdown"><label for="trainingHighlightAnalysisMetric">BREAKDOWN BY</label><select id="trainingHighlightAnalysisMetric"></select></section>
+        <section class="attendance-report-chart-card"><h3 id="trainingHighlightAnalysisTitle"></h3><p id="trainingHighlightAnalysisSubtitle"></p><div class="attendance-report-donut"><svg id="trainingHighlightAnalysisDonut" viewBox="0 0 180 180" role="img"><circle cx="90" cy="90" r="70" fill="none" stroke="var(--border-subtle)" stroke-width="22"></circle><g id="trainingHighlightAnalysisSegments"></g></svg><div class="attendance-report-donut-center"><strong id="trainingHighlightAnalysisTotal">0.00</strong><small>Total Training Days</small></div></div><p id="trainingHighlightAnalysisNote" class="attendance-report-note"></p></section>
+        <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="trainingHighlightAnalysisColumn">Branch</span><span>Days</span><span>% of Total</span></div><div id="trainingHighlightAnalysisLegend"></div><div id="trainingHighlightAnalysisViewAllFooter" class="attendance-report-view-all" hidden><button id="trainingHighlightAnalysisViewAll" type="button">View all categories</button></div></section>
+      </section>
+    </main>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <div id="trainingHighlightDetailsOverlay" class="training-highlight-details-overlay detail-popout-overlay" aria-hidden="true" hidden>
+      <section id="trainingHighlightDetailView" class="detail-popout-panel" role="dialog" aria-modal="true" aria-labelledby="trainingHighlightDetailsTitle">
+        <header class="detail-popout-header">
+          <div class="detail-popout-header-contents training-highlight-person">
+            <h2 id="trainingHighlightDetailsTitle" class="detail-popout-title"><span id="trainingHighlightDetailName"></span></h2>
+            <span id="trainingHighlightDetailEmpNo" class="detail-popout-subtitle"></span>
+          </div>
+          <button id="trainingHighlightDetailsClose" class="detail-popout-close" type="button" aria-label="Close training details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div class="detail-popout-body" tabindex="0" role="region" aria-label="Employee training course details">
+          <section class="attendance-report-summary record-summary-card" aria-label="Employee course totals">
+            <div class="attendance-report-summary-row"><div class="record-summary-metric"><span class="record-summary-label">Total Records</span><strong id="trainingHighlightDetailRecords" class="record-summary-value">0</strong></div></div>
+            <div class="attendance-report-summary-row"><div><span class="attendance-report-summary-label">Total Days</span><strong id="trainingHighlightDetailDays" class="performance-highlight-average">0.00</strong></div></div>
+          </section>
+          <section class="attendance-report-table-card training-highlight-detail-table"><div class="attendance-report-table-scroll"><table id="trainingHighlightDetailTable" class="attendance-report-table" aria-label="Attended training courses"><thead><tr><th scope="col">Date</th><th scope="col">Course Title</th><th scope="col">Days</th></tr></thead><tbody></tbody></table></div></section>
+        </div>
+      </section>
+    </div>
+    <div id="trainingHighlightFilterOverlay" class="performance-highlight-filter-overlay standard-filter-sheet" aria-hidden="true" hidden>
+      <form id="trainingHighlightFilterForm" class="standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="trainingHighlightFilterTitle" novalidate>
+        <div class="standard-filter-handle" aria-hidden="true"></div>
+        <header class="standard-filter-header"><h2 id="trainingHighlightFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button id="trainingHighlightResetFilter" class="standard-filter-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button id="trainingHighlightCloseFilter" class="standard-filter-close" type="button" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="performance-highlight-filter-fields">
+          <div><label for="trainingHighlightKeyword">Search Keyword</label><input id="trainingHighlightKeyword" name="keyword" type="search" placeholder="Search employee number or name" maxlength="200"></div>
+          <div><label for="trainingHighlightStartDate">Start Date</label><input id="trainingHighlightStartDate" name="startDate" type="date" aria-describedby="trainingHighlightFilterError"></div>
+          <div><label for="trainingHighlightEndDate">End Date</label><input id="trainingHighlightEndDate" name="endDate" type="date" aria-describedby="trainingHighlightFilterError"></div>
+          <div><label for="trainingHighlightDevelopmentArea">Development Area</label><select id="trainingHighlightDevelopmentArea" name="developmentArea"><option value="">All Development Areas</option></select></div>
+          <div><label for="trainingHighlightCourse">Course</label><select id="trainingHighlightCourse" name="course"><option value="">All Courses</option></select></div>
+          <div><label for="trainingHighlightSummaryBy">Summary By</label><select id="trainingHighlightSummaryBy" name="summaryBy"></select></div>
+          <div role="group" aria-labelledby="trainingHighlightDaysRangeLabel"><label id="trainingHighlightDaysRangeLabel" for="trainingHighlightDaysMin">Days Range</label><div class="performance-highlight-score-range"><input id="trainingHighlightDaysMin" name="daysMin" type="number" min="0" step="any" placeholder="Min" aria-label="Minimum employee training days" aria-describedby="trainingHighlightFilterError"><span aria-hidden="true">–</span><input id="trainingHighlightDaysMax" name="daysMax" type="number" min="0" step="any" placeholder="Max" aria-label="Maximum employee training days" aria-describedby="trainingHighlightFilterError"></div></div>
+          <p id="trainingHighlightFilterError" class="performance-highlight-error" role="alert" hidden></p>
+        </div>
+        <footer class="standard-filter-footer"><button id="trainingHighlightApplyFilter" class="standard-filter-apply" type="submit">Apply Filter</button></footer>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

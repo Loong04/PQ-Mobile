@@ -21,7 +21,7 @@ async function buttonState(page) {
 }
 
 async function rows(page) {
-  return page.$$eval('#trainingClockingRows tr', records => records.map(record =>
+  return page.$$eval('#trainingClockingRows tr:not([data-preview])', records => records.map(record =>
     [...record.cells].map(cell => cell.textContent.trim())
   ));
 }
@@ -64,8 +64,10 @@ async function rows(page) {
     await page.waitForFunction(previous => document.getElementById('trainingClockingTime').textContent.trim() !== previous, { timeout: 2500 }, pausedTime);
 
     assert.deepEqual(await page.$$eval('#trainingClockingTable thead th', nodes => nodes.map(node => node.textContent.trim())), ['Date', 'Type', 'Time']);
+    assert.deepEqual(await page.$$eval('#trainingClockingRows tr[data-preview]', records => records.map(record => record.cells[1].textContent.trim())), ['Clock Out', 'Clock In', 'Clock Out', 'Clock In'], 'History displays two sample training sessions');
     assert.deepEqual(await rows(page), []);
-    assert.equal(await page.$eval('#trainingClockingEmpty', node => node.hidden), false);
+    assert.equal(await page.$eval('#trainingClockingEmpty', node => node.hidden), true);
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'Preview rows are never saved as employee clocking records');
     assert.deepEqual(await buttonState(page), { clockInDisabled: false, clockOutDisabled: true });
 
     await page.click('#trainingClockIn');
@@ -117,6 +119,7 @@ async function rows(page) {
     await page.evaluate(key => localStorage.setItem(key, '{invalid-json'), storageKey);
     await page.reload({ waitUntil: 'domcontentloaded' });
     assert.deepEqual(await rows(page), [], 'Invalid stored data falls back to an empty history');
+    assert.equal(await page.$$eval('#trainingClockingRows tr[data-preview]', records => records.length), 4, 'Sample history remains visible when saved history is unavailable');
     assert.deepEqual(await buttonState(page), { clockInDisabled: false, clockOutDisabled: true });
 
     assert.deepEqual(pageErrors, [], `Page should have no JavaScript errors: ${pageErrors.join('; ')}`);
