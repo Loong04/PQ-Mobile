@@ -1,7 +1,77 @@
 (() => {
   const tabs = [document.getElementById('performanceTabIndividual'), document.getElementById('performanceTabTeam')];
   const panels = [document.getElementById('performanceIndividualPanel'), document.getElementById('performanceTeamPanel')];
+  const highlightRecords = Array.isArray(window.PERFORMANCE_HIGHLIGHT_DATA) ? window.PERFORMANCE_HIGHLIGHT_DATA : [];
   const theme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+
+  function employeeId(value) {
+    const id = String(value ?? '').replace(/^#+/, '').trim();
+    return id ? `#${id}` : '—';
+  }
+
+  function latestEmployeeRecords(records) {
+    const latestByEmployee = new Map();
+    records.forEach(record => {
+      const key = String(record.empNo ?? '').replace(/^#+/, '').trim();
+      const score = Number(record.overallScore);
+      if (!key || !Number.isFinite(score)) return;
+      const current = latestByEmployee.get(key);
+      if (!current || String(record.evaluationDate ?? '').localeCompare(String(current.evaluationDate ?? '')) > 0) {
+        latestByEmployee.set(key, record);
+      }
+    });
+    return [...latestByEmployee.values()];
+  }
+
+  function attentionItem(record, rank) {
+    const item = document.createElement('li');
+    item.className = 'performance-attention-item';
+
+    const rankLabel = document.createElement('span');
+    rankLabel.className = 'performance-attention-rank';
+    rankLabel.textContent = String(rank);
+
+    const person = document.createElement('span');
+    person.className = 'performance-attention-person';
+    const name = document.createElement('strong');
+    name.className = 'performance-attention-name';
+    name.textContent = record.name || 'Unnamed Employee';
+    const id = document.createElement('small');
+    id.className = 'performance-attention-employee-id';
+    id.textContent = employeeId(record.empNo);
+    person.append(name, id);
+
+    const result = document.createElement('span');
+    result.className = 'performance-attention-result';
+    const score = document.createElement('strong');
+    score.className = 'performance-attention-score';
+    score.textContent = Number(record.overallScore).toFixed(2);
+    const grade = document.createElement('small');
+    grade.className = 'performance-attention-grade';
+    grade.textContent = `Grade ${record.scoreGrade || '—'}`;
+    result.append(score, grade);
+    item.append(rankLabel, person, result);
+    return item;
+  }
+
+  function renderAttentionList(list, records) {
+    list.replaceChildren();
+    if (!records.length) {
+      const empty = document.createElement('li');
+      empty.className = 'performance-attention-empty';
+      empty.textContent = 'No performance records';
+      list.append(empty);
+      return;
+    }
+    records.forEach((record, index) => list.append(attentionItem(record, index + 1)));
+  }
+
+  function renderNeedAttention() {
+    const employees = latestEmployeeRecords(highlightRecords);
+    const ascending = [...employees].sort((left, right) => Number(left.overallScore) - Number(right.overallScore) || left.name.localeCompare(right.name));
+    renderAttentionList(document.getElementById('performanceLowestList'), ascending.slice(0, 5));
+    renderAttentionList(document.getElementById('performanceTopList'), ascending.slice(-5).reverse());
+  }
 
   function syncBackLink() {
     document.getElementById('performanceBack').href = `../../app${theme()}.html`;
@@ -60,5 +130,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     setScope(new URLSearchParams(location.search).get('scope'), false);
     syncBackLink();
+    renderNeedAttention();
   });
 })();

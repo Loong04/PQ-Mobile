@@ -92,7 +92,27 @@ window.EMPLOYEE_CAREER_PENDING_DATA = [{
   },
   changes: [],
   approverRemarks: ''
+}, {
+  id: 'SEG-2026-0021',
+  reference: 'SEG-2026-0021',
+  employeeName: 'Aina Rahman',
+  empNo: 'EBB01',
+  position: 'People Operations Executive',
+  type: 'Staff Engagement',
+  approvalTitle: 'Staff Engagement Approval',
+  submitDate: '2026-10-12',
+  status: 'pending',
+  documentStatus: 'Submitted',
+  interviewDate: '2026-10-08',
+  positiveFeedback: 'Supportive colleagues and clear responsibilities within the team.',
+  negativeFeedback: 'Would like more opportunities for career development and cross-team projects.',
+  flightRisk: 'Low',
+  recommendation: 'Continue Development Plan',
+  mitigationAction: 'Arrange a career development discussion and identify a suitable training course within 30 days.',
+  remarks: 'Follow up on the agreed development plan at the next monthly check-in.',
+  attachments: [],
+  approverRemarks: ''
 }];
 
-window.EMPLOYEE_CAREER_PENDING_CATEGORIES = ['CV Change Request'];
+window.EMPLOYEE_CAREER_PENDING_CATEGORIES = ['CV Change Request', 'Staff Engagement'];
 window.EMPLOYEE_CAREER_BACKUP_APPROVERS = [];
