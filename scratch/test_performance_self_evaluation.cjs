@@ -55,11 +55,10 @@ const url = (file, theme) => pathToFileURL(path.join(root, file)).href + `?theme
         assert.deepEqual(await page.$$eval('#selfEvaluationGeneral label', nodes => nodes.map(node => node.textContent.trim())), ['Name', 'Position', 'Department', 'Supervisor', 'Report To', 'Evaluation Ref#', 'Period', 'Type']);
         assert.equal(await page.$eval('#selfEvaluationName', node => node.value), 'Farhan Binti Rahmat');
         assert.equal(await page.$eval('#selfEvaluationRef', node => node.value), 'SE-2026-0012');
-        assert.deepEqual(await page.$$eval('.self-evaluation-employee-id', nodes => nodes.map(node => ({ value: node.textContent.trim(), belowName: node.previousElementSibling?.value }))), [
-          { value: '#EBB12', belowName: 'Farhan Binti Rahmat' },
-          { value: '#EBB04', belowName: 'Angeline Loren Alan' },
-          { value: '#EBB01', belowName: 'Muhammad Ali Bin Man' }
-        ]);
+        assert.equal(await page.$('#selfEvaluationEmployeeId'), null, 'Self Evaluation does not show the employee ID below Name');
+        assert.equal(await page.$('#selfEvaluationSupervisorId'), null, 'Self Evaluation does not show the employee ID below Supervisor');
+        assert.equal(await page.$('#selfEvaluationReportToId'), null, 'Self Evaluation does not show the employee ID below Report To');
+        assert.equal(await page.$$eval('.self-evaluation-employee-id', nodes => nodes.length), 0, 'General does not display employee IDs');
         for (const section of ['Goal', 'Competency']) {
           const labels = await page.$$eval(`#selfEvaluation${section}Items .self-evaluation-item`, nodes => nodes.map(node => [...node.querySelectorAll('label')].map(label => label.textContent.trim())));
           assert.ok(labels.length > 0, `${section} displays evaluation records`);

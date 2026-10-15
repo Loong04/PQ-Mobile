@@ -8,13 +8,6 @@
     $('selfEvaluationBack').href = `../index.html?scope=individual&theme=${theme}`;
   }
 
-  function setPerson(nameId, employeeId, person = {}) {
-    $(nameId).value = display(person.name);
-    const id = String(person.empNo ?? '').replace(/^#+/, '');
-    $(employeeId).textContent = id ? `#${id}` : '';
-    $(employeeId).hidden = !id;
-  }
-
   function field(id, labelText, value, multiline = false) {
     const wrapper = document.createElement('div');
     wrapper.className = 'goal-form-field';
@@ -65,9 +58,9 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const employee = source.employee || {};
-    setPerson('selfEvaluationName', 'selfEvaluationEmployeeId', employee);
-    setPerson('selfEvaluationSupervisor', 'selfEvaluationSupervisorId', employee.supervisor);
-    setPerson('selfEvaluationReportTo', 'selfEvaluationReportToId', employee.reportingTo);
+    $('selfEvaluationName').value = display(employee.name);
+    $('selfEvaluationSupervisor').value = display(employee.supervisor?.name);
+    $('selfEvaluationReportTo').value = display(employee.reportingTo?.name);
     for (const [id, value] of Object.entries({
       selfEvaluationPosition: employee.position,
       selfEvaluationDepartment: employee.department,

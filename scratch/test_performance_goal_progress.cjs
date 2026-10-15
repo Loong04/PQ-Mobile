@@ -50,13 +50,23 @@ async function setField(page, selector, value) {
 
         const card = await page.$eval('.goal-progress-card', node => {
           const headerStyle = getComputedStyle(node.querySelector('.goal-progress-card-header'));
+          const footer = node.querySelector('.goal-progress-card-footer');
+          const update = footer.querySelector('.goal-progress-update');
+          const footerStyle = getComputedStyle(footer);
+          const footerRect = footer.getBoundingClientRect();
+          const updateRect = update.getBoundingClientRect();
           return {
             category: node.querySelector('.goal-progress-card-category')?.textContent.trim(),
             context: node.querySelector('.goal-progress-card-context')?.textContent.trim(),
             title: node.querySelector('.goal-progress-card-title')?.textContent.trim(),
             labels: [...node.querySelectorAll('.goal-progress-detail dt')].map(item => item.textContent.trim()),
             values: [...node.querySelectorAll('.goal-progress-detail dd')].map(item => item.textContent.trim()),
-            updateText: node.querySelector('.goal-progress-update')?.textContent.trim(),
+            updateText: update.textContent.trim(),
+            updateHasIcon: Boolean(update.querySelector('i')),
+            updateCompactRight: updateRect.width < footerRect.width / 2
+              && Math.abs(updateRect.right - (footerRect.right - parseFloat(footerStyle.paddingRight))) <= 1,
+            updateHeight: Math.round(updateRect.height),
+            updateRadius: getComputedStyle(update).borderRadius,
             purpleHeader: headerStyle.backgroundImage.includes('linear-gradient') && headerStyle.color === 'rgb(255, 255, 255)',
             rounded: getComputedStyle(node).borderRadius === '18px'
           };
@@ -68,6 +78,10 @@ async function setField(page, selector, value) {
           labels: ['Description', 'Target', 'Weightage', 'Deadline', 'Last Update', 'Achieved'],
           values: ['Deliver the approved annual FFB production budget.', '120,000 MT', '30%', '31 Dec 2026', 'No updates yet', '0 MT · 0%'],
           updateText: 'Update',
+          updateHasIcon: false,
+          updateCompactRight: true,
+          updateHeight: 36,
+          updateRadius: '11px',
           purpleHeader: true,
           rounded: true
         });

@@ -4,7 +4,23 @@
   const params = new URLSearchParams(window.location.search);
   const theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
   const token = params.get('goalReturnToken') || `goal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  const snapshotKey = `peoplehcm:performance:goal-plan:snapshot:${token}`;
   const resultKey = `peoplehcm:performance:goal-plan:result:${token}`;
+  const goalId = params.get('goalId');
+
+  function parseJson(value) {
+    try { return value ? JSON.parse(value) : null; } catch { return null; }
+  }
+
+  function readSession(key) {
+    try { return window.sessionStorage.getItem(key); } catch { return null; }
+  }
+
+  const snapshot = parseJson(readSession(snapshotKey));
+  const seededGoal = parseJson(params.get('goalSeed'));
+  const editingGoal = goalId ? snapshot?.goals?.find(goal => goal.id === goalId)
+    || source.goals.find(goal => goal.id === goalId)
+    || (seededGoal?.id === goalId ? seededGoal : null) : null;
 
   function returnUrl() {
     const url = new URL('goal-plan.html', window.location.href);
@@ -20,7 +36,7 @@
 
   function formValues() {
     return {
-      id: `GOAL-${Date.now()}`,
+      id: editingGoal?.id || `GOAL-${Date.now()}`,
       title: $('goalTitleInput').value.trim(),
       type: $('goalTypeInput').value,
       description: $('goalDescriptionInput').value.trim(),
@@ -53,8 +69,25 @@
     window.location.assign(returnUrl().href);
   }
 
+  function populateForm(goal) {
+    if (!goal) return;
+    $('goalTitleInput').value = goal.title || '';
+    $('goalTypeInput').value = goal.type || '';
+    $('goalDescriptionInput').value = goal.description || '';
+    $('goalTargetInput').value = goal.targetDescription || '';
+    $('goalDeadlineInput').value = goal.deadline || '2026-12-31';
+    $('goalWeightageInput').value = String(goal.weightage ?? '');
+    $('goalBudgetHoursInput').value = String(goal.budgetHours ?? 0);
+    $('goalRemarkInput').value = goal.remark || '';
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     source.goalTypes.forEach(type => $('goalTypeInput').append(new Option(type, type)));
+    if (editingGoal) {
+      document.title = 'PeopleHCM - Update Performance Goal';
+      $('performanceGoalTitle').textContent = 'Update Performance Goal';
+      populateForm(editingGoal);
+    }
     $('performanceGoalBack').href = returnUrl().href;
     $('goalFormCancel').addEventListener('click', goBack);
     $('goalForm').addEventListener('input', clearError);
@@ -71,7 +104,7 @@
 
       let stored = false;
       try {
-        window.sessionStorage.setItem(resultKey, JSON.stringify({ token, goal }));
+        window.sessionStorage.setItem(resultKey, JSON.stringify({ token, action: editingGoal ? 'updated' : 'added', goal }));
         stored = true;
       } catch {}
       const url = returnUrl();

@@ -69,9 +69,8 @@
     );
 
     const footer = node('footer', 'goal-progress-card-footer');
-    const update = node('button', 'goal-progress-update');
+    const update = node('button', 'goal-progress-update', 'Update');
     update.type = 'button';
-    update.append(icon('fa-pen'), node('span', '', 'Update'));
     update.addEventListener('click', () => showUpdate(goal.id));
     footer.append(update);
     card.append(header, body, footer);

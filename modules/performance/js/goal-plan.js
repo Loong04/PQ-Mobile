@@ -7,8 +7,7 @@
   const state = {
     status: source.status,
     goals: source.goals.map(goal => ({ ...goal })),
-    selectedId: null,
-    editingId: null
+    selectedId: null
   };
   let activeOverlay = null;
   let returnFocus = null;
@@ -55,15 +54,23 @@
     $('goalPlanBack').href = `../index.html?scope=individual&theme=${currentTheme()}`;
   }
 
-  function beginAddGoal() {
+  function openGoalPage(goal = null) {
     const token = `goal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    writeSession(`${SNAPSHOT_KEY_PREFIX}${token}`, JSON.stringify({
+    const stored = writeSession(`${SNAPSHOT_KEY_PREFIX}${token}`, JSON.stringify({
       token,
       status: state.status,
       goals: state.goals
     }));
     const params = new URLSearchParams({ theme: currentTheme(), [RETURN_TOKEN_PARAM]: token });
+    if (goal) {
+      params.set('goalId', goal.id);
+      if (!stored) params.set('goalSeed', JSON.stringify(goal));
+    }
     window.location.assign(`performance-goal.html?${params.toString()}`);
+  }
+
+  function beginAddGoal() {
+    openGoalPage();
   }
 
   function consumeGoalReturn() {
@@ -85,11 +92,17 @@
     let returnedGoal = result?.token === token ? result.goal : null;
     if (!returnedGoal && params.has('goalPayload')) returnedGoal = parseJson(params.get('goalPayload'));
     if (returnedGoal && typeof returnedGoal === 'object' && returnedGoal.id && returnedGoal.title) {
+      const index = state.goals.findIndex(goal => goal.id === returnedGoal.id);
+      if (index >= 0) {
+        state.goals[index] = { ...state.goals[index], ...returnedGoal };
+        state.status = 'Draft';
+        return 'updated';
+      }
       state.goals.push({ ...returnedGoal });
       state.status = 'Draft';
-      return true;
+      return 'added';
     }
-    return false;
+    return '';
   }
 
   function showToast(message) {
@@ -166,10 +179,7 @@
     const update = node('button', 'goal-plan-card-update');
     update.type = 'button';
     update.append(icon('fa-pen'), node('span', '', 'Update'));
-    update.addEventListener('click', () => {
-      state.selectedId = goal.id;
-      openForm(goal);
-    });
+    update.addEventListener('click', () => openGoalPage(goal));
     const remove = node('button', 'goal-plan-card-delete');
     remove.type = 'button';
     remove.append(icon('fa-trash'), node('span', '', 'Delete'));
@@ -218,62 +228,6 @@
     $('goalDetailsOverlay').querySelector('.detail-popout-body').scrollTop = 0;
   }
 
-  function clearFormError() {
-    $('goalFormError').hidden = true;
-    $('goalForm').querySelectorAll('[aria-invalid="true"]').forEach(field => field.removeAttribute('aria-invalid'));
-  }
-
-  function formValues() {
-    return {
-      title: $('goalTitleInput').value.trim(),
-      type: $('goalTypeInput').value,
-      description: $('goalDescriptionInput').value.trim(),
-      targetDescription: $('goalTargetInput').value.trim(),
-      deadline: $('goalDeadlineInput').value,
-      weightage: Number($('goalWeightageInput').value),
-      budgetHours: Number($('goalBudgetHoursInput').value || 0),
-      remark: $('goalRemarkInput').value.trim()
-    };
-  }
-
-  function showFormError(message, field) {
-    $('goalFormError').textContent = message;
-    $('goalFormError').hidden = false;
-    field.setAttribute('aria-invalid', 'true');
-    field.focus({ preventScroll: true });
-  }
-
-  function validateGoal(goal) {
-    if (!goal.title) return ['Goal Title is required.', $('goalTitleInput')];
-    if (!goal.type) return ['Goal Type is required.', $('goalTypeInput')];
-    if (!goal.targetDescription) return ['Target Description is required.', $('goalTargetInput')];
-    if (!goal.deadline) return ['Deadline is required.', $('goalDeadlineInput')];
-    if (!Number.isFinite(goal.weightage) || goal.weightage <= 0 || goal.weightage > 100) return ['Weightage must be more than 0 and not more than 100.', $('goalWeightageInput')];
-    if (!Number.isFinite(goal.budgetHours) || goal.budgetHours < 0) return ['Budget Hours cannot be negative.', $('goalBudgetHoursInput')];
-    return null;
-  }
-
-  function populateForm(goal) {
-    $('goalForm').reset();
-    $('goalTitleInput').value = goal?.title || '';
-    $('goalTypeInput').value = goal?.type || '';
-    $('goalDescriptionInput').value = goal?.description || '';
-    $('goalTargetInput').value = goal?.targetDescription || '';
-    $('goalDeadlineInput').value = goal?.deadline || '2026-12-31';
-    $('goalWeightageInput').value = goal ? String(goal.weightage) : '';
-    $('goalBudgetHoursInput').value = goal ? String(goal.budgetHours || 0) : '0';
-    $('goalRemarkInput').value = goal?.remark || '';
-  }
-
-  function openForm(goal) {
-    state.editingId = goal?.id || null;
-    clearFormError();
-    populateForm(goal);
-    $('goalFormTitle').textContent = goal ? 'Update Performance Goal' : 'Add Performance Goal';
-    $('goalFormSave').textContent = goal ? 'Update Goal' : 'Save Goal';
-    openOverlay($('goalFormOverlay'), $('goalTitleInput'));
-  }
-
   function openDelete() {
     const goal = selectedGoal();
     if (!goal) return;
@@ -297,8 +251,6 @@
 
   $('goalPlanAdd').addEventListener('click', beginAddGoal);
   $('goalDetailsClose').addEventListener('click', closeOverlay);
-  $('goalFormClose').addEventListener('click', closeOverlay);
-  $('goalFormCancel').addEventListener('click', closeOverlay);
   $('goalDeleteCancel').addEventListener('click', closeOverlay);
 
   $('goalDeleteConfirm').addEventListener('click', () => {
@@ -312,31 +264,6 @@
     showToast('Goal deleted.');
   });
 
-  $('goalForm').addEventListener('input', clearFormError);
-  $('goalForm').addEventListener('change', clearFormError);
-  $('goalForm').addEventListener('submit', event => {
-    event.preventDefault();
-    clearFormError();
-    const goal = formValues();
-    const error = validateGoal(goal);
-    if (error) {
-      showFormError(...error);
-      return;
-    }
-    if (state.editingId) {
-      const index = state.goals.findIndex(item => item.id === state.editingId);
-      if (index >= 0) state.goals[index] = { ...state.goals[index], ...goal };
-      showToast('Goal updated.');
-    } else {
-      state.goals.push({ id: `GOAL-${Date.now()}`, ...goal });
-      showToast('Goal added.');
-    }
-    state.status = 'Draft';
-    state.editingId = null;
-    render();
-    closeOverlay();
-  });
-
   $('goalPlanSaveDraft').addEventListener('click', () => {
     state.status = 'Draft';
     render();
@@ -346,9 +273,6 @@
 
   [$('goalDetailsOverlay'), $('goalDeleteOverlay')].forEach(overlay => {
     overlay.addEventListener('click', event => { if (event.target === overlay) closeOverlay(); });
-  });
-  $('goalFormOverlay').addEventListener('click', event => {
-    if (event.target === $('goalFormOverlay')) closeOverlay();
   });
   document.addEventListener('keydown', event => {
     if (!activeOverlay) return;
@@ -372,11 +296,10 @@
 
   new MutationObserver(syncBack).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   document.addEventListener('DOMContentLoaded', () => {
-    source.goalTypes.forEach(type => $('goalTypeInput').append(new Option(type, type)));
-    const addedGoal = consumeGoalReturn();
+    const returnedAction = consumeGoalReturn();
     renderEmployee();
     syncBack();
     render();
-    if (addedGoal) showToast('Goal added.');
+    if (returnedAction) showToast(`Goal ${returnedAction}.`);
   });
 })();

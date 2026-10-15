@@ -197,7 +197,7 @@ async function setField(page, selector, value) {
         await page.goto(formPageUrl(theme), { waitUntil: 'domcontentloaded' });
         assert.equal(await page.$eval('#performanceGoalTitle', node => node.textContent.trim()), 'Performance Goal');
         assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme);
-        assert.deepEqual(await page.evaluate(() => {
+        assert.deepEqual(await page.evaluate((activeTheme) => {
           const content = document.querySelector('.performance-goal-content');
           const form = document.querySelector('.performance-goal-form');
           const formHeader = document.querySelector('.performance-goal-form-header');
@@ -205,23 +205,30 @@ async function setField(page, selector, value) {
           const footer = document.querySelector('.goal-form-footer');
           const buttons = [...footer.querySelectorAll('button')];
           const formStyle = getComputedStyle(form);
-          const headerStyle = getComputedStyle(formHeader);
           const bodyStyle = getComputedStyle(body);
+          const cancelStyle = getComputedStyle(buttons[0]);
           const buttonRects = buttons.map(button => button.getBoundingClientRect());
           return {
-            headerUsesPurpleSurface: headerStyle.backgroundImage.includes('linear-gradient') && headerStyle.color === 'rgb(255, 255, 255)',
+            hasInnerHeader: Boolean(formHeader),
+            startsWithGoalTitle: form.firstElementChild === body && body.querySelector('.goal-form-field > label').textContent.replace('*', '').trim() === 'Goal Title',
             formIsPageCard: formStyle.borderRadius === '22px' && formStyle.borderBottomWidth === '1px' && formStyle.overflow === 'visible',
             bodyScrollsWithPage: bodyStyle.overflowY === 'visible',
             actions: buttons.map(button => button.textContent.trim()),
             actionsAreEqual: buttonRects.length === 2 && Math.abs(buttonRects[0].width - buttonRects[1].width) <= 1 && buttonRects.every(rect => rect.height >= 44),
+            cancelUsesStandardStyle: buttons[0].classList.contains('form-cancel-btn')
+              && cancelStyle.borderRadius === '999px'
+              && cancelStyle.backgroundImage === 'none'
+              && cancelStyle.backgroundColor === (activeTheme === 'light' ? formStyle.backgroundColor : 'rgb(23, 21, 41)'),
             noHorizontalOverflow: content.scrollWidth <= content.clientWidth + 1 && document.documentElement.scrollWidth <= innerWidth
           };
-        }), {
-          headerUsesPurpleSurface: true,
+        }, theme), {
+          hasInnerHeader: false,
+          startsWithGoalTitle: true,
           formIsPageCard: true,
           bodyScrollsWithPage: true,
-          actions: ['Cancel', 'Save Goal'],
+          actions: ['Cancel', 'Save'],
           actionsAreEqual: true,
+          cancelUsesStandardStyle: true,
           noHorizontalOverflow: true
         }, `${theme} ${width}px standalone form uses the page-card design without overflow`);
         await page.screenshot({ path: path.join(__dirname, `performance-goal-form-${theme}-${width}.png`) });
@@ -230,6 +237,7 @@ async function setField(page, selector, value) {
 
     await page.setViewport({ width: 420, height: 844 });
     await page.goto(pageUrl('dark'), { waitUntil: 'domcontentloaded' });
+    assert.equal(await page.$('#goalFormOverlay'), null, 'Goal Plan no longer keeps the legacy edit overlay');
     await page.click('#goalPlanCards .goal-plan-card-body');
     assert.equal(await page.$eval('#goalDetailsOverlay', node => node.hidden), false, 'Card opens goal details');
     assert.equal(await page.$eval('#goalDetailsRows tr:first-child td', node => node.textContent.trim()), 'Reduce Staff Attrition');
@@ -271,11 +279,24 @@ async function setField(page, selector, value) {
     assert.equal(await page.$eval('#goalPlanCards .goal-plan-card:last-child .goal-plan-card-title', node => node.textContent.trim()), 'Strengthen Succession Readiness', 'Saved goal data is handed back to Goal Plan');
     assert.equal(await page.$eval('#goalPlanTotalWeightage', node => node.textContent.trim()), '110.00%');
 
-    await page.click('#goalPlanCards .goal-plan-card:last-child .goal-plan-card-update');
+    await clickAndExpectFile(page, '#goalPlanCards .goal-plan-card:last-child .goal-plan-card-update', 'performance-goal.html');
+    assert.equal(await page.$eval('#performanceGoalTitle', node => node.textContent.trim()), 'Update Performance Goal');
+    assert.equal(await page.$('.performance-goal-form-header'), null, 'Update page has no inner purple header');
+    assert.equal(await page.$eval('#goalFormSave span', node => node.textContent.trim()), 'Save');
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark', 'Update keeps the selected theme');
     assert.equal(await page.$eval('#goalTitleInput', node => node.value), 'Strengthen Succession Readiness');
+    assert.equal(await page.$eval('#goalTypeInput', node => node.value), 'Learning & Growth');
+    assert.equal(await page.$eval('#goalWeightageInput', node => node.value), '10');
+    await setField(page, '#goalTitleInput', 'Discarded Update');
+    await clickAndExpectFile(page, '#goalFormCancel', 'goal-plan.html');
+    assert.equal(await page.$$eval('#goalPlanCards .goal-plan-card', cards => cards.length), 3, 'Cancel edit keeps the same number of goals');
+    assert.equal(await page.$eval('#goalPlanCards .goal-plan-card:last-child .goal-plan-card-title', node => node.textContent.trim()), 'Strengthen Succession Readiness', 'Cancel edit keeps the original goal');
+
+    await clickAndExpectFile(page, '#goalPlanCards .goal-plan-card:last-child .goal-plan-card-update', 'performance-goal.html');
     await setField(page, '#goalTitleInput', 'Strengthen Leadership Pipeline');
-    await page.click('#goalFormSave');
-    assert.equal(await page.$eval('#goalPlanCards .goal-plan-card:last-child .goal-plan-card-title', node => node.textContent.trim()), 'Strengthen Leadership Pipeline', 'Update changes the card');
+    await clickAndExpectFile(page, '#goalFormSave', 'goal-plan.html');
+    assert.equal(await page.$$eval('#goalPlanCards .goal-plan-card', cards => cards.length), 3, 'Update replaces the goal without adding a duplicate');
+    assert.equal(await page.$eval('#goalPlanCards .goal-plan-card:last-child .goal-plan-card-title', node => node.textContent.trim()), 'Strengthen Leadership Pipeline', 'Update page changes the original card');
 
     await page.click('#goalPlanCards .goal-plan-card:last-child .goal-plan-card-delete');
     await page.click('#goalDeleteConfirm');
@@ -288,7 +309,7 @@ async function setField(page, selector, value) {
     assert.ok(await page.$eval('#goalPlanToast', node => node.classList.contains('show') && node.textContent.includes('submitted')));
 
     assert.deepEqual(errors, [], 'No browser JavaScript errors');
-    console.log('PASS: Goal Plan cards, employee ID, details, CRUD, draft, submit, themes and responsive layouts.');
+    console.log('PASS: Goal Plan cards, standalone add/update forms, employee ID, details, CRUD, draft, submit, themes and responsive layouts.');
   } finally {
     await browser.close();
   }
