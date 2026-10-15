@@ -52,13 +52,6 @@
     return wrapper;
   }
 
-  function personField(id, label, person = {}) {
-    const wrapper = field(id, label, person?.name);
-    const idText = employeeId(person?.empNo);
-    if (idText) wrapper.append(element('span', 'self-evaluation-employee-id', idText));
-    return wrapper;
-  }
-
   function fitTextareas() {
     document.querySelectorAll('textarea[readonly]').forEach(control => {
       control.style.height = 'auto';
@@ -179,9 +172,12 @@
     const general = $('evaluationGeneralFields');
     const period = element('div', 'goal-form-grid');
     period.append(field('evaluationPeriod', 'Period', record.period), field('evaluationType', 'Type', record.type));
-    general.replaceChildren(personField('evaluationName', 'Name', employee), field('evaluationPosition', 'Position', employee.position),
-      field('evaluationDepartment', 'Department', employee.department), personField('evaluationSupervisor', 'Supervisor', employee.supervisor),
-      personField('evaluationReportTo', 'Report To', employee.reportingTo), field('evaluationRef', 'Evaluation Ref#', record.evaluationRef), period);
+    const document = element('div', 'goal-form-grid');
+    document.append(field('evaluationStatus', 'Status', record.status), field('evaluationDocumentDate', 'Document Date', record.documentDate));
+    general.replaceChildren(field('evaluationName', 'Name', employee.name), field('evaluationPosition', 'Position', employee.position),
+      field('evaluationDepartment', 'Department', employee.department), field('evaluationSupervisor', 'Supervisor', employee.supervisor?.name),
+      field('evaluationReportTo', 'Report To', employee.reportingTo?.name), field('evaluationRef', 'Evaluation Ref#', record.evaluationRef),
+      period, document, field('evaluationRemark', 'Remark', record.remark, true));
     for (const [kind, title] of [['goals', 'Goal'], ['competencies', 'Competency']]) {
       const container = $(`evaluation${title}Items`);
       const items = record[kind] || [];

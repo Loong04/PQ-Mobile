@@ -13,6 +13,8 @@ const url=(file,theme)=>pathToFileURL(path.resolve(__dirname,'../modules/perform
       assert.equal(await page.$eval('[data-option-id="staff-incident"]',node=>node.tagName),'A','Staff Incident opens its implemented form');
       await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('[data-option-id="staff-incident"]')]);
       assert.ok(page.url().includes('/options/staff-incident.html'));assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),theme);
+      assert.equal(await page.$eval('#staffIncidentSubmit span',node=>node.textContent.trim()),'Save');
+      assert.ok(await page.$eval('#staffIncidentSubmit i',node=>node.classList.contains('fa-floppy-disk')),'Save uses the standard save icon');
       assert.deepEqual(await page.$$eval('#staffIncidentForm label',nodes=>nodes.map(node=>node.textContent.replace(/\s*\*\s*$/,'').trim())),['Employee','Name','Position','Incident Date','Incident Type','Action Type','Value / Measure','Remarks']);
       assert.equal(await page.$eval('#staffIncidentEmployee option:first-child',node=>node.textContent.trim()),'Select Employee');
       assert.equal(await page.$eval('#staffIncidentName',node=>node.readOnly),true);assert.equal(await page.$eval('#staffIncidentPosition',node=>node.readOnly),true);
@@ -51,14 +53,14 @@ const url=(file,theme)=>pathToFileURL(path.resolve(__dirname,'../modules/perform
       await page.$eval('#staffIncidentName',node=>{node.value='Tampered';});
       await page.click('#staffIncidentSubmit');
       assert.deepEqual(await page.evaluate(()=>({...window.staffIncidentCaptured,attachments:window.staffIncidentCaptured.attachments.map(file=>({name:file.name,isFile:file.isFile}))})),{empNo:'EBB01',name:'Alex Tan',position:'Account Executive',incidentDate:'2026-10-14',incidentType:'Commendation',incidentAction:'Recognition',measureValue:'1 completed handover',remarks:'Completed early.\nPrepared the notes.',attachments:[{name:'handover-notes.txt',isFile:true}]});
-      assert.match(await page.$eval('#staffIncidentStatus',node=>node.textContent),/ready for submission/i);
+      assert.equal(await page.$eval('#staffIncidentStatus',node=>node.textContent),'Staff incident saved successfully.');
       assert.equal(await page.evaluate(()=>JSON.stringify(window.PERFORMANCE_INCIDENT_HIGHLIGHT_DATA)),original,'Preparing form does not silently change existing incidents');
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.ok(await page.$eval('main',node=>node.scrollWidth<=node.clientWidth+1));
       await page.$eval('main',node=>{node.scrollTop=0;});await page.screenshot({path:path.join(__dirname,`staff-incident-form-top-${theme}-${width}.png`)});
       await page.$eval('main',node=>{node.scrollTop=node.scrollHeight;});await page.screenshot({path:path.join(__dirname,`staff-incident-form-bottom-${theme}-${width}.png`)});
       await page.setViewport({width,height:568});
       await page.$eval('main',node=>{node.scrollTop=node.scrollHeight;});
-      assert.ok(await page.$eval('#staffIncidentSubmit',node=>{const rect=node.getBoundingClientRect();return rect.top>=0&&rect.bottom<=innerHeight-70;}),'Submit stays reachable above bottom navigation');
+      assert.ok(await page.$eval('#staffIncidentSubmit',node=>{const rect=node.getBoundingClientRect();return rect.top>=0&&rect.bottom<=innerHeight-70;}),'Save stays reachable above bottom navigation');
       await page.click(`[data-set-theme="${theme==='light'?'dark':'light'}"]`);assert.ok(await page.$eval('#staffIncidentBack',node=>node.href.includes('theme='+document.documentElement.dataset.theme)));
       await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('#staffIncidentCancel')]);assert.equal(await page.$eval('#performanceTeamPanel',node=>node.hidden),false);
       assert.deepEqual(errors,[]);await page.close();console.log(`PASS: Staff Incident consistent form, identity, dependent actions, attachments and validation; ${theme} ${width}px`);

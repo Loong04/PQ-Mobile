@@ -99,7 +99,7 @@
     const remarks = $('staffIncidentRemarks');
     if (!remarks.validity.valid) return validationError('Keep remarks within 5,000 characters.', remarks);
     syncEmployee();
-    // Like the existing Staff Engagement form, this preview prepares a submission without an API write.
+    // Like the existing Staff Engagement form, this preview prepares a save without an API write.
     const record = { ...(editMode ? editingRecord : {}), ...employee, incidentDate: date.value, incidentType: type.value, incidentAction: action.value, measureValue: measure.value.trim(), remarks: remarks.value.trim(), attachments: [...files] };
     form.dispatchEvent(new CustomEvent('staffincident:ready', { bubbles: true, detail: record }));
     if (editMode) {
@@ -107,7 +107,7 @@
       catch { return validationError('Unable to save this preview change. Try again.', remarks); }
       location.assign(backUrl()); return;
     }
-    $('staffIncidentStatus').textContent = 'Staff incident ready for submission.'; $('staffIncidentStatus').hidden = false;
+    $('staffIncidentStatus').textContent = 'Staff incident saved successfully.'; $('staffIncidentStatus').hidden = false;
   });
   if (editMode) {
     document.querySelector('h1').textContent = 'Edit Staff Incident'; document.title = 'PeopleHCM - Edit Staff Incident';

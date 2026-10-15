@@ -81,8 +81,14 @@ async function noOverflow(page) {
       assert.equal(await page.$eval('#evaluationTotalRecords', node => node.textContent), '1', 'Reload preserves filters');
       await navigate(page, '.evaluation-card .evaluation-update');
       assert.deepEqual(await page.$$eval('.evaluation-form-section h2', nodes => nodes.map(node => node.textContent)), ['General', 'Goal', 'Competency']);
-      assert.deepEqual(await page.$$eval('#evaluationGeneral label', nodes => nodes.map(node => node.textContent)), ['Name', 'Position', 'Department', 'Supervisor', 'Report To', 'Evaluation Ref#', 'Period', 'Type']);
+      assert.deepEqual(await page.$$eval('#evaluationGeneral label', nodes => nodes.map(node => node.textContent)), ['Name', 'Position', 'Department', 'Supervisor', 'Report To', 'Evaluation Ref#', 'Period', 'Type', 'Status', 'Document Date', 'Remark']);
       assert.equal(await page.$eval('#evaluationName', node => node.value), 'Farhan Binti Rahmat');
+      assert.equal(await page.$eval('#evaluationSupervisor', node => node.value), 'Angeline Loren Alan');
+      assert.equal(await page.$eval('#evaluationReportTo', node => node.value), 'Muhammad Ali Bin Man');
+      assert.equal(await page.$eval('#evaluationStatus', node => node.value), 'In Progress');
+      assert.equal(await page.$eval('#evaluationDocumentDate', node => node.value), '12 Jan 2026');
+      assert.equal(await page.$eval('#evaluationRemark', node => node.value), 'Annual performance evaluation for FY 2026A.');
+      assert.equal(await page.$$eval('#evaluationGeneral .self-evaluation-employee-id', nodes => nodes.length), 0, 'Performance Evaluation General does not display employee IDs');
       assert.equal(await page.$$eval('#evaluationGoalItems .evaluation-item', nodes => nodes.length), 2);
       assert.equal(await page.$$eval('#evaluationCompetencyItems .evaluation-item', nodes => nodes.length), 3);
       assert.ok(await page.$$eval('#evaluationDetailsForm input, #evaluationDetailsForm textarea', nodes => nodes.every(node => node.readOnly)), 'Overview remains read-only');
