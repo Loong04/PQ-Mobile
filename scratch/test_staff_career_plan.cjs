@@ -48,12 +48,12 @@ const pageUrl = theme => pathToFileURL(path.join(root, 'modules/employee-career/
         idBelowName: true,
         headerSpansCard: true,
         hasChevron: false,
-        detailTiles: 3,
+        detailTiles: 5,
         path: '/C:/Users/loong/PQ-Mobile/me.html',
         employee: 'EBB12',
         theme,
-        labels: ['Career Path', 'Next Position', 'Target Date'],
-        values: ['Human Resources', 'HR Manager', '26 Dec 2026']
+        labels: ['Branch', 'Department', 'Position', 'Sex', 'Age'],
+        values: ['Headquarters (HQ)', 'Human Resource', 'HR Executive', 'Female', '32']
       });
 
       assert.deepEqual(await page.$eval('#staffCareerPlanViewChart', button => ({
@@ -70,7 +70,7 @@ const pageUrl = theme => pathToFileURL(path.join(root, 'modules/employee-career/
       assert.ok(await page.$$eval('#staffCareerPlanChartSegments circle', nodes => nodes.length) >= 4, 'Branch chart renders multiple donut segments');
       assert.equal(await page.$$eval('#staffCareerPlanChartLegend [data-count]', nodes => nodes.reduce((sum, node) => sum + Number(node.dataset.count), 0)), 8);
       assert.deepEqual(await page.$$eval('#staffCareerPlanChartMetric option', nodes => nodes.map(node => node.value)), ['branch', 'department', 'careerPath']);
-      assert.match(await page.$eval('#staffCareerPlanChartPeriod', node => node.textContent.trim()), /01 Jan 2024.*13 Oct 2026/);
+      assert.equal(await page.$eval('#staffCareerPlanChartPeriod', node => node.textContent.trim()), 'All Target Years');
 
       await page.select('#staffCareerPlanChartMetric', 'careerPath');
       assert.match(await page.$eval('#staffCareerPlanChartTitle', node => node.textContent.trim()), /career path/i);
@@ -81,15 +81,21 @@ const pageUrl = theme => pathToFileURL(path.join(root, 'modules/employee-career/
 
       await page.click('#staffCareerPlanFilterTrigger');
       assert.equal(await page.$eval('#staffCareerPlanFilterOverlay', node => node.hidden), false);
-      const filterFields = ['Keyword', 'StartDate', 'EndDate', 'CareerPath', 'NextPosition', 'Branch', 'Department'];
+      const filterFields = ['Keyword', 'TargetYear', 'Branch', 'Department'];
       for (const suffix of filterFields) assert.ok(await page.$(`#staffCareerPlanFilter${suffix}`), `Filter includes ${suffix}`);
+      for (const removed of ['CareerPath', 'NextPosition', 'StartDate', 'EndDate']) {
+        assert.equal(await page.$('#staffCareerPlanFilter' + removed), null, 'Filter removes ' + removed);
+      }
+      assert.deepEqual(
+        await page.$$eval('#staffCareerPlanFilterForm label', nodes => nodes.map(node => node.textContent.trim())),
+        ['Search keyword', 'Target year', 'Branch', 'Department']
+      );
       await page.type('#staffCareerPlanFilterKeyword', 'Farhan');
-      await page.select('#staffCareerPlanFilterCareerPath', 'human-resources');
-      assert.deepEqual(await page.$$eval('#staffCareerPlanFilterNextPosition option', nodes => nodes.map(node => node.value)), ['', 'hr-manager']);
+      await page.select('#staffCareerPlanFilterTargetYear', '2026');
       await page.click('#staffCareerPlanApplyFilter');
       assert.equal(await page.$eval('#staffCareerPlanTotalRecords', node => node.textContent.trim()), '1');
       assert.equal(await page.$$eval('#staffCareerPlanCards .staff-career-plan-card', nodes => nodes.length), 1);
-      assert.match(await page.$eval('#staffCareerPlanFilterSummary', node => node.textContent.trim()), /Farhan.*Human Resources/);
+      assert.match(await page.$eval('#staffCareerPlanFilterSummary', node => node.textContent.trim()), /Farhan.*2026/);
 
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
@@ -102,17 +108,11 @@ const pageUrl = theme => pathToFileURL(path.join(root, 'modules/employee-career/
       await page.goBack({ waitUntil: 'load' });
 
       await page.click('#staffCareerPlanFilterTrigger');
-      await page.$eval('#staffCareerPlanFilterStartDate', node => { node.value = '2026-10-13'; });
-      await page.$eval('#staffCareerPlanFilterEndDate', node => { node.value = '2024-01-01'; });
-      await page.click('#staffCareerPlanApplyFilter');
-      assert.equal(await page.$eval('#staffCareerPlanFilterError', node => node.hidden), false);
-      assert.equal(await page.$eval('#staffCareerPlanFilterOverlay', node => node.hidden), false);
       await page.click('#staffCareerPlanResetFilter');
       assert.deepEqual(await page.evaluate(() => ({
         keyword: document.getElementById('staffCareerPlanFilterKeyword').value,
-        start: document.getElementById('staffCareerPlanFilterStartDate').value,
-        end: document.getElementById('staffCareerPlanFilterEndDate').value
-      })), { keyword: '', start: '2024-01-01', end: '2026-10-13' });
+        targetYear: document.getElementById('staffCareerPlanFilterTargetYear').value
+      })), { keyword: '', targetYear: '' });
       await page.click('#staffCareerPlanCloseFilter');
 
       for (const width of [360, 420]) {

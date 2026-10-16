@@ -80,7 +80,25 @@ async function noOverflow(page) {
       await page.reload({ waitUntil: 'domcontentloaded' });
       assert.equal(await page.$eval('#evaluationTotalRecords', node => node.textContent), '1', 'Reload preserves filters');
       await navigate(page, '.evaluation-card .evaluation-update');
-      assert.deepEqual(await page.$$eval('.evaluation-form-section h2', nodes => nodes.map(node => node.textContent)), ['General', 'Goal', 'Competency']);
+      assert.deepEqual(await page.$$eval('.evaluation-form-section h2', nodes => nodes.map(node => node.textContent)), ['General']);
+      assert.deepEqual(await page.$$eval('[data-evaluation-details]', nodes => nodes.map(node => ({
+        section: node.dataset.evaluationDetails,
+        summary: node.querySelector('small').textContent,
+        action: node.querySelector('.goal-plan-section-link').textContent.trim()
+      }))), [
+        { section: 'goals', summary: '2 items', action: 'Details' },
+        { section: 'competencies', summary: '3 items', action: 'Details' }
+      ]);
+      await page.click('[data-evaluation-details="goals"]');
+      assert.equal(await page.$eval('#evaluationGeneralView', node => node.hidden), true);
+      assert.equal(await page.$eval('#evaluationListTitle', node => node.textContent), 'Goal');
+      assert.equal(await page.$$eval('#evaluationSectionItems .evaluation-summary-item', nodes => nodes.length), 2);
+      assert.equal(await page.$$eval('#evaluationSectionItems .evaluation-item-number', nodes => nodes.length), 0, 'Compact lists do not use numbering');
+      await page.click('#evaluationBack');
+      await page.click('[data-evaluation-details="competencies"]');
+      assert.equal(await page.$eval('#evaluationListTitle', node => node.textContent), 'Competency');
+      assert.equal(await page.$$eval('#evaluationSectionItems .evaluation-summary-item', nodes => nodes.length), 3);
+      await page.click('#evaluationBack');
       assert.deepEqual(await page.$$eval('#evaluationGeneral label', nodes => nodes.map(node => node.textContent)), ['Name', 'Position', 'Department', 'Supervisor', 'Report To', 'Evaluation Ref#', 'Period', 'Type', 'Status', 'Document Date', 'Remark']);
       assert.equal(await page.$eval('#evaluationName', node => node.value), 'Farhan Binti Rahmat');
       assert.equal(await page.$eval('#evaluationSupervisor', node => node.value), 'Angeline Loren Alan');
@@ -89,16 +107,16 @@ async function noOverflow(page) {
       assert.equal(await page.$eval('#evaluationDocumentDate', node => node.value), '12 Jan 2026');
       assert.equal(await page.$eval('#evaluationRemark', node => node.value), 'Annual performance evaluation for FY 2026A.');
       assert.equal(await page.$$eval('#evaluationGeneral .self-evaluation-employee-id', nodes => nodes.length), 0, 'Performance Evaluation General does not display employee IDs');
-      assert.equal(await page.$$eval('#evaluationGoalItems .evaluation-item', nodes => nodes.length), 2);
-      assert.equal(await page.$$eval('#evaluationCompetencyItems .evaluation-item', nodes => nodes.length), 3);
       assert.ok(await page.$$eval('#evaluationDetailsForm input, #evaluationDetailsForm textarea', nodes => nodes.every(node => node.readOnly)), 'Overview remains read-only');
       await noOverflow(page);
       await page.screenshot({ path: path.join(__dirname, `performance-evaluation-general-${theme}-${width}.png`) });
       for (const [kind, section, item] of [['goals', 'Goal', 'goal-2'], ['competencies', 'Competency', 'competency-3']]) {
-        const selected = `#evaluation${section}Items [data-item-id="${item}"]`;
+        if (await page.$eval('#evaluationGeneralView', node => node.hidden)) await page.click('#evaluationBack');
+        await page.click(`[data-evaluation-details="${kind}"]`);
+        const selected = `#evaluationSectionItems [data-item-id="${item}"]`;
         const beforeAll = await page.evaluate(() => JSON.stringify(PerformanceEvaluationStore.all()));
         const beforeStorage = await page.evaluate(() => sessionStorage.getItem('pq_performance_evaluation_preview_v1'));
-        await page.$eval(`#evaluation${section}`, node => node.scrollIntoView({ block: 'start', behavior: 'instant' }));
+        await page.$eval(`#evaluationDetailView`, node => node.scrollIntoView({ block: 'start', behavior: 'instant' }));
         await page.screenshot({ path: path.join(__dirname, `performance-evaluation-${kind}-${theme}-${width}.png`) });
         await navigate(page, `${selected} .evaluation-update`);
         assert.equal(await page.$eval('#evaluationItemTitle', node => node.readOnly), true);
@@ -125,18 +143,19 @@ async function noOverflow(page) {
         await setField(page, '#evaluationItemTitle', 'Tampered title');
         await setField(page, '#evaluationItemWeightage', '999%');
         await navigate(page, '#evaluationItemUpdate');
-        assert.equal(await page.$eval(`${selected} [data-field="rating"]`, node => node.value), '4.5 / 5');
-        assert.equal(await page.$eval(`${selected} [data-field="remark"]`, node => node.value), `Updated ${kind}\nSpecific follow-up <b>plain text</b>.`);
+        assert.equal(await page.$eval(`${selected} [data-field="rating"]`, node => node.textContent), '4.5 / 5');
+        assert.equal(await page.$eval(`${selected} [data-field="remark"]`, node => node.textContent), `Updated ${kind}\nSpecific follow-up <b>plain text</b>.`);
         const expected = JSON.parse(beforeAll);
         const expectedItem = expected.find(record => record.id === 'PE-2026-0012')[kind].find(record => record.id === item);
         expectedItem.rating = 4.5;
         expectedItem.remark = `Updated ${kind}\nSpecific follow-up <b>plain text</b>.`;
         assert.deepEqual(await page.evaluate(() => PerformanceEvaluationStore.all()), expected, 'Update changes only the chosen record, section and item rating/remark');
         await page.reload({ waitUntil: 'domcontentloaded' });
-        assert.equal(await page.$eval(`${selected} [data-field="rating"]`, node => node.value), '4.5 / 5', 'Saved edits survive reload');
+        assert.equal(await page.$eval(`${selected} [data-field="rating"]`, node => node.textContent), '4.5 / 5', 'Saved edits survive reload');
       }
       const nextTheme = theme === 'dark' ? 'light' : 'dark';
       await page.click(`[data-set-theme="${nextTheme}"]`);
+      if (await page.$eval('#evaluationGeneralView', node => node.hidden)) await page.click('#evaluationBack');
       await navigate(page, '#evaluationBack');
       assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), nextTheme);
       assert.equal(await page.$eval('#evaluationTotalRecords', node => node.textContent), '1', 'Returning to list preserves all filters');

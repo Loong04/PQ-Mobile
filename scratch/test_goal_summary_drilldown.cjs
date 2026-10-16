@@ -14,15 +14,29 @@ const file=pathToFileURL(path.resolve(__dirname,'../modules/performance/options/
       await page.click('[data-goal-summary-type="People"]');
       assert.equal(await page.$eval('#goalSummaryEmployeeView',node=>node.hidden),false);assert.equal(await page.$eval('#goalSummaryReportView',node=>node.hidden),true);
       assert.equal(await page.$eval('#goalSummaryEmployeeCount',node=>node.textContent.trim()),'3');
+      assert.equal(await page.$eval('#goalSummaryEmployeeType',node=>node.hidden),true,'Goal type heading is not repeated above the cards');
+      assert.equal(await page.$eval('#goalSummaryEmployeeView',node=>node.innerText.includes('Financial Goals')),false,'Details do not repeat the selected goal type');
+      assert.equal(await page.$$eval('#goalSummaryEmployeeCards .history-card-item',nodes=>nodes.length),3,'Employee goals use History Cards');
+      assert.equal(await page.$$eval('#goalSummaryEmployeeCards .status-pill',nodes=>nodes.length),3,'Each History Card shows achievement in a status pill');
+      assert.equal(await page.$$eval('#goalSummaryEmployeeCards .history-card-details',nodes=>nodes.length),3,'Each History Card uses the shared detail panel');
+      assert.deepEqual(
+        await page.$$eval('#goalSummaryEmployeeCards .goal-summary-employee-card',nodes=>nodes.map(node=>({status:node.dataset.status,pill:[...node.querySelector('.status-pill').classList]}))),
+        [
+          {status:'draft',pill:['status-pill','draft','goal-summary-achieved-pill']},
+          {status:'draft',pill:['status-pill','draft','goal-summary-achieved-pill']},
+          {status:'approved',pill:['status-pill','approved','goal-summary-achieved-pill']}
+        ],
+        '100% uses the teal approved treatment while lower results remain purple'
+      );
       assert.deepEqual(await page.$$eval('#goalSummaryEmployeeCards .goal-summary-employee-card',cards=>cards.map(card=>({
-        name:card.querySelector('.goal-summary-employee-name').textContent.trim(),id:card.querySelector('.goal-summary-employee-name + .goal-summary-employee-id').textContent.trim(),
+        name:card.querySelector('.goal-summary-employee-name').textContent.trim(),id:card.querySelector('.goal-summary-employee-id').textContent.trim(),status:card.querySelector('.status-pill').textContent.trim(),
         fields:[...card.querySelectorAll('.goal-summary-employee-detail')].map(field=>[field.querySelector('dt').textContent.trim(),field.querySelector('dd').textContent.trim()])
       }))),[
-        {name:'Farhan Binti Rahmat',id:'#EBB12',fields:[['Department','Human Resource'],['Job','Group HR Manager'],['Period','2026'],['Goal','Reduce Staff Attrition'],['Achieved','90.00%']]},
-        {name:'Farhan Binti Rahmat',id:'#EBB12',fields:[['Department','Human Resource'],['Job','Group HR Manager'],['Period','2026'],['Goal','Improve Staff Satisfaction'],['Achieved','80.00%']]},
-        {name:'Nur Izzati',id:'#EBB03',fields:[['Department','Finance'],['Job','Finance Analyst'],['Period','2026'],['Goal','Improve team knowledge sharing'],['Achieved','100.00%']]}
+        {name:'Farhan Binti Rahmat',id:'#EBB12',status:'90.00%',fields:[['Department','Human Resource'],['Job','Group HR Manager'],['Period','2026'],['Goal','Reduce Staff Attrition']]},
+        {name:'Farhan Binti Rahmat',id:'#EBB12',status:'80.00%',fields:[['Department','Human Resource'],['Job','Group HR Manager'],['Period','2026'],['Goal','Improve Staff Satisfaction']]},
+        {name:'Nur Izzati',id:'#EBB03',status:'100.00%',fields:[['Department','Finance'],['Job','Finance Analyst'],['Period','2026'],['Goal','Improve team knowledge sharing']]}
       ]);
-      assert.ok(await page.$eval('.goal-summary-employee-header',node=>getComputedStyle(node).backgroundImage.includes('109, 40, 217')&&getComputedStyle(node).backgroundImage.includes('124, 58, 237')));
+      assert.ok(await page.$eval('.goal-summary-employee-card',node=>parseFloat(getComputedStyle(node).borderTopLeftRadius)===20&&parseFloat(getComputedStyle(node).borderLeftWidth)===5));
       assert.ok(await page.$eval('.goal-summary-employee-id',node=>getComputedStyle(node).fontSize==='11.5px'&&getComputedStyle(node).opacity==='0.8'));
       assert.deepEqual(await page.$eval('#goalSummaryEmployeeViewChart',node=>({text:node.textContent.trim(),pie:!!node.querySelector('.fa-chart-pie')})),{text:'View Chart',pie:true});
       await page.screenshot({path:path.join(__dirname,`goal-summary-employee-cards-${theme}-${width}.png`)});

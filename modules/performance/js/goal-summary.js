@@ -56,17 +56,36 @@
   }
   function renderEmployeeCards() {
     const rows = employeeRows(), cards = $('goalSummaryEmployeeCards'); cards.replaceChildren();
-    $('goalSummaryEmployeeType').textContent = `${state.selectedType} Goals`; $('goalSummaryEmployeeCount').textContent = String(rows.length);
+    $('goalSummaryEmployeeType').textContent = ''; $('goalSummaryEmployeeType').hidden = true; $('goalSummaryEmployeeCount').textContent = String(rows.length);
     rows.forEach(record => {
-      const empNo = String(record.empNo ?? '').replace(/^#+/,''), card = node(empNo ? 'a' : 'article','goal-summary-employee-card');
-      if (empNo) { card.href = cvUrl(record); card.dataset.goalCv = record.id || ''; card.setAttribute('aria-label',`Open CV for ${display(record.name)}, #${empNo}`); }
-      const header = node('span','goal-summary-employee-header'); header.append(node('strong','goal-summary-employee-name',display(record.name)),node('span','goal-summary-employee-id',empNo ? `#${empNo}` : '—'));
-      const details = node('dl','goal-summary-employee-details');
-      [['Department',record.department],['Job',record.job],['Period',record.period],['Goal',record.title],['Achieved',percent(achievement(record))]].forEach(([label,value]) => { const field = node('div','goal-summary-employee-detail'); field.append(node('dt','',label),node('dd','',display(value))); details.append(field); });
-      card.append(header,details); cards.append(card);
+      const empNo = String(record.empNo ?? '').replace(/^#+/,'');
+      const card = node(empNo ? 'a' : 'article','history-card-item goal-summary-employee-card');
+      const achieved = achievement(record), statusTone = achieved === 100 ? 'approved' : 'draft';
+      card.dataset.status = statusTone;
+      if (empNo) {
+        card.href = cvUrl(record);
+        card.dataset.goalCv = record.id || '';
+        card.setAttribute('aria-label','Open CV for ' + display(record.name) + ', #' + empNo);
+      }
+      const header = node('span','history-card-header goal-summary-employee-header');
+      const heading = node('span','history-card-heading goal-summary-employee-identity');
+      heading.append(
+        node('strong','history-card-title goal-summary-employee-name',display(record.name)),
+        node('span','history-card-ref goal-summary-employee-id',empNo ? '#' + empNo : '—')
+      );
+      const status = node('span','status-pill ' + statusTone + ' goal-summary-achieved-pill',percent(achieved));
+      header.append(heading,status);
+
+      const details = node('dl','history-card-details goal-summary-employee-details');
+      [['Department',record.department],['Job',record.job],['Period',record.period],['Goal',record.title]].forEach(([label,value]) => {
+        const field = node('div','goal-summary-employee-detail');
+        field.append(node('dt','',label),node('dd','',display(value)));
+        details.append(field);
+      });
+      card.append(header,details);
+      cards.append(card);
     });
-  }
-  function openEmployees(category) { state.selectedType = category; syncUrl(); showView('employees'); }
+  }  function openEmployees(category) { state.selectedType = category; syncUrl(); showView('employees'); }
   function clearError() { $('goalSummaryFilterError').hidden = true; $('goalSummaryFilterError').textContent = ''; form.querySelectorAll('[aria-invalid]').forEach(field => field.removeAttribute('aria-invalid')); }
   function fillForm(values) { Object.entries(values).forEach(([key,value]) => { form.elements.namedItem(key).value = value; }); clearError(); }
   function openFilter() {

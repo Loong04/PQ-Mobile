@@ -1,103 +1,116 @@
 (() => {
-  const source = window.SelfEvaluationStore?.get() || window.PERFORMANCE_SELF_EVALUATION || {};
+  const store = window.SelfEvaluationStore;
+  const source = store?.get() || window.PERFORMANCE_SELF_EVALUATION || {};
   const $ = id => document.getElementById(id);
-  const display = value => value === null || value === undefined || value === '' ? '—' : String(value);
+  let section = new URLSearchParams(location.search).get('kind');
+  if (!['goals', 'competencies'].includes(section)) section = null;
+  let toastTimer;
 
-  function syncBackLink() {
-    const theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-    $('selfEvaluationBack').href = `../index.html?scope=individual&theme=${theme}`;
+  const theme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+  const title = () => section === 'competencies' ? 'Competency' : 'Goal';
+  const items = () => section ? source[section] || [] : [];
+  const compact = value => Number(value).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const icon = name => { const node = document.createElement('i'); node.className = 'fa-solid ' + name; node.setAttribute('aria-hidden', 'true'); return node; };
+  const element = (tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
+
+  function syncLinks() {
+    const home = '../index.html?scope=individual&theme=' + theme();
+    $('selfEvaluationCancel').href = home;
+    $('selfEvaluationBack').href = section ? 'self-evaluation.html?theme=' + theme() : home;
+    $('selfEvaluationBack').setAttribute('aria-label', section ? 'Back to Self Evaluation' : 'Back to Performance');
     document.querySelectorAll('[data-self-evaluation-link]').forEach(link => {
       const url = new URL(link.href);
-      url.searchParams.set('theme', theme);
+      url.searchParams.set('theme', theme());
       link.href = url.href;
     });
   }
 
-  function field(id, labelText, value, multiline = false) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'goal-form-field';
-    const label = document.createElement('label');
-    label.htmlFor = id;
-    label.textContent = labelText;
-    const control = document.createElement(multiline ? 'textarea' : 'input');
-    control.id = id;
-    control.readOnly = true;
-    control.value = display(value);
-    if (multiline) control.rows = 1;
-    else control.type = 'text';
-    wrapper.append(label, control);
-    return wrapper;
+  function showToast(message) {
+    clearTimeout(toastTimer);
+    $('selfEvaluationToast').textContent = message;
+    $('selfEvaluationToast').classList.add('show');
+    toastTimer = setTimeout(() => $('selfEvaluationToast').classList.remove('show'), 2400);
   }
 
-  function renderItems(containerId, records, prefix, emptyMessage, kind) {
-    const container = $(containerId);
-    container.replaceChildren();
-    if (!Array.isArray(records) || !records.length) {
-      const empty = document.createElement('p');
-      empty.className = 'self-evaluation-empty';
-      empty.textContent = emptyMessage;
-      container.append(empty);
-      return;
+  function fieldRow(label, value) {
+    const row = element('div', 'goal-plan-item-field');
+    row.append(element('dt', '', label), element('dd', '', value || '—'));
+    return row;
+  }
+
+  function renderCard(item) {
+    const card = element('article', 'goal-plan-card');
+    card.dataset.itemId = item.id;
+    const header = element('header', 'goal-plan-card-header');
+    const toggle = element('button', 'goal-plan-item-toggle');
+    toggle.type = 'button';
+    toggle.setAttribute('aria-expanded', 'false');
+    const itemIcon = element('span', 'goal-plan-item-icon');
+    itemIcon.append(icon(section === 'competencies' ? 'fa-award' : 'fa-bullseye'));
+    toggle.append(itemIcon, element('strong', 'goal-plan-card-title', item.title), element('strong', 'goal-plan-item-weight', compact(item.rating) + ' / 5'), icon('fa-chevron-down'));
+    toggle.lastChild.classList.add('goal-plan-item-chevron');
+    const update = element('a', 'goal-plan-card-update self-evaluation-update');
+    update.href = 'self-evaluation-item.html?kind=' + encodeURIComponent(section) + '&item=' + encodeURIComponent(item.id) + '&theme=' + theme();
+    update.dataset.selfEvaluationLink = '';
+    update.setAttribute('aria-label', 'Edit ' + item.title);
+    update.append(icon('fa-pen-to-square'));
+    header.append(toggle, element('div', 'goal-plan-card-actions'));
+    header.lastChild.append(update);
+    const details = element('div', 'goal-plan-card-body goal-plan-item-details');
+    details.hidden = true;
+    const fields = element('dl', 'goal-plan-item-fields');
+    fields.append(fieldRow('Title', item.title), fieldRow('Weightage', compact(item.weightage) + '%'), fieldRow('Rating', compact(item.rating) + ' / 5'), fieldRow('Remark', item.remark));
+    details.append(fields);
+    toggle.addEventListener('click', () => { details.hidden = !details.hidden; toggle.setAttribute('aria-expanded', String(!details.hidden)); });
+    card.append(header, details);
+    return card;
+  }
+
+  function render() {
+    $('selfEvaluationGeneralView').hidden = Boolean(section);
+    $('selfEvaluationDetailView').hidden = !section;
+    $('selfEvaluationPageTitle').textContent = section ? title() : 'Self Evaluation';
+    if (section) {
+      $('selfEvaluationListTitle').textContent = title();
+      $('selfEvaluationListIcon').replaceChildren(icon(section === 'competencies' ? 'fa-award' : 'fa-bullseye'));
+      $('selfEvaluationAdd').hidden = section === 'competencies';
+      $('selfEvaluationCards').replaceChildren(...items().map(renderCard));
     }
-    records.forEach((record, index) => {
-      const item = document.createElement('article');
-      item.className = 'goal-form-body self-evaluation-item';
-      item.dataset.itemId = record.id;
-      item.setAttribute('aria-label', `${kind === 'goals' ? 'Goal' : 'Competency'} ${index + 1} of ${records.length}: ${record.title}`);
-      const id = `${prefix}${index + 1}`;
-      const number = document.createElement('span');
-      number.className = 'self-evaluation-item-number';
-      number.textContent = `${String(index + 1).padStart(2, '0')} / ${String(records.length).padStart(2, '0')}`;
-      number.setAttribute('aria-hidden', 'true');
-      const metrics = document.createElement('div');
-      metrics.className = 'goal-form-grid';
-      metrics.append(
-        field(`${id}Weightage`, 'Weightage', record.weightage == null ? null : `${record.weightage}%`),
-        field(`${id}Rating`, 'Rating', record.rating == null ? null : `${record.rating} / 5`)
-      );
-      const update = document.createElement('a');
-      update.className = 'self-evaluation-update';
-      update.href = `self-evaluation-item.html?kind=${encodeURIComponent(kind)}&item=${encodeURIComponent(record.id)}`;
-      update.dataset.selfEvaluationLink = '';
-      update.textContent = 'Update';
-      update.setAttribute('aria-label', `Update ${kind === 'goals' ? 'goal' : 'competency'}: ${record.title}`);
-      item.append(number, field(`${id}Title`, 'Title', record.title, true), metrics, field(`${id}Remark`, 'Remark', record.remark, true), update);
-      container.append(item);
-    });
+    syncLinks();
+    document.querySelector('.self-evaluation-content')?.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  function fitRemarks() {
-    document.querySelectorAll('#selfEvaluationForm textarea').forEach(control => {
-      control.style.height = 'auto';
-      control.style.height = `${control.scrollHeight + control.offsetHeight - control.clientHeight}px`;
-    });
+  function openSection(next) {
+    section = next;
+    const url = new URL(location.href);
+    url.searchParams.set('kind', section);
+    url.searchParams.delete('item');
+    history.pushState(null, '', url);
+    render();
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     const employee = source.employee || {};
-    $('selfEvaluationName').value = display(employee.name);
-    $('selfEvaluationSupervisor').value = display(employee.supervisor?.name);
-    $('selfEvaluationReportTo').value = display(employee.reportingTo?.name);
-    for (const [id, value] of Object.entries({
-      selfEvaluationPosition: employee.position,
-      selfEvaluationDepartment: employee.department,
-      selfEvaluationRef: source.evaluationRef,
-      selfEvaluationPeriod: source.period,
-      selfEvaluationType: source.type
-    })) $(id).value = display(value);
-    renderItems('selfEvaluationGoalItems', source.goals, 'selfEvaluationGoal', 'No goals available for this evaluation.', 'goals');
-    renderItems('selfEvaluationCompetencyItems', source.competencies, 'selfEvaluationCompetency', 'No competencies available for this evaluation.', 'competencies');
-    const params = new URLSearchParams(location.search);
-    const selected = document.querySelector(`#selfEvaluation${params.get('kind') === 'competencies' ? 'Competency' : 'Goal'}Items [data-item-id="${CSS.escape(params.get('item') || '')}"]`);
-    if (selected) {
-      selected.scrollIntoView({ block: 'start', behavior: 'instant' });
-      selected.querySelector('.self-evaluation-update')?.focus({ preventScroll: true });
-    }
-    $('selfEvaluationForm').addEventListener('submit', event => event.preventDefault());
-    syncBackLink();
-    fitRemarks();
-    document.fonts.ready.then(fitRemarks);
-    new ResizeObserver(fitRemarks).observe($('selfEvaluationForm'));
+    $('selfEvaluationName').value = employee.name || '—';
+    $('selfEvaluationPosition').value = employee.position || '—';
+    $('selfEvaluationDepartment').value = employee.department || '—';
+    $('selfEvaluationSupervisor').value = (employee.supervisor?.name || '—') + (employee.supervisor?.empNo ? '  #' + String(employee.supervisor.empNo).replace(/^#/, '') : '');
+    $('selfEvaluationReportTo').value = (employee.reportingTo?.name || '—') + (employee.reportingTo?.empNo ? '  #' + String(employee.reportingTo.empNo).replace(/^#/, '') : '');
+    $('selfEvaluationRef').value = source.evaluationRef || '—';
+    $('selfEvaluationPeriod').value = source.period || '—';
+    $('selfEvaluationType').value = source.type || '—';
+    $('selfEvaluationGoalsSummary').textContent = (source.goals?.length || 0) + ' items';
+    $('selfEvaluationCompetenciesSummary').textContent = (source.competencies?.length || 0) + ' items';
+    document.querySelectorAll('[data-evaluation-section]').forEach(button => button.addEventListener('click', () => openSection(button.dataset.evaluationSection)));
+    $('selfEvaluationAdd').addEventListener('click', () => {
+      if (section !== 'goals') return;
+      location.assign('self-evaluation-item.html?kind=goals&mode=add&theme=' + theme());
+    });
+    $('selfEvaluationBack').addEventListener('click', event => { if (!section) return; event.preventDefault(); section = null; history.pushState(null, '', 'self-evaluation.html?theme=' + theme()); render(); });
+    $('selfEvaluationDraft').addEventListener('click', () => { sessionStorage.setItem('pq_self_evaluation_status_v1', 'Draft'); showToast('Self Evaluation draft saved.'); });
+    $('selfEvaluationSubmit').addEventListener('click', () => { sessionStorage.setItem('pq_self_evaluation_status_v1', 'Submitted'); showToast('Self Evaluation submitted successfully.'); });
+    window.addEventListener('popstate', () => { const value = new URLSearchParams(location.search).get('kind'); section = ['goals', 'competencies'].includes(value) ? value : null; render(); });
+    render();
   });
-  new MutationObserver(syncBackLink).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(syncLinks).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 })();

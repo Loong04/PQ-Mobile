@@ -4,10 +4,7 @@
   const colors = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#14b8a6', '#f97316'];
   const defaults = {
     keyword: '',
-    startDate: '2024-01-01',
-    endDate: '2026-10-13',
-    careerPath: '',
-    nextPosition: '',
+    targetYear: '',
     branch: '',
     department: ''
   };
@@ -43,23 +40,6 @@
     select.value = selected;
   }
 
-  function populateCareerPaths() {
-    const select = $('staffCareerPlanFilterCareerPath');
-    select.replaceChildren(new Option('All Career Paths', ''));
-    const paths = new Map(data.map(row => [row.careerPathKey, row.careerPath]));
-    [...paths].sort((a, b) => a[1].localeCompare(b[1])).forEach(([value, label]) => option(select, label, value));
-  }
-
-  function populateNextPositions(selected = '') {
-    const path = $('staffCareerPlanFilterCareerPath').value;
-    const rows = path ? data.filter(row => row.careerPathKey === path) : data;
-    const positions = new Map(rows.map(row => [row.nextPositionKey, row.nextPosition]));
-    const select = $('staffCareerPlanFilterNextPosition');
-    select.replaceChildren(new Option('All Next Positions', ''));
-    [...positions].sort((a, b) => a[1].localeCompare(b[1])).forEach(([value, label]) => option(select, label, value));
-    select.value = [...positions].some(([value]) => value === selected) ? selected : '';
-  }
-
   function profileUrl(row) {
     const url = new URL('../../../../me.html', location.href);
     url.searchParams.set('employee', row.empNo);
@@ -88,9 +68,11 @@
 
       const details = node('dl', 'staff-career-plan-details');
       details.append(
-        detail('Career Path', row.careerPath),
-        detail('Next Position', row.nextPosition),
-        detail('Target Date', formatDate(row.targetDate))
+        detail('Branch', row.branch),
+        detail('Department', row.department),
+        detail('Position', row.position),
+        detail('Sex', row.sex),
+        detail('Age', String(row.age))
       );
       card.append(header, details);
       cards.append(card);
@@ -102,13 +84,9 @@
   function filterSummary() {
     const parts = [];
     if (state.filters.keyword) parts.push(state.filters.keyword);
-    const path = data.find(row => row.careerPathKey === state.filters.careerPath)?.careerPath;
-    const next = data.find(row => row.nextPositionKey === state.filters.nextPosition)?.nextPosition;
-    if (path) parts.push(path);
-    if (next) parts.push(next);
+    if (state.filters.targetYear) parts.push(state.filters.targetYear);
     if (state.filters.branch) parts.push(state.filters.branch);
     if (state.filters.department) parts.push(state.filters.department);
-    parts.push(`${formatDate(state.filters.startDate)} – ${formatDate(state.filters.endDate)}`);
     $('staffCareerPlanFilterSummary').textContent = parts.join(' · ');
   }
 
@@ -116,9 +94,7 @@
     const keyword = state.filters.keyword.toLowerCase().replace(/^#/, '');
     state.rows = data.filter(row => (
       (!keyword || `${row.empNo} ${row.name}`.toLowerCase().includes(keyword)) &&
-      row.planDate >= state.filters.startDate && row.planDate <= state.filters.endDate &&
-      (!state.filters.careerPath || row.careerPathKey === state.filters.careerPath) &&
-      (!state.filters.nextPosition || row.nextPositionKey === state.filters.nextPosition) &&
+      (!state.filters.targetYear || row.targetDate.slice(0, 4) === state.filters.targetYear) &&
       (!state.filters.branch || row.branch === state.filters.branch) &&
       (!state.filters.department || row.department === state.filters.department)
     ));
@@ -144,7 +120,7 @@
     $('staffCareerPlanChartTitle').textContent = `Career plans by ${metric.label.toLowerCase()}`;
     $('staffCareerPlanChartColumn').textContent = metric.label;
     $('staffCareerPlanChartTotal').textContent = total;
-    $('staffCareerPlanChartPeriod').textContent = `${formatDate(state.filters.startDate)} – ${formatDate(state.filters.endDate)}`;
+    $('staffCareerPlanChartPeriod').textContent = state.filters.targetYear || 'All Target Years';
     $('staffCareerPlanChartNote').textContent = total ? `Distribution of ${total} filtered career ${total === 1 ? 'plan' : 'plans'}` : 'No career plans match the current filter';
     $('staffCareerPlanChartSegments').replaceChildren();
     $('staffCareerPlanChartLegend').replaceChildren();
@@ -187,10 +163,7 @@
 
   function setFilterControls(filters) {
     $('staffCareerPlanFilterKeyword').value = filters.keyword;
-    $('staffCareerPlanFilterStartDate').value = filters.startDate;
-    $('staffCareerPlanFilterEndDate').value = filters.endDate;
-    $('staffCareerPlanFilterCareerPath').value = filters.careerPath;
-    populateNextPositions(filters.nextPosition);
+    $('staffCareerPlanFilterTargetYear').value = filters.targetYear;
     $('staffCareerPlanFilterBranch').value = filters.branch;
     $('staffCareerPlanFilterDepartment').value = filters.department;
   }
@@ -203,7 +176,6 @@
 
   function openFilter() {
     setFilterControls(state.filters);
-    $('staffCareerPlanFilterError').hidden = true;
     $('staffCareerPlanFilterOverlay').hidden = false;
     $('staffCareerPlanFilterOverlay').classList.add('is-open');
     setFilterInert(true);
@@ -220,10 +192,7 @@
   function readFilterControls() {
     return {
       keyword: $('staffCareerPlanFilterKeyword').value.trim(),
-      startDate: $('staffCareerPlanFilterStartDate').value,
-      endDate: $('staffCareerPlanFilterEndDate').value,
-      careerPath: $('staffCareerPlanFilterCareerPath').value,
-      nextPosition: $('staffCareerPlanFilterNextPosition').value,
+      targetYear: $('staffCareerPlanFilterTargetYear').value,
       branch: $('staffCareerPlanFilterBranch').value,
       department: $('staffCareerPlanFilterDepartment').value
     };
@@ -232,18 +201,14 @@
   function applyFilter(event) {
     event.preventDefault();
     const filters = readFilterControls();
-    const invalidDates = filters.startDate > filters.endDate;
-    $('staffCareerPlanFilterError').hidden = !invalidDates;
-    $('staffCareerPlanFilterStartDate').toggleAttribute('aria-invalid', invalidDates);
-    $('staffCareerPlanFilterEndDate').toggleAttribute('aria-invalid', invalidDates);
-    if (invalidDates) return;
+
     state.filters = filters;
     applyRows();
     closeFilter();
   }
 
   function init() {
-    populateCareerPaths();
+    populateSelect($('staffCareerPlanFilterTargetYear'), 'All Target Years', [...new Set(data.map(row => row.targetDate.slice(0, 4)))].sort());
     populateSelect($('staffCareerPlanFilterBranch'), 'All Branches', unique('branch'));
     populateSelect($('staffCareerPlanFilterDepartment'), 'All Departments', unique('department'));
     setFilterControls(defaults);
@@ -252,10 +217,8 @@
     $('staffCareerPlanFilterTrigger').addEventListener('click', openFilter);
     $('staffCareerPlanCloseFilter').addEventListener('click', closeFilter);
     $('staffCareerPlanResetFilter').addEventListener('click', () => {
-      $('staffCareerPlanFilterError').hidden = true;
-      setFilterControls(defaults);
+        setFilterControls(defaults);
     });
-    $('staffCareerPlanFilterCareerPath').addEventListener('change', () => populateNextPositions());
     $('staffCareerPlanFilterForm').addEventListener('submit', applyFilter);
     $('staffCareerPlanFilterOverlay').addEventListener('click', event => { if (event.target === event.currentTarget) closeFilter(); });
     $('staffCareerPlanViewChart').addEventListener('click', () => { renderChart(); showView('chart'); $('staffCareerPlanChartMetric').focus(); });

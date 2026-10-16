@@ -4,6 +4,7 @@
   const store = window.SelfEvaluationStore;
   const kind = params.get('kind');
   const itemId = params.get('item');
+  const adding = kind === 'goals' && params.get('mode') === 'add';
   const validKinds = ['goals', 'competencies'];
   const theme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
   const sectionTitle = () => kind === 'competencies' ? 'Competency' : 'Goal';
@@ -45,7 +46,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const record = store?.get();
-    const item = validKinds.includes(kind) ? record?.[kind]?.find(entry => entry.id === itemId) : null;
+    const item = adding ? { title: '', weightage: '', rating: '', remark: '' } : validKinds.includes(kind) ? record?.[kind]?.find(entry => entry.id === itemId) : null;
     syncLinks();
     if (!item) {
       $('selfEvaluationItemForm').hidden = true;
@@ -53,10 +54,18 @@
       return;
     }
     const title = sectionTitle();
-    $('selfEvaluationItemPageTitle').textContent = `Update ${title}`;
-    $('selfEvaluationItemSectionTitle').textContent = title;
+    $('selfEvaluationItemPageTitle').textContent = adding ? 'Add Goal' : `Update ${title}`;
+    $('selfEvaluationItemSectionTitle').textContent = adding ? 'Goal' : title;
+    if (adding) {
+      $('selfEvaluationItemTitle').readOnly = false;
+      $('selfEvaluationItemWeightage').readOnly = false;
+      $('selfEvaluationItemWeightage').type = 'number';
+      $('selfEvaluationItemWeightage').min = '0.01';
+      $('selfEvaluationItemWeightage').max = '100';
+      $('selfEvaluationItemSave').querySelector('span').textContent = 'Add';
+    }
     $('selfEvaluationItemTitle').value = item.title ?? '';
-    $('selfEvaluationItemWeightage').value = item.weightage == null ? '—' : `${item.weightage}%`;
+    $('selfEvaluationItemWeightage').value = adding ? '' : item.weightage == null ? '—' : `${item.weightage}%`;
     $('selfEvaluationItemRating').value = item.rating ?? '';
     $('selfEvaluationItemRemark').value = item.remark ?? '';
     $('selfEvaluationItemForm').addEventListener('input', clearError);
@@ -75,7 +84,13 @@
         return;
       }
       try {
-        store.update(kind, item.id, { rating, remark });
+        if (adding) {
+          const titleValue = $('selfEvaluationItemTitle').value.trim();
+          const weightage = Number($('selfEvaluationItemWeightage').value);
+          if (!titleValue) { showError('Enter a goal title.', $('selfEvaluationItemTitle')); return; }
+          if (!Number.isFinite(weightage) || weightage <= 0 || weightage > 100) { showError('Weightage must be more than 0 and not more than 100.', $('selfEvaluationItemWeightage')); return; }
+          store.addGoal({ title: titleValue, weightage, rating, remark });
+        } else store.update(kind, item.id, { rating, remark });
         location.assign(returnUrl());
       } catch {
         showError('Unable to save this update. Please try again.');

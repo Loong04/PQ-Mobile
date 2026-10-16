@@ -168,70 +168,186 @@
     const record = store.all().find(record => record.id === params.get('evaluation'));
     $('evaluationBack').href = route('performance-evaluation.html', {}, ['evaluation', 'kind', 'item']);
     if (!record) { notFound('evaluationDetailsForm', 'This performance evaluation is unavailable. Return to the list to select a record.'); return; }
+
     const employee = record.employee;
     const general = $('evaluationGeneralFields');
     const period = element('div', 'goal-form-grid');
     period.append(field('evaluationPeriod', 'Period', record.period), field('evaluationType', 'Type', record.type));
-    const document = element('div', 'goal-form-grid');
-    document.append(field('evaluationStatus', 'Status', record.status), field('evaluationDocumentDate', 'Document Date', record.documentDate));
+    const documentFields = element('div', 'goal-form-grid');
+    documentFields.append(field('evaluationStatus', 'Status', record.status), field('evaluationDocumentDate', 'Document Date', record.documentDate));
     general.replaceChildren(field('evaluationName', 'Name', employee.name), field('evaluationPosition', 'Position', employee.position),
       field('evaluationDepartment', 'Department', employee.department), field('evaluationSupervisor', 'Supervisor', employee.supervisor?.name),
       field('evaluationReportTo', 'Report To', employee.reportingTo?.name), field('evaluationRef', 'Evaluation Ref#', record.evaluationRef),
-      period, document, field('evaluationRemark', 'Remark', record.remark, true));
-    for (const [kind, title] of [['goals', 'Goal'], ['competencies', 'Competency']]) {
-      const container = $(`evaluation${title}Items`);
-      const items = record[kind] || [];
-      container.replaceChildren();
-      if (!items.length) container.append(element('p', 'self-evaluation-empty', `No ${kind} available for this evaluation.`));
-      items.forEach((item, index) => {
-        const body = element('article', 'goal-form-body self-evaluation-item evaluation-item');
-        body.dataset.itemId = item.id;
-        body.setAttribute('aria-label', `${title} ${index + 1} of ${items.length}: ${item.title}`);
-        const number = element('span', 'evaluation-item-number', `${String(index + 1).padStart(2, '0')} / ${String(items.length).padStart(2, '0')}`);
-        number.setAttribute('aria-hidden', 'true');
-        const prefix = `evaluation${title}${index + 1}`;
-        const metrics = element('div', 'goal-form-grid');
-        metrics.append(field(`${prefix}Weightage`, 'Weightage', item.weightage == null ? null : `${item.weightage}%`, false, 'weightage'),
-          field(`${prefix}Rating`, 'Rating', item.rating == null ? null : `${item.rating} / 5`, false, 'rating'));
-        const update = link(route('performance-evaluation-item.html', { evaluation: record.id, kind, item: item.id }), 'Update', 'evaluation-update');
-        update.setAttribute('aria-label', `Update ${title.toLowerCase()}: ${item.title}`);
-        body.append(number, field(`${prefix}Title`, 'Title', item.title, true, 'title'), metrics,
-          field(`${prefix}Remark`, 'Remark', item.remark, true, 'remark'), update);
-        container.append(body);
-      });
+      period, documentFields, field('evaluationRemark', 'Remark', record.remark, true));
+
+    $('evaluationGoalsSummary').textContent = (record.goals || []).length + ' items';
+    $('evaluationCompetenciesSummary').textContent = (record.competencies || []).length + ' items';
+
+    let section = ['goals', 'competencies'].includes(params.get('kind')) ? params.get('kind') : null;
+    let pendingDeleteId = null;
+    const sectionTitle = () => section === 'competencies' ? 'Competency' : 'Goal';
+    const sectionItems = () => section ? record[section] || [] : [];
+
+    function detailRow(label, value, key) {
+      const row = element('div', 'goal-plan-item-field');
+      const output = element('dd', '', display(value));
+      if (key) output.dataset.field = key;
+      row.append(element('dt', '', label), output);
+      return row;
     }
+
+    function renderItem(item) {
+      const title = sectionTitle();
+      const card = element('article', 'goal-plan-card evaluation-summary-item');
+      card.dataset.itemId = item.id;
+      const header = element('header', 'goal-plan-card-header');
+      const toggle = element('button', 'goal-plan-item-toggle');
+      toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', 'false');
+      const icon = element('span', 'goal-plan-item-icon');
+      icon.append(element('i', 'fa-solid ' + (section === 'competencies' ? 'fa-award' : 'fa-bullseye')));
+      const rating = item.rating == null ? '—' : item.rating + ' / 5';
+      const chevron = element('i', 'fa-solid fa-chevron-down goal-plan-item-chevron');
+      toggle.append(icon, element('strong', 'goal-plan-card-title', display(item.title)), element('strong', 'goal-plan-item-weight', rating), chevron);
+
+      const actions = element('div', 'goal-plan-card-actions');
+      const update = link(route('performance-evaluation-item.html', { evaluation: record.id, kind: section, item: item.id }), '', 'goal-plan-card-update evaluation-update');
+      update.setAttribute('aria-label', 'Update ' + title.toLowerCase() + ': ' + item.title);
+      update.append(element('i', 'fa-solid fa-pen-to-square'));
+      actions.append(update);
+      if (section === 'goals') {
+        const remove = element('button', 'goal-plan-card-delete');
+        remove.type = 'button';
+        remove.title = 'Delete';
+        remove.setAttribute('aria-label', 'Delete ' + item.title);
+        remove.append(element('i', 'fa-solid fa-trash'));
+        remove.addEventListener('click', () => {
+          pendingDeleteId = item.id;
+          $('evaluationDeleteMessage').textContent = '"' + item.title + '" will be removed from this Performance Evaluation.';
+          $('evaluationDeleteOverlay').hidden = false;
+          $('evaluationDeleteCancel').focus();
+        });
+        actions.append(remove);
+      }
+      header.append(toggle, actions);
+
+      const details = element('div', 'goal-plan-card-body goal-plan-item-details');
+      details.hidden = true;
+      const fields = element('dl', 'goal-plan-item-fields');
+      fields.append(detailRow('Title', item.title, 'title'), detailRow('Weightage', item.weightage == null ? '—' : item.weightage + '%', 'weightage'),
+        detailRow('Rating', rating, 'rating'), detailRow('Remark', item.remark, 'remark'));
+      details.append(fields);
+      toggle.addEventListener('click', () => {
+        details.hidden = !details.hidden;
+        toggle.setAttribute('aria-expanded', String(!details.hidden));
+      });
+      card.append(header, details);
+      return card;
+    }
+
+    function renderSection() {
+      $('evaluationGeneralView').hidden = Boolean(section);
+      $('evaluationDetailView').hidden = !section;
+      if (!section) return;
+      $('evaluationListTitle').textContent = sectionTitle();
+      const icon = element('i', 'fa-solid ' + (section === 'competencies' ? 'fa-award' : 'fa-bullseye'));
+      icon.setAttribute('aria-hidden', 'true');
+      $('evaluationListIcon').replaceChildren(icon);
+      $('evaluationAdd').hidden = section !== 'goals';
+      $('evaluationSectionItems').replaceChildren(...sectionItems().map(renderItem));
+      const selected = [...$('evaluationSectionItems').children].find(node => node.dataset.itemId === params.get('item'));
+      selected?.querySelector('a')?.focus({ preventScroll: true });
+      document.querySelector('main').scrollTop = 0;
+    }
+
+    function openSection(next) {
+      section = next;
+      const url = new URL(location.href);
+      url.searchParams.set('kind', next);
+      url.searchParams.delete('item');
+      history.pushState(null, '', url);
+      renderSection();
+    }
+
+    document.querySelectorAll('[data-evaluation-details]').forEach(button => button.addEventListener('click', () => openSection(button.dataset.evaluationDetails)));
+    $('evaluationAdd').addEventListener('click', () => {
+      if (section !== 'goals') return;
+      location.assign(route('performance-evaluation-item.html', { evaluation: record.id, kind: 'goals', mode: 'add' }));
+    });
+    $('evaluationDeleteCancel').addEventListener('click', () => {
+      pendingDeleteId = null;
+      $('evaluationDeleteOverlay').hidden = true;
+    });
+    $('evaluationDeleteConfirm').addEventListener('click', () => {
+      if (!pendingDeleteId) return;
+      store.deleteGoal(record.id, pendingDeleteId);
+      record.goals = record.goals.filter(item => item.id !== pendingDeleteId);
+      pendingDeleteId = null;
+      $('evaluationDeleteOverlay').hidden = true;
+      $('evaluationGoalsSummary').textContent = record.goals.length + ' items';
+      renderSection();
+    });
+    $('evaluationDeleteOverlay').addEventListener('click', event => {
+      if (event.target !== event.currentTarget) return;
+      pendingDeleteId = null;
+      event.currentTarget.hidden = true;
+    });
+    $('evaluationBack').addEventListener('click', event => {
+      if (!section) return;
+      event.preventDefault();
+      section = null;
+      const url = new URL(location.href);
+      url.searchParams.delete('kind');
+      url.searchParams.delete('item');
+      history.pushState(null, '', url);
+      renderSection();
+    });
+    window.addEventListener('popstate', () => {
+      const kind = new URLSearchParams(location.search).get('kind');
+      section = ['goals', 'competencies'].includes(kind) ? kind : null;
+      renderSection();
+    });
     $('evaluationDetailsForm').addEventListener('submit', event => event.preventDefault());
     observeForm();
-    const kind = params.get('kind');
-    const selected = kind === 'goals' ? $('evaluationGoalItems') : kind === 'competencies' ? $('evaluationCompetencyItems') : null;
-    if (selected) {
-      const item = [...selected.children].find(node => node.dataset.itemId === params.get('item'));
-      if (item) { item.scrollIntoView({ block: 'start', behavior: 'instant' }); item.querySelector('a')?.focus({ preventScroll: true }); }
-    }
+    renderSection();
   }
 
   function initItem() {
     const record = store.all().find(record => record.id === params.get('evaluation'));
     const kind = params.get('kind');
     const title = kind === 'competencies' ? 'Competency' : 'Goal';
-    const item = ['goals', 'competencies'].includes(kind) ? record?.[kind]?.find(item => item.id === params.get('item')) : null;
-    const returnUrl = () => record ? route('performance-evaluation-form.html', { evaluation: record.id }) : route('performance-evaluation.html', {}, ['evaluation', 'kind', 'item']);
+    const adding = kind === 'goals' && params.get('mode') === 'add';
+    const item = adding ? { title: '', weightage: '', rating: '', remark: '' }
+      : ['goals', 'competencies'].includes(kind) ? record?.[kind]?.find(item => item.id === params.get('item')) : null;
+    const returnUrl = () => record
+      ? route('performance-evaluation-form.html', { evaluation: record.id, kind }, ['mode', 'item'])
+      : route('performance-evaluation.html', {}, ['evaluation', 'kind', 'item', 'mode']);
     $('evaluationBack').href = returnUrl();
     $('evaluationItemCancel').href = returnUrl();
     if (!item) { notFound('evaluationItemForm', 'This evaluation item is unavailable. Return to the evaluation to select an item.'); return; }
-    $('evaluationPageTitle').textContent = `Update ${title}`;
+
+    $('evaluationPageTitle').textContent = adding ? 'Add Goal' : 'Update ' + title;
     $('evaluationItemSectionTitle').textContent = title;
     $('evaluationItemContext').replaceChildren(element('strong', 'evaluation-context-name', record.employee.name),
       element('span', 'self-evaluation-employee-id', employeeId(record.employee.empNo)),
       element('span', 'evaluation-context-reference', record.evaluationRef));
-    $('evaluationItemTitle').value = display(item.title);
-    $('evaluationItemWeightage').value = item.weightage == null ? '—' : `${item.weightage}%`;
+    $('evaluationItemTitle').readOnly = !adding;
+    $('evaluationItemWeightage').readOnly = !adding;
+    $('evaluationItemTitle').value = adding ? '' : display(item.title);
+    $('evaluationItemWeightage').type = adding ? 'number' : 'text';
+    if (adding) {
+      $('evaluationItemWeightage').min = '0.01';
+      $('evaluationItemWeightage').max = '100';
+      $('evaluationItemWeightage').step = '0.01';
+    }
+    $('evaluationItemWeightage').value = adding ? '' : item.weightage + '%';
     $('evaluationItemRating').value = item.rating ?? '';
     $('evaluationItemRemark').value = item.remark || '';
+    $('evaluationItemUpdate').textContent = adding ? 'Add Goal' : 'Update';
+
     function clearError() {
       $('evaluationItemError').hidden = true;
-      $('evaluationItemRating').removeAttribute('aria-invalid');
-      $('evaluationItemRemark').removeAttribute('aria-invalid');
+      for (const control of [$('evaluationItemTitle'), $('evaluationItemWeightage'), $('evaluationItemRating'), $('evaluationItemRemark')]) control.removeAttribute('aria-invalid');
     }
     function error(message, control) {
       $('evaluationItemError').textContent = message;
@@ -242,20 +358,29 @@
     $('evaluationItemForm').addEventListener('submit', event => {
       event.preventDefault();
       clearError();
-      const control = $('evaluationItemRating');
-      const rating = Number(control.value);
-      if (control.value.trim() === '' || !Number.isFinite(rating) || rating < 0 || rating > 5) {
-        error('Enter a rating from 0 to 5.', control); return;
+      const ratingControl = $('evaluationItemRating');
+      const rating = Number(ratingControl.value);
+      if (ratingControl.value.trim() === '' || !Number.isFinite(rating) || rating < 0 || rating > 5) {
+        error('Enter a rating from 0 to 5.', ratingControl); return;
       }
       const remark = $('evaluationItemRemark').value.trim();
       if (remark.length > 2000) { error('Remark must be 2,000 characters or fewer.', $('evaluationItemRemark')); return; }
-      try { store.update(record.id, kind, item.id, { rating, remark }); }
-      catch { error('Unable to save this update. Please try again.'); return; }
+      try {
+        if (adding) {
+          const titleValue = $('evaluationItemTitle').value.trim();
+          const weightage = Number($('evaluationItemWeightage').value);
+          if (!titleValue) { error('Enter a goal title.', $('evaluationItemTitle')); return; }
+          if (!Number.isFinite(weightage) || weightage <= 0 || weightage > 100) { error('Enter a weightage above 0 and up to 100.', $('evaluationItemWeightage')); return; }
+          store.addGoal(record.id, { title: titleValue, weightage, rating, remark });
+        } else store.update(record.id, kind, item.id, { rating, remark });
+      } catch {
+        error(adding ? 'Unable to add this goal. Please check the fields and try again.' : 'Unable to save this update. Please try again.');
+        return;
+      }
       location.assign(returnUrl());
     });
     observeForm();
   }
-
   document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.dataset.evaluationPage;
     if (page === 'list') initList();

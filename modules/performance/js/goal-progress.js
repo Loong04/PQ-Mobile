@@ -286,7 +286,6 @@
     $('goalProgressFormHeading').textContent = goal.kra;
     $('goalProgressUnit').textContent = `Unit: ${goal.unit}`;
     $('goalProgressValueUnit').textContent = goal.unit;
-    $('goalProgressContextDetails').replaceChildren(detail('Goal', goal.title), detail('Period', `${goal.period} · ${goal.evaluationType}`), detail('Target', goal.target), detail('Deadline', formatDate(goal.deadline)));
     $('goalProgressOverviewError').hidden = true;
     $('goalProgressListView').hidden = true;
     $('goalProgressUpdateView').hidden = false;

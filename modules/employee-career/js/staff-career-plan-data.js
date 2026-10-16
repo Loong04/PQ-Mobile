@@ -1,6 +1,8 @@
 window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   {
     empNo: 'EBB12',
+    sex: 'Female',
+    age: 32,
     name: 'Farhan Binti Rahmat',
     position: 'HR Executive',
     careerPath: 'Human Resources',
@@ -14,6 +16,8 @@ window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   },
   {
     empNo: 'EBB02',
+    sex: 'Male',
+    age: 30,
     name: 'Daniel Wong',
     position: 'Product Designer',
     careerPath: 'Specialist',
@@ -27,6 +31,8 @@ window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   },
   {
     empNo: 'EBB03',
+    sex: 'Female',
+    age: 29,
     name: 'Nur Izzati',
     position: 'Finance Analyst',
     careerPath: 'Specialist',
@@ -40,6 +46,8 @@ window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   },
   {
     empNo: '004177',
+    sex: 'Male',
+    age: 41,
     name: 'Ahmad Rafy Bin Zulkiple',
     position: 'Admin Manager',
     careerPath: 'Leadership',
@@ -53,6 +61,8 @@ window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   },
   {
     empNo: '007216',
+    sex: 'Male',
+    age: 38,
     name: 'Hailizam Bin Mohamed Ikhsan',
     position: 'Operations Supervisor',
     careerPath: 'Leadership',
@@ -66,6 +76,8 @@ window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   },
   {
     empNo: '005712',
+    sex: 'Male',
+    age: 31,
     name: 'Lee Wei Ming',
     position: 'Software Engineer',
     careerPath: 'Specialist',
@@ -79,6 +91,8 @@ window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   },
   {
     empNo: '008105',
+    sex: 'Male',
+    age: 28,
     name: 'Jason Tan',
     position: 'Sales Executive',
     careerPath: 'Leadership',
@@ -92,6 +106,8 @@ window.EMPLOYEE_CAREER_STAFF_PLAN_DATA = [
   },
   {
     empNo: '009034',
+    sex: 'Male',
+    age: 33,
     name: 'Muhammad Hafiz',
     position: 'IT Support Executive',
     careerPath: 'Cross-functional',

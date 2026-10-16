@@ -56,6 +56,9 @@ async function fill(page, overrides = {}) {
       assert.equal(await visible(page, '#goalProgressForm'), false, 'Update opens the detail list, with a separate entry form like OT Claim');
       assert.equal(await visible(page, '#goalProgressOverviewView'), true);
       assert.equal(await visible(page, '#goalProgressHistoryEmpty'), true);
+      assert.deepEqual(await page.$$eval('.goal-progress-context-header .goal-progress-context-line', nodes => nodes.map(node => node.textContent.trim())), ['A) Financial', 'KRA 1: FFB Budget', 'Unit: MT']);
+      assert.equal(await page.$('#goalProgressContextDetails'), null, 'Goal Details contains only category, KRA and unit');
+      assert.deepEqual(await page.$$eval('#goalProgressForm label', nodes => nodes.map(node => node.textContent.replace('*', '').trim())), ['Date', 'Hours Spent', 'Achieved Value', 'Achieved %', 'Remark']);
       await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-update-${theme}-${width}.png`) });
       await click(page, '#goalProgressSubmit');
       assert.match(await page.$eval('#goalProgressOverviewError', el => el.textContent), /Add at least one/);
@@ -103,6 +106,9 @@ async function fill(page, overrides = {}) {
       assert.match(await page.$eval('#goalProgressHistoryCount', el => el.textContent), /6.5 hrs/, 'Header back cancels edit');
       await click(page, '.goal-progress-delete');
       assert.equal(await visible(page, '#goalProgressHistoryEmpty'), true);
+      assert.deepEqual(await page.$$eval('.goal-progress-context-header .goal-progress-context-line', nodes => nodes.map(node => node.textContent.trim())), ['A) Financial', 'KRA 1: FFB Budget', 'Unit: MT']);
+      assert.equal(await page.$('#goalProgressContextDetails'), null, 'Goal Details contains only category, KRA and unit');
+      assert.deepEqual(await page.$$eval('#goalProgressForm label', nodes => nodes.map(node => node.textContent.replace('*', '').trim())), ['Date', 'Hours Spent', 'Achieved Value', 'Achieved %', 'Remark']);
       await click(page, '#goalProgressCancel'); await click(page, '.goal-progress-update');
       assert.equal(await page.$$('.goal-progress-entry').then(items => items.length), 1, 'Cancel restores saved draft');
       await click(page, '#goalProgressSubmit');
