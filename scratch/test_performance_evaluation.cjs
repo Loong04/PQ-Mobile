@@ -108,6 +108,14 @@ async function noOverflow(page) {
       assert.equal(await page.$eval('#evaluationRemark', node => node.value), 'Annual performance evaluation for FY 2026A.');
       assert.equal(await page.$$eval('#evaluationGeneral .self-evaluation-employee-id', nodes => nodes.length), 0, 'Performance Evaluation General does not display employee IDs');
       assert.ok(await page.$$eval('#evaluationDetailsForm input, #evaluationDetailsForm textarea', nodes => nodes.every(node => node.readOnly)), 'Overview remains read-only');
+      assert.deepEqual(await page.$$eval('#evaluationDecisionActions button', nodes => nodes.map(node => node.textContent.trim())), ['Approve', 'Resubmit', 'Cancel', 'Reject']);
+      assert.equal(await page.$eval('#evaluationDecisionActions', node => getComputedStyle(node).position), 'static', 'Decision actions scroll with the form');
+      assert.equal(await page.$eval('#evaluationDecisionActions', node => getComputedStyle(node).gridTemplateColumns.split(' ').length), 4, 'Decision actions stay in one row');
+      assert.ok(await page.$$eval('#evaluationDecisionActions button', nodes => nodes.every(node => getComputedStyle(node).backgroundImage !== 'none' && getComputedStyle(node).color === 'rgb(255, 255, 255)')), 'All decision actions use the purple button treatment');
+      await page.click('[data-evaluation-decision="Resubmit"]');
+      assert.equal(await page.$eval('#evaluationStatus', node => node.value), 'Resubmit', 'Decision updates the General status');
+      assert.equal(await page.$eval('#evaluationDecisionMessage', node => node.textContent), 'Performance Evaluation sent for resubmission.');
+      assert.equal(await page.evaluate(() => PerformanceEvaluationStore.all().find(record => record.id === 'PE-2026-0012').status), 'Resubmit', 'Decision persists through the evaluation store');
       await noOverflow(page);
       await page.screenshot({ path: path.join(__dirname, `performance-evaluation-general-${theme}-${width}.png`) });
       for (const [kind, section, item] of [['goals', 'Goal', 'goal-2'], ['competencies', 'Competency', 'competency-3']]) {

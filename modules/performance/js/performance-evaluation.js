@@ -183,6 +183,14 @@
     $('evaluationGoalsSummary').textContent = (record.goals || []).length + ' items';
     $('evaluationCompetenciesSummary').textContent = (record.competencies || []).length + ' items';
 
+    const decisionLabels = { Approved: 'approved', Resubmit: 'sent for resubmission', Cancelled: 'cancelled', Rejected: 'rejected' };
+    document.querySelectorAll('[data-evaluation-decision]').forEach(button => button.addEventListener('click', () => {
+      const status = button.dataset.evaluationDecision;
+      store.setStatus(record.id, status);
+      record.status = status;
+      $('evaluationStatus').value = status;
+      $('evaluationDecisionMessage').textContent = 'Performance Evaluation ' + decisionLabels[status] + '.';
+    }));
     let section = ['goals', 'competencies'].includes(params.get('kind')) ? params.get('kind') : null;
     let pendingDeleteId = null;
     const sectionTitle = () => section === 'competencies' ? 'Competency' : 'Goal';

@@ -1,10 +1,12 @@
-﻿// Preview edits persist across these pages in the current tab, like Staff Incident.
+// Preview edits persist across these pages in the current tab, like Staff Incident.
 (() => {
   const key = 'pq_performance_evaluation_preview_v1';
   const kinds = ['goals', 'competencies'];
 
   function validPatch(patch) {
-    if (!patch || typeof patch.evaluationId !== 'string' || !kinds.includes(patch.kind)) return false;
+    if (!patch || typeof patch.evaluationId !== 'string') return false;
+    if (patch.action === 'status') return ['Approved', 'Resubmit', 'Cancelled', 'Rejected'].includes(patch.status);
+    if (!kinds.includes(patch.kind)) return false;
     if (patch.action === 'add') return patch.kind === 'goals' && patch.item && typeof patch.item.id === 'string';
     if (patch.action === 'delete') return patch.kind === 'goals' && typeof patch.itemId === 'string';
     return typeof patch.itemId === 'string' && Number.isFinite(patch.rating) && patch.rating >= 0 && patch.rating <= 5
@@ -23,6 +25,10 @@
     for (const patch of saved()) {
       const record = records.find(record => record.id === patch.evaluationId);
       if (!record) continue;
+      if (patch.action === 'status') {
+        record.status = patch.status;
+        continue;
+      }
       if (patch.action === 'add') {
         if (!record.goals.some(item => item.id === patch.item.id)) record.goals.push({ ...patch.item });
         continue;
@@ -76,5 +82,14 @@
     sessionStorage.setItem(key, JSON.stringify(edits));
   }
 
-  window.PerformanceEvaluationStore = { all, update, addGoal, deleteGoal, key };
+  function setStatus(evaluationId, status) {
+    if (!all().some(record => record.id === evaluationId)) throw new Error('Evaluation not found.');
+    const patch = { action: 'status', evaluationId, status };
+    if (!validPatch(patch)) throw new Error('Evaluation status is invalid.');
+    const edits = saved().filter(entry => !(entry.action === 'status' && entry.evaluationId === evaluationId));
+    edits.push(patch);
+    sessionStorage.setItem(key, JSON.stringify(edits));
+  }
+
+  window.PerformanceEvaluationStore = { all, update, addGoal, deleteGoal, setStatus, key };
 })();
