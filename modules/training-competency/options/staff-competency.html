@@ -19,7 +19,10 @@
   <script src="../../../js/app.js" defer></script>
   <script src="../../performance/js/highlight-export.js" defer></script>
   <script src="../js/staff-competency-data.js" defer></script>
+  <script src="../js/competency-summary-data.js" defer></script>
+  <script src="../js/staff-competency-reports.js" defer></script>
   <script src="../js/staff-competency.js" defer></script>
+  <script src="../js/staff-competency-hub.js" defer></script>
 </head>
 <body class="training-competency-page attendance-highlight-page performance-highlight-page staff-competency-page">
   <preview-top-bar active-page="training-competency"></preview-top-bar>
@@ -33,6 +36,13 @@
       </div>
     </header>
     <main class="main-content performance-highlight-content">
+      <nav class="sch-tabs" role="tablist" aria-label="Staff Competency views">
+        <button id="schTabStaff" type="button" role="tab" data-competency-tab="staff" aria-selected="true" aria-controls="competencyStaffPanel"><i class="fa-solid fa-users" aria-hidden="true"></i><span>Staff</span></button>
+        <button id="schTabAssessment" type="button" role="tab" data-competency-tab="assessment" aria-selected="false" aria-controls="competencyHubPanel" tabindex="-1"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i><span>Assessment</span></button>
+        <button id="schTabSearch" type="button" role="tab" data-competency-tab="search" aria-selected="false" aria-controls="competencyHubPanel" tabindex="-1"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Search</span></button>
+        <button id="schTabGap" type="button" role="tab" data-competency-tab="gap" aria-selected="false" aria-controls="competencyHubPanel" tabindex="-1"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span>Gap Summary</span></button>
+      </nav>
+      <div id="competencyStaffPanel" role="tabpanel" aria-labelledby="schTabStaff">
       <section id="staffCompetencyReportView" aria-label="Staff competency matches">
         <div class="filter-summary-bar performance-highlight-filter-summary">
           <div><small>Current Filter</small><strong id="staffCompetencyFilterSummary">All Staff</strong></div>
@@ -40,7 +50,7 @@
         </div>
         <section class="attendance-report-summary record-summary-card" aria-label="Staff competency totals" aria-live="polite">
           <div class="attendance-report-summary-row">
-            <div class="record-summary-metric"><span class="record-summary-label">Total Records</span><strong id="staffCompetencyTotalRecords" class="record-summary-value">0</strong></div>
+            <div class="record-summary-metric"><span class="record-summary-label">Total Employees</span><strong id="staffCompetencyTotalRecords" class="record-summary-value">0</strong></div>
             <button id="staffCompetencyViewChart" class="view-chart-btn" type="button"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
           </div>
           <div class="attendance-report-summary-row">
@@ -64,6 +74,29 @@
         </section>
         <section class="attendance-report-legend"><div class="attendance-report-legend-head"><span id="staffCompetencyChartColumn">Branch</span><span>Avg Match</span><span>% Records</span></div><div id="staffCompetencyChartLegend"></div></section>
       </section>
+      </div>
+      <section id="competencyHubPanel" class="sch-panel" role="tabpanel" aria-labelledby="schTabAssessment" hidden>
+        <div class="filter-summary-bar performance-highlight-filter-summary">
+          <div><small>Current Filter</small><strong id="competencyHubFilterSummary">All Staff</strong></div>
+          <button id="competencyHubFilterTrigger" type="button" aria-label="Open competency filter" aria-haspopup="dialog" aria-controls="competencyHubFilterOverlay" aria-expanded="false"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+        </div>
+        <div id="competencyGapSwitch" class="sch-gap-switch" role="group" aria-label="Gap type" hidden>
+          <button type="button" data-gap-sign="negative" aria-pressed="true">Negative Gap</button>
+          <button type="button" data-gap-sign="positive" aria-pressed="false">Positive Gap</button>
+        </div>
+        <div class="sch-heading"><div><h2 id="competencyHubHeading">Assessment</h2><p id="competencyHubDescription"></p></div></div>
+        <p id="competencyHubDataNote" class="sch-data-note" hidden></p>
+        <section class="attendance-report-summary record-summary-card" aria-label="Competency results" aria-live="polite">
+          <div class="attendance-report-summary-row">
+            <div class="record-summary-metric"><span id="competencyHubCountLabel" class="record-summary-label">Total Employees</span><strong id="competencyHubCount" class="record-summary-value">0</strong></div>
+            <button id="competencyHubViewChart" class="view-chart-btn" type="button" aria-expanded="false" aria-controls="competencyHubChart" hidden><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>View Chart</span></button>
+          </div>
+          <p id="competencyHubCountNote" class="sch-count-note"></p>
+        </section>
+        <section id="competencyHubChart" class="sch-chart" aria-labelledby="competencyHubChartTitle" hidden><h3 id="competencyHubChartTitle">Records by competency</h3><div id="competencyHubChartBars"></div></section>
+        <button id="competencyGapAll" class="sch-back-link" type="button" hidden><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>All competencies</span></button>
+        <div id="competencyHubResults" class="sch-results"></div>
+      </section>
     </main>
     <phone-bottom-nav active="apps"></phone-bottom-nav>
     <div id="staffCompetencyFilterOverlay" class="performance-highlight-filter-overlay standard-filter-sheet" aria-hidden="true" hidden>
@@ -80,6 +113,14 @@
           <p id="staffCompetencyFilterError" class="performance-highlight-error" role="alert" hidden></p>
         </div>
         <footer class="standard-filter-footer"><button id="staffCompetencyApplyFilter" class="standard-filter-apply" type="submit">Apply Filter</button></footer>
+      </form>
+    </div>
+    <div id="competencyHubFilterOverlay" class="performance-highlight-filter-overlay standard-filter-sheet" aria-hidden="true" hidden>
+      <form id="competencyHubFilterForm" class="standard-filter-panel" data-standard-filter-ready="true" role="dialog" aria-modal="true" aria-labelledby="competencyHubFilterTitle" novalidate>
+        <div class="standard-filter-handle" aria-hidden="true"></div>
+        <header class="standard-filter-header"><h2 id="competencyHubFilterTitle">Filter</h2><div class="standard-filter-header-actions"><button id="competencyHubResetFilter" class="standard-filter-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset</span></button><button id="competencyHubCloseFilter" class="standard-filter-close" type="button" aria-label="Close filter"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="performance-highlight-filter-fields"><div id="competencyHubFilterFields" class="sch-filter-fields"></div><p id="competencyHubFilterError" class="performance-highlight-error" role="alert" hidden></p></div>
+        <footer class="standard-filter-footer"><button id="competencyHubApplyFilter" class="standard-filter-apply" type="submit">Apply Filter</button></footer>
       </form>
     </div>
   </div>

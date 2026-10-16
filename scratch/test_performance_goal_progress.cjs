@@ -2,202 +2,162 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const puppeteer = require('puppeteer');
-
-const root = path.resolve(__dirname, '..');
-const indexUrl = theme => pathToFileURL(path.join(root, 'modules/performance/index.html')).href + `?theme=${theme}`;
-const pageUrl = theme => pathToFileURL(path.join(root, 'modules/performance/options/goal-progress.html')).href + `?theme=${theme}`;
-
-async function setField(page, selector, value) {
-  await page.$eval(selector, (element, nextValue) => {
-    element.value = nextValue;
-    element.dispatchEvent(new Event('input', { bubbles: true }));
-    element.dispatchEvent(new Event('change', { bubbles: true }));
-  }, value);
+const fs = require('node:fs');
+const url = theme => pathToFileURL(path.resolve(__dirname, '../modules/performance/options/goal-progress.html')).href + `?theme=${theme}`;
+const key = 'peoplehcm:performance:goal-progress:v1';
+async function field(page, id, value) {
+  await page.$eval(`#${id}`, (el, value) => { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); }, value);
 }
-
+async function click(page, selector) {
+  await page.$eval(selector, el => el.scrollIntoView({ block: 'center' }));
+  await page.click(selector);
+}
+async function visible(page, selector) { return page.$eval(selector, el => !!el.getClientRects().length); }
+async function values(page) { return page.$$eval('#goalProgressForm input, #goalProgressForm textarea', fields => fields.map(el => el.value)); }
+async function fill(page, overrides = {}) {
+  for (const [id, value] of Object.entries({ goalProgressDate: '2026-10-13', goalProgressHours: '6.5', goalProgressAchievedValue: '2500', goalProgressAchievedPercent: '72.5', goalProgressRemark: 'Mill delivery verified.', ...overrides })) await field(page, id, value);
+}
 (async () => {
-  const browser = await puppeteer.launch({
-    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
-    headless: true,
-    args: ['--allow-file-access-from-files', '--no-sandbox']
-  });
-  const errors = [];
-
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true, args: ['--allow-file-access-from-files', '--no-sandbox'] });
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage(), errors = [];
     await page.setRequestInterception(true);
-    page.on('request', request => /^https?:/.test(request.url()) ? request.abort() : request.continue());
-    page.on('pageerror', error => errors.push(error.message));
-
-    await page.setViewport({ width: 420, height: 844 });
-    await page.goto(indexUrl('light'), { waitUntil: 'domcontentloaded' });
-    assert.equal(await page.$eval('[data-option-id="goal-progress"]', node => node.tagName), 'A', 'Goal Progress must be a navigable option');
-    await page.click('[data-option-id="goal-progress"]');
-    await page.waitForFunction(() => location.pathname.endsWith('/goal-progress.html'));
-    assert.ok(new URL(page.url()).pathname.endsWith('/goal-progress.html'), 'Goal Progress option opens the page');
-
-    for (const theme of ['dark', 'light']) {
-      for (const width of [360, 420]) {
-        await page.setViewport({ width, height: 844 });
-        await page.goto(pageUrl(theme), { waitUntil: 'domcontentloaded' });
-
-        assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme);
-        assert.equal(await page.$eval('#goalProgressTitle', node => node.textContent.trim()), 'Goal Progress');
-        assert.ok(await page.$('#goalProgressFilterTrigger.claim-filter-bar'),'Goal Progress uses the shared Current Filter bar');
-        assert.deepEqual(await page.$$eval('.goal-progress-filter label', nodes => nodes.map(node => node.textContent.trim())), ['Period', 'Evaluation Type']);
-        assert.equal(await page.$('.goal-progress-card-header i'),null,'Goal title has no decorative target icon');
-        assert.equal(await page.$eval('#goalProgressTotal', node => node.textContent.trim()), '1');
-
-        const card = await page.$eval('.goal-progress-card', node => {
-          const headerStyle = getComputedStyle(node.querySelector('.goal-progress-card-header'));
-          const footer = node.querySelector('.goal-progress-card-footer');
-          const update = footer.querySelector('.goal-progress-update');
-          const footerStyle = getComputedStyle(footer);
-          const footerRect = footer.getBoundingClientRect();
-          const updateRect = update.getBoundingClientRect();
-          return {
-            category: node.querySelector('.goal-progress-card-category')?.textContent.trim(),
-            context: node.querySelector('.goal-progress-card-context')?.textContent.trim(),
-            title: node.querySelector('.goal-progress-card-title')?.textContent.trim(),
-            labels: [...node.querySelectorAll('.goal-progress-detail dt')].map(item => item.textContent.trim()),
-            values: [...node.querySelectorAll('.goal-progress-detail dd')].map(item => item.textContent.trim()),
-            updateText: update.textContent.trim(),
-            updateHasIcon: Boolean(update.querySelector('i')),
-            updateCompactRight: updateRect.width < footerRect.width / 2
-              && Math.abs(updateRect.right - (footerRect.right - parseFloat(footerStyle.paddingRight))) <= 1,
-            updateHeight: Math.round(updateRect.height),
-            updateRadius: getComputedStyle(update).borderRadius,
-            purpleHeader: headerStyle.backgroundImage.includes('linear-gradient') && headerStyle.color === 'rgb(255, 255, 255)',
-            rounded: getComputedStyle(node).borderRadius === '18px'
-          };
-        });
-        assert.deepEqual(card, {
-          category: 'A) Financial',
-          context: 'KRA 1: FFB Budget · Unit: MT',
-          title: 'Achieve FFB Production Budget',
-          labels: ['Description', 'Target', 'Weightage', 'Deadline', 'Last Update', 'Achieved'],
-          values: ['Deliver the approved annual FFB production budget.', '120,000 MT', '30%', '31 Dec 2026', 'No updates yet', '0 MT · 0%'],
-          updateText: 'Update',
-          updateHasIcon: false,
-          updateCompactRight: true,
-          updateHeight: 36,
-          updateRadius: '11px',
-          purpleHeader: true,
-          rounded: true
-        });
-        await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-${theme}-${width}.png`) });
-
-        await page.click('#goalProgressFilterTrigger');
-        assert.equal(await page.$eval('#goalProgressFilterModal',node=>node.getAttribute('aria-hidden')),'false');
-        await page.screenshot({path:path.join(__dirname,`performance-goal-progress-filter-${theme}-${width}.png`)});
-        await setField(page, '#goalProgressEvaluationFilter', 'Annual Review');
-        assert.equal(await page.$eval('#goalProgressTotal',node=>node.textContent.trim()),'1','Draft filter does not change records before Apply');
-        await page.keyboard.press('Escape');
-        assert.equal(await page.evaluate(()=>document.activeElement.id),'goalProgressFilterTrigger');
-        await page.click('#goalProgressFilterTrigger');
-        assert.equal(await page.$eval('#goalProgressEvaluationFilter',node=>node.value),'','Closing without Apply discards draft changes');
-        await setField(page, '#goalProgressEvaluationFilter', 'Annual Review');
-        await page.click('#goalProgressApplyFilter');
-        assert.equal(await page.$eval('#goalProgressTotal', node => node.textContent.trim()), '0', 'Evaluation type filter updates total record');
-        assert.equal(await page.$eval('#goalProgressEmpty', node => node.hidden), false, 'Empty state appears when filters have no results');
-        assert.ok(await page.$eval('#goalProgressFilterSummary',node=>node.textContent.includes('Annual Review')));
-        await page.click('#goalProgressFilterTrigger');
-        await setField(page, '#goalProgressEvaluationFilter', 'Mid-Year Review');
-        await page.click('#goalProgressApplyFilter');
-        assert.equal(await page.$eval('#goalProgressTotal', node => node.textContent.trim()), '1');
-        await page.click('#goalProgressFilterTrigger');await page.click('#goalProgressResetFilter');await page.click('#goalProgressApplyFilter');
-        assert.equal(await page.$eval('#goalProgressFilterSummary',node=>node.textContent),'All Periods • All Evaluation Types');
-
-        await page.click('.goal-progress-update');
-        assert.ok(await page.$('.goal-progress-content'),'Update opens the Goal Progress form without navigating through the bottom bar');
-        assert.deepEqual(await page.evaluate(() => ({ pageY: window.scrollY, phoneY: document.querySelector('.phone-container').scrollTop, contentY: document.querySelector('.goal-progress-content').scrollTop })), { pageY: 0, phoneY: 0, contentY: 0 }, 'Switching views keeps the preview frame fixed and resets only the phone content');
-        assert.equal(await page.$eval('#goalProgressListView', node => node.hidden), true);
-        assert.equal(await page.$eval('#goalProgressUpdateView', node => node.hidden), false);
-        assert.equal(await page.$eval('#goalProgressTitle', node => node.textContent.trim()), 'Update Goal Progress');
-        assert.deepEqual(await page.$$eval('.goal-progress-context-line', nodes => nodes.map(node => node.textContent.trim())), [
-          'A) Financial',
-          'KRA 1: FFB Budget',
-          'Unit: MT'
-        ]);
-        assert.deepEqual(await page.$$eval('#goalProgressForm label', nodes => nodes.map(node => node.textContent.replace('*', '').trim())), [
-          'Date', 'Hours Spent', 'Achieved Value', 'Achieved %', 'Remark'
-        ]);
-        assert.deepEqual(await page.$$eval('#goalProgressTable thead th', nodes => nodes.map(node => node.textContent.trim())), ['Date', 'Achieved', 'Action']);
-        assert.ok(await page.$eval('#goalProgressClear',node=>{const add=getComputedStyle(document.getElementById('goalProgressAdd')),clear=getComputedStyle(node);return clear.backgroundImage===add.backgroundImage&&clear.color===add.color;}),'Clear Form matches Add purple styling');
-
-        await page.click('#goalProgressAdd');
-        assert.equal(await page.$eval('#goalProgressFormError', node => node.textContent.trim()), 'Date is required.');
-        assert.equal(await page.$eval('#goalProgressDate', node => node.getAttribute('aria-invalid')), 'true');
-
-        await setField(page, '#goalProgressDate', '2026-10-13');
-        await page.click('#goalProgressAdd');
-        assert.equal(await page.$eval('#goalProgressFormError', node => node.textContent.trim()), 'Hours Spent is required.');
-        await setField(page, '#goalProgressHours', '6.5');
-        await page.click('#goalProgressAdd');
-        assert.equal(await page.$eval('#goalProgressFormError', node => node.textContent.trim()), 'Achieved Value is required.');
-        await setField(page, '#goalProgressAchievedValue', '2500');
-        await page.click('#goalProgressAdd');
-        assert.equal(await page.$eval('#goalProgressFormError', node => node.textContent.trim()), 'Achieved % is required.');
-        await setField(page, '#goalProgressAchievedPercent', '72.5');
-        await setField(page, '#goalProgressRemark', 'Mill delivery verified.');
-        await page.click('#goalProgressAdd');
-
-        assert.deepEqual(await page.$$eval('#goalProgressTableBody tr', rows => rows.map(row => [...row.cells].map(cell => cell.textContent.trim()))), [
-          ['13 Oct 2026', '2,500 MT · 72.5%', '']
-        ], 'Add places the progress record in the table');
-        assert.equal(await page.$$eval('#goalProgressTableBody button',nodes=>nodes.length),2);
-        assert.ok(await page.$('.goal-progress-edit i.fa-pen-to-square'));
-        assert.ok(await page.$('.goal-progress-delete i.fa-trash'));
-        assert.equal(await page.$('#goalProgressTableBody button span'),null,'Actions show icons without labels');
-        assert.ok(await page.$$eval('#goalProgressTableBody button',nodes=>{const add=getComputedStyle(document.getElementById('goalProgressAdd'));return nodes.every(node=>{const style=getComputedStyle(node);return style.backgroundImage===add.backgroundImage&&style.color==='rgb(255, 255, 255)';});}),'Edit and Delete use the same purple gradient and white icons as Add');
-        await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-update-${theme}-${width}.png`) });
-        await page.$eval('#goalProgressTable',table=>table.scrollIntoView({block:'nearest',behavior:'instant'}));
-        assert.ok(await page.$eval('.goal-progress-row-actions',node=>{const row=node.getBoundingClientRect(),cell=node.closest('td').getBoundingClientRect(),main=node.closest('main').getBoundingClientRect();return row.right<=cell.right+1&&row.left>=cell.left&&row.bottom<=main.bottom+1;}),'Both icon actions fit their column and remain above bottom navigation');
-        await page.screenshot({path:path.join(__dirname,`performance-goal-progress-actions-${theme}-${width}.png`)});
-        assert.deepEqual(await page.$eval('#goalProgressForm', form => [...form.elements].filter(item => item.matches('input, textarea')).map(item => item.value)), ['', '', '', '', ''], 'Add clears the form after a successful entry');
-        assert.deepEqual(await page.evaluate(() => Object.keys(sessionStorage).concat(Object.keys(localStorage)).filter(key => key.startsWith('peoplehcm:performance:goal-progress'))), [], 'Goal progress records are not persisted');
-        await page.click('.goal-progress-edit');
-        assert.deepEqual(await page.$eval('#goalProgressForm',form=>[...form.elements].filter(item=>item.matches('input,textarea')).map(item=>item.value)),['2026-10-13','6.5','2500','72.5','Mill delivery verified.'],'Edit prefills all original progress values');
-        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Update');
-        await setField(page,'#goalProgressAchievedValue','-1');await page.click('#goalProgressAdd');
-        assert.equal(await page.$eval('#goalProgressFormError',node=>node.textContent.trim()),'Achieved Value cannot be negative.');
-        assert.equal(await page.$$eval('#goalProgressTableBody tr',nodes=>nodes.length),1,'Invalid edit does not alter the progress log');
-        await setField(page,'#goalProgressDate','2026-10-14');await setField(page,'#goalProgressHours','8');await setField(page,'#goalProgressAchievedValue','3000');await setField(page,'#goalProgressAchievedPercent','80');await setField(page,'#goalProgressRemark','Revision verified.');
-        await page.click('#goalProgressAdd');
-        assert.deepEqual(await page.$$eval('#goalProgressTableBody tr',rows=>rows.map(row=>[...row.cells].map(cell=>cell.textContent.trim()))),[['14 Oct 2026','3,000 MT · 80%','']],'Editing updates the original row instead of adding another');
-        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Add');
-
-        await page.click('#goalProgressBack');
-        assert.equal(await page.$eval('#goalProgressTitle', node => node.textContent.trim()), 'Goal Progress');
-        assert.deepEqual(await page.$$eval('.goal-progress-detail dd', nodes => nodes.map(node => node.textContent.trim()).slice(-2)), ['14 Oct 2026', '3,000 MT · 80%'], 'Edited entry updates the goal card');
-
-        await page.click('.goal-progress-update');
-        await page.click('.goal-progress-edit');
-        await setField(page, '#goalProgressDate', '2026-10-14');
-        await setField(page, '#goalProgressHours', '3');
-        await page.click('#goalProgressClear');
-        assert.deepEqual(await page.$eval('#goalProgressForm', form => [...form.elements].filter(item => item.matches('input, textarea')).map(item => item.value)), ['', '', '', '', ''], 'Clear Form resets every input');
-        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Add','Clear Form exits edit mode');
-        await page.click('.goal-progress-edit');
-
-        await page.$eval('.goal-progress-delete', button => button.scrollIntoView({ block: 'center' }));
-        await page.click('.goal-progress-delete');
-        assert.equal(await page.$$eval('#goalProgressTableBody tr', rows => rows.length), 0, 'Delete removes the progress row');
-        assert.equal(await page.$eval('#goalProgressHistoryEmpty', node => node.hidden), false, 'Empty history state returns after deletion');
-        assert.equal(await page.$eval('#goalProgressAdd',node=>node.textContent.trim()),'Add','Deleting an edited row exits edit mode');
-
-        await page.reload({ waitUntil: 'domcontentloaded' });
-        await page.click('.goal-progress-update');
-        assert.equal(await page.$$eval('#goalProgressTableBody tr', rows => rows.length), 0, 'Refreshing resets in-memory records');
+    let multipleGoals = false;
+    page.on('request', req => {
+      if (multipleGoals && req.url().includes('/goal-progress-data.js')) {
+        const source = fs.readFileSync(path.resolve(__dirname, '../modules/performance/js/goal-progress-data.js'), 'utf8');
+        return req.respond({ contentType: 'text/javascript', body: source + '\nwindow.PERFORMANCE_GOAL_PROGRESS.goals.push({...window.PERFORMANCE_GOAL_PROGRESS.goals[0], id: "SECOND-GOAL", title: "Second Goal", unit: "KG"});' });
       }
+      return /^https?:/.test(req.url()) ? req.abort() : req.continue();
+    });
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(pathToFileURL(path.resolve(__dirname, '../modules/performance/index.html')).href + '?theme=light', { waitUntil: 'domcontentloaded' });
+    await click(page, '[data-option-id="goal-progress"]');
+    await page.waitForFunction(() => location.pathname.endsWith('/goal-progress.html'));
+    for (const theme of ['light', 'dark']) for (const width of [360, 420]) {
+      await page.setViewport({ width, height: 844 });
+      await page.goto(url(theme), { waitUntil: 'domcontentloaded' });
+      await page.evaluate(key => sessionStorage.removeItem(key), key);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      assert.equal(await page.$eval('#goalProgressTotal', el => el.textContent), '1');
+      await click(page, '#goalProgressFilterTrigger');
+      await field(page, 'goalProgressEvaluationFilter', 'Annual Review');
+      await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'goalProgressFilterTrigger');
+      await click(page, '#goalProgressFilterTrigger');
+      assert.equal(await page.$eval('#goalProgressEvaluationFilter', el => el.value), '', 'Filter cancel discards changes');
+      await field(page, 'goalProgressEvaluationFilter', 'Annual Review');
+      await click(page, '#goalProgressApplyFilter');
+      assert.equal(await visible(page, '#goalProgressEmpty'), true);
+      await click(page, '#goalProgressFilterTrigger');
+      await click(page, '#goalProgressResetFilter');
+      await click(page, '#goalProgressApplyFilter');
+      await click(page, '.goal-progress-update');
+      assert.equal(await visible(page, '#goalProgressForm'), false, 'Update opens the detail list, with a separate entry form like OT Claim');
+      assert.equal(await visible(page, '#goalProgressOverviewView'), true);
+      assert.equal(await visible(page, '#goalProgressHistoryEmpty'), true);
+      await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-update-${theme}-${width}.png`) });
+      await click(page, '#goalProgressSubmit');
+      assert.match(await page.$eval('#goalProgressOverviewError', el => el.textContent), /Add at least one/);
+      await click(page, '#goalProgressNew');
+      assert.equal(await page.$eval('#goalProgressTitle', el => el.textContent), 'Add Progress Details');
+      await click(page, '#goalProgressSaveItem');
+      assert.equal(await page.$eval('#goalProgressFormError', el => el.textContent), 'Date is required.');
+      for (const [override, message] of [
+        [{ goalProgressHours: '' }, /required/],
+        [{ goalProgressHours: '0' }, /more than 0/],
+        [{ goalProgressAchievedValue: '-1' }, /negative/],
+        [{ goalProgressAchievedPercent: '101' }, /between 0 and 100/]
+      ]) {
+        await fill(page, override); await click(page, '#goalProgressSaveItem');
+        assert.match(await page.$eval('#goalProgressFormError', el => el.textContent), message);
+      }
+      await fill(page);
+      await page.$eval('.goal-progress-content', el => { el.scrollTop = 0; });
+      await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-entry-${theme}-${width}.png`) });
+      await click(page, '#goalProgressEntryCancel');
+      assert.equal(await page.$$('.goal-progress-entry').then(items => items.length), 0, 'Cancel does not save an item');
+      await click(page, '#goalProgressNew');
+      assert.deepEqual(await values(page), ['', '', '', '', '']);
+      await fill(page); await click(page, '#goalProgressSaveItem');
+      assert.equal(await visible(page, '#goalProgressOverviewView'), true, 'Save Item returns to list');
+      assert.match(await page.$eval('#goalProgressHistoryCount', el => el.textContent), /1 record.*6.5 hrs/);
+      await click(page, '.goal-progress-entry-toggle');
+      assert.equal(await page.$eval('.goal-progress-entry-toggle', el => el.getAttribute('aria-expanded')), 'true');
+      assert.match(await page.$eval('.goal-progress-entry-body', el => el.textContent), /Mill delivery verified/);
+      await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-actions-${theme}-${width}.png`) });
+      await click(page, '.goal-progress-edit');
+      assert.deepEqual(await values(page), ['2026-10-13', '6.5', '2500', '72.5', 'Mill delivery verified.']);
+      await fill(page, { goalProgressDate: '2026-10-14', goalProgressAchievedValue: '3000', goalProgressAchievedPercent: '80', goalProgressRemark: '<b>Revised delivery</b>' });
+      await click(page, '#goalProgressSaveItem');
+      assert.equal(await page.$$('.goal-progress-entry').then(items => items.length), 1, 'Edit replaces rather than duplicates');
+      await click(page, '#goalProgressSaveDraft');
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      assert.match(await page.$eval('.goal-progress-card', el => el.textContent), /No updates yet/, 'Draft does not publish achievements');
+      await click(page, '.goal-progress-update');
+      assert.equal(await page.$$('.goal-progress-entry').then(items => items.length), 1, 'Draft survives refresh');
+      await click(page, '.goal-progress-entry-toggle');
+      assert.equal(await page.$('.goal-progress-entry-body b'), null, 'Remarks render as text');
+      await click(page, '.goal-progress-edit');
+      await field(page, 'goalProgressHours', '99'); await click(page, '#goalProgressBack');
+      assert.match(await page.$eval('#goalProgressHistoryCount', el => el.textContent), /6.5 hrs/, 'Header back cancels edit');
+      await click(page, '.goal-progress-delete');
+      assert.equal(await visible(page, '#goalProgressHistoryEmpty'), true);
+      await click(page, '#goalProgressCancel'); await click(page, '.goal-progress-update');
+      assert.equal(await page.$$('.goal-progress-entry').then(items => items.length), 1, 'Cancel restores saved draft');
+      await click(page, '#goalProgressSubmit');
+      assert.equal(await visible(page, '#goalProgressListView'), true);
+      assert.match(await page.$eval('.goal-progress-card', el => el.textContent), /14 Oct 2026/);
+      assert.match(await page.$eval('.goal-progress-card', el => el.textContent), /3,000 MT.*80%/);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      assert.match(await page.$eval('.goal-progress-card', el => el.textContent), /3,000 MT.*80%/, 'Submitted progress survives session refresh');
+      await click(page, '.goal-progress-update');
+      assert.equal(await page.$eval('#goalProgressDraftStatus', el => el.textContent), 'Submitted');
+      await click(page, '#goalProgressNew');
+      await fill(page, { goalProgressDate: '2026-10-10', goalProgressAchievedValue: '1000', goalProgressAchievedPercent: '20' });
+      await click(page, '#goalProgressSaveItem'); await click(page, '#goalProgressSubmit');
+      assert.match(await page.$eval('.goal-progress-card', el => el.textContent), /3,000 MT.*80%/, 'Earlier dated entry does not replace latest achievement');
+      await click(page, '.goal-progress-update');
+      await page.screenshot({ path: path.join(__dirname, `performance-goal-progress-filled-${theme}-${width}.png`) });
+      assert.equal(await page.$eval('.goal-progress-content', el => el.scrollWidth <= el.clientWidth), true, 'No horizontal overflow');
+      assert.equal(await page.$$eval('#goalProgressOverviewView button', buttons => buttons.every(el => el.scrollWidth <= el.clientWidth)), true, 'Action labels fit at mobile widths');
+      await click(page, '#goalProgressSaveDraft');
+      assert.equal(await page.$eval('#goalProgressSaveDraft', el => {
+        const rect = el.getBoundingClientRect();
+        return el.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+      }), true, 'Footer actions can scroll clear of the bottom navigation');
     }
 
-    assert.deepEqual(errors, [], `Page errors: ${errors.join(' | ')}`);
-    console.log('Performance Goal Progress checks passed.');
-  } finally {
-    await browser.close();
-  }
-})().catch(error => {
-  console.error(error);
-  process.exitCode = 1;
-});
+    // Exercise isolation with two goals, then a storage failure and corrupt session.
+    multipleGoals = true;
+    await page.evaluate(key => sessionStorage.removeItem(key), key);
+    await page.goto(url('light'), { waitUntil: 'domcontentloaded' });
+    assert.equal(await page.$eval('#goalProgressTotal', el => el.textContent), '2');
+    await click(page, '.goal-progress-update'); await click(page, '#goalProgressNew');
+    await fill(page); await click(page, '#goalProgressSaveItem'); await click(page, '#goalProgressSaveDraft');
+    await click(page, '#goalProgressCancel');
+    await click(page, '[data-goal-id="SECOND-GOAL"]');
+    assert.equal(await visible(page, '#goalProgressHistoryEmpty'), true, 'A different goal has no entries from the first');
+    await click(page, '#goalProgressNew');
+    assert.equal(await page.$eval('#goalProgressValueUnit', el => el.textContent), 'KG');
+    await fill(page); await click(page, '#goalProgressSaveItem'); await click(page, '#goalProgressSubmit');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await click(page, '.goal-progress-update');
+    assert.equal(await page.$$('.goal-progress-entry').then(items => items.length), 1, 'Submitting another goal retains the first goal draft');
+    await page.evaluate(() => {
+      window.originalStorageSet = Storage.prototype.setItem;
+      Storage.prototype.setItem = () => { throw new DOMException('Storage full', 'QuotaExceededError'); };
+    });
+    await click(page, '#goalProgressSubmit');
+    assert.equal(await visible(page, '#goalProgressOverviewView'), true, 'Failed save leaves work open');
+    assert.match(await page.$eval('#goalProgressOverviewError', el => el.textContent), /Unable to save/);
+    await page.evaluate(() => { Storage.prototype.setItem = window.originalStorageSet; });
+    await click(page, '#goalProgressSubmit');
+    assert.match(await page.$eval('.goal-progress-card', el => el.textContent), /2,500 MT/);
+    await page.evaluate(key => sessionStorage.setItem(key, '{invalid-json'), key);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.$eval('#goalProgressTotal', el => el.textContent), '2', 'Invalid saved JSON cannot break the page');
+    assert.deepEqual(errors, []);
+    console.log('Goal Progress OT Claim flow passed: light/dark, 360/420px.');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

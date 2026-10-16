@@ -4,7 +4,7 @@
   // Preview changes survive navigation in this tab without changing the source incidents.
   let records = window.StaffIncidentPreviewStore.all();
   const emptyFilters = () => ({ keyword: '', type: '', start: '', end: '', closed: '' });
-  let filters = emptyFilters(), visible = [], modal = null, returnFocus = null, deleting = null, updateMode = false;
+  let filters = emptyFilters(), visible = [], modal = null, returnFocus = null, deleting = null;
   const actions = new Map();
   records.forEach(record => {
     if (!record.incidentType) return;
@@ -31,7 +31,7 @@
   function syncBack() { $('incidentHistoryBack').href = `../index.html?scope=team&theme=${theme()}`; }
   function syncHistoryUrl() {
     const url = new URL(location.href); url.searchParams.set('theme', theme());
-    if (updateMode) url.searchParams.set('update', '1'); else url.searchParams.delete('update');
+    url.searchParams.delete('update');
     if (Object.values(filters).some(Boolean)) url.searchParams.set('filters', JSON.stringify(filters)); else url.searchParams.delete('filters');
     history.replaceState(null, '', url);
   }
@@ -42,13 +42,6 @@
     if ((filters.start || filters.end) && !dateValid(day)) return false;
     if (filters.start && day < filters.start || filters.end && day > filters.end) return false;
     return !filters.keyword || [record.reference, record.name, employeeId(record), record.incidentDate, dateText(record.incidentDate), record.incidentType, record.incidentAction, record.remarks].join(' ').toLowerCase().includes(filters.keyword.toLowerCase());
-  }
-  function syncUpdateMode() {
-    $('incidentHistoryUpdate').checked = updateMode;
-    $('incidentHistoryUpdate').disabled = visible.length === 0;
-    $('incidentHistoryList').querySelectorAll('.incident-history-card').forEach(card => {
-      card.querySelector('.incident-history-actions').hidden = !updateMode;
-    });
   }
   function render() {
     visible = records.filter(matches).sort((a, b) => String(b.incidentDate || '').localeCompare(String(a.incidentDate || '')) || String(b.reference).localeCompare(String(a.reference)));
@@ -66,7 +59,7 @@
       [['Date', dateText(record.incidentDate)], ['Incident Type', record.incidentType], ['Action', record.incidentAction], ['Remarks', record.remarks]].forEach(([label, value]) => {
         const tile = element('div', 'incident-history-detail'); tile.append(element('dt', '', label), element('dd', '', text(value))); details.append(tile);
       });
-      const buttons = element('div', 'incident-history-actions'); buttons.hidden = !updateMode;
+      const buttons = element('div', 'incident-history-actions');
       [['edit', 'Edit'], ['delete', 'Delete']].forEach(([action, label]) => {
         const button = element('button', 'incident-history-button'); button.type = 'button'; button.dataset[action] = record.reference;
         button.setAttribute('aria-label', `${label} incident for ${text(record.name)}, ${dateText(record.incidentDate)}`);
@@ -82,7 +75,6 @@
     if (filters.start || filters.end) summary.push(`${filters.start ? dateText(filters.start) : 'Any Date'} – ${filters.end ? dateText(filters.end) : 'Any Date'}`);
     if (filters.closed) summary.push(`Is Closed: ${filters.closed === 'true' ? 'Yes' : 'No'}`);
     $('incidentHistoryFilterSummary').textContent = summary.join(' • ') || 'All Staff Incident Records';
-    syncUpdateMode();
     syncHistoryUrl();
   }
   function setBackgroundInert(value) {
@@ -162,12 +154,8 @@
     }
     filters = draft; render(); closeModal();
   });
-  $('incidentHistoryUpdate').addEventListener('change', event => {
-    updateMode = event.target.checked; syncUpdateMode(); syncHistoryUrl();
-  });
   $('incidentHistoryList').addEventListener('click', event => {
     const edit = event.target.closest('[data-edit]'), remove = event.target.closest('[data-delete]');
-    if ((edit || remove) && !updateMode) return;
     if (edit) {
       const record = records.find(record => record.reference === edit.dataset.edit); if (!record) return;
       const url = new URL('staff-incident.html', location.href);
@@ -214,7 +202,6 @@
       filters.closed = restored.closed === 'true' ? 'true' : '';
     }
   } catch { /* An invalid return filter opens the unfiltered History. */ }
-  updateMode = params.get('update') === '1';
   new MutationObserver(() => { syncBack(); syncHistoryUrl(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   syncBack(); render();
 })();

@@ -11,6 +11,12 @@ window.PERFORMANCE_GOAL_PLAN = {
   appraisalType: 'Annual Appraisal',
   status: 'Draft',
   goalTypes: ['Financial', 'Customer', 'Process', 'Learning & Growth', 'People'],
+  competencyTypes: ['Core', 'Functional', 'Leadership'],
+  competencies: [
+    { id: 'COMP-2026-001', title: 'Leadership & People Management', weightage: 40, rating: 4, remark: 'Supported team development through regular coaching and clear performance expectations.' },
+    { id: 'COMP-2026-002', title: 'Communication & Collaboration', weightage: 35, rating: 4, remark: 'Communicated clearly and collaborated effectively across departments.' },
+    { id: 'COMP-2026-003', title: 'Problem Solving & Decision Making', weightage: 25, rating: 4, remark: 'Used feedback and HR data to make sound and practical decisions.' }
+  ],
   goals: [
     {
       id: 'GOAL-2026-001',

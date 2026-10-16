@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeopleHCM - Performance Pending Approval</title>
+  <script>(() => { document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') === 'light' ? 'light' : 'dark'; })();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../../css/theme.css">
+  <link rel="stylesheet" href="../../../css/app.css">
+  <link rel="stylesheet" href="../../../css/payroll-pending-approval.css">
+  <link rel="stylesheet" href="../../../css/detail-popout.css">
+  <link rel="stylesheet" href="../../../css/approval-actions.css">
+  <link rel="stylesheet" href="../../../css/pending-approval-filter.css">
+  <link rel="stylesheet" href="../css/performance-pending-approval.css">
+  <script src="../../../js/components.js"></script>
+  <script src="../../../js/app.js" defer></script>
+  <script src="../../../js/pending-approval-filter.js" defer></script>
+  <script src="../js/performance-pending-data.js" defer></script>
+  <script src="../js/performance-pending-approval.js" defer></script>
+</head>
+<body class="payroll-pending-page performance-pending-page unified-approval-actions">
+  <preview-top-bar active-page="performance"></preview-top-bar>
+  <div class="phone-container">
+    <header class="payroll-pending-header">
+      <phone-status-bar time="9:41"></phone-status-bar>
+      <div class="payroll-pending-header-row"><a id="performanceApprovalBack" class="payroll-pending-back" href="../index.html?scope=team" aria-label="Back to Performance Team"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a><h1>Pending Approval</h1></div>
+    </header>
+    <main class="payroll-pending-content">
+      <div class="payroll-pending-tabs" role="tablist" aria-label="Performance request type">
+        <button id="approvalTab-goal-plan" class="filter-pill active" type="button" role="tab" aria-selected="true" aria-controls="performanceApprovalPanel" data-approval-tab="goal-plan">Goal Plan</button>
+        <button id="approvalTab-self-evaluation" class="filter-pill" type="button" role="tab" aria-selected="false" aria-controls="performanceApprovalPanel" tabindex="-1" data-approval-tab="self-evaluation">Self Evaluation</button>
+        <button id="approvalTab-self-review" class="filter-pill" type="button" role="tab" aria-selected="false" aria-controls="performanceApprovalPanel" tabindex="-1" data-approval-tab="self-review">Self Review</button>
+      </div>
+      <div class="approval-filter-summary">
+        <div class="payroll-pending-summary-copy"><small>Current Filter</small><div class="payroll-pending-summary-value"><span id="performanceApprovalFilterSummary">All Requests &bull; All Dates</span></div></div>
+        <button id="performanceApprovalFilterTrigger" type="button" aria-label="Open pending approval filter" aria-haspopup="dialog" aria-controls="performanceApprovalFilter"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+      </div>
+      <section id="performanceApprovalPanel" role="tabpanel" aria-labelledby="approvalTab-goal-plan">
+        <div class="payroll-pending-list-heading"><h2>Pending Approvals (<span id="performanceApprovalCount">0</span>)</h2><label class="payroll-pending-select-all"><input id="performanceApprovalSelectAll" type="checkbox">Select All</label></div>
+        <div id="performanceApprovalQueue" aria-live="polite"></div>
+      </section>
+    </main>
+    <aside id="performanceApprovalBulk" class="payroll-pending-bulk" aria-label="Selected requests" hidden><strong><span id="performanceApprovalSelectedCount">0</span> selected</strong><div id="performanceApprovalBulkActions"></div></aside>
+    <phone-bottom-nav active="apps"></phone-bottom-nav>
+    <left-profile-drawer></left-profile-drawer><notification-sheet></notification-sheet>
+    <div id="performanceApprovalMenu" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel payroll-approval-menu" role="dialog" aria-modal="true" aria-labelledby="performanceApprovalMenuTitle">
+        <div class="payroll-approval-handle" aria-hidden="true"></div>
+        <div class="payroll-approval-menu-heading"><h2 id="performanceApprovalMenuTitle">Request Options</h2><button type="button" class="payroll-approval-close" data-close-approval aria-label="Close request options"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <div class="payroll-approval-menu-options">
+          <button id="performanceApprovalViewDetails" type="button" class="payroll-approval-menu-option"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>View Details</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button id="performanceApprovalViewWorkflow" type="button" class="payroll-approval-menu-option"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>View Workflow</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+      </section>
+    </div>
+    <div id="approvalDetails" class="payroll-approval-overlay detail-popout-overlay" hidden>
+      <section class="payroll-approval-panel detail-popout-panel" role="dialog" aria-modal="true" aria-labelledby="approvalDetailsTitle">
+        <header class="payroll-approval-details-header detail-popout-header"><h2 id="approvalDetailsTitle" class="detail-popout-title">Goal Plan Approval</h2><button class="payroll-approval-close detail-popout-close" type="button" data-close-approval aria-label="Close details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div id="approvalDetailsBody" class="payroll-approval-details-body detail-popout-body" role="region" aria-label="Performance approval details" tabindex="0"></div>
+        <footer id="approvalDetailsActions" class="payroll-approval-details-footer detail-popout-footer"></footer>
+      </section>
+    </div>
+    <div id="approvalConfirm" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel" role="dialog" aria-modal="true" aria-labelledby="approvalConfirmTitle">
+        <header class="payroll-approval-details-header"><h2 id="approvalConfirmTitle">Confirm Approval</h2><button class="payroll-approval-close" type="button" data-close-approval aria-label="Close confirmation"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <form id="approvalConfirmForm"><div class="payroll-approval-details-body"><p id="approvalConfirmMessage"></p><label for="approvalComments">Approver Comments</label><textarea id="approvalComments" rows="3" maxlength="2000" placeholder="Add comments..."></textarea><p id="approvalConfirmError" class="performance-approval-error" role="alert" hidden></p></div><footer class="payroll-approval-details-footer"><button class="action-btn-cancel" type="button" data-close-approval>Cancel</button><button id="approvalConfirmSubmit" class="action-btn-approve" type="submit">Confirm</button></footer></form>
+      </section>
+    </div>
+    <div id="approvalBackup" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel" role="dialog" aria-modal="true" aria-labelledby="approvalBackupTitle">
+        <header class="payroll-approval-details-header"><h2 id="approvalBackupTitle">Select Backup Approver</h2><button type="button" class="payroll-approval-close" data-close-approval aria-label="Close backup selection"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <form id="approvalBackupForm"><div class="payroll-approval-details-body"><p id="approvalBackupMessage"></p><label for="approvalBackupApprover">Backup Approver</label><select id="approvalBackupApprover" required><option value="">Select an approver</option></select><p id="approvalBackupError" class="performance-approval-error" role="alert" hidden></p></div><footer class="payroll-approval-details-footer"><button type="button" class="action-btn-cancel" data-close-approval>Cancel</button><button id="approvalBackupSubmit" type="submit" class="action-btn-approve">Assign Backup</button></footer></form>
+      </section>
+    </div>
+    <div id="performanceApprovalWorkflow" class="payroll-approval-overlay" hidden>
+      <section class="payroll-approval-panel payroll-approval-workflow" role="dialog" aria-modal="true" aria-labelledby="performanceApprovalWorkflowTitle">
+        <header class="payroll-approval-workflow-header"><div class="payroll-approval-handle" aria-hidden="true"></div><div class="payroll-approval-workflow-heading"><i class="fa-solid fa-diagram-project payroll-approval-workflow-icon" aria-hidden="true"></i><div><h2 id="performanceApprovalWorkflowTitle">Approval Workflow</h2><p>Approval status &amp; history</p></div><button type="button" class="payroll-approval-close" data-close-approval aria-label="Close workflow"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div></header>
+        <div class="payroll-approval-workflow-body" tabindex="0"><section id="performanceApprovalWorkflowRequest" class="payroll-approval-workflow-request" aria-label="Workflow request"></section><section><h3>Approval Steps</h3><ol id="performanceApprovalWorkflowSteps" class="payroll-approval-workflow-steps"></ol></section><section class="payroll-approval-workflow-audit"><h3>Audit History</h3><ul id="performanceApprovalWorkflowAudit"></ul></section></div>
+        <footer class="payroll-approval-workflow-footer"><button type="button" class="action-btn-cancel" data-close-approval>Close Workflow</button></footer>
+      </section>
+    </div>
+    <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>
+  </div>
+</body>
+</html>

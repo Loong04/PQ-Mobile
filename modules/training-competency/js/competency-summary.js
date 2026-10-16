@@ -73,6 +73,12 @@
         if (value !== null && value !== '') query.set(key, value);
       });
       $('csBack').href = `staff-competency.html?${query}`;
+      if (params.has('hubReturn')) {
+        const context = new URLSearchParams(params.get('hubReturn'));
+        context.delete('hubReturn');
+        context.set('theme', theme);
+        $('csBack').href = `staff-competency.html?${context}`;
+      }
     }
     $('csBack').setAttribute('aria-label', chartOpen ? `Back to ${titles[page]}` : page === 'summary' ? 'Back to Training and Competency Team' : 'Back to previous competency report');
     if (staffEmployee) $('csBack').setAttribute('aria-label', 'Back to Staff Competency');

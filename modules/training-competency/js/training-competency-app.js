@@ -114,6 +114,7 @@
       url.searchParams.set('theme', theme());
       history.replaceState(null, '', url);
     }
+    document.dispatchEvent(new CustomEvent('training:scopechange', { detail: activeIndex === 1 ? 'team' : 'individual' }));
   }
 
   tabs.forEach((tab, index) => {

@@ -54,6 +54,9 @@
     Object.entries(state.filters).forEach(([key, value]) => {
       if (value !== defaults[key]) url.searchParams.set(key, value);
     });
+    const context = new URLSearchParams(location.search);
+    context.set('theme', document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+    url.searchParams.set('hubReturn', context.toString());
     location.href = url.href;
   }
 
@@ -186,7 +189,8 @@
     ]);
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  function loadUrlFilters() {
+    state.filters = { ...defaults };
     const params = new URLSearchParams(location.search);
     Object.keys(defaults).forEach(key => {
       if (!params.has(key)) return;
@@ -196,6 +200,10 @@
       } else state.filters[key] = params.get(key).trim();
     });
     if (state.filters.matchMin > state.filters.matchMax) Object.assign(state.filters, { matchMin: 0, matchMax: 100 });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadUrlFilters();
     Object.entries(metadata).forEach(([key, field]) => {
       [...new Set(records.map(record => record[field]).filter(Boolean))].sort().forEach(value => form.elements[key].append(new Option(value, value)));
     });
@@ -211,6 +219,14 @@
     $('staffCompetencyExportExcel').addEventListener('click', exportExcel);
     $('staffCompetencyExportPdf').addEventListener('click', () => { showView('report'); window.print(); });
     $('staffCompetencyBack').addEventListener('click', event => { if (state.view === 'chart') { event.preventDefault(); showView('report'); } });
+    document.addEventListener('competency:tabchange', event => {
+      if (!overlay.hidden) closeFilter();
+      if (event.detail !== 'staff' && state.view === 'chart') showView('report');
+      if (event.detail === 'staff') {
+        loadUrlFilters(); renderReport();
+        if (state.view === 'chart') renderChart();
+      }
+    });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape') {
         if (!overlay.hidden) { event.preventDefault(); closeFilter(); }

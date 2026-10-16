@@ -22,7 +22,7 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       assert.equal(await page.$('#incidentHistoryTitle'),null,'No Staff Incident History heading');
       assert.equal(await page.$('#incidentHistoryEditModal'),null,'Edit uses its own page');
       assert.equal(await page.$('#incidentHistorySelectionCount'),null,'No stale Selected Records count after removing card selection');
-      assert.ok(await page.$('.incident-history-summary #incidentHistoryUpdate'),'Update checkbox sits inside Total Records card');
+      assert.equal(await page.$('#incidentHistoryUpdate'),null,'Update control is removed');
       assert.equal(await page.$('#incidentHistorySelectAll'),null,'Select All is removed');
       assert.equal(await page.$('.phone-container > #incidentHistoryUpdate'),null,'No floating Update button');
       assert.equal(await page.$('.history-categories'),null,'No unrelated history categories');
@@ -36,12 +36,8 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       assert.equal(await page.$('.incident-history-actions button i'),null,'Edit and Delete contain only text');
       assert.equal(await page.$('.incident-history-card input[type="checkbox"]'),null,'Cards have no selection checkbox');
       assert.equal(await page.$('.incident-history-card .incident-history-select-label'),null,'Cards have no Select label');
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.type),'checkbox');
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>getComputedStyle(el).appearance),'auto');
-      assert.equal(await page.$eval('label[for="incidentHistoryUpdate"] span',el=>el.textContent),'Update');
       assert.ok(await page.$$eval('.incident-history-actions button',els=>els.every(el=>getComputedStyle(el).backgroundColor==='rgb(124, 58, 237)'&&getComputedStyle(el).color==='rgb(255, 255, 255)')));
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.checked),false);
-      assert.ok(await page.$$eval('.incident-history-actions',els=>els.every(el=>el.hidden)),'Edit and Delete start hidden');
+      assert.ok(await page.$$eval('.incident-history-actions',els=>els.length===10&&els.every(el=>!el.hidden&&getComputedStyle(el).display==='flex')),'Edit and Delete are visible on entry');
       const firstId=await page.$eval('.incident-history-card',el=>el.dataset.reference);
       await page.click('.incident-history-name');
       assert.equal(await page.$eval('#incidentHistoryDetailsModal',el=>el.getAttribute('aria-hidden')),'false','Clicking card opens its details');
@@ -65,15 +61,7 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       assert.equal(await page.$eval('#incidentHistoryDetailsRows tr:nth-child(10) td',el=>el.textContent),'—','Missing value is not invented from points');
       assert.equal(await page.$eval('#incidentHistoryDetailsRows tr:nth-child(12) td',el=>el.textContent),'—','Unknown closed status stays unknown');
       await page.keyboard.press('Escape');
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.checked),false,'Card click does not toggle Update');
-      assert.ok(await page.$$eval('.incident-history-actions',els=>els.every(el=>el.hidden)),'Card click does not reveal Edit and Delete');
-      await page.click('label[for="incidentHistoryUpdate"]');
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.checked),true);
-      assert.ok(await page.$$eval('.incident-history-actions',els=>els.every(el=>!el.hidden)),'Update reveals Edit and Delete for all cards');
-      await page.screenshot({path:path.join(__dirname,`staff-incident-history-update-${theme}-${width}.png`)});
-      await page.click('#incidentHistoryUpdate');
-      assert.ok(await page.$$eval('.incident-history-actions',els=>els.every(el=>el.hidden)),'Turning Update off hides Edit and Delete');
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.checked),false);
+      assert.ok(await page.$$eval('.incident-history-actions',els=>els.every(el=>!el.hidden)),'Edit and Delete stay visible after viewing details');
       await page.evaluate(()=>Promise.all([...document.querySelectorAll('input[type=checkbox]')].flatMap(el=>el.getAnimations().map(animation=>animation.finished.catch(()=>{})))));
       await page.screenshot({path:path.join(__dirname,`staff-incident-history-${theme}-${width}.png`)});
       await page.click('#incidentHistoryFilterTrigger');
@@ -107,10 +95,9 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       assert.equal(await page.$eval('#incidentHistoryCount',el=>Number(el.textContent)),1,'Keyword, type, dates and switch combine correctly');
       await page.click('#incidentHistoryFilterTrigger');await page.click('#incidentHistoryResetFilter');await page.$eval('#incidentHistoryStart',el=>{el.value='2027-01-01';});await page.click('#incidentHistoryApplyFilter');
       assert.equal(await page.$eval('#incidentHistoryEmpty',el=>el.hidden),false);
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.disabled),true,'No records disables Update');
+      assert.equal(await page.$('#incidentHistoryUpdate'),null,'Empty results do not restore Update');
       await page.click('#incidentHistoryFilterTrigger');await page.click('#incidentHistoryResetFilter');await page.click('#incidentHistoryApplyFilter');
-      await page.focus('#incidentHistoryUpdate');await page.keyboard.press('Space');
-      assert.ok(await page.$$eval('.incident-history-actions',els=>els.every(el=>!el.hidden)),'Update works with keyboard');
+      assert.ok(await page.$$eval('.incident-history-actions',els=>els.length===10&&els.every(el=>!el.hidden)),'Edit and Delete stay visible after filtering');
       await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('[data-edit]')]);
       assert.ok(page.url().includes('/staff-incident.html'));
       assert.equal(new URL(page.url()).searchParams.get('edit'),firstId);
@@ -139,7 +126,7 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       await page.screenshot({path:path.join(__dirname,`staff-incident-history-edit-bottom-${theme}-${width}.png`)});
       await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.click('#staffIncidentSubmit')]);
       assert.ok(page.url().includes('/history.html'));
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.checked),true);
+      assert.ok(await page.$$eval('.incident-history-actions',els=>els.length===10&&els.every(el=>!el.hidden)),'Edit and Delete stay visible after saving');
       assert.equal(await page.$eval(`[data-reference="${firstId}"] .incident-history-detail:last-child dd`,el=>el.textContent),'<b>Literal remarks</b>');
       assert.equal(await page.$(`[data-reference="${firstId}"] dd b`),null,'Record text is not interpreted as HTML');
       await page.click(`[data-reference="${firstId}"] .incident-history-details-trigger`);
@@ -163,7 +150,7 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       assert.equal(await page.$eval('#incidentHistoryCount',el=>Number(el.textContent)),10,'Delete requires confirmation');
       await page.click('[data-delete]');await page.click('#incidentHistoryDeleteConfirm');
       assert.equal(await page.$eval('#incidentHistoryCount',el=>Number(el.textContent)),9);
-      assert.equal(await page.$eval('#incidentHistoryUpdate',el=>el.checked),true,'Update mode stays active after deleting a record');
+      assert.ok(await page.$$eval('.incident-history-actions',els=>els.length===9&&els.every(el=>!el.hidden)),'Edit and Delete stay visible after deleting a record');
       assert.equal(await page.evaluate(()=>JSON.stringify(window.PERFORMANCE_INCIDENT_HIGHLIGHT_DATA)),source,'History preview does not mutate shared incident data');
       await page.click('#incidentHistoryFilterTrigger');await page.keyboard.press('Escape');
       assert.equal(await page.$eval('#incidentHistoryFilterModal',el=>el.getAttribute('aria-hidden')),'true');
@@ -180,7 +167,7 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'incidentHistoryDetailsClose','Details trap focus inside modal');
       await page.keyboard.press('Escape');
       await page.click('#incidentHistoryFilterTrigger');
-      assert.ok(await page.$eval('#incidentHistoryUpdate',el=>Boolean(el.closest('[inert]'))),'Update is inert behind modal');
+      assert.ok(await page.$eval('[data-edit]',el=>Boolean(el.closest('[inert]'))),'Edit is inert behind modal');
       await page.keyboard.press('Escape');
       await page.click(`[data-set-theme="${theme==='light'?'dark':'light'}"]`);
       assert.ok(await page.$eval('#incidentHistoryBack',el=>el.href.includes('theme='+document.documentElement.dataset.theme)));
@@ -191,7 +178,7 @@ const url = (file, theme) => pathToFileURL(path.join(root, 'modules/performance'
       assert.equal(await page.$eval('#staffIncidentError',el=>el.hidden),false);
       assert.ok(await page.$eval('#staffIncidentBack',el=>el.href.startsWith('file:')&&new URL(el.href).pathname.endsWith('/options/history.html')),'Return destination stays within History');
       assert.deepEqual(errors,[]);
-      await page.close();console.log(`PASS: Staff Incident history details, separate prefilled edit form, attachments, cancel, Update and filters; ${theme} ${width}px`);
+      await page.close();console.log(`PASS: Staff Incident history details, separate prefilled edit form, attachments, cancel, always visible actions and filters; ${theme} ${width}px`);
     }
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

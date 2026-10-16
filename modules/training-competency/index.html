@@ -12,13 +12,19 @@
   <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/app.css">
   <link rel="stylesheet" href="../../css/history-cards.css">
+  <link rel="stylesheet" href="../../css/claim-summary-cards.css">
+  <link rel="stylesheet" href="../../css/detail-popout.css">
   <link rel="stylesheet" href="css/training-competency.css">
   <link rel="stylesheet" href="css/training-calendar.css">
+  <link rel="stylesheet" href="css/training-expired.css">
   <script src="../../js/components.js"></script>
   <script src="../../js/app.js" defer></script>
   <script src="js/training-competency-data.js" defer></script>
   <script src="js/training-calendar.js" defer></script>
   <script src="js/training-competency-app.js" defer></script>
+  <script src="js/training-expired-data.js" defer></script>
+  <script src="js/training-expired-model.js" defer></script>
+  <script src="js/training-expired.js" defer></script>
 </head>
 <body class="training-competency-page" data-training-calendar-page="dashboard">
   <preview-top-bar active-page="training-competency"></preview-top-bar>
@@ -27,13 +33,13 @@
       <phone-status-bar time="9:41"></phone-status-bar>
       <div class="training-competency-header-row">
         <a id="trainingCompetencyBack" class="training-competency-back" href="../../appdark.html" aria-label="Back to Apps"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
-        <h1>Training &amp; Competency</h1>
+        <h1 id="trainingCompetencyPageTitle">Training &amp; Competency</h1>
         <span class="training-competency-header-spacer" aria-hidden="true"></span>
       </div>
     </header>
 
     <main class="main-content training-competency-content">
-      <div class="training-competency-scope" role="tablist" aria-label="Training and Competency scope">
+      <div id="trainingCompetencyScope" class="training-competency-scope" role="tablist" aria-label="Training and Competency scope">
         <button id="trainingCompetencyTabIndividual" class="training-competency-scope-tab active" type="button" role="tab" aria-selected="true" aria-controls="trainingCompetencyIndividualPanel"><i class="fa-solid fa-user" aria-hidden="true"></i><span>Individual</span></button>
         <button id="trainingCompetencyTabTeam" class="training-competency-scope-tab" type="button" role="tab" aria-selected="false" aria-controls="trainingCompetencyTeamPanel" tabindex="-1"><i class="fa-solid fa-users" aria-hidden="true"></i><span>Team</span></button>
       </div>
@@ -95,6 +101,16 @@
             <li><a class="training-competency-option" data-option-id="training-highlight" href="options/training-highlight.html"><span class="training-competency-option-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span><span class="training-competency-option-title">Training Highlight</span></a></li>
           </ul>
         </section>
+        <section id="trainingExpiredCompetencies" class="training-competency-section history-card-item claim-summary-card tec-summary" aria-labelledby="trainingExpiredTitle">
+          <header class="claim-summary-card-head tec-summary-header">
+            <h2 id="trainingExpiredTitle"><i class="fa-solid fa-calendar-xmark" aria-hidden="true"></i><span>Expired Competencies</span></h2>
+          </header>
+          <div class="claim-summary-card-body tec-summary-body">
+            <p class="tec-summary-total"><strong id="trainingExpiredTotal">0</strong><span>expired records</span></p>
+            <p id="trainingExpiredSummaryNote" class="tec-muted">0 employees · 0 competencies</p>
+            <div id="trainingExpiredSummaryRows" class="tec-summary-rows"></div>
+          </div>
+        </section>
       </div>
     </main>
 
@@ -102,6 +118,16 @@
     <phone-bottom-nav active="apps"></phone-bottom-nav>
     <left-profile-drawer></left-profile-drawer>
     <notification-sheet></notification-sheet>
+    <div id="trainingExpiredOverlay" class="detail-popout-overlay tec-overlay" aria-hidden="true" hidden>
+      <section id="trainingExpiredDetail" class="detail-popout-panel tec-detail" role="dialog" aria-modal="true" aria-labelledby="trainingExpiredDetailTitle">
+        <header class="detail-popout-header"><h2 id="trainingExpiredDetailTitle" class="detail-popout-title">Expired Competencies</h2><button id="trainingExpiredClose" class="detail-popout-close" type="button" aria-label="Close expired competencies"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="tec-modal-scroll">
+          <p class="tec-expired-label">Expired competencies</p>
+          <nav class="tec-level-navigation" aria-label="Expired competency levels"><p class="tec-muted">Level · expired records</p><div id="trainingExpiredLevels" class="tec-levels"></div></nav>
+          <div id="trainingExpiredEmployees" class="tec-employees"></div>
+        </div>
+      </section>
+    </div>
     <div id="trainingCalendarSheet" class="training-calendar-sheet-overlay" aria-hidden="true">
       <section class="training-calendar-sheet" role="dialog" aria-modal="true" aria-labelledby="trainingCalendarSheetDate">
         <div class="training-calendar-sheet-handle" aria-hidden="true"></div>

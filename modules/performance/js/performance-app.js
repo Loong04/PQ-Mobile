@@ -4,80 +4,62 @@
   const highlightRecords = Array.isArray(window.PERFORMANCE_HIGHLIGHT_DATA) ? window.PERFORMANCE_HIGHLIGHT_DATA : [];
   const theme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
 
-  function employeeId(value) {
-    const id = String(value ?? '').replace(/^#+/, '').trim();
-    return id ? `#${id}` : '—';
-  }
-
   function latestEmployeeRecords(records) {
     const latestByEmployee = new Map();
     records.forEach(record => {
       const key = String(record.empNo ?? '').replace(/^#+/, '').trim();
-      const score = Number(record.overallScore);
-      if (!key || !Number.isFinite(score)) return;
+      if (!key) return;
       const current = latestByEmployee.get(key);
       if (!current || String(record.evaluationDate ?? '').localeCompare(String(current.evaluationDate ?? '')) > 0) {
         latestByEmployee.set(key, record);
       }
     });
-    return [...latestByEmployee.values()];
-  }
-
-  function attentionItem(record, rank) {
-    const item = document.createElement('li');
-    item.className = 'performance-attention-item';
-
-    const rankLabel = document.createElement('span');
-    rankLabel.className = 'performance-attention-rank';
-    rankLabel.textContent = String(rank);
-
-    const person = document.createElement('span');
-    person.className = 'performance-attention-person';
-    const name = document.createElement('strong');
-    name.className = 'performance-attention-name';
-    name.textContent = record.name || 'Unnamed Employee';
-    const id = document.createElement('small');
-    id.className = 'performance-attention-employee-id';
-    id.textContent = employeeId(record.empNo);
-    person.append(name, id);
-
-    const result = document.createElement('span');
-    result.className = 'performance-attention-result';
-    const score = document.createElement('strong');
-    score.className = 'performance-attention-score';
-    score.textContent = Number(record.overallScore).toFixed(2);
-    const grade = document.createElement('small');
-    grade.className = 'performance-attention-grade';
-    grade.textContent = `Grade ${record.scoreGrade || '—'}`;
-    result.append(score, grade);
-    item.append(rankLabel, person, result);
-    return item;
-  }
-
-  function renderAttentionList(list, records) {
-    list.replaceChildren();
-    if (!records.length) {
-      const empty = document.createElement('li');
-      empty.className = 'performance-attention-empty';
-      empty.textContent = 'No performance records';
-      list.append(empty);
-      return;
-    }
-    records.forEach((record, index) => list.append(attentionItem(record, index + 1)));
+    return [...latestByEmployee.values()].filter(record => {
+      const score = Number(record.overallScore);
+      return record.overallScore !== null && record.overallScore !== undefined && String(record.overallScore).trim() !== '' && Number.isFinite(score) && score >= 0 && score <= 100;
+    });
   }
 
   function renderNeedAttention() {
     const employees = latestEmployeeRecords(highlightRecords);
-    const ascending = [...employees].sort((left, right) => Number(left.overallScore) - Number(right.overallScore) || left.name.localeCompare(right.name));
-    renderAttentionList(document.getElementById('performanceLowestList'), ascending.slice(0, 5));
-    renderAttentionList(document.getElementById('performanceTopList'), ascending.slice(-5).reverse());
+    const average = records => records.length ? (records.reduce((total, record) => total + Number(record.overallScore), 0) / records.length).toFixed(2) : '—';
+    const container = document.getElementById('performanceScoreGroups');
+    container.replaceChildren();
+    const bands = [
+      { range: '80–100', label: '80 to 100', min: 80, max: 101, tone: 'high' },
+      { range: '60–<80', label: '60 to below 80', min: 60, max: 80, tone: 'medium' },
+      { range: '40–<60', label: '40 to below 60', min: 40, max: 60, tone: 'low' },
+      { range: '0–<40', label: '0 to below 40', min: 0, max: 40, tone: 'critical' }
+    ];
+    const element = (tag, className, text) => {
+      const node = document.createElement(tag);
+      node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    };
+    bands.forEach(band => {
+      const records = employees.filter(record => Number(record.overallScore) >= band.min && Number(record.overallScore) < band.max);
+      const row = element('tr', 'performance-score-group');
+      const range = element('th', 'performance-score-range', band.range);
+      range.scope = 'row';
+      const count = element('td', 'performance-score-count', String(records.length));
+      const averageCell = element('td', 'performance-score-average');
+      averageCell.append(element('strong', '', average(records)));
+      row.append(range, count, averageCell);
+      container.append(row);
+    });
   }
 
   function syncBackLink() {
+    document.getElementById('performancePendingApproval').href = `options/pending-approval.html?theme=${theme()}`;
     document.getElementById('performanceBack').href = `../../app${theme()}.html`;
     document.querySelector('[data-option-id="goal-plan"]').href = `options/goal-plan.html?theme=${theme()}`;
     document.querySelector('[data-option-id="goal-progress"]').href = `options/goal-progress.html?theme=${theme()}`;
     document.querySelector('[data-option-id="self-evaluation"]').href = `options/self-evaluation.html?theme=${theme()}`;
+    document.querySelector('[data-option-id="self-review"]').href = `options/self-review.html?theme=${theme()}`;
+    document.querySelector('[data-task-id="goal-plan"]').href = `options/goal-plan.html?theme=${theme()}`;
+    document.querySelector('[data-task-id="self-evaluation"]').href = `options/self-evaluation.html?theme=${theme()}`;
+    document.querySelector('[data-task-id="self-review"]').href = `options/self-review.html?theme=${theme()}`;
     document.querySelector('[data-option-id="performance-evaluation"]').href = `options/performance-evaluation.html?theme=${theme()}`;
     document.querySelector('[data-option-id="work-incident"]').href = `options/work-incident.html?theme=${theme()}`;
     document.querySelector('[data-option-id="performance-highlight"]').href = `options/performance-highlight.html?theme=${theme()}`;
@@ -121,6 +103,15 @@
       showToast(`${title} is coming soon`);
     });
   });
+  const appraisalToggle = document.getElementById('performanceAppraisalToggle');
+  const appraisalDetails = document.getElementById('performanceAppraisalDetails');
+  appraisalToggle.addEventListener('click', () => {
+    const expanded = appraisalToggle.getAttribute('aria-expanded') === 'true';
+    appraisalToggle.setAttribute('aria-expanded', String(!expanded));
+    appraisalDetails.hidden = expanded;
+    appraisalToggle.querySelector('span').textContent = expanded ? 'View appraisal details' : 'Hide appraisal details';
+  });
+
   document.querySelectorAll('[data-status]').forEach(button => {
     button.addEventListener('click', () => showToast('Performance history is coming soon'));
   });
@@ -131,5 +122,12 @@
     setScope(new URLSearchParams(location.search).get('scope'), false);
     syncBackLink();
     renderNeedAttention();
+    syncPendingCounts();
   });
+  function syncPendingCounts() {
+    const count = window.PerformancePendingStore.getPending().length;
+    document.getElementById('performancePendingCount').textContent = count;
+    document.getElementById('performanceActionRequiredCount').textContent = `${count} ${count === 1 ? 'Task' : 'Tasks'}`;
+  }
+  window.addEventListener('pageshow', syncPendingCounts);
 })();

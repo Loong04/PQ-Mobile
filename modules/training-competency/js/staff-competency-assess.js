@@ -6,9 +6,17 @@
   const source = window.COMPETENCY_SUMMARY_DATA;
   const definition = id => source.definitions.find(item => item.id === id);
   const assignments = source.records.filter(record => record.empNo === employee?.empNo);
-  const skillGroup = assignments.length ? definition(assignments[0].competency).skillGroup : '—';
+  const fromHub = params.get('origin') === 'hub';
+  const selectedGroup = fromHub ? params.get('skillGroup') || '' : assignments.length ? definition(assignments[0].competency).skillGroup : '';
+  const skillGroup = selectedGroup || (fromHub ? 'All Skill Groups' : '—');
 
   function backUrl() {
+    if (fromHub) {
+      const context = new URLSearchParams(params.get('hubReturn') || 'tab=assessment');
+      context.delete('hubReturn');
+      context.set('theme', document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+      return `staff-competency.html?${context}`;
+    }
     const query = new URLSearchParams(params);
     const origin = query.get('origin') === 'summary' ? 'summary' : 'staff';
     query.delete('origin');
@@ -38,7 +46,7 @@
     $('staffAssessError').hidden = !message;
   }
 
-  function currentAssignments() { return assignments.filter(record => definition(record.competency).skillGroup === skillGroup); }
+  function currentAssignments() { return assignments.filter(record => !selectedGroup || definition(record.competency).skillGroup === selectedGroup); }
 
   function renderCards() {
     const rows = currentAssignments();
