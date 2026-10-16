@@ -39,52 +39,49 @@ const fileUrl = (relative, query = '') => pathToFileURL(path.join(root, relative
       assert.equal(await page.$eval('[data-option-back]', node => new URL(node.href).searchParams.get('theme')), theme);
 
       const fields = [
-        'careerPlanName', 'careerPlanPosition', 'careerPlanDepartment', 'careerPlanPath',
-        'careerPlanNextPosition', 'careerPlanTargetDate', 'careerPlanJustification',
-        'careerPlanActionPlan', 'careerPlanDevelopmentNeeds', 'careerPlanRemarks', 'careerPlanFiles'
+        'careerPlanEmployeeNo', 'careerPlanName', 'careerPlanPosition', 'careerPlanDepartment',
+        'careerPlanNextJob', 'careerPlanTargetYear', 'careerPlanCareerGoal', 'careerPlanDevelopmentNotes'
       ];
       for (const id of fields) assert.ok(await page.$(`#${id}`), `Career Plan includes #${id}`);
 
+      assert.deepEqual(
+        await page.$$eval('#careerPlanForm label', nodes => nodes.map(node => node.textContent.trim())),
+        ['Employee #', 'Name', 'Position', 'Department', 'Next Job', 'Target Year', 'Career Goal', 'Development Needs / Notes'],
+        'Career Plan presents only the requested fields in order'
+      );
+
       assert.deepEqual(await page.evaluate(() => ({
+        employeeNo: document.getElementById('careerPlanEmployeeNo').value,
         name: document.getElementById('careerPlanName').value,
         position: document.getElementById('careerPlanPosition').value,
         department: document.getElementById('careerPlanDepartment').value,
-        readonly: ['careerPlanName', 'careerPlanPosition', 'careerPlanDepartment'].every(id => document.getElementById(id).readOnly)
+        readonly: ['careerPlanEmployeeNo', 'careerPlanName', 'careerPlanPosition', 'careerPlanDepartment'].every(id => document.getElementById(id).readOnly)
       })), {
+        employeeNo: '#EBB01',
         name: 'Aina Rahman',
         position: 'People Operations Executive',
         department: 'People & Culture',
         readonly: true
       });
 
-      await page.select('#careerPlanPath', 'leadership');
       assert.deepEqual(
-        await page.$$eval('#careerPlanNextPosition option', nodes => nodes.map(node => [node.value, node.textContent.trim()])),
-        [
-          ['', 'Select Next Position'],
-          ['team-lead', 'Team Lead'],
-          ['department-manager', 'Department Manager'],
-          ['head-of-department', 'Head of Department']
-        ],
-        'Leadership path exposes only its relevant next positions'
+        await page.evaluate(() => ({
+          nextJobType: document.getElementById('careerPlanNextJob').type,
+          targetYearType: document.getElementById('careerPlanTargetYear').type,
+          careerGoalTag: document.getElementById('careerPlanCareerGoal').tagName,
+          developmentNotesTag: document.getElementById('careerPlanDevelopmentNotes').tagName,
+          legacyFields: ['careerPlanPath', 'careerPlanTargetDate', 'careerPlanJustification', 'careerPlanActionPlan', 'careerPlanRemarks', 'careerPlanFiles']
+            .filter(id => document.getElementById(id))
+        })),
+        {
+          nextJobType: 'text',
+          targetYearType: 'number',
+          careerGoalTag: 'TEXTAREA',
+          developmentNotesTag: 'TEXTAREA',
+          legacyFields: []
+        },
+        'Career Plan uses concise editable fields without legacy controls or attachments'
       );
-
-      await page.select('#careerPlanPath', 'specialist');
-      assert.deepEqual(
-        await page.$$eval('#careerPlanNextPosition option', nodes => nodes.map(node => node.value)),
-        ['', 'senior-specialist', 'principal-specialist', 'subject-matter-expert'],
-        'Changing Career Path refreshes Next Position choices'
-      );
-
-      await page.$eval('#careerPlanFiles', input => {
-        const transfer = new DataTransfer();
-        transfer.items.add(new File(['plan'], 'career-plan.pdf', { type: 'application/pdf' }));
-        input.files = transfer.files;
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-      assert.equal(await page.$eval('#careerPlanAttachments', node => node.textContent.includes('career-plan.pdf')), true);
-      await page.click('#careerPlanAttachments [data-remove-file]');
-      assert.equal(await page.$eval('#careerPlanAttachments', node => node.textContent.trim()), '');
 
       assert.deepEqual(
         await page.$$eval('.employee-career-form-actions > *', nodes => nodes.map(node => node.textContent.trim())),
@@ -101,7 +98,7 @@ const fileUrl = (relative, query = '') => pathToFileURL(path.join(root, relative
     }
 
     assert.deepEqual(errors, [], `Career Plan should have no JavaScript errors: ${errors.join('; ')}`);
-    console.log('PASS: Career Plan option, consistent form fields, linked positions, attachments and actions.');
+    console.log('PASS: Career Plan option, fixed employee data, concise planning fields and actions.');
   } finally {
     await browser.close();
   }

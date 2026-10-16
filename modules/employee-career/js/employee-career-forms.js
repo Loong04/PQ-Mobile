@@ -192,37 +192,6 @@
   function initCareerPlan() {
     const form = document.getElementById('careerPlanForm');
     if (!form) return;
-    const path = document.getElementById('careerPlanPath');
-    const nextPosition = document.getElementById('careerPlanNextPosition');
-    const positions = {
-      '': [],
-      leadership: [
-        ['team-lead', 'Team Lead'],
-        ['department-manager', 'Department Manager'],
-        ['head-of-department', 'Head of Department']
-      ],
-      specialist: [
-        ['senior-specialist', 'Senior Specialist'],
-        ['principal-specialist', 'Principal Specialist'],
-        ['subject-matter-expert', 'Subject Matter Expert']
-      ],
-      'cross-functional': [
-        ['project-manager', 'Project Manager'],
-        ['business-partner', 'Business Partner'],
-        ['product-owner', 'Product Owner']
-      ]
-    };
-
-    function renderNextPositions() {
-      nextPosition.innerHTML = '<option value="">Select Next Position</option>' + (positions[path.value] || [])
-        .map(([value, label]) => `<option value="${value}">${label}</option>`)
-        .join('');
-      nextPosition.disabled = !path.value;
-    }
-
-    path.addEventListener('change', renderNextPositions);
-    renderNextPositions();
-    initAttachments(form, ['careerPlanFiles', 'careerPlanCamera'], 'careerPlanAttachments');
     bindSubmit(form, 'Career plan updated successfully');
   }
 
